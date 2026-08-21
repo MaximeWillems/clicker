@@ -72,16 +72,32 @@ Deux axes indépendants, à ne pas confondre : le **palier** est la progression 
 fil de sa vie, la **rareté** est la lignée dont elle est issue et ne change jamais. Le palier,
 c'est le travail ; la rareté, c'est la chance.
 
-| Rareté | Lignées | Valeur | Adulte palier 1 → palier 5 |
-|---|---|---|---|
-| commune | crapaud, poisson, lézard, oiseau, crocodile | ×1 | 40 → 1 500 000 |
-| rare | salamandre, serpent-plume | ×3 | 120 → 4 500 000 |
-| épique | kraken, golem | ×10 | 400 → 15 000 000 |
-| mythique | chimère, béhémoth | ×40 | 1 600 → 60 000 000 |
+Les deux axes sont calés pour **s'enchaîner** plutôt que se concurrencer. Chaque rareté est
+une ère, pas un bonus : on épuise ce que les communes peuvent donner avant que les rares
+n'ouvrent.
 
-**Le coût d'évolution ne dépend pas de la rareté.** Monter une mythique au palier 5 coûte les
-mêmes 643 200 pièces qu'une commune et en rapporte quarante fois plus : une lignée rare n'est
-pas un lot à encaisser, c'est un investissement qui ne paie que si on la mène au bout.
+| Rareté | Valeur | Adulte p1 → p5 | Coût pour monter au p5 |
+|---|---|---|---|
+| commune | ×1 | 40 → 1,5 M | 643 200 |
+| rare | ×25 | 1 000 → 37,5 M | 16,1 M |
+| épique | ×600 | 24 000 → 900 M | 385,9 M |
+| mythique | ×15 000 | 600 000 → 22,5 Md | 9,65 Md |
+
+**Le coût d'évolution suit la rareté.** C'est le pivot de tout l'équilibrage : sans lui, une
+rare tombée par chance se montait au palier 5 pour le prix d'une commune et court-circuitait
+toute la progression.
+
+**Chaque œuf coûte 0,7 bête de l'ère précédente menée au palier 5** — la même proportion sur
+les trois transitions. On ne s'offre donc un œuf rare qu'après avoir mené des communes au
+bout, un épique qu'après des rares, et ainsi de suite.
+
+**Tous les œufs payants se remboursent au palier 4**, jamais avant : une règle unique, quelle
+que soit l'ère.
+
+Rythme mesuré sur une partie simulée de quatre heures, joueur cliquant quatre fois par
+seconde : couveuse à 2 min, éleveur à 3 min, acheteur à 9 min, mangeoire à 10 min, marchand à
+28 min, évolution automatique à 64 min, **ère rare à 3 h 34**. L'ère commune occupe donc les
+trois premières heures et demie, automatisations comprises.
 
 ### Les quatre œufs
 
@@ -104,9 +120,10 @@ niveau 2 — elle divise la durée par son niveau.
 Débit mesuré, par incubateur et par heure, avec une couveuse de niveau 3 : 327 communs,
 59 rares, 14 épiques, 3 mythiques.
 
-L'œuf commun garde sa chance sur deux mille de donner une mythique : le coup de chance doit
-rester possible dès la première minute, c'est ce qui rend chaque éclosion tendue. Les œufs
-chers n'achètent pas la possibilité, ils achètent la **régularité**.
+**Un œuf ne peut donner que sa rareté ou celle juste au-dessus.** Pas de raccourci : on
+n'atteint une mythique qu'avec des œufs épiques, qu'on ne s'offre qu'avec l'argent des rares.
+La chance de monter d'un cran grandit avec le prix — 3,5 %, 12 %, 25 % — et l'œuf mythique,
+n'ayant rien au-dessus de lui, garantit.
 
 L'œuf mythique est volontairement plus cher que son espérance : passer par des œufs épiques
 revient à 160 000 par mythique contre 200 000 pour la garantie. On paie 25 % de prime pour

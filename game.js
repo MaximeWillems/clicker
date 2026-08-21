@@ -19,14 +19,18 @@ const SLOT_MULT  = 1.6;
 
 /* Deux axes indépendants, à ne pas confondre :
    le PALIER est la progression d'une bête au fil de sa vie (têtard → crapaud → …),
-   la RARETÉ est la lignée dont elle est issue et ne change jamais. Une commune de palier 5
-   vaut 1 500 000 ; une mythique de palier 1 en vaut 1 600. C'est la rareté qui fait les
-   coups de chance, le palier qui fait le travail. */
+   la RARETÉ est la lignée dont elle est issue et ne change jamais.
+
+   Les deux axes sont calés pour s'ENCHAÎNER plutôt que se concurrencer : le multiplicateur
+   d'une rareté fait sauter à peu près deux paliers, et le coût d'évolution suit le même
+   multiplicateur. Monter une rare coûte donc vingt-cinq fois ce que coûte une commune —
+   on ne s'y met qu'une fois la ferme commune arrivée à maturité. Chaque rareté est une ère,
+   pas un bonus. */
 const RARITY = {
-  commune:  { name: 'commune',  plur: 'communes',  mult: 1,  rank: 0 },
-  rare:     { name: 'rare',     plur: 'rares',     mult: 3,  rank: 1 },
-  epique:   { name: 'épique',   plur: 'épiques',   mult: 10, rank: 2 },
-  mythique: { name: 'mythique', plur: 'mythiques', mult: 40, rank: 3 },
+  commune:  { name: 'commune',  plur: 'communes',  mult: 1,     rank: 0 },
+  rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1 },
+  epique:   { name: 'épique',   plur: 'épiques',   mult: 600,   rank: 2 },
+  mythique: { name: 'mythique', plur: 'mythiques', mult: 15000, rank: 3 },
 };
 
 // « a, b et c » plutôt que « a, b, c » : les notes doivent se lire à voix haute.
@@ -35,22 +39,21 @@ function liste(mots) {
   return mots.slice(0, -1).join(', ') + ' et ' + mots[mots.length - 1];
 }
 
-/* Un œuf par rareté. Chacun donne surtout sa propre rareté, avec une chance de tomber
-   au-dessus — et cette chance grandit avec le prix : 3,5 % pour un œuf commun, 12 % pour un
-   rare, 25 % pour un épique. L'œuf mythique n'a rien au-dessus de lui, il garantit.
-   L'œuf commun garde sa chance sur deux mille de donner une mythique : le coup de chance
-   doit rester possible dès la première minute, c'est ce qui rend chaque éclosion tendue. */
+/* Un œuf par rareté, et chacun ne peut donner QUE sa rareté ou celle juste au-dessus.
+   C'est ce qui rend la progression séquentielle : on n'atteint une mythique qu'en achetant
+   des œufs épiques, qu'on ne s'offre qu'avec l'argent des rares. Pas de raccourci.
+   La chance de monter d'un cran, elle, grandit avec le prix : 3,5 % · 12 % · 25 %. */
 const EGG_KINDS = [
   { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
     up: '3,5 %', hatch: 30,
-    odds: { commune: 0.9650, rare: 0.0300, epique: 0.0045, mythique: 0.0005 } },
-  { key: 'rare', name: 'Œuf rare', price: 3000, glyph: '🥚', rarity: 'rare',
+    odds: { commune: 0.965, rare: 0.035 } },
+  { key: 'rare', name: 'Œuf rare', price: 600000, glyph: '🥚', rarity: 'rare',
     up: '12 %', hatch: 180,
-    odds: { rare: 0.88, epique: 0.10, mythique: 0.02 } },
-  { key: 'epique', name: 'Œuf épique', price: 40000, glyph: '🥚', rarity: 'epique',
+    odds: { rare: 0.88, epique: 0.12 } },
+  { key: 'epique', name: 'Œuf épique', price: 15000000, glyph: '🥚', rarity: 'epique',
     up: '25 %', hatch: 720,
     odds: { epique: 0.75, mythique: 0.25 } },
-  { key: 'mythique', name: 'Œuf mythique', price: 200000, glyph: '🥚', rarity: 'mythique',
+  { key: 'mythique', name: 'Œuf mythique', price: 375000000, glyph: '🥚', rarity: 'mythique',
     up: null, hatch: 2700,
     odds: { mythique: 1 } },
 ];
@@ -390,10 +393,11 @@ function rollVariants() {
    payants se remboursent au palier 3, jamais avant — autant le dire plutôt que de laisser
    le joueur le découvrir en perdant sa mise. */
 function seuilRentable(c) {
-  const mult = rarityOf(c).mult * variantMult(c);
+  const rar = rarityOf(c).mult;
+  const mult = rar * variantMult(c);
   let cumul = 0;
   for (let t = 1; t <= 5; t++) {
-    if (t > 1) cumul += EVOLVE[t - 2] || 0;
+    if (t > 1) cumul += (EVOLVE[t - 2] || 0) * rar;
     if (VALUE[t - 1] * mult - cumul >= (c.cost || 0)) return t;
   }
   return null;
@@ -413,7 +417,10 @@ const eggStock  = k => (state.eggs && state.eggs[k]) || 0;
 const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 // la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
 const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
-const evoCost   = c => EVOLVE[c.tier - 1];
+// Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
+// palier 5 pour le prix d'une commune, et toute la progression se court-circuitait.
+const evoCost   = c => EVOLVE[c.tier - 1] === null ? null
+                     : Math.round(EVOLVE[c.tier - 1] * rarityOf(c).mult);
 const isAdult   = c => c.p >= growTime(c);
 const form      = (lineKey, tier) => LINE_BY_KEY[lineKey].forms[tier - 1];
 const penFull   = () => state.pen.length >= state.pens;
@@ -472,10 +479,16 @@ function visualScale(c) {
   return TIER_SCALE[c.tier - 1] * life * Math.min(SIZE_VIS, sizeFactor(c));
 }
 
+/* L'économie court maintenant de 40 à des dizaines de milliards : au-delà du million on
+   abrège, sinon les boutons débordent et plus personne ne lit les chiffres. */
 function fmt(n) {
   n = Math.floor(n);
-  if (n >= 1e9) return (n / 1e9).toFixed(2).replace('.', ',') + ' Md';
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const signe = n < 0 ? '-' : '', a = Math.abs(n);
+  const court = (v, u) => signe + v.toFixed(v < 10 ? 2 : 1).replace('.', ',') + ' ' + u;
+  if (a >= 1e12) return court(a / 1e12, 'Bn');
+  if (a >= 1e9)  return court(a / 1e9, 'Md');
+  if (a >= 1e6)  return court(a / 1e6, 'M');
+  return signe + a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function dec(n, d) { return n.toFixed(d === undefined ? 2 : d).replace('.', ','); }
