@@ -28,7 +28,8 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 11 lignées et leurs 55 formes, du têtard au Béhémoth primordial
+- 19 lignées et leurs 95 formes, du têtard à l'Ouroboros éternel
+- **Variantes** : teinte, motif, tempérament, et un prodige sur cinq cents
 - **Quatre raretés** et trois sortes d'œufs, dont un coup de chance possible dès la première minute
 - Œuf → clic → éclosion → croissance → **vendre ou faire évoluer**
 - **Rien n'avance tout seul au départ** : seul le clic fait éclore et grandir. Le temps ne se
@@ -111,6 +112,50 @@ et une lignée non commune déclenche gerbe, accord et mise en scène immédiate
 réserve, en commençant par les plus rares — un œuf cher acheté exprès ne doit pas dormir en
 stock — puis rachète la sorte demandée. S'il n'a pas de quoi la payer il laisse l'incubateur
 vide : rabattre sur du commun trahirait la consigne.
+
+### Variantes
+
+Une variante est une **identité**, tirée à l'éclosion et gardée à vie — contrairement à la
+taille, qu'une évolution remet à zéro. C'est ce qui en fait une collection, et le brouillon
+direct des gènes du jalon 4 : le jour où la reproduction arrive, tout ça s'hérite.
+
+**La teinte** est la seule qui se voit. Un `filter: hue-rotate()` recolore vraiment l'emoji,
+ce qui multiplie le bestiaire visible sans un seul dessin — et règle le problème des lignées
+où les cinq formes partagent le même glyphe.
+
+| Teinte | Fréquence | Valeur |
+|---|---|---|
+| ordinaire | 52 % | ×1 |
+| cendré | 11,5 % | ×1,10 |
+| écarlate / azur | 9,5 % chacun | ×1,15 |
+| jade | 7 % | ×1,20 |
+| améthyste | 5 % | ×1,25 |
+| doré | 3 % | ×1,30 |
+| albâtre | 1,6 % | ×1,40 |
+
+**Le prodige** ignore la lignée : une bête sur cinq cents naît *chromatique*, quelle que soit
+sa rareté — on peut avoir un têtard chromatique. Halo doré battant, valeur **×5**, et elle
+naît **protégée d'office** : perdre une bête sur cinq cents parce qu'un automate l'a vendue
+avant qu'on l'ait vue serait impardonnable.
+
+**Le tempérament** ne se lit qu'en texte, mais il agit : `grow` raccourcit la croissance,
+`fat` accélère l'engraissement. Docile (neutre), nerveux (croissance ×1,25 / engraissement
+×0,85), placide (l'inverse), glouton (engraissement ×1,4), farouche, rêveur. L'effet est
+confiné à la phase de croissance — la durée de référence des rangs de taille reste celle du
+palier, sinon un tempérament vif cumulerait deux bonus.
+
+**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé — n'a aucun
+effet. C'est de l'identité pure : « un Ouroboros chromatique doré marbré placide » se
+reconnaît entre mille.
+
+### Garder une bête
+
+Le bouton **☆ Garder** met une créature hors de portée des automates : ni vendue par le
+marchand, ni faite évoluer — évoluer lui ferait perdre sa taille. La mangeoire continue de
+l'engraisser, elle. Le bouton *Vendre* se verrouille tant qu'elle est gardée.
+
+Ce que ça coûte est une place d'enclos immobilisée, et c'est tout l'intérêt : on choisit de
+continuer l'aventure avec une bête plutôt que de la faire entrer dans la chaîne.
 
 ### Automatisations
 

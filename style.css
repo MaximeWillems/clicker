@@ -481,3 +481,25 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── variantes : teinte, prodige, protection ─────────────────────────────── */
+.subject-traits {
+  font-family: var(--f-num); font-size: 0.72rem; letter-spacing: 0.06em;
+  color: var(--soft); margin: -0.2rem 0 0; text-align: center;
+}
+.stage.prodige .subject-traits { color: var(--amber); }
+.stage.prodige .subject-glow {
+  background: radial-gradient(circle, var(--amber) 0%, transparent 62%);
+  opacity: 0.35; animation: throb 2.4s ease-in-out infinite;
+}
+.stage.prodige .subject-name { color: var(--amber); }
+
+button.act.keep { border-color: var(--rule-hi); }
+button.act.keep.on { color: var(--amber); border-color: var(--amber); }
+button.act.keep:hover:not(:disabled) { color: var(--amber); border-color: var(--amber); }
+
+.thumb.prodige { border-color: var(--amber); }
+.thumb.gardee::after {
+  content: "★"; position: absolute; top: 2px; right: 4px;
+  font-size: 0.6rem; color: var(--amber); line-height: 1;
+}

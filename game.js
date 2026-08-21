@@ -61,6 +61,45 @@ const FATTEN_X  = 2;        // secondes d'engraissement par seconde et par nivea
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
 const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever la scène
 
+/* ── Variantes ────────────────────────────────────────────────────────────────
+   Tirées à l'éclosion et gardées À VIE, contrairement à la taille qu'une évolution
+   remet à zéro : ce sont des identités, pas des états. C'est ce qui en fait une
+   collection, et le brouillon direct des gènes du jalon 4.
+
+   La TEINTE se voit — un filtre CSS recolore l'emoji, ce qui multiplie le bestiaire
+   visible sans un seul dessin. Le TEMPÉRAMENT et le MOTIF ne sont que du texte : ils
+   donnent une identité à chaque bête sans rien demander aux graphismes. */
+
+const TINTS = [
+  { key: 'ordinaire', name: '',           filter: '',                                             mult: 1,    poids: 100 },
+  { key: 'cendre',    name: 'cendré',     filter: 'saturate(.3) brightness(.88)',                 mult: 1.10, poids: 22 },
+  { key: 'ecarlate',  name: 'écarlate',   filter: 'hue-rotate(-40deg) saturate(1.7)',             mult: 1.15, poids: 18 },
+  { key: 'azur',      name: 'azur',       filter: 'hue-rotate(150deg) saturate(1.4)',             mult: 1.15, poids: 18 },
+  { key: 'jade',      name: 'jade',       filter: 'hue-rotate(80deg) saturate(1.5)',              mult: 1.20, poids: 14 },
+  { key: 'amethyste', name: 'améthyste',  filter: 'hue-rotate(230deg) saturate(1.5)',             mult: 1.25, poids: 10 },
+  { key: 'dore',      name: 'doré',       filter: 'hue-rotate(25deg) saturate(2.2) brightness(1.15)', mult: 1.30, poids: 6 },
+  { key: 'albatre',   name: 'albâtre',    filter: 'saturate(0) brightness(1.4)',                  mult: 1.40, poids: 3 },
+];
+
+// Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
+// raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
+const PRODIGE_ODDS  = 1 / 500;
+const PRODIGE_MULT  = 5;
+const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
+
+// grow : divise la durée de croissance. fat : multiplie la vitesse d'engraissement.
+const TEMPERS = [
+  { key: 'docile',   name: 'docile',   grow: 1.00, fat: 1.00 },
+  { key: 'nerveux',  name: 'nerveux',  grow: 1.25, fat: 0.85 },
+  { key: 'placide',  name: 'placide',  grow: 0.85, fat: 1.25 },
+  { key: 'glouton',  name: 'glouton',  grow: 1.00, fat: 1.40 },
+  { key: 'farouche', name: 'farouche', grow: 1.15, fat: 0.95 },
+  { key: 'rêveur',   name: 'rêveur',   grow: 0.90, fat: 1.15 },
+];
+
+// Purement descriptif : aucun effet, juste de quoi reconnaître une bête entre mille.
+const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé'];
+
 /* Les rangs de taille qualifient l'adulte : « adulte », puis « adulte grand », « adulte
    énorme »… Le seuil d'un rang est aussi son multiplicateur de valeur : franchir un rang
    fait donc bondir le prix de vente, exactement comme passer d'enfant à adolescent.
@@ -137,7 +176,23 @@ const LINES = [
     ['Crocodillon', '🐊', '🐊'], ['Crocodile', '🐊', '🐊'], ['Crocodile ancien', '🐊', '🐊'],
     ['Draco-saurien', '🐲', '🐊'], ['Dragon-tonnerre', '🐉', '🐲'] ] },
 
+  { key: 'insecte', name: 'Insecte', rarity: 'commune', forms: [
+    ['Larve', '🐛', '🐛'], ['Scarabée', '🪲', '🐛'], ['Lucane', '🪲', '🪲'],
+    ['Scarabée-titan', '🪲', '🪲'], ['Khépri, porteur du soleil', '🌞', '🪲'] ] },
+  { key: 'rongeur', name: 'Rongeur', rarity: 'commune', forms: [
+    ['Souriceau', '🐁', '🐁'], ['Rat', '🐀', '🐁'], ['Ragondin', '🦫', '🐀'],
+    ['Rongeur colossal', '🦫', '🦫'], ['Ratatosk, messager des cimes', '🐿️', '🦫'] ] },
+  { key: 'chiroptere', name: 'Chauve-souris', rarity: 'commune', forms: [
+    ['Chiroptère', '🦇', '🦇'], ['Chauve-souris', '🦇', '🦇'], ['Roussette', '🦇', '🦇'],
+    ['Buveur de nuit', '🧛', '🦇'], ['Camazotz, l’éclipse', '🌑', '🧛'] ] },
+
   // ── rares ───────────────────────────────────────────────────────────────
+  { key: 'loup', name: 'Loup', rarity: 'rare', forms: [
+    ['Louveteau', '🐕', '🐕'], ['Loup', '🐺', '🐕'], ['Loup des steppes', '🐺', '🐺'],
+    ['Garou', '🧌', '🐺'], ['Fenrir, dévoreur', '🌘', '🧌'] ] },
+  { key: 'meduse', name: 'Méduse', rarity: 'rare', forms: [
+    ['Éphyrule', '🫧', '🫧'], ['Méduse', '🪼', '🫧'], ['Méduse abyssale', '🪼', '🪼'],
+    ['Cnidaire colossal', '🪼', '🪼'], ['Physalie-monde', '🌊', '🪼'] ] },
   { key: 'salamandre', name: 'Salamandre', rarity: 'rare', forms: [
     ['Larve ardente', '🐛', '🐛'], ['Salamandre', '🦎', '🐛'], ['Salamandre de braise', '🦎', '🦎'],
     ['Salamandre de cendre', '🔥', '🦎'], ['Ifrit', '👹', '🔥'] ] },
@@ -152,6 +207,12 @@ const LINES = [
   { key: 'golem', name: 'Golem', rarity: 'epique', forms: [
     ['Éclat', '🪨', '🪨'], ['Gravier animé', '🪨', '🪨'], ['Golem', '🗿', '🪨'],
     ['Colosse de pierre', '🗿', '🗿'], ['Titan de granit', '🏔️', '🗿'] ] },
+  { key: 'sphinx', name: 'Sphinx', rarity: 'epique', forms: [
+    ['Chaton sans poil', '🐈', '🐈'], ['Sphinx', '🐈‍⬛', '🐈'], ['Sphinx royal', '🦁', '🐈‍⬛'],
+    ['Gardien de tombeau', '🗿', '🦁'], ['Grand Sphinx', '🏜️', '🗿'] ] },
+  { key: 'cheval', name: 'Cheval', rarity: 'epique', forms: [
+    ['Poulain', '🐴', '🐴'], ['Cheval', '🐎', '🐴'], ['Destrier', '🐎', '🐎'],
+    ['Licorne', '🦄', '🐎'], ['Pégase', '🌠', '🦄'] ] },
 
   // ── mythiques ───────────────────────────────────────────────────────────
   { key: 'chimere', name: 'Chimère', rarity: 'mythique', forms: [
@@ -160,6 +221,9 @@ const LINES = [
   { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
     ['Ossement', '🦴', '🦴'], ['Saurien', '🦕', '🦴'], ['Béhémoth', '🦖', '🦕'],
     ['Béhémoth ancien', '🦖', '🦖'], ['Béhémoth primordial', '☄️', '🦖'] ] },
+  { key: 'ouroboros', name: 'Ouroboros', rarity: 'mythique', forms: [
+    ['Anneau de mue', '🐛', '🐛'], ['Serpent gris', '🐍', '🐛'], ['Serpent-monde', '🐍', '🐍'],
+    ['Ouroboros', '🐉', '🐍'], ['Ouroboros éternel', '♾️', '🐉'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
@@ -279,10 +343,44 @@ function save() {
 
 const $ = id => document.getElementById(id);
 
-const growTime  = c => GROW[c.tier - 1];
 const lineOf    = c => LINE_BY_KEY[c.line];
 const rarityOf  = c => RARITY[lineOf(c).rarity];
-const baseValue = c => VALUE[c.tier - 1] * rarityOf(c).mult;
+const tintOf    = c => TINTS[c.tint] || TINTS[0];
+const temperOf  = c => TEMPERS[c.temper] || TEMPERS[0];
+const motifOf   = c => MOTIFS[c.motif] || MOTIFS[0];
+
+// Le tempérament ne touche QUE la phase de croissance. La durée de référence des rangs de
+// taille reste la valeur brute du palier, sinon un tempérament vif cumulerait deux bonus.
+const tierTime  = c => GROW[c.tier - 1];
+const growTime  = c => GROW[c.tier - 1] / temperOf(c).grow;
+
+const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
+const baseValue = c => VALUE[c.tier - 1] * rarityOf(c).mult * variantMult(c);
+
+function pickWeighted(list) {
+  let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
+  for (let i = 0; i < list.length; i++) { r -= list[i].poids; if (r < 0) return i; }
+  return 0;
+}
+
+// Tiré une fois, à l'éclosion, et jamais retouché ensuite.
+function rollVariants() {
+  return {
+    tint: pickWeighted(TINTS),
+    temper: Math.floor(Math.random() * TEMPERS.length),
+    motif: Math.floor(Math.random() * MOTIFS.length),
+    prodige: Math.random() < PRODIGE_ODDS,
+  };
+}
+
+// La description d'une bête : ce qui la distingue de toutes les autres de sa forme.
+function traitsOf(c) {
+  const bouts = [];
+  if (c.prodige) bouts.push('chromatique');
+  if (tintOf(c).name) bouts.push(tintOf(c).name);
+  bouts.push(motifOf(c), temperOf(c).name);
+  return bouts.join(' · ');
+}
 const eggStock  = k => (state.eggs && state.eggs[k]) || 0;
 const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 // la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
@@ -303,7 +401,7 @@ const clickPower  = () => 1 + lvl('clic');
 // La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
 // à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
 // une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
-const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / growTime(c));
+const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / tierTime(c));
 // stageMult est défini plus bas : sellValue n'est appelée qu'une fois le fichier chargé.
 // Le multiplicateur d'étape porte déjà la taille — la valeur est donc plate entre deux
 // rangs, et c'est le clic qui franchit le rang qui paie.
@@ -548,7 +646,11 @@ function hatchAll() {
     const slot = state.incub[i];
     if (!slot || slot.p < HATCH) continue;
     if (penFull()) continue;
-    const c = { id: nextId++, line: slot.line, tier: 1, p: 0, over: 0 };
+    const c = Object.assign({ id: nextId++, line: slot.line, tier: 1, p: 0, over: 0 },
+                           rollVariants());
+    // un prodige est protégé d'office : on ne perd pas une bête sur cinq cents
+    // parce que le marchand l'a vendue avant qu'on l'ait vue
+    if (c.prodige) c.keep = true;
     state.pen.push(c);
     state.incub[i] = null;
     markSeen(slot.line, 1);
@@ -610,6 +712,18 @@ function evolve(c) {
   floatText(pt.x, pt.y - 80, form(c.line, c.tier)[0], 'gain');
   chord([440, 554, 659, 880], 80);
   popNext = true;
+  refresh();
+}
+
+/* Protéger une bête, c'est refuser qu'un automate décide de sa vie : ni vendue par le
+   marchand, ni fait évoluer — évoluer lui ferait perdre sa taille. C'est le prix d'une
+   place d'enclos immobilisée, et c'est ce qui permet de garder un prodige et de continuer
+   l'aventure avec lui. */
+function toggleKeep(c) {
+  c.keep = !c.keep;
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y - 40, c.keep ? 'gardée' : 'relâchée', c.keep ? 'gain' : '');
+  chord(c.keep ? [523, 784] : [440, 330], 60);
   refresh();
 }
 
@@ -687,7 +801,7 @@ function runAutomations(dt) {
      l'évolution remet la croissance à zéro, donc la bête n'est plus adulte juste après. */
   if (lvl('evolution') && state.evolveUpTo > 1) {
     for (const c of state.pen) {
-      if (!isAdult(c) || c.tier >= state.evolveUpTo) continue;
+      if (c.keep || !isAdult(c) || c.tier >= state.evolveUpTo) continue;
       const cost = evoCost(c);
       if (state.coins < cost) continue;
       state.coins -= cost;
@@ -701,7 +815,7 @@ function runAutomations(dt) {
      tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce
      soit — les deux automates se marchaient dessus. */
   if (state.up.marchand && state.sellUpTo > 0) {
-    const ready = state.pen.filter(c => isAdult(c) && c.tier <= state.sellUpTo &&
+    const ready = state.pen.filter(c => !c.keep && isAdult(c) && c.tier <= state.sellUpTo &&
                                         rankOf(sizeFactor(c)).i >= state.sellRank);
     for (const c of ready) {
       state.coins += sellValue(c);
@@ -713,7 +827,7 @@ function runAutomations(dt) {
   if (lvl('mangeoire')) {
     const debit = dt * FATTEN_X * lvl('mangeoire');
     for (const c of state.pen) {
-      if (isAdult(c)) c.over = (c.over || 0) + debit;
+      if (isAdult(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
   }
   // L'acheteur écoule d'abord la réserve — le joueur y a mis ses œufs chers exprès —
@@ -779,6 +893,7 @@ function setText(el, v) { if (el.textContent !== v) el.textContent = v; }
 function setHtml(el, v) { if (el.__html !== v) { el.__html = v; el.innerHTML = v; } }
 function setVar(el, name, v) { if (el.__var !== v) { el.__var = v; el.style.setProperty(name, v); } }
 function setWidth(el, v) { if (el.__w !== v) { el.__w = v; el.style.width = v; } }
+function setFilter(el, v) { if (el.__f !== v) { el.__f = v; el.style.filter = v; } }
 
 // La scène porte une seule classe de rareté à la fois — elle teinte le halo et la jauge.
 const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique',
@@ -799,6 +914,7 @@ function buildChrome() {
     { key: 'place', cls: 'grow', run: () => { const s = current(); if (s && s.kind === 'egg') placeEgg(s.i); } },
     { key: 'sell',  cls: 'sell', run: () => { const s = current(); if (s && s.c) sell(s.c); } },
     { key: 'evo',   cls: 'evo',  run: () => { const s = current(); if (s && s.c) evolve(s.c); } },
+    { key: 'keep',  cls: 'keep', run: () => { const s = current(); if (s && s.c) toggleKeep(s.c); } },
   ];
   for (const d of defs) {
     const b = document.createElement('button');
@@ -863,7 +979,7 @@ function renderStrip() {
   // change de silhouette, soit trois ou quatre fois par créature — c'est négligeable.
   const sig = list.map(s => s.kind === 'egg'
     ? 'i' + s.i + (s.slot ? ':' + s.slot.line : ':-')
-    : 'c' + s.c.id + ':' + s.c.tier + ':' + stageOf(s.c).key).join(',');
+    : 'c' + s.c.id + ':' + s.c.tier + ':' + stageOf(s.c).key + (s.c.keep ? ':k' : '')).join(',');
   if (sig === stripSig) return;
   stripSig = sig;
 
@@ -893,6 +1009,9 @@ function renderStrip() {
       tag.textContent = s.slot ? (k.key === 'commun' ? 'œuf' : k.key) : 'libre';
     } else {
       b.classList.add('rar-' + lineOf(s.c).rarity);
+      if (s.c.prodige) b.classList.add('prodige');
+      if (s.c.keep) b.classList.add('gardee');
+      glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
       glyph.textContent = glyphOf(s.c);
       // la vignette reprend l'échelle de la scène, en réduction
       glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
@@ -951,7 +1070,7 @@ function renderStage() {
     setText($('stage-timer'), '');
     setWidth($('stage-fill'), '0%');
     setText($('stage-hint'), 'Achète un œuf pour recommencer.');
-    ['place', 'sell', 'evo'].forEach(hide);
+    ['place', 'sell', 'evo', 'keep'].forEach(hide);
     return;
   }
 
@@ -965,7 +1084,10 @@ function renderStage() {
     const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
     setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
     setText($('stage-glyph'), slot ? kind.glyph : '◌');
+    setFilter($('stage-glyph'), '');
+    stage.classList.remove('prodige');
     setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
+    $('stage-traits').hidden = true;
     setStageRarity(stage, slot ? 'egg-' + kind.key : null);
     stage.classList.toggle('cracking', !!slot && ratio > 0.65);
 
@@ -980,7 +1102,7 @@ function renderStage() {
       $('stage-timer').classList.toggle('done', ready);
       setText($('stage-hint'), state.up.couveuse
         ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
-      ['place', 'sell', 'evo'].forEach(hide);
+      ['place', 'sell', 'evo', 'keep'].forEach(hide);
     } else {
       stage.classList.remove('ready');
       setHtml($('stage-meta'), 'vide');
@@ -991,7 +1113,7 @@ function renderStage() {
       setText($('stage-hint'), stock
         ? 'Tu as ' + stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve.'
         : 'Achète un œuf dans la boutique.');
-      ['sell', 'evo'].forEach(hide);
+      ['sell', 'evo', 'keep'].forEach(hide);
       acts.place.hidden = false;
       const best = bestStocked();
       setText(acts.place, best ? 'Placer un ' + EGG_BY_KEY[best].name.toLowerCase() : 'Placer un œuf');
@@ -1014,8 +1136,12 @@ function renderStage() {
   setStageRarity(stage, 'rar-' + lineOf(c).rarity);
   // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
   setVar(subject, '--sz', visualScale(c).toFixed(3));
+  setFilter($('stage-glyph'), c.prodige ? PRODIGE_FILTER : tintOf(c).filter);
+  stage.classList.toggle('prodige', !!c.prodige);
   setText($('stage-glyph'), glyphOf(c));
   setText($('stage-name'), f[0]);
+  setText($('stage-traits'), traitsOf(c));
+  $('stage-traits').hidden = false;
 
   const mult = stageMult(c);
   setHtml($('stage-meta'),
@@ -1043,7 +1169,7 @@ function renderStage() {
       setWidth($('stage-fill'), Math.min(100, ((sf - rank.from) / span) * 100).toFixed(1) + '%');
       // Ce qu'il reste avant le prochain rang. Même règle que partout ailleurs : en secondes
       // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
-      const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * growTime(c);
+      const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * tierTime(c);
       setText($('stage-timer'), 'adulte · ' +
         remaining(cible - (c.over || 0), FATTEN_X * lvl('mangeoire')) + ' → ' + rank.next.name +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
@@ -1058,9 +1184,18 @@ function renderStage() {
   acts.place.hidden = true;
   acts.sell.hidden = false;
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
-  acts.sell.title = adult ? 'Au prix fort.'
+  acts.sell.title = c.keep ? 'Elle est gardée : relâche-la d’abord.'
+    : adult ? 'Au prix fort.'
     : 'Un ' + stg.name + ' ne vaut qu’une fraction de sa valeur adulte — mais ça libère la place.';
-  acts.sell.disabled = false;
+  acts.sell.disabled = !!c.keep;
+
+  acts.keep.hidden = false;
+  setText(acts.keep, c.keep ? '★ Gardée' : '☆ Garder');
+  acts.keep.title = c.keep
+    ? 'Aucun automate n’y touchera. Clique pour la relâcher.'
+    : 'Ni vendue ni faite évoluer par les automates : elle reste avec toi.';
+  acts.keep.classList.toggle('on', !!c.keep);
+  acts.keep.disabled = false;
 
   acts.evo.hidden = false;
   if (c.tier >= 5) {
