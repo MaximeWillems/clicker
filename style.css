@@ -153,6 +153,9 @@ body {
 }
 .stage.apex .subject-glow { background: radial-gradient(circle, var(--jade-dim) 0%, transparent 68%); opacity: 0.9; }
 .stage.ready .subject-glow { opacity: 0.95; }
+/* l'œuf s'échauffe dans le dernier tiers de la couvaison */
+.stage.cracking .subject-glow { opacity: 0.85; animation: throb 1.1s ease-in-out infinite; }
+@keyframes throb { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
 /* L'échelle vit sur un conteneur, en transform, et SANS transition : la scène se redessine
    dix fois par seconde, et une transition relancée à ce rythme n'atteint jamais sa cible —

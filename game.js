@@ -33,15 +33,22 @@ const OVER_COST  = 0.5;     // ce que coûte une seconde d'engraissement
 const OVER_GAIN  = 0.55;    // ce qu'elle rapporte, en rendement décroissant
 const SIZE_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas crever la scène
 
-// Les paliers de taille donnent un cap à viser une fois l'animal adulte.
+// Les rangs de taille qualifient l'adulte : « adulte », puis « adulte grand », « adulte
+// énorme »… Ils donnent un cap à viser une fois la croissance terminée.
 const RANKS = [
-  { at: 1.00, name: 'taille normale' },
+  { at: 1.00, name: '' },
   { at: 1.30, name: 'grand' },
   { at: 1.70, name: 'énorme' },
   { at: 2.30, name: 'colossal' },
   { at: 3.20, name: 'titanesque' },
   { at: 4.50, name: 'démesuré' },
 ];
+
+/* Étapes de vie, traversées à l'intérieur de chaque palier.
+   ENFANT_JUSQU / ADO_JUSQU découpent la barre de croissance ; l'échelle visuelle, elle,
+   est continue — l'animal grossit à chaque clic plutôt que de sauter d'un cran à l'autre. */
+const ENFANT_JUSQU = 0.40;
+const LIFE_MIN     = 0.5;   // taille d'un nouveau-né, en fraction de sa taille adulte
 
 const UPGRADES = [
   { key: 'couveuse',  name: 'Couveuse automatique', cost: 120,
@@ -56,22 +63,27 @@ const UPGRADES = [
     desc: 'Vend les adultes selon la règle que tu définis.' },
 ];
 
+/* Chaque forme : [nom, glyphe adulte, glyphe juvénile].
+   Le juvénile sert pendant l'enfance et l'adolescence — c'est ce qui fait qu'une wyverne
+   commence sa vie en lézard et qu'un léviathan commence en serpent de mer. Là où les emoji
+   n'offrent aucune variante (toute la lignée du crapaud), les deux sont identiques et seule
+   l'échelle raconte la croissance : ce sont ces cases-là qui réclament de vrais dessins. */
 const LINES = [
   { key: 'crapaud', name: 'Crapaud', forms: [
-    ['Têtard', '🐸'], ['Crapaud', '🐸'], ['Crapaud-buffle', '🐸'],
-    ['Colosse fangeux', '🐸'], ['Gama, crapaud-montagne', '🐸'] ] },
+    ['Têtard', '🐸', '🐸'], ['Crapaud', '🐸', '🐸'], ['Crapaud-buffle', '🐸', '🐸'],
+    ['Colosse fangeux', '🐸', '🐸'], ['Gama, crapaud-montagne', '🐸', '🐸'] ] },
   { key: 'poisson', name: 'Poisson', forms: [
-    ['Alevin', '🐟'], ['Carpe', '🐟'], ['Carpe centenaire', '🐠'],
-    ['Serpent de mer', '🐍'], ['Léviathan', '🐉'] ] },
+    ['Alevin', '🐟', '🐟'], ['Carpe', '🐟', '🐟'], ['Carpe centenaire', '🐠', '🐟'],
+    ['Serpent de mer', '🐍', '🐠'], ['Léviathan', '🐉', '🐍'] ] },
   { key: 'lezard', name: 'Lézard', forms: [
-    ['Lézardeau', '🦎'], ['Lézard', '🦎'], ['Varan', '🦎'],
-    ['Wyverne', '🐲'], ['Dragon de terre', '🐉'] ] },
+    ['Lézardeau', '🦎', '🦎'], ['Lézard', '🦎', '🦎'], ['Varan', '🦎', '🦎'],
+    ['Wyverne', '🐲', '🦎'], ['Dragon de terre', '🐉', '🐲'] ] },
   { key: 'oiseau', name: 'Oiseau', forms: [
-    ['Oisillon', '🐣'], ['Passereau', '🐦'], ['Rapace', '🦅'],
-    ['Roc', '🦅'], ['Phénix', '🔥'] ] },
+    ['Oisillon', '🐤', '🐣'], ['Passereau', '🐦', '🐤'], ['Rapace', '🦅', '🐦'],
+    ['Roc', '🦅', '🦅'], ['Phénix', '🔥', '🦅'] ] },
   { key: 'crocodile', name: 'Crocodile', forms: [
-    ['Crocodillon', '🐊'], ['Crocodile', '🐊'], ['Crocodile ancien', '🐊'],
-    ['Draco-saurien', '🐲'], ['Dragon-tonnerre', '🐉'] ] },
+    ['Crocodillon', '🐊', '🐊'], ['Crocodile', '🐊', '🐊'], ['Crocodile ancien', '🐊', '🐊'],
+    ['Draco-saurien', '🐲', '🐊'], ['Dragon-tonnerre', '🐉', '🐲'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
@@ -162,6 +174,29 @@ function rankOf(sf) {
   let i = 0;
   while (i + 1 < RANKS.length && sf >= RANKS[i + 1].at) i++;
   return { name: RANKS[i].name, from: RANKS[i].at, next: RANKS[i + 1] || null };
+}
+
+/* L'étape de vie : ce que le joueur voit changer sous ses clics.
+   œuf → enfant → adolescent → adulte → adulte grand (puis énorme, colossal…). */
+function stageOf(c) {
+  const ratio = c.p / growTime(c);
+  if (ratio < ENFANT_JUSQU) return { key: 'enfant', name: 'enfant' };
+  if (ratio < 1) return { key: 'ado', name: 'adolescent' };
+  const rank = rankOf(sizeFactor(c)).name;
+  return { key: rank ? 'grand' : 'adulte', name: rank ? 'adulte ' + rank : 'adulte' };
+}
+
+// Juvénile tant qu'il n'est pas adulte, puis la forme définitive.
+function glyphOf(c) {
+  const f = form(c.line, c.tier);
+  return isAdult(c) ? f[1] : (f[2] || f[1]);
+}
+
+// Échelle visuelle : continue pendant la croissance, puis prolongée par l'engraissement.
+function visualScale(c) {
+  const ratio = Math.min(1, c.p / growTime(c));
+  const life = LIFE_MIN + (1 - LIFE_MIN) * ratio;
+  return TIER_SCALE[c.tier - 1] * life * Math.min(SIZE_VIS, sizeFactor(c));
 }
 
 // prix d'une ration : proportionnel au temps réellement gagné
@@ -637,9 +672,11 @@ function buildChrome() {
 
 function renderStrip() {
   const list = subjects();
+  // l'étape de vie entre dans la signature : la vignette se redessine quand la bête
+  // change de silhouette, soit trois ou quatre fois par créature — c'est négligeable.
   const sig = list.map(s => s.kind === 'egg'
     ? 'i' + s.i + (s.slot ? ':' + s.slot.line : ':-')
-    : 'c' + s.c.id + ':' + s.c.tier).join(',');
+    : 'c' + s.c.id + ':' + s.c.tier + ':' + stageOf(s.c).key).join(',');
   if (sig === stripSig) return;
   stripSig = sig;
 
@@ -667,8 +704,11 @@ function renderStrip() {
       if (!s.slot) b.classList.add('empty');
       tag.textContent = s.slot ? 'œuf' : 'libre';
     } else {
-      glyph.textContent = form(s.c.line, s.c.tier)[1];
-      tag.textContent = 'p.' + s.c.tier;
+      glyph.textContent = glyphOf(s.c);
+      // la vignette reprend l'échelle de la scène, en réduction
+      glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
+      tag.textContent = stageOf(s.c).key === 'enfant' ? 'enfant'
+                      : stageOf(s.c).key === 'ado' ? 'ado' : 'p.' + s.c.tier;
       if (s.c.tier === 5) b.classList.add('apex');
     }
 
@@ -721,14 +761,17 @@ function renderStage() {
   if (s.kind === 'egg') {
     const slot = s.slot;
     stage.classList.remove('apex');
-    setVar(subject, '--sz', '1');
+    // l'œuf gonfle doucement à mesure qu'il couve
+    const ratio = slot ? Math.min(1, slot.p / HATCH) : 0;
+    setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
     setText($('stage-glyph'), slot ? '🥚' : '◌');
     setText($('stage-name'), slot ? 'Œuf' : 'Incubateur libre');
+    stage.classList.toggle('cracking', !!slot && ratio > 0.65);
 
     if (slot) {
       const ready = slot.p >= HATCH;
       stage.classList.toggle('ready', ready);
-      setHtml($('stage-meta'), ready ? 'ça sort !' : 'en couvaison');
+      setHtml($('stage-meta'), ready ? 'ça sort !' : (ratio > 0.65 ? 'ça craque' : 'en couvaison'));
       setWidth($('stage-fill'), Math.min(100, (slot.p / HATCH) * 100) + '%');
       setText($('stage-timer'), ready
         ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
@@ -759,16 +802,19 @@ function renderStage() {
   const adult = isAdult(c);
   const sf = sizeFactor(c);
   const rank = rankOf(sf);
+  const stg = stageOf(c);
 
+  stage.classList.remove('cracking');
   stage.classList.toggle('apex', c.tier === 5);
   stage.classList.toggle('ready', adult);
   // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
-  setVar(subject, '--sz', (TIER_SCALE[c.tier - 1] * Math.min(SIZE_VIS, sf)).toFixed(3));
-  setText($('stage-glyph'), f[1]);
+  setVar(subject, '--sz', visualScale(c).toFixed(3));
+  setText($('stage-glyph'), glyphOf(c));
   setText($('stage-name'), f[0]);
 
   setHtml($('stage-meta'), 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
-    (isFat(c) ? ' · <span class="rank">' + rank.name + '</span> · ×' + dec(sf) : ''));
+    ' · <span class="rank">' + stg.name + '</span>' +
+    (isFat(c) ? ' · ×' + dec(sf) : ''));
 
   if (!adult) {
     setWidth($('stage-fill'), Math.min(100, (c.p / growTime(c)) * 100) + '%');
@@ -833,9 +879,11 @@ function tickView() {
       if (s.slot) setText(t.tag, ready ? 'prêt' : 'œuf');
     } else {
       const adult = isAdult(s.c);
+      const k = stageOf(s.c).key;
       setWidth(t.bar, Math.min(100, (s.c.p / growTime(s.c)) * 100).toFixed(1) + '%');
       t.el.classList.toggle('done', adult);
-      setText(t.tag, adult ? 'p.' + s.c.tier + ' ✦' : 'p.' + s.c.tier);
+      setText(t.tag, k === 'enfant' ? 'enfant' : k === 'ado' ? 'ado'
+              : 'p.' + s.c.tier + (k === 'grand' ? ' ✦' : ''));
     }
   }
 

@@ -89,6 +89,31 @@ L'écran n'a **qu'un seul sujet à la fois**, en grand au centre : l'œuf qu'on 
 l'animal qu'on fait grandir. C'est lui qu'on clique. La bande en dessous liste les autres
 œufs et créatures en vignettes ; on clique une vignette pour la mettre en scène.
 
+### Étapes de vie
+
+Une créature traverse cinq états visibles, et l'échelle est **continue** — elle grossit à
+chaque clic plutôt que de sauter d'un cran à l'autre.
+
+| État | Quand | Échelle | Silhouette |
+|---|---|---|---|
+| œuf | en couvaison | 0,80 → 1,05 | 🥚, halo qui bat après 65 % |
+| enfant | 0 – 40 % de la croissance | 0,50 | forme juvénile |
+| adolescent | 40 – 100 % | 0,50 → 1,00 | forme juvénile |
+| adulte | croissance terminée | 1,00 | forme définitive |
+| adulte grand… | engraissement | jusqu'à 1,50 | forme définitive |
+
+Le tout est multiplié par l'échelle du palier (×1 à ×1,5), donc un nouveau-né de palier 1
+fait 0,50 et un légendaire engraissé 2,25 : un rapport de 4,5 entre les deux extrêmes.
+
+**La forme juvénile d'une créature est la forme précédente de sa propre lignée.** Une wyverne
+grandit en lézard puis devient wyverne ; un léviathan grandit en serpent de mer puis devient
+dragon. C'est le moment fort du jeu, et ça ne coûte **aucun dessin supplémentaire** — le
+budget graphique reste à 25 illustrations, une par forme.
+
+Chaque forme est déclarée `[nom, glyphe adulte, glyphe juvénile]` en haut de `game.js`. La
+lignée du crapaud est la seule où les emoji n'offrent aucune variante : c'est là que de vrais
+dessins manquent le plus.
+
 ### Croissance sans fin
 
 Un clic vaut toujours **une seconde de vie**, avant comme après l'âge adulte : l'animal ne
