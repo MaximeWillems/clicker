@@ -31,6 +31,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - Les 5 lignées et leurs 25 formes, du têtard au Léviathan
 - Œuf → clic → éclosion → croissance → **vendre ou faire évoluer**
 - Les trois accélérateurs : le temps (gratuit), le clic (+1 s), la nourriture (payante)
+- **Engraissement sans limite** : un adulte se nourrit indéfiniment et grossit à vue d'œil
 - Incubateurs et enclos, à prix croissant
 - Trois automatisations : couveuse, mangeoire (activable), marchand (avec règle de vente)
 - Progression hors ligne, plafonnée à 24 h
@@ -60,6 +61,36 @@ crédible, pas une vérité — ils sont faits pour être retouchés en jouant.
 | 3 | 15 min | 3 000 | 6 000 |
 | 4 | 1 h | 40 000 | 80 000 |
 | 5 | 6 h | 600 000 | 1 500 000 |
+
+### Engraissement
+
+Un adulte peut être nourri à l'infini. Sa taille et sa valeur montent en **rendement
+décroissant** (`OVER_GAIN`, logarithmique) pendant que la nourriture coûte toujours le même
+prix à la seconde (`OVER_COST`, linéaire). Le rapport est identique à tous les paliers.
+
+| Taille atteinte | Valeur gagnée | Résultat net |
+|---|---|---|
+| ×1,05 | +5 % | **+0,24 %** — le maximum possible |
+| ×1,22 | +22 % | −2,7 % |
+| ×1,38 | +38 % | −11,9 % |
+| ×1,99 | +99 % | −151 % |
+| ×3,92 | +292 % | −9 700 % |
+
+Autrement dit : grossir est un plaisir et un puits à pièces, jamais une stratégie. Le meilleur
+coup possible rapporte 0,24 % — trop peu pour valoir le clic, même automatisé.
+
+Deux garde-fous en découlent :
+
+- **L'évolution remet la taille à ×1.** Sans ça, engraisser au palier 1 — où la nourriture
+  est dérisoire — puis évoluer rapporterait des dizaines de fois la mise, la valeur montant
+  ×12 par palier quand la croissance ne monte que ×4. Le bouton *Évoluer* passe en rouge
+  quand la créature est engraissée.
+- **La mangeoire automatique s'arrête à l'âge adulte.** Elle ne doit jamais dépenser les
+  pièces du joueur dans une opération perdante.
+
+Pour rendre l'engraissement plus gratifiant, augmenter `OVER_GAIN` ou baisser `OVER_COST` —
+mais tant que `OVER_GAIN` dépasse `OVER_COST`, les premières bouchées redeviennent rentables
+et l'optimum se met à valoir le détour.
 
 ## À vérifier en jouant
 

@@ -196,6 +196,9 @@ button.act:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }
 button.act:disabled { opacity: 0.38; cursor: not-allowed; }
 button.act.sell:hover:not(:disabled)  { color: var(--amber); border-color: var(--amber); }
 button.act.evo:hover:not(:disabled)   { color: var(--jade);  border-color: var(--jade); }
+/* évoluer une créature engraissée lui fait perdre sa taille : on prévient */
+button.act.warn-evo:not(:disabled)    { border-color: var(--red); color: var(--red); }
+button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
 
 .warn {
   font-family: var(--f-num); font-size: 0.66rem; color: var(--red);

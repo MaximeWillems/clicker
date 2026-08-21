@@ -23,6 +23,16 @@ const FEED_CHUNK = 60;      // secondes ajoutées par ration
 const FEED_RATIO = 0.8;     // une ration coûte 80 % de ce qu'elle fait gagner
 const AUTOFEED_X = 2;       // la mangeoire ajoute 2 s par seconde (croissance ×3)
 
+/* Engraissement — nourrir un adulte le fait grossir, sans limite.
+   La valeur suit un logarithme (OVER_GAIN) pendant que le coût reste linéaire (OVER_COST).
+   Comme OVER_GAIN dépasse à peine OVER_COST, la toute première bouchée est
+   marginalement gagnante puis ça devient une perte : grossir est un plaisir,
+   jamais une stratégie. Le rapport est le même à tous les paliers. */
+const OVER_CHUNK = 60;      // secondes d'engraissement par ration
+const OVER_COST  = 0.5;     // ce que coûte une seconde d'engraissement
+const OVER_GAIN  = 0.55;    // ce qu'elle rapporte, en rendement décroissant
+const OVER_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas casser les cartes
+
 const UPGRADES = [
   { key: 'couveuse',  name: 'Couveuse automatique', cost: 2000,
     desc: "Achète et place un œuf dès qu'un incubateur se libère." },
@@ -115,8 +125,15 @@ function save() {
 const $ = id => document.getElementById(id);
 
 const growTime  = c => GROW[c.tier - 1];
-const sellValue = c => VALUE[c.tier - 1];
+const baseValue = c => VALUE[c.tier - 1];
 const evoCost   = c => EVOLVE[c.tier - 1];
+
+// La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
+// à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
+// une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
+const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / growTime(c));
+const isFat      = c => sizeFactor(c) > 1.005;
+const sellValue  = c => Math.round(baseValue(c) * sizeFactor(c));
 const isAdult   = c => c.p >= growTime(c);
 const form      = (lineKey, tier) => LINE_BY_KEY[lineKey].forms[tier - 1];
 const penFull   = () => state.pen.length >= state.pens;
@@ -129,8 +146,15 @@ function feedQuote(c) {
   const left = growTime(c) - c.p;
   if (left <= 0) return null;
   const seconds = Math.min(FEED_CHUNK, left);
-  const rate = sellValue(c) / growTime(c);
+  const rate = baseValue(c) / growTime(c);
   return { seconds, cost: Math.max(1, Math.ceil(seconds * rate * FEED_RATIO)) };
+}
+
+// prix d'une ration donnée à un adulte : le tarif ne dépend jamais de la taille déjà atteinte,
+// donc engraisser reste au même prix à l'infini pendant que le gain, lui, s'essouffle.
+function overfeedQuote(c) {
+  const rate = baseValue(c) / growTime(c);
+  return { seconds: OVER_CHUNK, cost: Math.max(1, Math.ceil(OVER_CHUNK * rate * OVER_COST)) };
 }
 
 function fmt(n) {
@@ -256,7 +280,7 @@ function hatchAll() {
     const slot = state.incub[i];
     if (!slot || slot.p < HATCH) continue;
     if (penFull()) continue;
-    state.pen.push({ id: nextId++, line: slot.line, tier: 1, p: 0 });
+    state.pen.push({ id: nextId++, line: slot.line, tier: 1, p: 0, over: 0 });
     state.incub[i] = null;
     markSeen(slot.line, 1);
     hatched++;
@@ -272,13 +296,22 @@ function hatchAll() {
 }
 
 function feed(c, el) {
-  const q = feedQuote(c);
+  const adult = isAdult(c);
+  const q = adult ? overfeedQuote(c) : feedQuote(c);
   if (!q || state.coins < q.cost) return;
+
+  const before = adult ? sellValue(c) : 0;
   state.coins -= q.cost;
-  c.p = Math.min(growTime(c), c.p + q.seconds);
+  if (adult) c.over = (c.over || 0) + q.seconds;
+  else c.p = Math.min(growTime(c), c.p + q.seconds);
+
   const pt = centerOf(el);
   floatText(pt.x, pt.y, '−' + fmt(q.cost));
-  blip(400, 0.05, 'sine', 0.03);
+  if (adult) {
+    floatText(pt.x, pt.y - 26, '+' + fmt(sellValue(c) - before) + ' de valeur', 'gain');
+    flash(el, 'shake');
+  }
+  blip(adult ? 320 : 400, 0.05, 'sine', 0.03);
   refresh();
 }
 
@@ -303,6 +336,10 @@ function evolve(c, el) {
   state.coins -= cost;
   c.tier++;
   c.p = 0;
+  // La taille repart de zéro : sans ça, engraisser à bas palier — où la nourriture est
+  // dérisoire — puis évoluer rapporterait des dizaines de fois la mise au palier suivant,
+  // la valeur montant ×12 par palier quand la croissance ne monte que ×4.
+  c.over = 0;
   markSeen(c.line, c.tier);
   if (el) {
     const pt = centerOf(el);
@@ -367,8 +404,9 @@ function runAutomations(dt) {
     for (const c of state.pen) {
       const left = growTime(c) - c.p;
       if (left <= 0) continue;
+      // la mangeoire s'arrête à l'âge adulte : engraisser est une décision, pas un automatisme
       const extra = Math.min(left, dt * AUTOFEED_X);
-      const cost = extra * (sellValue(c) / growTime(c)) * FEED_RATIO;
+      const cost = extra * (baseValue(c) / growTime(c)) * FEED_RATIO;
       if (state.coins < cost) break;
       state.coins -= cost;
       c.p += extra;
@@ -643,17 +681,33 @@ function tickView() {
     refs.el.classList.toggle('ready', adult && c.tier < 5);
     refs.timer.textContent = adult ? 'adulte' : fmtTime(g - c.p);
 
-    const q = feedQuote(c);
+    // la taille change sans changer la structure : elle se met à jour ici, pas au redessin
+    const sf = sizeFactor(c);
+    const size = (GLYPH_REM[c.tier - 1] * Math.min(OVER_VIS, sf)).toFixed(2) + 'rem';
+    if (refs.lastSize !== size) { refs.glyph.style.fontSize = size; refs.lastSize = size; }
+    const label = 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
+      (sf > 1.005 ? ' · taille ×' + sf.toFixed(2).replace('.', ',') : '');
+    if (refs.lastLabel !== label) { refs.tier.textContent = label; refs.lastLabel = label; }
+
+    const q = adult ? overfeedQuote(c) : feedQuote(c);
     const bFeed = refs.acts.feed, bSell = refs.acts.sell, bEvo = refs.acts.evo;
-    bFeed.textContent = q ? 'Nourrir ' + fmt(q.cost) : 'Nourrir';
+    bFeed.textContent = (adult ? 'Grossir ' : 'Nourrir ') + fmt(q ? q.cost : 0);
+    bFeed.title = adult
+      ? 'Fait grossir sans limite. La valeur monte un peu moins vite que la nourriture ne coûte.'
+      : 'Accélère la croissance et libère la place plus vite.';
     bFeed.disabled = !q || state.coins < q.cost;
     bSell.textContent = 'Vendre ' + fmt(sellValue(c));
     bSell.disabled = !adult;
     if (c.tier >= 5) {
       bEvo.textContent = 'Forme finale';
+      bEvo.title = 'Plus rien au-dessus — il ne reste qu’à la faire grossir.';
       bEvo.disabled = true;
     } else {
       bEvo.textContent = 'Évoluer ' + fmt(evoCost(c));
+      bEvo.title = isFat(c)
+        ? 'Attention : évoluer ramène la taille à ×1. Vends-la d’abord si tu l’as engraissée pour ça.'
+        : 'Passe au palier suivant. La croissance repart de zéro.';
+      bEvo.classList.toggle('warn-evo', isFat(c));
       bEvo.disabled = !adult || state.coins < evoCost(c);
     }
   }
