@@ -30,19 +30,24 @@ const RARITY = {
   mythique: { name: 'mythique', mult: 40, rank: 3 },
 };
 
-/* Trois œufs, trois tables de tirage. L'œuf commun garde une chance infime de mythique —
-   une fois sur deux mille — pour que le coup de chance reste possible dès la première
-   minute ; les œufs chers achètent surtout la certitude. */
+/* Un œuf par rareté. Chacun donne surtout sa propre rareté, avec une chance de tomber
+   au-dessus — et cette chance grandit avec le prix : 3,5 % pour un œuf commun, 12 % pour un
+   rare, 25 % pour un épique. L'œuf mythique n'a rien au-dessus de lui, il garantit.
+   L'œuf commun garde sa chance sur deux mille de donner une mythique : le coup de chance
+   doit rester possible dès la première minute, c'est ce qui rend chaque éclosion tendue. */
 const EGG_KINDS = [
-  { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚',
-    desc: 'Presque toujours une lignée commune. Une chance sur 2 000 de mythique.',
-    odds: { commune: 0.9700, rare: 0.0250, epique: 0.0045, mythique: 0.0005 } },
-  { key: 'rare', name: 'Œuf rare', price: 3000, glyph: '🥚',
-    desc: 'Jamais de commune. 17 % d’épique, 3 % de mythique.',
-    odds: { commune: 0, rare: 0.80, epique: 0.17, mythique: 0.03 } },
-  { key: 'mythique', name: 'Œuf mythique', price: 400000, glyph: '🥚',
-    desc: 'Épique au pire, mythique une fois sur quatre.',
-    odds: { commune: 0, rare: 0, epique: 0.75, mythique: 0.25 } },
+  { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
+    up: '3,5 %',
+    odds: { commune: 0.9650, rare: 0.0300, epique: 0.0045, mythique: 0.0005 } },
+  { key: 'rare', name: 'Œuf rare', price: 3000, glyph: '🥚', rarity: 'rare',
+    up: '12 %',
+    odds: { rare: 0.88, epique: 0.10, mythique: 0.02 } },
+  { key: 'epique', name: 'Œuf épique', price: 40000, glyph: '🥚', rarity: 'epique',
+    up: '25 %',
+    odds: { epique: 0.75, mythique: 0.25 } },
+  { key: 'mythique', name: 'Œuf mythique', price: 200000, glyph: '🥚', rarity: 'mythique',
+    up: null,
+    odds: { mythique: 1 } },
 ];
 
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
@@ -172,7 +177,8 @@ function freshState() {
   return {
     v: 2,
     coins: 0,
-    eggs: { commun: 0, rare: 0, mythique: 0 },
+    eggs: { commun: 0, rare: 0, epique: 0, mythique: 0 },
+    buyKind: 'commun',      // ce que rachète l'acheteur automatique
     incubators: 1,
     pens: 1,
     incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
@@ -197,12 +203,34 @@ function pickLine(rarityKey) {
 
 function rollLine(kindKey) {
   const odds = (EGG_BY_KEY[kindKey] || EGG_BY_KEY.commun).odds;
-  let r = Math.random();
+  let r = Math.random(), base = 'commune';
+  // du plus rare au plus commun ; en cas d'arrondi, on retombe sur la rareté de base de l'œuf
   for (const key of ['mythique', 'epique', 'rare', 'commune']) {
-    r -= odds[key] || 0;
+    const p = odds[key] || 0;
+    if (p > 0) base = key;
+    r -= p;
     if (r < 0) return pickLine(key);
   }
-  return pickLine(odds.commune ? 'commune' : 'rare');
+  return pickLine(base);
+}
+
+// Le libellé d'un œuf en boutique : sa rareté de base, puis ce qu'il peut donner au-dessus.
+function eggDesc(e) {
+  const dessus = ['rare', 'epique', 'mythique']
+    .filter(k => k !== e.rarity && e.odds[k])
+    .map(k => pourcent(e.odds[k]) + ' ' + de(RARITY[k].name));
+  const base = RARITY[e.rarity].name.replace(/^./, m => m.toUpperCase());
+  return dessus.length ? base + '. Au-dessus : ' + dessus.join(', ') + '.' : base + ' garantie.';
+}
+
+// « de rare » mais « d'épique »
+function de(mot) { return /^[aeiouéèêà]/i.test(mot) ? 'd’' + mot : 'de ' + mot; }
+
+function pourcent(p) {
+  const v = p * 100;
+  if (v >= 1) return v.toFixed(v % 1 ? 1 : 0).replace('.', ',') + ' %';
+  if (v >= 0.1) return v.toFixed(1).replace('.', ',') + ' %';
+  return '1 sur ' + fmt(Math.round(1 / p));
 }
 
 function load() {
@@ -219,8 +247,11 @@ function load() {
       else if (merged.up[k] === false || merged.up[k] == null) merged.up[k] = 0;
     }
     // la réserve d'œufs était un simple compteur avant qu'il n'y ait plusieurs sortes
-    if (typeof merged.eggs === 'number') merged.eggs = { commun: merged.eggs, rare: 0, mythique: 0 };
-    else merged.eggs = Object.assign({ commun: 0, rare: 0, mythique: 0 }, merged.eggs || {});
+    const vide = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+    merged.eggs = typeof merged.eggs === 'number'
+      ? Object.assign({}, vide, { commun: merged.eggs })
+      : Object.assign({}, vide, merged.eggs || {});
+    if (!EGG_BY_KEY[merged.buyKind]) merged.buyKind = 'commun';
     // les œufs déjà en couvaison n'avaient pas de sorte
     for (const slot of merged.incub || []) if (slot && !slot.kind) slot.kind = 'commun';
     // l'array des incubateurs doit toujours suivre le nombre acheté
@@ -680,13 +711,13 @@ function runAutomations(dt) {
   // L'acheteur écoule d'abord la réserve — le joueur y a mis ses œufs chers exprès —
   // puis rachète du commun pour que la boucle ne s'arrête jamais.
   if (state.up.acheteur) {
-    const commun = EGG_BY_KEY.commun;
+    const voulu = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
     for (let i = 0; i < state.incub.length; i++) {
       if (state.incub[i]) continue;
       let kind = bestStocked();
       if (kind) state.eggs[kind]--;
-      else if (state.coins >= commun.price) { state.coins -= commun.price; kind = 'commun'; }
-      else break;
+      else if (state.coins >= voulu.price) { state.coins -= voulu.price; kind = voulu.key; }
+      else break;      // on laisse l'incubateur vide plutôt que de brader la consigne
       state.incub[i] = { line: rollLine(kind), p: 0, kind };
     }
   }
@@ -743,7 +774,7 @@ function setWidth(el, v) { if (el.__w !== v) { el.__w = v; el.style.width = v; }
 
 // La scène porte une seule classe de rareté à la fois — elle teinte le halo et la jauge.
 const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique',
-                     'egg-commun', 'egg-rare', 'egg-mythique'];
+                     'egg-commun', 'egg-rare', 'egg-epique', 'egg-mythique'];
 function setStageRarity(stage, cls) {
   if (stage.__rar === cls) return;
   stage.__rar = cls;
@@ -771,7 +802,7 @@ function buildChrome() {
   }
 
   const items = EGG_KINDS.map(e => ({
-    key: 'egg-' + e.key, title: e.name, desc: e.desc, rarity: e.key,
+    key: 'egg-' + e.key, title: e.name, desc: eggDesc(e), rarity: e.key,
     cost: () => e.price, run: () => buyEgg(e.key),
   })).concat([
     { key: 'incub', title: 'Incubateur', desc: 'Un œuf de plus en couvaison.',        cost: incubCost, run: buyIncubator },
@@ -1091,6 +1122,7 @@ function tickView() {
 
   $('cfg-marchand').hidden = !state.up.marchand;
   $('cfg-evolution').hidden = !state.up.evolution;
+  $('cfg-acheteur').hidden = !state.up.acheteur;
 }
 
 function refresh() {
@@ -1135,6 +1167,10 @@ function bindTools() {
   $('sel-evolution').addEventListener('change', e => {
     state.evolveUpTo = parseInt(e.target.value, 10) || 0;
   });
+
+  $('sel-acheteur').addEventListener('change', e => {
+    state.buyKind = EGG_BY_KEY[e.target.value] ? e.target.value : 'commun';
+  });
 }
 
 function start() {
@@ -1146,6 +1182,7 @@ function start() {
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   $('sel-marchand').value = String(state.sellUpTo);
   $('sel-evolution').value = String(state.evolveUpTo);
+  $('sel-acheteur').value = state.buyKind;
 
   catchUp();
   refresh();

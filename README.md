@@ -82,24 +82,35 @@ c'est le travail ; la rareté, c'est la chance.
 mêmes 643 200 pièces qu'une commune et en rapporte quarante fois plus : une lignée rare n'est
 pas un lot à encaisser, c'est un investissement qui ne paie que si on la mène au bout.
 
-### Les trois œufs
+### Les quatre œufs
 
-| Œuf | Prix | commune | rare | épique | mythique |
-|---|---|---|---|---|---|
-| Œuf commun | 12 | 97 % | 2,5 % | 0,45 % | **0,05 %** |
-| Œuf rare | 3 000 | — | 80 % | 17 % | 3 % |
-| Œuf mythique | 400 000 | — | — | 75 % | 25 % |
+Un œuf par rareté. Chacun donne surtout la sienne, avec une **chance de tomber au-dessus qui
+grandit avec le prix** — 3,5 % pour un commun, 12 % pour un rare, 25 % pour un épique.
+L'œuf mythique n'a rien au-dessus de lui : il garantit.
 
-L'œuf commun garde une chance sur deux mille de donner une mythique : le coup de chance reste
-possible dès la première minute, et c'est ce qui rend chaque éclosion intéressante. Les œufs
-chers n'achètent pas la possibilité, ils achètent la **certitude**.
+| Œuf | Prix | commune | rare | épique | mythique | chance de monter |
+|---|---|---|---|---|---|---|
+| Œuf commun | 12 | 96,5 % | 3 % | 0,45 % | **0,05 %** | 3,5 % |
+| Œuf rare | 3 000 | — | 88 % | 10 % | 2 % | 12 % |
+| Œuf épique | 40 000 | — | — | 75 % | 25 % | 25 % |
+| Œuf mythique | 200 000 | — | — | — | 100 % | — |
+
+L'œuf commun garde sa chance sur deux mille de donner une mythique : le coup de chance doit
+rester possible dès la première minute, c'est ce qui rend chaque éclosion tendue. Les œufs
+chers n'achètent pas la possibilité, ils achètent la **régularité**.
+
+L'œuf mythique est volontairement plus cher que son espérance : passer par des œufs épiques
+revient à 160 000 par mythique contre 200 000 pour la garantie. On paie 25 % de prime pour
+supprimer la variance, ce qui est le bon prix d'une certitude.
 
 La lignée est tirée **à la mise en couvaison**, pas à l'éclosion — c'est ce qui permet de
 recalculer une absence sans rejouer le hasard. Le joueur, lui, ne la découvre qu'à l'éclosion,
 et une lignée non commune déclenche gerbe, accord et mise en scène immédiate.
 
-L'acheteur automatique écoule d'abord la réserve, en commençant par les œufs les plus rares —
-un œuf cher acheté exprès ne doit pas dormir en stock — puis rachète du commun.
+**L'acheteur automatique se règle** sur la sorte d'œuf à racheter. Il écoule d'abord la
+réserve, en commençant par les plus rares — un œuf cher acheté exprès ne doit pas dormir en
+stock — puis rachète la sorte demandée. S'il n'a pas de quoi la payer il laisse l'incubateur
+vide : rabattre sur du commun trahirait la consigne.
 
 ### Automatisations
 
