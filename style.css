@@ -540,3 +540,17 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.04em;
   color: var(--faint); margin: -0.1rem 0 0; text-align: center;
 }
+
+/* ── illustrations ───────────────────────────────────────────────────────
+   Une image fait exactement 1em : tout ce qui pilotait la taille de l'emoji —
+   font-size, échelle du palier, grossissement — pilote la sienne à l'identique.
+   Un dessin remplace donc un emoji sans qu'aucun autre calcul ne bouge. */
+.subject-glyph img, .thumb-glyph img, .cell img {
+  width: 1em; height: 1em;
+  display: block;
+  object-fit: contain;
+  image-rendering: auto;
+}
+/* pour du pixel art, décommenter :
+.subject-glyph img, .thumb-glyph img, .cell img { image-rendering: pixelated; } */
+.cell img { width: 1.05em; height: 1.05em; }

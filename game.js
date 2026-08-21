@@ -242,6 +242,50 @@ const LINES = [
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
 
+/* ── Illustrations ────────────────────────────────────────────────────────────
+   Une lignée n'a PAS besoin de ses cinq dessins. On déclare les paliers dessinés,
+   et un palier sans dessin prend celui du palier le plus proche en dessous ; s'il n'y
+   en a aucun, on retombe sur l'emoji. Trois dessins couvrent donc une lignée entière,
+   et on peut n'en avoir qu'un pour commencer.
+
+   Ajouter un dessin = poser le fichier dans art/ et ajouter une ligne ici. Rien d'autre.
+   Le format et les dimensions attendus sont décrits dans art/LISEZMOI.md.
+
+   Exemple, une fois les fichiers en place :
+     crapaud: { 1: 'crapaud-tetard.png', 3: 'crapaud-buffle.png', 5: 'crapaud-gama.png' },
+*/
+const ART = {};
+
+/* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
+   le plus proche en dessous. La scène, les vignettes et la collection s'en servent toutes,
+   sinon la collection montrerait autre chose que le jeu. */
+function artAt(lineKey, tier) {
+  const table = ART[lineKey];
+  if (!table) return null;
+  for (let t = tier; t >= 1; t--) if (table[t]) return 'art/' + table[t];
+  return null;
+}
+
+// Un juvénile porte le dessin du palier précédent — c'est ce qui fait qu'une wyverne
+// grandit en lézard avant de devenir wyverne.
+const artFor = c => artAt(c.line, isAdult(c) ? c.tier : Math.max(1, c.tier - 1));
+
+/* Pose un dessin ou un emoji dans le même élément, et par le même chemin de taille :
+   l'image fait 1em, donc tout ce qui pilotait la taille de l'emoji pilote la sienne. */
+function setCreature(el, fichier, emoji) {
+  const cle = fichier || emoji;
+  if (el.__art === cle) return;
+  el.__art = cle;
+  if (fichier) {
+    let img = el.firstElementChild;
+    if (!img || img.tagName !== 'IMG') { el.textContent = ''; img = document.createElement('img'); el.appendChild(img); }
+    if (img.getAttribute('src') !== fichier) img.setAttribute('src', fichier);
+    img.alt = '';
+  } else {
+    el.textContent = emoji;
+  }
+}
+
 /* ─────────────────────────────────────────────
    État
    ───────────────────────────────────────────── */
@@ -1097,7 +1141,7 @@ function renderStrip() {
       if (s.c.prodige) b.classList.add('prodige');
       if (s.c.keep) b.classList.add('gardee');
       glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
-      glyph.textContent = glyphOf(s.c);
+      setCreature(glyph, artFor(s.c), glyphOf(s.c));
       // la vignette reprend l'échelle de la scène, en réduction
       glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
       tag.textContent = stageOf(s.c).key === 'enfant' ? 'enfant'
@@ -1134,7 +1178,7 @@ function renderCollection() {
       cell.className = 'cell rar-' + line.rarity + (got ? ' got' : ' locked') + (t === 5 ? ' t5' : '');
       cell.title = (got ? line.forms[t - 1][0] : line.name + ' — palier ' + t) +
                    ' (' + RARITY[line.rarity].name + ')';
-      if (got) cell.textContent = line.forms[t - 1][1];
+      if (got) setCreature(cell, artAt(line.key, t), line.forms[t - 1][1]);
       host.appendChild(cell);
     }
   }
@@ -1149,7 +1193,7 @@ function renderStage() {
   const hide = k => { acts[k].hidden = true; };
 
   if (!s) {
-    setText($('stage-glyph'), '◌');
+    setCreature($('stage-glyph'), null, '◌');
     setText($('stage-name'), 'Rien en vue');
     setHtml($('stage-meta'), '');
     setText($('stage-timer'), '');
@@ -1170,7 +1214,7 @@ function renderStage() {
     const ratio = slot ? Math.min(1, slot.p / hatchTime(slot)) : 0;
     const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
     setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
-    setText($('stage-glyph'), slot ? kind.glyph : '◌');
+    setCreature($('stage-glyph'), null, slot ? kind.glyph : '◌');
     setFilter($('stage-glyph'), '');
     stage.classList.remove('prodige');
     setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
@@ -1225,7 +1269,7 @@ function renderStage() {
   setVar(subject, '--sz', visualScale(c).toFixed(3));
   setFilter($('stage-glyph'), c.prodige ? PRODIGE_FILTER : tintOf(c).filter);
   stage.classList.toggle('prodige', !!c.prodige);
-  setText($('stage-glyph'), glyphOf(c));
+  setCreature($('stage-glyph'), artFor(c), glyphOf(c));
   setText($('stage-name'), f[0]);
   setText($('stage-traits'), traitsOf(c));
   $('stage-traits').hidden = false;

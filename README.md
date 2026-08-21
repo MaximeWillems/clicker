@@ -393,6 +393,26 @@ ils étaient noyés. Ils y sont présentés comme la chaîne qu'ils forment vrai
 n'apparaît que lorsqu'on possède au moins un automate à régler, et la consigne du marchand
 affiche sa conséquence en clair plutôt que de la laisser deviner.
 
+### Illustrations
+
+Les emoji sont des bouche-trous, et le dossier `art/` sert à les remplacer **une lignée à la
+fois**. Tant qu'un dessin n'est pas là, l'emoji reste : rien ne casse jamais, et on peut
+s'arrêter n'importe quand.
+
+Ajouter un dessin, c'est poser le fichier dans `art/` et ajouter une ligne à la table `ART`
+en haut de `game.js`. Rien d'autre — pas de build, pas de manifeste à régénérer.
+
+**Trois dessins suffisent pour une lignée entière.** Un palier sans dessin prend celui du
+palier le plus proche en dessous, et un juvénile porte toujours le dessin du palier
+précédent. Avec `{ 1: 'tetard.png', 4: 'colosse.png' }`, les paliers 1 à 3 montrent le têtard
+et les paliers 4 et 5 le colosse. Un seul fichier fonctionne aussi.
+
+Une image fait exactement `1em`, donc **tout ce qui pilotait la taille de l'emoji pilote la
+sienne** — échelle du palier, étape de vie, engraissement, teinte. Un dessin remplace un emoji
+sans qu'aucun autre calcul ne bouge, du nouveau-né à 47 px au légendaire démesuré à 211 px.
+
+Le détail du format attendu est dans [`art/LISEZMOI.md`](art/LISEZMOI.md).
+
 ### Étapes de vie
 
 Une créature traverse cinq états visibles, et l'échelle est **continue** — elle grossit à
