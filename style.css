@@ -302,8 +302,31 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
   text-transform: uppercase; color: var(--faint);
 }
 .strip-titre h2 { font: inherit; margin: 0; color: var(--soft); }
-.strip-tri { margin-left: auto; display: flex; align-items: center; gap: 0.4rem; }
-.strip-tri select { font-family: var(--f-num); font-size: 0.7rem; text-transform: none; letter-spacing: 0; }
+.strip-tri { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+.strip-tri-mot { color: var(--faint); }
+/* Trois choix courts et exclusifs. Un menu déroulant les cachait et demandait deux gestes ;
+   un segment les montre tous et n'en coûte qu'un. La pastille suit le choix, comme la barre
+   de progression suit la croissance — c'est le même vert, et il ne sert qu'à ça. */
+.tri {
+  display: inline-flex; gap: 2px; padding: 2px;
+  background: var(--sunken);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+.tri-opt {
+  font-family: var(--f-num); font-size: 0.64rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--soft);
+  background: none; border: 0; border-radius: 999px;
+  padding: 0.22rem 0.6rem; cursor: pointer; white-space: nowrap;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+.tri-opt:hover { color: var(--ink); background: var(--raised); }
+.tri-opt[aria-pressed="true"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.tri-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Passé une quinzaine d'enclos, la file horizontale sortait de l'écran et il fallait la
    faire défiler pour voir sa propre ferme. Elle s'enroule donc sur autant de rangées qu'il
    faut, et ne se met à défiler qu'au-delà de trois — la scène doit rester la plus grande

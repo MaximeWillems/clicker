@@ -58,13 +58,14 @@
       <div class="strip-titre">
         <h2>Enclos</h2>
         <span id="compte-pen"></span>
-        <label class="strip-tri">trier
-          <select id="sel-tri">
-            <option value="arrivee">par arrivée</option>
-            <option value="rarete">par rareté</option>
-            <option value="palier">par palier</option>
-          </select>
-        </label>
+        <div class="strip-tri">
+          <span class="strip-tri-mot">trier</span>
+          <div class="tri" id="tri" role="group" aria-label="Ordre de l’enclos">
+            <button type="button" class="tri-opt" data-tri="arrivee">arrivée</button>
+            <button type="button" class="tri-opt" data-tri="rarete">rareté</button>
+            <button type="button" class="tri-opt" data-tri="palier">palier</button>
+          </div>
+        </div>
       </div>
       <div class="strip" id="strip-pen"></div>
     </div>

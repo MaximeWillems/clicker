@@ -1361,6 +1361,11 @@ function renderStrip() {
   peupler($('strip-incub'), list.filter(s => s.kind === 'egg'));
 }
 
+// Le segment de tri ne change qu'au clic : pas la peine de le repasser à chaque image.
+function syncTri() {
+  for (const b of $('tri').children) b.setAttribute('aria-pressed', String(b.dataset.tri === state.tri));
+}
+
 // Poser les vignettes d'un groupe dans l'ordre voulu, en ne touchant qu'à ce qui a bougé.
 function peupler(host, sujets) {
   // Retirer des vignettes déplace la barre de défilement. Sans ce report, la bête qu'on
@@ -1887,9 +1892,13 @@ function bindTools() {
     state.buyKind = EGG_BY_KEY[e.target.value] ? e.target.value : 'commun';
   });
 
-  $('sel-tri').addEventListener('change', e => {
-    state.tri = e.target.value in TRIS ? e.target.value : 'arrivee';
+  $('tri').addEventListener('click', e => {
+    const b = e.target.closest('.tri-opt');
+    if (!b || b.dataset.tri === state.tri) return;
+    state.tri = b.dataset.tri in TRIS ? b.dataset.tri : 'arrivee';
+    syncTri();
     refresh();
+    blip(440, 0.04, 'sine', 0.03);
   });
 }
 
@@ -1905,7 +1914,7 @@ function start() {
   $('sel-evolution').value = String(state.evolveUpTo);
   $('sel-acheteur').value = state.buyKind;
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
-  $('sel-tri').value = state.tri;
+  syncTri();
 
   catchUp();
   refresh();
