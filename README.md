@@ -254,6 +254,24 @@ Aux anciens prix, le marchand tombait à 78 min.
 jusqu'à l'âge adulte, la mangeoire prend le relais et engraisse les adultes. Aucune des deux
 ne dépense de pièces.
 
+### Un panneau qui s'explique
+
+Les réglages se lisaient comme des phrases à trous — un bout de texte, un menu, un autre bout
+de texte — et rien ne disait que les conditions du marchand se **cumulent**. Le panneau est
+donc réécrit sur trois principes :
+
+- **Chaque étape est titrée et numérotée** dans l'ordre où les automates s'exécutent, avec une
+  ligne qui dit ce qu'elle fait avant de montrer le menu.
+- **Les trois conditions du marchand sont trois lignes étiquetées** — palier au plus, taille au
+  moins, rareté au plus — au lieu de trois fragments de phrase à recoller.
+- **Chaque réglage écrit ce qu'il produit**, et se réécrit dès qu'on bouge un menu. « En clair :
+  il vend les communes et rares jusqu'au palier 4, une fois qu'elles ont atteint la taille
+  énorme. Les épiques et mythiques restent dans l'enclos. » L'acheteur annonce son débit à
+  l'heure, l'évolution le coût total du chemin qu'elle va financer.
+
+Une phrase qu'on relit après avoir bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une
+seule fois.
+
 **Le marchand attend deux conditions : le palier et la taille.** Sans la seconde il vendait
 tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce soit :
 les deux automates se marchaient dessus. On règle donc « jusqu'au palier N » **et** « pas

@@ -23,11 +23,17 @@ const SLOT_MULT  = 1.6;
    vaut 1 500 000 ; une mythique de palier 1 en vaut 1 600. C'est la rareté qui fait les
    coups de chance, le palier qui fait le travail. */
 const RARITY = {
-  commune:  { name: 'commune',  mult: 1,  rank: 0 },
-  rare:     { name: 'rare',     mult: 3,  rank: 1 },
-  epique:   { name: 'épique',   mult: 10, rank: 2 },
-  mythique: { name: 'mythique', mult: 40, rank: 3 },
+  commune:  { name: 'commune',  plur: 'communes',  mult: 1,  rank: 0 },
+  rare:     { name: 'rare',     plur: 'rares',     mult: 3,  rank: 1 },
+  epique:   { name: 'épique',   plur: 'épiques',   mult: 10, rank: 2 },
+  mythique: { name: 'mythique', plur: 'mythiques', mult: 40, rank: 3 },
 };
+
+// « a, b et c » plutôt que « a, b, c » : les notes doivent se lire à voix haute.
+function liste(mots) {
+  if (mots.length <= 1) return mots[0] || '';
+  return mots.slice(0, -1).join(', ') + ' et ' + mots[mots.length - 1];
+}
 
 /* Un œuf par rareté. Chacun donne surtout sa propre rareté, avec une chance de tomber
    au-dessus — et cette chance grandit avec le prix : 3,5 % pour un œuf commun, 12 % pour un
@@ -142,17 +148,17 @@ const UPGRADES = [
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.',
     value: n => n, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.9,
-    desc: 'Élève les jeunes tout seuls jusqu’à l’âge adulte.',
+    desc: 'Les jeunes grandissent tout seuls jusqu’à l’âge adulte.',
     value: n => n, unit: '× la vitesse de croissance' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
-    desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
+    desc: 'Rachète un œuf et le met à couver dès qu’un incubateur se libère.' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 2500, mult: 1.9,
     desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
     value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
-    desc: 'Vend les adultes selon ta règle : jusqu’à tel palier, et pas avant telle taille.' },
+    desc: 'Vend les adultes tout seul, selon trois conditions que tu règles : palier, taille et rareté.' },
   { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
-    desc: 'Fait monter les adultes de palier tout seul, jusqu’où tu décides.' },
+    desc: 'Fait monter les adultes de palier en palier, jusqu’où tu décides. Elle agit avant le marchand.' },
 ];
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
@@ -1258,6 +1264,40 @@ function renderStage() {
   }
 }
 
+function noteAcheteur() {
+  const e = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
+  const parHeure = Math.floor(3600 / (e.hatch / Math.max(1, lvl('couveuse'))));
+  return 'Environ ' + parHeure + ' éclosion' + (parHeure > 1 ? 's' : '') +
+    ' par heure et par incubateur, à ta couveuse actuelle. ' +
+    (e.price > 12
+      ? 'S’il ne peut pas payer les ' + fmt(e.price) + ', il laisse l’incubateur vide et attend.'
+      : 'Il ne s’arrêtera jamais faute de moyens.');
+}
+
+function noteEvolution() {
+  if (!state.evolveUpTo) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
+  const cumul = EVOLVE.slice(0, state.evolveUpTo - 1).reduce((a, b) => a + (b || 0), 0);
+  return 'Chaque bête sera menée au palier ' + state.evolveUpTo + ', ce qui lui coûtera ' +
+    fmt(cumul) + ' pièces en tout. Elle passe avant le marchand, donc une bête qui peut ' +
+    'encore monter n’est jamais vendue au prix du palier d’en dessous.';
+}
+
+function noteMarchand() {
+  if (!state.sellUpTo) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes.';
+  const vend = Object.values(RARITY).filter(x => x.rank <= state.sellRarity).map(x => x.plur);
+  const garde = Object.values(RARITY).filter(x => x.rank > state.sellRarity).map(x => x.plur);
+  const taille = state.sellRank
+    ? 'une fois qu’elles ont atteint la taille ' + RANKS[state.sellRank].name
+    : 'dès qu’elles sont adultes';
+  let txt = 'En clair : il vend les ' + liste(vend) + ' jusqu’au palier ' +
+            state.sellUpTo + ', ' + taille + '. ';
+  txt += garde.length
+    ? 'Les ' + liste(garde) + ' restent dans l’enclos.'
+    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’au palier 3.';
+  if (!state.sellRank && lvl('mangeoire')) txt += ' Ta mangeoire n’aura jamais le temps de les engraisser.';
+  return txt;
+}
+
 function tickView() {
   $('coins').textContent = fmt(state.coins);
 
@@ -1312,18 +1352,11 @@ function tickView() {
   $('cfg-acheteur').hidden = !state.up.acheteur;
   $('panel-reglages').hidden = !state.up.marchand && !state.up.evolution && !state.up.acheteur;
 
-  // ce que la consigne du marchand donne concrètement, sur la bête en scène
-  if (state.up.marchand) {
-    const r = RANKS[state.sellRank] || RANKS[0];
-    const gardees = Object.values(RARITY).filter(x => x.rank > state.sellRarity).map(x => x.name);
-    setText($('note-marchand'),
-      (state.sellRank
-        ? 'La mangeoire a le temps d’engraisser jusqu’à ' + r.name + ' avant la vente. '
-        : 'Vendues dès l’âge adulte : la mangeoire n’aura jamais le temps d’agir. ') +
-      (gardees.length
-        ? 'Il ne touche pas aux lignées ' + gardees.join(', ') + ' — un œuf cher ne se rembourse qu’au palier 3.'
-        : 'Il vend tout, y compris les mythiques : attention aux ventes à perte.'));
-  }
+  // Chaque réglage dit en clair ce qu'il produit. Une phrase qu'on relit après avoir
+  // bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une fois.
+  if (state.up.acheteur) setText($('note-acheteur'), noteAcheteur());
+  if (state.up.evolution) setText($('note-evolution'), noteEvolution());
+  if (state.up.marchand) setText($('note-marchand'), noteMarchand());
 }
 
 function refresh() {

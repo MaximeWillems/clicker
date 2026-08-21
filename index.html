@@ -76,63 +76,70 @@
   </section>
 
   <section class="panel" id="panel-reglages" hidden>
-    <div class="panel-head">
-      <h2>Réglages de la ferme</h2>
-      <span class="panel-meta">la chaîne</span>
-    </div>
+    <div class="panel-head"><h2>Réglages de la ferme</h2></div>
+    <p class="panel-intro">Tes automates travaillent en boucle, toujours dans cet ordre.
+      Chacun ne fait rien tant que tu ne lui as pas dit quoi.</p>
 
     <div class="config" id="cfg-acheteur" hidden>
-      <p class="config-step"><span class="step-n">1</span> Acheteur</p>
-      <label for="sel-acheteur">rachète des</label>
+      <p class="config-step"><span class="step-n">1</span> L'acheteur remplit</p>
+      <p class="config-what">Ce qu'il remet à couver dès qu'un incubateur se libère.</p>
       <select id="sel-acheteur">
-        <option value="commun">œufs communs — 12</option>
-        <option value="rare">œufs rares — 3 000</option>
-        <option value="epique">œufs épiques — 40 000</option>
-        <option value="mythique">œufs mythiques — 200 000</option>
+        <option value="commun">Œufs communs — 12 pièces, couve en 30 s</option>
+        <option value="rare">Œufs rares — 3 000, couve en 3 min</option>
+        <option value="epique">Œufs épiques — 40 000, couve en 12 min</option>
+        <option value="mythique">Œufs mythiques — 200 000, couve en 45 min</option>
       </select>
-      <p class="config-note">Il attend d'avoir de quoi payer plutôt que de rabattre sur moins cher.</p>
+      <p class="config-note" id="note-acheteur"></p>
     </div>
 
     <div class="config" id="cfg-evolution" hidden>
-      <p class="config-step"><span class="step-n">2</span> Évolution</p>
-      <label for="sel-evolution">fait monter les adultes jusqu'au palier</label>
+      <p class="config-step"><span class="step-n">2</span> L'évolution fait monter</p>
+      <p class="config-what">Jusqu'où pousser une bête adulte avant de la laisser tranquille.</p>
       <select id="sel-evolution">
-        <option value="0">aucun — je fais évoluer moi-même</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5 — jusqu'à la forme finale</option>
+        <option value="0">Ne rien faire évoluer</option>
+        <option value="2">Monter jusqu'au palier 2</option>
+        <option value="3">Monter jusqu'au palier 3</option>
+        <option value="4">Monter jusqu'au palier 4</option>
+        <option value="5">Monter jusqu'au palier 5, la forme finale</option>
       </select>
+      <p class="config-note" id="note-evolution"></p>
     </div>
 
     <div class="config" id="cfg-marchand" hidden>
-      <p class="config-step"><span class="step-n">3</span> Marchand</p>
-      <label for="sel-marchand">vend les adultes jusqu'au palier</label>
-      <select id="sel-marchand">
-        <option value="0">aucun — je vends moi-même</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5 — tout vendre</option>
-      </select>
+      <p class="config-step"><span class="step-n">3</span> Le marchand vend</p>
+      <p class="config-what">Il ne vend une bête que si <b>les trois conditions</b> sont
+        remplies en même temps.</p>
 
-      <label for="sel-rank">mais pas avant qu'elles aient atteint</label>
-      <select id="sel-rank">
-        <option value="0">l'âge adulte — vendre tout de suite</option>
-        <option value="1">la taille grand — ×1,30</option>
-        <option value="2">la taille énorme — ×1,70</option>
-        <option value="3">la taille colossale — ×2,30</option>
-        <option value="4">la taille titanesque — ×3,20</option>
-        <option value="5">la taille démesurée — ×4,50</option>
-      </select>
-      <label for="sel-rarete">et seulement les lignées jusqu'à</label>
-      <select id="sel-rarete">
-        <option value="0">commune — garde tout le reste</option>
-        <option value="1">rare</option>
-        <option value="2">épique</option>
-        <option value="3">mythique — tout vendre</option>
-      </select>
+      <div class="cond">
+        <label for="sel-marchand">Palier — au plus</label>
+        <select id="sel-marchand">
+          <option value="0">Ne rien vendre</option>
+          <option value="1">jusqu'au palier 1</option>
+          <option value="2">jusqu'au palier 2</option>
+          <option value="3">jusqu'au palier 3</option>
+          <option value="4">jusqu'au palier 4</option>
+          <option value="5">tous les paliers</option>
+        </select>
+
+        <label for="sel-rank">Taille — au moins</label>
+        <select id="sel-rank">
+          <option value="0">dès l'âge adulte</option>
+          <option value="1">grande — vaut ×1,30</option>
+          <option value="2">énorme — vaut ×1,70</option>
+          <option value="3">colossale — vaut ×2,30</option>
+          <option value="4">titanesque — vaut ×3,20</option>
+          <option value="5">démesurée — vaut ×4,50</option>
+        </select>
+
+        <label for="sel-rarete">Rareté — au plus</label>
+        <select id="sel-rarete">
+          <option value="0">communes seulement</option>
+          <option value="1">communes et rares</option>
+          <option value="2">jusqu'aux épiques</option>
+          <option value="3">tout, mythiques comprises</option>
+        </select>
+      </div>
+
       <p class="config-note" id="note-marchand"></p>
     </div>
   </section>
