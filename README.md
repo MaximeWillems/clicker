@@ -171,6 +171,32 @@ palier, sinon un tempérament vif cumulerait deux bonus.
 effet. C'est de l'identité pure : « un Ouroboros chromatique doré marbré placide » se
 reconnaît entre mille.
 
+### Ce que vaut la mangeoire
+
+Le rendement de l'engraissement ne dépend **pas du palier** — 0,83 à p1 comme à p5 avec les
+mêmes niveaux. Il ne dépend que du **rapport entre le niveau de mangeoire et celui
+d'éleveur** : l'un fait tourner l'enclos, l'autre l'immobilise pour grossir.
+
+À niveaux égaux, en rendement d'enclos comparé à y enchaîner des bêtes :
+
+| Rang visé | Rendement |
+|---|---|
+| grand | **1,24** — vaut mieux que recycler |
+| énorme | 0,82 |
+| colossal | 0,41 |
+| titanesque | 0,12 |
+| démesuré | 0,02 |
+
+Il y a donc un optimum net à *grand*, puis une longue traîne de plaisir payé en temps. C'est
+la décision qu'on veut, et elle se règle une fois pour toutes dans la taille exigée par le
+marchand.
+
+La mangeoire était auparavant à 2 500 × 2,0 avec un débit de ×2 : monter au niveau 5 coûtait
+**quatorze fois** le prix de l'éleveur, pour un rendement de 0,83 à niveaux égaux — donc
+jamais rentable, et en pratique 0,17 puisqu'on ne pouvait s'offrir que le niveau 1. Elle suit
+maintenant la même courbe de prix que l'éleveur, à cinq fois le total : elle reste un
+supplément, elle n'est plus un piège.
+
 ### Garder une bête
 
 Le bouton **☆ Garder** met une créature hors de portée des automates : ni vendue par le
@@ -206,7 +232,7 @@ double presque, donc chaque palier se mérite et les rendements décroissent d'e
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
 | Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
 | Acheteur automatique | 2 000 | — | achat unique |
-| Mangeoire automatique | 6 000 | ×2,0 | *n*×2 s d'engraissement par seconde |
+| Mangeoire automatique | 2 500 | ×1,9 | *n*×3 s d'engraissement par seconde |
 | Marchand automatique | 15 000 | — | achat unique |
 | Évolution automatique | 50 000 | — | achat unique |
 

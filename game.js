@@ -57,7 +57,7 @@ const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
    et engraisse les adultes sans fin. Le prix d'un animal énorme n'est donc pas en pièces
    mais en temps et en place d'enclos — une bête qu'on engraisse est une bête qu'on ne
    vend pas, et l'enclos qu'elle occupe ne produit rien pendant ce temps. */
-const FATTEN_X  = 2;        // secondes d'engraissement par seconde et par niveau de mangeoire
+const FATTEN_X  = 3;        // secondes d'engraissement par seconde et par niveau de mangeoire
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
 const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever la scène
 
@@ -142,7 +142,7 @@ const UPGRADES = [
     value: n => n, unit: '× la vitesse de croissance' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
-  { key: 'mangeoire', name: 'Mangeoire automatique', base: 6000, mult: 2,
+  { key: 'mangeoire', name: 'Mangeoire automatique', base: 2500, mult: 1.9,
     desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
     value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
