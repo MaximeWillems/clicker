@@ -18,6 +18,12 @@
   --jade-dim: #1B3A32;
   --red:      #C9705C;
 
+  /* la hiérarchie des lignées : neutre, bleu, violet, or */
+  --r-commune:  #8C998C;
+  --r-rare:     #6BA4D8;
+  --r-epique:   #B07BD8;
+  --r-mythique: #E4A63E;
+
   --f-ui:   "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --f-num:  "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
   --f-name: "Young Serif", Georgia, serif;
@@ -351,14 +357,60 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 .warn-txt { color: var(--red); font-weight: 500; }
 
 .collection { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.coll-head {
+  grid-column: 1 / -1;
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.11em;
+  text-transform: uppercase; margin: 0.55rem 0 0.1rem;
+  color: var(--rar, var(--faint));
+}
+.coll-head:first-child { margin-top: 0; }
 .cell {
   aspect-ratio: 1; display: grid; place-items: center;
   background: var(--sunken); border-radius: 2px; font-size: 1.05rem;
   color: var(--faint);
 }
-.cell.got { background: var(--raised); }
+.cell.got { background: var(--raised); box-shadow: inset 0 0 0 1px var(--rar, transparent); }
 .cell.got.t5 { background: var(--jade-dim); }
 .cell.locked::after { content: "·"; font-family: var(--f-num); color: var(--rule-hi); }
+
+/* ── rareté : une variable, portée par la classe de la lignée ── */
+.rar-commune  { --rar: var(--r-commune); }
+.rar-rare     { --rar: var(--r-rare); }
+.rar-epique   { --rar: var(--r-epique); }
+.rar-mythique { --rar: var(--r-mythique); }
+.egg-commun   { --rar: var(--r-commune); }
+.egg-rare     { --rar: var(--r-rare); }
+.egg-mythique { --rar: var(--r-mythique); }
+
+.rar {
+  color: var(--rar, var(--faint));
+  font-weight: 500; letter-spacing: 0.1em;
+}
+.rar-commune.rar { color: var(--faint); }
+
+/* la scène et les vignettes se teintent de la rareté du sujet */
+.stage.rar-rare .subject-glow,
+.stage.rar-epique .subject-glow,
+.stage.rar-mythique .subject-glow,
+.stage.egg-rare .subject-glow,
+.stage.egg-mythique .subject-glow {
+  background: radial-gradient(circle, var(--rar) 0%, transparent 66%);
+  opacity: 0.26;
+}
+.stage.rar-mythique .subject-glow,
+.stage.egg-mythique .subject-glow { opacity: 0.4; }
+.stage.rar-rare .stage-bar > i,
+.stage.rar-epique .stage-bar > i,
+.stage.rar-mythique .stage-bar > i { background: var(--rar); }
+
+.thumb.rar-rare, .thumb.rar-epique, .thumb.rar-mythique,
+.thumb.egg-rare, .thumb.egg-mythique { border-color: color-mix(in srgb, var(--rar) 45%, var(--rule)); }
+.thumb.rar-rare .thumb-tag, .thumb.rar-epique .thumb-tag, .thumb.rar-mythique .thumb-tag,
+.thumb.egg-rare .thumb-tag, .thumb.egg-mythique .thumb-tag { color: var(--rar); }
+
+.buy.egg-rare .t, .buy.egg-mythique .t { color: var(--rar); }
+.buy.egg-rare:hover:not(:disabled),
+.buy.egg-mythique:hover:not(:disabled) { border-color: var(--rar); }
 
 /* ── pied ────────────────────────────────────── */
 .foot { grid-area: foot; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }

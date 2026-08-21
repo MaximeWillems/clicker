@@ -14,10 +14,38 @@ const VALUE      = [40, 500, 6000, 80000, 1500000];           // valeur à la ve
 const EVOLVE     = [200, 3000, 40000, 600000, null];          // coût pour passer au palier suivant
 const TIER_SCALE = [1, 1.1, 1.22, 1.35, 1.5];                 // grossissement visuel par palier
 
-const EGG_PRICE  = 12;
 const INCUB_BASE = 150;
 const PEN_BASE   = 400;
 const SLOT_MULT  = 1.6;
+
+/* Deux axes indépendants, à ne pas confondre :
+   le PALIER est la progression d'une bête au fil de sa vie (têtard → crapaud → …),
+   la RARETÉ est la lignée dont elle est issue et ne change jamais. Une commune de palier 5
+   vaut 1 500 000 ; une mythique de palier 1 en vaut 1 600. C'est la rareté qui fait les
+   coups de chance, le palier qui fait le travail. */
+const RARITY = {
+  commune:  { name: 'commune',  mult: 1,  rank: 0 },
+  rare:     { name: 'rare',     mult: 3,  rank: 1 },
+  epique:   { name: 'épique',   mult: 10, rank: 2 },
+  mythique: { name: 'mythique', mult: 40, rank: 3 },
+};
+
+/* Trois œufs, trois tables de tirage. L'œuf commun garde une chance infime de mythique —
+   une fois sur deux mille — pour que le coup de chance reste possible dès la première
+   minute ; les œufs chers achètent surtout la certitude. */
+const EGG_KINDS = [
+  { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚',
+    desc: 'Presque toujours une lignée commune. Une chance sur 2 000 de mythique.',
+    odds: { commune: 0.9700, rare: 0.0250, epique: 0.0045, mythique: 0.0005 } },
+  { key: 'rare', name: 'Œuf rare', price: 3000, glyph: '🥚',
+    desc: 'Jamais de commune. 17 % d’épique, 3 % de mythique.',
+    odds: { commune: 0, rare: 0.80, epique: 0.17, mythique: 0.03 } },
+  { key: 'mythique', name: 'Œuf mythique', price: 400000, glyph: '🥚',
+    desc: 'Épique au pire, mythique une fois sur quatre.',
+    odds: { commune: 0, rare: 0, epique: 0.75, mythique: 0.25 } },
+];
+
+const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
 
 /* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
    L'éleveur pousse les jeunes jusqu'à l'âge adulte, la mangeoire prend le relais ensuite
@@ -87,21 +115,46 @@ const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
    n'offrent aucune variante (toute la lignée du crapaud), les deux sont identiques et seule
    l'échelle raconte la croissance : ce sont ces cases-là qui réclament de vrais dessins. */
 const LINES = [
-  { key: 'crapaud', name: 'Crapaud', forms: [
+  // ── communes ────────────────────────────────────────────────────────────
+  { key: 'crapaud', name: 'Crapaud', rarity: 'commune', forms: [
     ['Têtard', '🐸', '🐸'], ['Crapaud', '🐸', '🐸'], ['Crapaud-buffle', '🐸', '🐸'],
     ['Colosse fangeux', '🐸', '🐸'], ['Gama, crapaud-montagne', '🐸', '🐸'] ] },
-  { key: 'poisson', name: 'Poisson', forms: [
+  { key: 'poisson', name: 'Poisson', rarity: 'commune', forms: [
     ['Alevin', '🐟', '🐟'], ['Carpe', '🐟', '🐟'], ['Carpe centenaire', '🐠', '🐟'],
     ['Serpent de mer', '🐍', '🐠'], ['Léviathan', '🐉', '🐍'] ] },
-  { key: 'lezard', name: 'Lézard', forms: [
+  { key: 'lezard', name: 'Lézard', rarity: 'commune', forms: [
     ['Lézardeau', '🦎', '🦎'], ['Lézard', '🦎', '🦎'], ['Varan', '🦎', '🦎'],
     ['Wyverne', '🐲', '🦎'], ['Dragon de terre', '🐉', '🐲'] ] },
-  { key: 'oiseau', name: 'Oiseau', forms: [
+  { key: 'oiseau', name: 'Oiseau', rarity: 'commune', forms: [
     ['Oisillon', '🐤', '🐣'], ['Passereau', '🐦', '🐤'], ['Rapace', '🦅', '🐦'],
     ['Roc', '🦅', '🦅'], ['Phénix', '🔥', '🦅'] ] },
-  { key: 'crocodile', name: 'Crocodile', forms: [
+  { key: 'crocodile', name: 'Crocodile', rarity: 'commune', forms: [
     ['Crocodillon', '🐊', '🐊'], ['Crocodile', '🐊', '🐊'], ['Crocodile ancien', '🐊', '🐊'],
     ['Draco-saurien', '🐲', '🐊'], ['Dragon-tonnerre', '🐉', '🐲'] ] },
+
+  // ── rares ───────────────────────────────────────────────────────────────
+  { key: 'salamandre', name: 'Salamandre', rarity: 'rare', forms: [
+    ['Larve ardente', '🐛', '🐛'], ['Salamandre', '🦎', '🐛'], ['Salamandre de braise', '🦎', '🦎'],
+    ['Salamandre de cendre', '🔥', '🦎'], ['Ifrit', '👹', '🔥'] ] },
+  { key: 'serpent', name: 'Serpent-plume', rarity: 'rare', forms: [
+    ['Vermisseau', '🐛', '🐛'], ['Couleuvre', '🐍', '🐛'], ['Serpent-plume', '🐍', '🐍'],
+    ['Amphithère', '🐲', '🐍'], ['Quetzalcóatl', '🐉', '🐲'] ] },
+
+  // ── épiques ─────────────────────────────────────────────────────────────
+  { key: 'kraken', name: 'Kraken', rarity: 'epique', forms: [
+    ['Nauplius', '🦐', '🦐'], ['Poulpe', '🐙', '🦐'], ['Poulpe abyssal', '🐙', '🐙'],
+    ['Poulpe des fosses', '🦑', '🐙'], ['Kraken', '🦑', '🦑'] ] },
+  { key: 'golem', name: 'Golem', rarity: 'epique', forms: [
+    ['Éclat', '🪨', '🪨'], ['Gravier animé', '🪨', '🪨'], ['Golem', '🗿', '🪨'],
+    ['Colosse de pierre', '🗿', '🗿'], ['Titan de granit', '🏔️', '🗿'] ] },
+
+  // ── mythiques ───────────────────────────────────────────────────────────
+  { key: 'chimere', name: 'Chimère', rarity: 'mythique', forms: [
+    ['Avorton', '🐁', '🐁'], ['Chimèreau', '🐐', '🐁'], ['Chimère', '🦁', '🐐'],
+    ['Chimère royale', '🦁', '🦁'], ['Chimère primordiale', '👹', '🦁'] ] },
+  { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
+    ['Ossement', '🦴', '🦴'], ['Saurien', '🦕', '🦴'], ['Béhémoth', '🦖', '🦕'],
+    ['Béhémoth ancien', '🦖', '🦖'], ['Béhémoth primordial', '☄️', '🦖'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
@@ -119,10 +172,10 @@ function freshState() {
   return {
     v: 2,
     coins: 0,
-    eggs: 0,
+    eggs: { commun: 0, rare: 0, mythique: 0 },
     incubators: 1,
     pens: 1,
-    incub: [{ line: randomLine(), p: 0 }],   // le premier œuf est offert, déjà en place
+    incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
     pen: [],
     sel: 'i:0',
     up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0 },
@@ -135,8 +188,21 @@ function freshState() {
   };
 }
 
-function randomLine() {
-  return LINES[Math.floor(Math.random() * LINES.length)].key;
+// Le tirage se fait à la mise en couvaison, pas à l'éclosion : c'est ce qui permet de
+// recalculer une absence sans rejouer le hasard. Le joueur ne le découvre qu'à l'éclosion.
+function pickLine(rarityKey) {
+  const pool = LINES.filter(l => l.rarity === rarityKey);
+  return pool[Math.floor(Math.random() * pool.length)].key;
+}
+
+function rollLine(kindKey) {
+  const odds = (EGG_BY_KEY[kindKey] || EGG_BY_KEY.commun).odds;
+  let r = Math.random();
+  for (const key of ['mythique', 'epique', 'rare', 'commune']) {
+    r -= odds[key] || 0;
+    if (r < 0) return pickLine(key);
+  }
+  return pickLine(odds.commune ? 'commune' : 'rare');
 }
 
 function load() {
@@ -152,6 +218,11 @@ function load() {
       if (merged.up[k] === true) merged.up[k] = 1;
       else if (merged.up[k] === false || merged.up[k] == null) merged.up[k] = 0;
     }
+    // la réserve d'œufs était un simple compteur avant qu'il n'y ait plusieurs sortes
+    if (typeof merged.eggs === 'number') merged.eggs = { commun: merged.eggs, rare: 0, mythique: 0 };
+    else merged.eggs = Object.assign({ commun: 0, rare: 0, mythique: 0 }, merged.eggs || {});
+    // les œufs déjà en couvaison n'avaient pas de sorte
+    for (const slot of merged.incub || []) if (slot && !slot.kind) slot.kind = 'commun';
     // l'array des incubateurs doit toujours suivre le nombre acheté
     merged.incub = (merged.incub || []).slice(0, merged.incubators);
     while (merged.incub.length < merged.incubators) merged.incub.push(null);
@@ -177,7 +248,13 @@ function save() {
 const $ = id => document.getElementById(id);
 
 const growTime  = c => GROW[c.tier - 1];
-const baseValue = c => VALUE[c.tier - 1];
+const lineOf    = c => LINE_BY_KEY[c.line];
+const rarityOf  = c => RARITY[lineOf(c).rarity];
+const baseValue = c => VALUE[c.tier - 1] * rarityOf(c).mult;
+const eggStock  = k => (state.eggs && state.eggs[k]) || 0;
+const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
+// la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
+const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
 const evoCost   = c => EVOLVE[c.tier - 1];
 const isAdult   = c => c.p >= growTime(c);
 const form      = (lineKey, tier) => LINE_BY_KEY[lineKey].forms[tier - 1];
@@ -418,10 +495,11 @@ function tapStage() {
   refresh();
 }
 
-function placeEgg(i) {
-  if (state.incub[i] || state.eggs <= 0) return;
-  state.eggs--;
-  state.incub[i] = { line: randomLine(), p: 0 };   // la lignée est tirée ici, révélée à l'éclosion
+function placeEgg(i, kind) {
+  kind = kind || bestStocked();
+  if (state.incub[i] || !kind || !eggStock(kind)) return;
+  state.eggs[kind]--;
+  state.incub[i] = { line: rollLine(kind), p: 0, kind };
   // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
   // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
   if (!state.pen.length) state.sel = 'i:' + i;
@@ -430,7 +508,7 @@ function placeEgg(i) {
 }
 
 function hatchAll() {
-  let hatched = 0, lastKey = null;
+  let hatched = 0, lastKey = null, best = null, bestCreature = null;
   for (let i = 0; i < state.incub.length; i++) {
     const slot = state.incub[i];
     if (!slot || slot.p < HATCH) continue;
@@ -440,14 +518,26 @@ function hatchAll() {
     state.incub[i] = null;
     markSeen(slot.line, 1);
     lastKey = 'c:' + c.id;
+    // on retient la plus rare de la fournée pour la mettre en avant
+    const line = LINE_BY_KEY[slot.line];
+    if (!best || RARITY[line.rarity].rank > RARITY[best.rarity].rank) { best = line; bestCreature = c; }
     hatched++;
   }
   if (hatched) {
     // la bête qui vient de sortir prend la scène — on ne reste pas devant une coquille vide
     if (!state.sel || state.sel.startsWith('i:')) state.sel = lastKey;
-    const pt = centerOf($('subject'));
-    burst(pt.x, pt.y, '✦', 12);
-    chord([523, 659, 784]);
+    // un coup de chance doit s'entendre et se voir : c'est le seul moment de loterie du jeu
+    if (best && RARITY[best.rarity].rank > 0) {
+      state.sel = 'c:' + bestCreature.id;
+      const pt = centerOf($('subject'));
+      burst(pt.x, pt.y, '✦', 10 + RARITY[best.rarity].rank * 8);
+      floatText(pt.x, pt.y - 90, 'lignée ' + RARITY[best.rarity].name + ' !', 'gain');
+      chord([523, 659, 784, 1046, 1319], 90);
+    } else {
+      const pt = centerOf($('subject'));
+      burst(pt.x, pt.y, '✦', 12);
+      chord([523, 659, 784]);
+    }
     popNext = true;
   }
   refresh();
@@ -488,12 +578,13 @@ function evolve(c) {
   refresh();
 }
 
-function buyEgg() {
-  if (state.coins < EGG_PRICE) return;
-  state.coins -= EGG_PRICE;
-  state.eggs++;
+function buyEgg(kind) {
+  const e = EGG_BY_KEY[kind];
+  if (!e || state.coins < e.price) return;
+  state.coins -= e.price;
+  state.eggs[kind] = eggStock(kind) + 1;
   const free = state.incub.indexOf(null);
-  if (free !== -1) placeEgg(free); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
+  if (free !== -1) placeEgg(free, kind); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
 }
 
 function buyIncubator() {
@@ -586,13 +677,17 @@ function runAutomations(dt) {
       if (isAdult(c)) c.over = (c.over || 0) + debit;
     }
   }
+  // L'acheteur écoule d'abord la réserve — le joueur y a mis ses œufs chers exprès —
+  // puis rachète du commun pour que la boucle ne s'arrête jamais.
   if (state.up.acheteur) {
+    const commun = EGG_BY_KEY.commun;
     for (let i = 0; i < state.incub.length; i++) {
       if (state.incub[i]) continue;
-      if (state.eggs > 0) { state.eggs--; }
-      else if (state.coins >= EGG_PRICE) { state.coins -= EGG_PRICE; }
+      let kind = bestStocked();
+      if (kind) state.eggs[kind]--;
+      else if (state.coins >= commun.price) { state.coins -= commun.price; kind = 'commun'; }
       else break;
-      state.incub[i] = { line: randomLine(), p: 0 };
+      state.incub[i] = { line: rollLine(kind), p: 0, kind };
     }
   }
 }
@@ -646,6 +741,16 @@ function setHtml(el, v) { if (el.__html !== v) { el.__html = v; el.innerHTML = v
 function setVar(el, name, v) { if (el.__var !== v) { el.__var = v; el.style.setProperty(name, v); } }
 function setWidth(el, v) { if (el.__w !== v) { el.__w = v; el.style.width = v; } }
 
+// La scène porte une seule classe de rareté à la fois — elle teinte le halo et la jauge.
+const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique',
+                     'egg-commun', 'egg-rare', 'egg-mythique'];
+function setStageRarity(stage, cls) {
+  if (stage.__rar === cls) return;
+  stage.__rar = cls;
+  stage.classList.remove.apply(stage.classList, RAR_CLASSES);
+  if (cls) stage.classList.add(cls);
+}
+
 function buildChrome() {
   // les actions de la scène : construites une fois, montrées selon le sujet
   const host = $('stage-acts');
@@ -665,11 +770,13 @@ function buildChrome() {
     refs.acts[d.key] = b;
   }
 
-  const items = [
-    { key: 'egg',   title: 'Œuf',        desc: 'Lignée inconnue jusqu’à l’éclosion.', cost: () => EGG_PRICE, run: buyEgg },
-    { key: 'incub', title: 'Incubateur', desc: 'Un œuf de plus en couvaison.',        cost: incubCost,       run: buyIncubator },
-    { key: 'pen',   title: 'Enclos',     desc: 'Une créature de plus en croissance.', cost: penCost,         run: buyPen },
-  ];
+  const items = EGG_KINDS.map(e => ({
+    key: 'egg-' + e.key, title: e.name, desc: e.desc, rarity: e.key,
+    cost: () => e.price, run: () => buyEgg(e.key),
+  })).concat([
+    { key: 'incub', title: 'Incubateur', desc: 'Un œuf de plus en couvaison.',        cost: incubCost, run: buyIncubator },
+    { key: 'pen',   title: 'Enclos',     desc: 'Une créature de plus en croissance.', cost: penCost,   run: buyPen },
+  ]);
   refs.shop = {};
   const shop = $('shop');
   shop.textContent = '';
@@ -682,9 +789,11 @@ function buildChrome() {
     b.querySelector('.t').textContent = it.title;
     b.querySelector('.d').textContent = it.desc;
     b.addEventListener('click', it.run);
+    if (it.rarity) b.classList.add('egg-' + it.rarity);
     li.appendChild(b);
     shop.appendChild(li);
-    refs.shop[it.key] = { el: b, price: b.querySelector('.p'), desc: b.querySelector('.d'), cost: it.cost };
+    refs.shop[it.key] = { el: b, price: b.querySelector('.p'), desc: b.querySelector('.d'),
+                          cost: it.cost, base: it.desc, stock: it.rarity };
   }
 
   refs.up = {};
@@ -739,10 +848,12 @@ function renderStrip() {
     tag.className = 'thumb-tag';
 
     if (s.kind === 'egg') {
-      glyph.textContent = s.slot ? '🥚' : '◌';
-      if (!s.slot) b.classList.add('empty');
-      tag.textContent = s.slot ? 'œuf' : 'libre';
+      const k = s.slot ? EGG_BY_KEY[s.slot.kind] || EGG_BY_KEY.commun : null;
+      glyph.textContent = s.slot ? k.glyph : '◌';
+      if (!s.slot) b.classList.add('empty'); else b.classList.add('egg-' + k.key);
+      tag.textContent = s.slot ? (k.key === 'commun' ? 'œuf' : k.key) : 'libre';
     } else {
+      b.classList.add('rar-' + lineOf(s.c).rarity);
       glyph.textContent = glyphOf(s.c);
       // la vignette reprend l'échelle de la scène, en réduction
       glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
@@ -764,17 +875,27 @@ function renderCollection() {
 
   const host = $('collection');
   host.textContent = '';
+  let rarity = null;
   for (const line of LINES) {
+    // un intertitre à chaque changement de rareté : c'est la hiérarchie, rendue lisible
+    if (line.rarity !== rarity) {
+      rarity = line.rarity;
+      const h = document.createElement('p');
+      h.className = 'coll-head rar-' + rarity;
+      h.textContent = RARITY[rarity].name + ' · ×' + RARITY[rarity].mult;
+      host.appendChild(h);
+    }
     for (let t = 1; t <= 5; t++) {
       const got = !!state.seen[line.key + ':' + t];
       const cell = document.createElement('div');
-      cell.className = 'cell' + (got ? ' got' : ' locked') + (t === 5 ? ' t5' : '');
-      cell.title = got ? line.forms[t - 1][0] : line.name + ' — palier ' + t;
+      cell.className = 'cell rar-' + line.rarity + (got ? ' got' : ' locked') + (t === 5 ? ' t5' : '');
+      cell.title = (got ? line.forms[t - 1][0] : line.name + ' — palier ' + t) +
+                   ' (' + RARITY[line.rarity].name + ')';
       if (got) cell.textContent = line.forms[t - 1][1];
       host.appendChild(cell);
     }
   }
-  $('coll-meta').textContent = seenCount() + ' / 25';
+  $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * 5);
 }
 
 function renderStage() {
@@ -802,9 +923,11 @@ function renderStage() {
     stage.classList.remove('apex');
     // l'œuf gonfle doucement à mesure qu'il couve
     const ratio = slot ? Math.min(1, slot.p / HATCH) : 0;
+    const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
     setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
-    setText($('stage-glyph'), slot ? '🥚' : '◌');
-    setText($('stage-name'), slot ? 'Œuf' : 'Incubateur libre');
+    setText($('stage-glyph'), slot ? kind.glyph : '◌');
+    setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
+    setStageRarity(stage, slot ? 'egg-' + kind.key : null);
     stage.classList.toggle('cracking', !!slot && ratio > 0.65);
 
     if (slot) {
@@ -825,13 +948,15 @@ function renderStage() {
       setWidth($('stage-fill'), '0%');
       setText($('stage-timer'), '');
       $('stage-timer').classList.remove('done');
-      setText($('stage-hint'), state.eggs > 0
-        ? 'Tu as ' + state.eggs + ' œuf(s) en réserve.'
+      const stock = totalEggs();
+      setText($('stage-hint'), stock
+        ? 'Tu as ' + stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve.'
         : 'Achète un œuf dans la boutique.');
       ['sell', 'evo'].forEach(hide);
       acts.place.hidden = false;
-      setText(acts.place, 'Placer un œuf');
-      acts.place.disabled = state.eggs <= 0;
+      const best = bestStocked();
+      setText(acts.place, best ? 'Placer un ' + EGG_BY_KEY[best].name.toLowerCase() : 'Placer un œuf');
+      acts.place.disabled = !best;
     }
     return;
   }
@@ -843,16 +968,20 @@ function renderStage() {
   const rank = rankOf(sf);
   const stg = stageOf(c);
 
+  const rar = rarityOf(c);
   stage.classList.remove('cracking');
   stage.classList.toggle('apex', c.tier === 5);
   stage.classList.toggle('ready', adult);
+  setStageRarity(stage, 'rar-' + lineOf(c).rarity);
   // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
   setVar(subject, '--sz', visualScale(c).toFixed(3));
   setText($('stage-glyph'), glyphOf(c));
   setText($('stage-name'), f[0]);
 
   const mult = stageMult(c);
-  setHtml($('stage-meta'), 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
+  setHtml($('stage-meta'),
+    '<span class="rar rar-' + lineOf(c).rarity + '">' + rar.name + '</span>' +
+    ' · palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
     ' · <span class="rank">' + stg.name + '</span>' +
     (mult > 1 ? ' · valeur ×' + dec(mult) : ''));
 
@@ -933,20 +1062,22 @@ function tickView() {
     }
   }
 
+  const stock = totalEggs();
   $('strip-meta').textContent =
     state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur') + ' · ' +
-    state.pen.length + '/' + state.pens + (state.pens > 1 ? ' enclos' : ' enclos') +
-    (state.eggs > 0 ? ' · ' + state.eggs + ' œuf(s) en réserve' : '');
+    state.pen.length + '/' + state.pens + ' enclos' +
+    (stock ? ' · ' + stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve' : '');
 
-  for (const key of ['egg', 'incub', 'pen']) {
+  for (const key of Object.keys(refs.shop)) {
     const r = refs.shop[key];
     const cost = r.cost();
-    r.price.textContent = fmt(cost);
+    setText(r.price, fmt(cost));
     r.el.disabled = state.coins < cost;
+    if (r.stock) {
+      const n = eggStock(r.stock);
+      setText(r.desc, r.base + (n ? ' En réserve : ' + n + '.' : ''));
+    }
   }
-  refs.shop.egg.desc.textContent = state.eggs > 0
-    ? 'Lignée inconnue jusqu’à l’éclosion. En réserve : ' + state.eggs + '.'
-    : 'Lignée inconnue jusqu’à l’éclosion.';
 
   for (const u of UPGRADES) {
     const r = refs.up[u.key];

@@ -28,7 +28,8 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- Les 5 lignées et leurs 25 formes, du têtard au Léviathan
+- 11 lignées et leurs 55 formes, du têtard au Béhémoth primordial
+- **Quatre raretés** et trois sortes d'œufs, dont un coup de chance possible dès la première minute
 - Œuf → clic → éclosion → croissance → **vendre ou faire évoluer**
 - **Rien n'avance tout seul au départ** : seul le clic fait éclore et grandir. Le temps ne se
   met à travailler qu'une fois les automatisations achetées
@@ -63,6 +64,42 @@ crédible, pas une vérité — ils sont faits pour être retouchés en jouant.
 | 3 | 15 min | 3 000 | 6 000 |
 | 4 | 1 h | 40 000 | 80 000 |
 | 5 | 6 h | 600 000 | 1 500 000 |
+
+### Raretés
+
+Deux axes indépendants, à ne pas confondre : le **palier** est la progression d'une bête au
+fil de sa vie, la **rareté** est la lignée dont elle est issue et ne change jamais. Le palier,
+c'est le travail ; la rareté, c'est la chance.
+
+| Rareté | Lignées | Valeur | Adulte palier 1 → palier 5 |
+|---|---|---|---|
+| commune | crapaud, poisson, lézard, oiseau, crocodile | ×1 | 40 → 1 500 000 |
+| rare | salamandre, serpent-plume | ×3 | 120 → 4 500 000 |
+| épique | kraken, golem | ×10 | 400 → 15 000 000 |
+| mythique | chimère, béhémoth | ×40 | 1 600 → 60 000 000 |
+
+**Le coût d'évolution ne dépend pas de la rareté.** Monter une mythique au palier 5 coûte les
+mêmes 643 200 pièces qu'une commune et en rapporte quarante fois plus : une lignée rare n'est
+pas un lot à encaisser, c'est un investissement qui ne paie que si on la mène au bout.
+
+### Les trois œufs
+
+| Œuf | Prix | commune | rare | épique | mythique |
+|---|---|---|---|---|---|
+| Œuf commun | 12 | 97 % | 2,5 % | 0,45 % | **0,05 %** |
+| Œuf rare | 3 000 | — | 80 % | 17 % | 3 % |
+| Œuf mythique | 400 000 | — | — | 75 % | 25 % |
+
+L'œuf commun garde une chance sur deux mille de donner une mythique : le coup de chance reste
+possible dès la première minute, et c'est ce qui rend chaque éclosion intéressante. Les œufs
+chers n'achètent pas la possibilité, ils achètent la **certitude**.
+
+La lignée est tirée **à la mise en couvaison**, pas à l'éclosion — c'est ce qui permet de
+recalculer une absence sans rejouer le hasard. Le joueur, lui, ne la découvre qu'à l'éclosion,
+et une lignée non commune déclenche gerbe, accord et mise en scène immédiate.
+
+L'acheteur automatique écoule d'abord la réserve, en commençant par les œufs les plus rares —
+un œuf cher acheté exprès ne doit pas dormir en stock — puis rachète du commun.
 
 ### Automatisations
 
