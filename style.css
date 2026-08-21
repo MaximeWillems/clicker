@@ -503,3 +503,7 @@ button.act.keep:hover:not(:disabled) { color: var(--amber); border-color: var(--
   content: "★"; position: absolute; top: 2px; right: 4px;
   font-size: 0.6rem; color: var(--amber); line-height: 1;
 }
+
+/* vendre à perte : ça doit se voir avant de cliquer, pas après */
+button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
+.stage-hint.alerte { color: var(--red); }

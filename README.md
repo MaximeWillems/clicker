@@ -104,6 +104,29 @@ L'œuf mythique est volontairement plus cher que son espérance : passer par des
 revient à 160 000 par mythique contre 200 000 pour la garantie. On paie 25 % de prime pour
 supprimer la variance, ce qui est le bon prix d'une certitude.
 
+### Un œuf cher est un investissement, pas un lot
+
+**Tous les œufs payants se remboursent au palier 3, jamais avant.** Une mythique payée
+200 000 ne vaut que 1 600 à l'âge adulte de son premier palier — la vendre là serait ruineux.
+
+| Œuf | p1 | p2 | **p3** | p4 |
+|---|---|---|---|---|
+| commun (12) | +28 | +288 | +2 788 | +36 788 |
+| rare (3 000) | −2 880 | −1 700 | **+11 800** | +193 800 |
+| épique (40 000) | −39 600 | −35 200 | **+16 800** | +716 800 |
+| mythique (200 000) | −198 400 | −180 200 | **+36 800** | +2 956 800 |
+
+C'est la mécanique voulue : ce qu'on achète avec un œuf cher, c'est le droit d'investir, pas
+un gain immédiat. Elle demande de rester attentif, et c'est très bien — mais elle ne doit
+jamais être **silencieuse**. Deux garde-fous :
+
+- Chaque bête retient **le prix de l'œuf dont elle sort**. Tant qu'elle vaut moins que lui, la
+  scène l'annonce en rouge — « son œuf a coûté 200 000, elle en vaut 1 600, elle le
+  remboursera au palier 3 » — et le bouton *Vendre* passe en rouge.
+- **Le marchand automatique ne touche qu'aux communes par défaut.** Un troisième réglage
+  élargit sa portée rareté par rareté ; tant qu'on ne le fait pas, il ne peut pas brader un
+  mythique à 1 600. Le réglage prévient quand on lui ouvre les mythiques.
+
 La lignée est tirée **à la mise en couvaison**, pas à l'éclosion — c'est ce qui permet de
 recalculer une absence sans rejouer le hasard. Le joueur, lui, ne la découvre qu'à l'éclosion,
 et une lignée non commune déclenche gerbe, accord et mise en scène immédiate.

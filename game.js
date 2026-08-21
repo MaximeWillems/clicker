@@ -251,6 +251,7 @@ function freshState() {
     up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0 },
     sellUpTo: 0,
     sellRank: 0,        // taille minimale exigée avant la vente (0 = dès l'âge adulte)
+    sellRarity: 0,      // le marchand ne touche qu'aux communes tant qu'on ne l'élargit pas
     evolveUpTo: 0,
     seen: {},
     speed: 1,
@@ -372,6 +373,22 @@ function rollVariants() {
     prodige: Math.random() < PRODIGE_ODDS,
   };
 }
+
+/* À partir de quel palier la bête rembourse l'œuf dont elle sort. Un œuf cher n'est pas un
+   lot à encaisser : à palier 1 une mythique payée 200 000 ne vaut que 1 600. Tous les œufs
+   payants se remboursent au palier 3, jamais avant — autant le dire plutôt que de laisser
+   le joueur le découvrir en perdant sa mise. */
+function seuilRentable(c) {
+  const mult = rarityOf(c).mult * variantMult(c);
+  let cumul = 0;
+  for (let t = 1; t <= 5; t++) {
+    if (t > 1) cumul += EVOLVE[t - 2] || 0;
+    if (VALUE[t - 1] * mult - cumul >= (c.cost || 0)) return t;
+  }
+  return null;
+}
+
+const aPerte = c => (c.cost || 0) > sellValue(c);
 
 // La description d'une bête : ce qui la distingue de toutes les autres de sa forme.
 function traitsOf(c) {
@@ -646,7 +663,10 @@ function hatchAll() {
     const slot = state.incub[i];
     if (!slot || slot.p < HATCH) continue;
     if (penFull()) continue;
-    const c = Object.assign({ id: nextId++, line: slot.line, tier: 1, p: 0, over: 0 },
+    // on retient le prix de l'œuf : c'est la seule façon de dire au joueur, plus tard,
+    // qu'il est en train de vendre à perte
+    const c = Object.assign({ id: nextId++, line: slot.line, tier: 1, p: 0, over: 0,
+                              cost: (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).price },
                            rollVariants());
     // un prodige est protégé d'office : on ne perd pas une bête sur cinq cents
     // parce que le marchand l'a vendue avant qu'on l'ait vue
@@ -816,7 +836,8 @@ function runAutomations(dt) {
      soit — les deux automates se marchaient dessus. */
   if (state.up.marchand && state.sellUpTo > 0) {
     const ready = state.pen.filter(c => !c.keep && isAdult(c) && c.tier <= state.sellUpTo &&
-                                        rankOf(sizeFactor(c)).i >= state.sellRank);
+                                        rankOf(sizeFactor(c)).i >= state.sellRank &&
+                                        rarityOf(c).rank <= state.sellRarity);
     for (const c of ready) {
       state.coins += sellValue(c);
       state.pen = state.pen.filter(x => x.id !== c.id);
@@ -1181,12 +1202,26 @@ function renderStage() {
     setText($('stage-hint'), 'Continue à cliquer : elle grandit sans fin, de plus en plus lentement.');
   }
 
+  // Un œuf cher ne se rembourse qu'en menant la bête assez haut : on le dit, plutôt que
+  // de laisser le marchand la brader en silence.
+  if (aPerte(c)) {
+    const seuil = seuilRentable(c);
+    setText($('stage-hint'), 'Son œuf a coûté ' + fmt(c.cost) + ', elle en vaut ' + fmt(sellValue(c)) +
+      '. ' + (seuil ? 'Elle le remboursera au palier ' + seuil + '.' : 'Elle ne le remboursera jamais.'));
+    $('stage-hint').classList.add('alerte');
+  } else {
+    $('stage-hint').classList.remove('alerte');
+  }
+
   acts.place.hidden = true;
   acts.sell.hidden = false;
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
+  const perte = aPerte(c);
   acts.sell.title = c.keep ? 'Elle est gardée : relâche-la d’abord.'
+    : perte ? 'À perte : son œuf a coûté ' + fmt(c.cost) + '.'
     : adult ? 'Au prix fort.'
     : 'Un ' + stg.name + ' ne vaut qu’une fraction de sa valeur adulte — mais ça libère la place.';
+  acts.sell.classList.toggle('perte', perte && !c.keep);
   acts.sell.disabled = !!c.keep;
 
   acts.keep.hidden = false;
@@ -1272,9 +1307,14 @@ function tickView() {
   // ce que la consigne du marchand donne concrètement, sur la bête en scène
   if (state.up.marchand) {
     const r = RANKS[state.sellRank] || RANKS[0];
-    setText($('note-marchand'), state.sellRank
-      ? 'La mangeoire a le temps d’engraisser jusqu’à ' + r.name + ' avant la vente.'
-      : 'Vendues dès l’âge adulte : la mangeoire n’aura jamais le temps d’agir.');
+    const gardees = Object.values(RARITY).filter(x => x.rank > state.sellRarity).map(x => x.name);
+    setText($('note-marchand'),
+      (state.sellRank
+        ? 'La mangeoire a le temps d’engraisser jusqu’à ' + r.name + ' avant la vente. '
+        : 'Vendues dès l’âge adulte : la mangeoire n’aura jamais le temps d’agir. ') +
+      (gardees.length
+        ? 'Il ne touche pas aux lignées ' + gardees.join(', ') + ' — un œuf cher ne se rembourse qu’au palier 3.'
+        : 'Il vend tout, y compris les mythiques : attention aux ventes à perte.'));
   }
 }
 
@@ -1325,7 +1365,7 @@ function bindTools() {
   });
 
   // Un menu qui garde le focus détournerait la barre espace : on le relâche après usage.
-  for (const id of ['sel-marchand', 'sel-rank', 'sel-evolution', 'sel-acheteur']) {
+  for (const id of ['sel-marchand', 'sel-rank', 'sel-rarete', 'sel-evolution', 'sel-acheteur']) {
     $(id).addEventListener('change', e => e.target.blur());
   }
 
@@ -1335,6 +1375,10 @@ function bindTools() {
 
   $('sel-rank').addEventListener('change', e => {
     state.sellRank = parseInt(e.target.value, 10) || 0;
+  });
+
+  $('sel-rarete').addEventListener('change', e => {
+    state.sellRarity = parseInt(e.target.value, 10) || 0;
   });
 
   $('sel-evolution').addEventListener('change', e => {
@@ -1355,6 +1399,7 @@ function start() {
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   $('sel-marchand').value = String(state.sellUpTo);
   $('sel-rank').value = String(state.sellRank || 0);
+  $('sel-rarete').value = String(state.sellRarity || 0);
   $('sel-evolution').value = String(state.evolveUpTo);
   $('sel-acheteur').value = state.buyKind;
 
