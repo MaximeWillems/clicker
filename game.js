@@ -60,18 +60,29 @@ const LIFE_MIN     = 0.5;   // taille d'un nouveau-né, en fraction de sa taille
    quand un enclos bloque, jamais une stratégie. */
 const STAGE_MULT = { enfant: 0.15, ado: 0.40 };   // 1 par défaut pour tout adulte
 
+/* Améliorations à niveaux. Le coût du prochain niveau est base × mult^niveau : l'effet
+   monte linéairement pendant que le prix double presque, donc chaque palier se mérite.
+   `max: 1` marque les deux achats qui débloquent une capacité sans avoir de puissance. */
 const UPGRADES = [
-  { key: 'couveuse',  name: 'Couveuse automatique', cost: 120,
-    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.' },
-  { key: 'eleveur',   name: 'Éleveur automatique', cost: 500,
-    desc: 'Les créatures grandissent toutes seules jusqu’à l’âge adulte.' },
-  { key: 'acheteur',  name: 'Acheteur automatique', cost: 2000,
+  { key: 'clic', name: 'Force du clic', base: 60, mult: 1.6,
+    desc: 'Chaque clic vaut une seconde de vie de plus.',
+    value: n => 1 + n, unit: ' s par clic' },
+  { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9,
+    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.',
+    value: n => n, unit: '× la vitesse de couvaison' },
+  { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.9,
+    desc: 'Les créatures grandissent toutes seules jusqu’à l’âge adulte.',
+    value: n => n, unit: '× la vitesse de croissance' },
+  { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
-  { key: 'mangeoire', name: 'Mangeoire automatique', cost: 15000,
-    desc: 'Nourrit en continu pour accélérer la croissance, tant qu’il reste des pièces.' },
-  { key: 'marchand',  name: 'Marchand automatique', cost: 100000,
+  { key: 'mangeoire', name: 'Mangeoire automatique', base: 15000, mult: 2,
+    desc: 'Nourrit en continu pour accélérer la croissance, tant qu’il reste des pièces.',
+    value: n => n * AUTOFEED_X, unit: ' s de croissance par seconde' },
+  { key: 'marchand', name: 'Marchand automatique', base: 100000, mult: 1, max: 1,
     desc: 'Vend les adultes selon la règle que tu définis.' },
 ];
+
+const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
 
 /* Chaque forme : [nom, glyphe adulte, glyphe juvénile].
    Le juvénile sert pendant l'enfance et l'adolescence — c'est ce qui fait qu'une wyverne
@@ -117,7 +128,7 @@ function freshState() {
     incub: [{ line: randomLine(), p: 0 }],   // le premier œuf est offert, déjà en place
     pen: [],
     sel: 'i:0',
-    up: { couveuse: false, eleveur: false, acheteur: false, mangeoire: false, marchand: false },
+    up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0 },
     sellUpTo: 0,
     autoFeed: true,
     seen: {},
@@ -139,6 +150,11 @@ function load() {
     const s = JSON.parse(raw);
     const base = freshState();
     const merged = Object.assign(base, s, { up: Object.assign(base.up, s.up || {}) });
+    // les améliorations étaient des booléens avant de devenir des niveaux
+    for (const k of Object.keys(merged.up)) {
+      if (merged.up[k] === true) merged.up[k] = 1;
+      else if (merged.up[k] === false || merged.up[k] == null) merged.up[k] = 0;
+    }
     // l'array des incubateurs doit toujours suivre le nombre acheté
     merged.incub = (merged.incub || []).slice(0, merged.incubators);
     while (merged.incub.length < merged.incubators) merged.incub.push(null);
@@ -172,6 +188,11 @@ const penFull   = () => state.pen.length >= state.pens;
 
 const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incubators - 1));
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
+
+const lvl         = key => state.up[key] || 0;
+const upCost      = u => Math.round(u.base * Math.pow(u.mult, lvl(u.key)));
+const upMaxed     = u => !!u.max && lvl(u.key) >= u.max;
+const clickPower  = () => 1 + lvl('clic');
 
 // La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
 // à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
@@ -252,9 +273,9 @@ function fmtTime(s) {
 
 // Tant que rien ne pousse tout seul, afficher un compte à rebours en secondes serait un
 // mensonge : ce qui reste à faire se mesure en clics.
-function remaining(left, automated) {
-  if (automated) return fmtTime(left);
-  const n = Math.ceil(left);
+function remaining(left, speed) {
+  if (speed > 0) return fmtTime(left / speed);
+  const n = Math.max(1, Math.ceil(left / clickPower()));
   return n + (n > 1 ? ' clics' : ' clic');
 }
 
@@ -389,12 +410,14 @@ function tapStage() {
   const pt = centerOf(el);
   const jitter = () => pt.x + (Math.random() * 60 - 30);
 
+  const power = clickPower();
+
   if (s.kind === 'egg') {
     if (!s.slot) { placeEgg(s.i); return; }
     if (s.slot.p >= HATCH) return;
-    s.slot.p += 1;
+    s.slot.p = Math.min(HATCH, s.slot.p + power);
     flash(el, 'shake');
-    floatText(jitter(), pt.y - 20, '+1 s');
+    floatText(jitter(), pt.y - 20, '+' + power + ' s');
     blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
     if (s.slot.p >= HATCH) hatchAll(); else refresh();
     return;
@@ -405,9 +428,10 @@ function tapStage() {
   const wasValue = sellValue(c);
   // Un clic vaut une seconde de vie, avant comme après l'âge adulte : la créature
   // ne cesse jamais de grandir, seul le rendement diminue.
-  if (isAdult(c)) c.over = (c.over || 0) + 1; else c.p += 1;
+  if (isAdult(c)) c.over = (c.over || 0) + power;
+  else c.p = Math.min(growTime(c), c.p + power);
   flash(el, 'shake');
-  floatText(jitter(), pt.y - 20, '+1 s');
+  floatText(jitter(), pt.y - 20, '+' + power + ' s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
   if (stageOf(c).key !== wasStage) { celebrate(c, wasValue, pt); return; }
   refresh();
@@ -534,11 +558,22 @@ function buyPen() {
 }
 
 function buyUpgrade(u) {
-  if (state.up[u.key] || state.coins < u.cost) return;
-  state.coins -= u.cost;
-  state.up[u.key] = true;
+  if (upMaxed(u)) return;
+  const cost = upCost(u);
+  if (state.coins < cost) return;
+  state.coins -= cost;
+  state.up[u.key] = lvl(u.key) + 1;
   chord([523, 659, 784, 1046], 80);
   refresh();
+}
+
+// Ce qu'on lit sous le nom de l'amélioration : ce qu'elle fait, ou ce que le prochain
+// niveau va changer.
+function upLabel(u) {
+  const n = lvl(u.key);
+  if (!u.value || upMaxed(u)) return u.desc;
+  if (n === 0) return u.desc + ' Niveau 1 : ' + u.value(1) + u.unit + '.';
+  return 'Niveau ' + n + ' → ' + (n + 1) + ' · ' + u.value(n) + ' → ' + u.value(n + 1) + u.unit;
 }
 
 /* ─────────────────────────────────────────────
@@ -548,26 +583,27 @@ function buyUpgrade(u) {
 // Le temps ne fait avancer que ce qui a été automatisé. Tant que rien n'est acheté,
 // seuls le clic et la nourriture font bouger quoi que ce soit.
 function advance(dt) {
-  if (state.up.couveuse) {
+  const couve = lvl('couveuse'), eleve = lvl('eleveur');
+  if (couve) {
     for (const slot of state.incub) {
-      if (slot && slot.p < HATCH) slot.p = Math.min(HATCH, slot.p + dt);
+      if (slot && slot.p < HATCH) slot.p = Math.min(HATCH, slot.p + dt * couve);
     }
   }
-  if (state.up.eleveur) {
+  if (eleve) {
     for (const c of state.pen) {
       const g = growTime(c);
-      if (c.p < g) c.p = Math.min(g, c.p + dt);
+      if (c.p < g) c.p = Math.min(g, c.p + dt * eleve);
     }
   }
 }
 
 function runAutomations(dt) {
-  if (state.up.mangeoire && state.autoFeed) {
+  if (lvl('mangeoire') && state.autoFeed) {
     for (const c of state.pen) {
       // la mangeoire s'arrête à l'âge adulte : engraisser est une décision, pas un automatisme
       const left = growTime(c) - c.p;
       if (left <= 0) continue;
-      const extra = Math.min(left, dt * AUTOFEED_X);
+      const extra = Math.min(left, dt * AUTOFEED_X * lvl('mangeoire'));
       const cost = extra * (baseValue(c) / growTime(c)) * FEED_RATIO;
       if (state.coins < cost) break;
       state.coins -= cost;
@@ -692,12 +728,11 @@ function buildChrome() {
     b.type = 'button';
     b.className = 'buy';
     b.innerHTML = '<span class="t"></span><span class="p"></span><span class="d"></span>';
-    b.querySelector('.t').textContent = u.name;
-    b.querySelector('.d').textContent = u.desc;
     b.addEventListener('click', () => buyUpgrade(u));
     li.appendChild(b);
     autos.appendChild(li);
-    refs.up[u.key] = { el: b, price: b.querySelector('.p'), up: u };
+    refs.up[u.key] = { el: b, title: b.querySelector('.t'),
+                       price: b.querySelector('.p'), desc: b.querySelector('.d'), up: u };
   }
 }
 
@@ -870,8 +905,11 @@ function renderStage() {
     if (rank.next) {
       const span = rank.next.at - rank.from;
       setWidth($('stage-fill'), Math.min(100, ((sf - rank.from) / span) * 100).toFixed(1) + '%');
-      setText($('stage-timer'), 'adulte · ' + rank.next.name + ' → ' +
-        fmt(baseValue(c) * rank.next.at) + ' pièces');
+      // combien de clics avant le prochain rang, à la puissance de clic du moment
+      const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * growTime(c);
+      const clics = Math.max(1, Math.ceil((cible - (c.over || 0)) / clickPower()));
+      setText($('stage-timer'), 'adulte · ' + fmt(clics) + ' clics → ' + rank.next.name +
+        ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
       setText($('stage-timer'), 'adulte · plus aucun rang au-dessus');
@@ -952,10 +990,12 @@ function tickView() {
 
   for (const u of UPGRADES) {
     const r = refs.up[u.key];
-    const owned = state.up[u.key];
-    r.el.classList.toggle('owned', owned);
-    r.price.textContent = owned ? 'acquis' : fmt(u.cost);
-    r.el.disabled = owned || state.coins < u.cost;
+    const n = lvl(u.key), maxed = upMaxed(u), cost = upCost(u);
+    r.el.classList.toggle('owned', n > 0);
+    setText(r.title, u.name + (n > 0 && !u.max ? ' · niv. ' + n : ''));
+    setText(r.price, maxed ? 'acquis' : fmt(cost));
+    setText(r.desc, upLabel(u));
+    r.el.disabled = maxed || state.coins < cost;
   }
 
   $('cfg-marchand').hidden = !state.up.marchand;

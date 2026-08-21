@@ -34,7 +34,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
   éclore et grandir. Le temps ne se met à travailler qu'une fois les automatisations achetées
 - **Engraissement sans limite** : un adulte se nourrit indéfiniment et grossit à vue d'œil
 - Incubateurs et enclos, à prix croissant
-- Cinq automatisations, dans cet ordre : couveuse, éleveur, acheteur, mangeoire, marchand
+- Six améliorations à niveaux : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
 - Collection des 25 formes découvertes
 
@@ -72,13 +72,25 @@ qu'annoncer des secondes quand rien ne s'écoule serait un mensonge.
 Les deux premiers achats n'accélèrent pas la partie, ils **mettent le temps au travail** —
 c'est le moment précis où le jeu bascule de clicker à idle.
 
-| Achat | Coût | Effet |
-|---|---|---|
-| Couveuse automatique | 120 | Les œufs couvent tout seuls |
-| Éleveur automatique | 500 | Les créatures grandissent toutes seules |
-| Acheteur automatique | 2 000 | Rachète et place un œuf dès qu'un incubateur se libère |
-| Mangeoire automatique | 15 000 | Nourrit en continu pour dépasser la vitesse passive |
-| Marchand automatique | 100 000 | Vend les adultes selon une règle réglable |
+Quatre améliorations sur cinq se montent **niveau par niveau, sans plafond**. Le prix du
+prochain niveau vaut `base × mult^niveau` : l'effet monte linéairement pendant que le prix
+double presque, donc chaque palier se mérite et les rendements décroissent d'eux-mêmes.
+
+| Amélioration | Base | Mult. | Effet au niveau *n* |
+|---|---|---|---|
+| Force du clic | 60 | ×1,6 | *n*+1 secondes de vie par clic |
+| Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
+| Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
+| Acheteur automatique | 2 000 | — | achat unique |
+| Mangeoire automatique | 15 000 | ×2,0 | *n*×2 s de croissance par seconde |
+| Marchand automatique | 100 000 | — | achat unique |
+
+La force du clic vaut aussi pour l'engraissement d'un adulte, et les compteurs en tiennent
+compte : « 2 clics » plutôt que « 15 clics » une fois le clic monté à 7 secondes. Elle ne
+déséquilibre rien — un cycle complet et un engraissement montent tous les deux avec elle,
+donc leur rapport (0,67 contre 0,36 pièce par clic) ne bouge pas.
+
+Les sauvegardes d'avant les niveaux sont converties au chargement : `true` devient niveau 1.
 
 La progression hors ligne suit la même règle : sans couveuse ni éleveur, une absence ne
 produit rien, et le bandeau de retour ne s'affiche pas.
