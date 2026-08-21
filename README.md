@@ -115,8 +115,15 @@ vide : rabattre sur du commun trahirait la consigne.
 ### Automatisations
 
 Le jeu commence entièrement à la main : un œuf ne couve pas et une créature ne grandit pas
-tant qu'on ne clique pas dessus. Les compteurs affichent donc `15 clics` et non `15 s`, parce
-qu'annoncer des secondes quand rien ne s'écoule serait un mensonge.
+tant qu'on ne clique pas dessus.
+
+**Les compteurs suivent une règle unique** : des secondes quand quelque chose fait avancer la
+chose tout seul, des clics sinon — annoncer « 15 s » alors que rien ne s'écoule serait un
+mensonge. Quand les deux valent, ils s'affichent ensemble : `15 s ou 15 clics`. Le raccourci
+au clic disparaît au-delà de soixante clics, là où marteler ne sert plus à rien.
+
+La règle vaut aussi pour un adulte qui s'engraisse : `33 clics → grand` sans mangeoire,
+`17 s ou 33 clics → grand` avec.
 
 Les deux premiers achats n'accélèrent pas la partie, ils **mettent le temps au travail** —
 c'est le moment précis où le jeu bascule de clicker à idle.

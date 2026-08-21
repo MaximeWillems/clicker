@@ -364,9 +364,12 @@ function fmtTime(s) {
 // Tant que rien ne pousse tout seul, afficher un compte à rebours en secondes serait un
 // mensonge : ce qui reste à faire se mesure en clics.
 function remaining(left, speed) {
-  if (speed > 0) return fmtTime(left / speed);
   const n = Math.max(1, Math.ceil(left / clickPower()));
-  return n + (n > 1 ? ' clics' : ' clic');
+  const clics = n + (n > 1 ? ' clics' : ' clic');
+  if (speed <= 0) return clics;
+  // Automatisé : on annonce le temps, et le raccourci au clic tant qu'il reste à portée
+  // de main. Au-delà, cliquer ne sert plus à rien et l'afficher serait du bruit.
+  return fmtTime(left / speed) + (n <= 60 ? ' ou ' + clics : '');
 }
 
 function markSeen(lineKey, tier) { state.seen[lineKey + ':' + tier] = true; }
@@ -1038,10 +1041,11 @@ function renderStage() {
     if (rank.next) {
       const span = rank.next.at - rank.from;
       setWidth($('stage-fill'), Math.min(100, ((sf - rank.from) / span) * 100).toFixed(1) + '%');
-      // combien de clics avant le prochain rang, à la puissance de clic du moment
+      // Ce qu'il reste avant le prochain rang. Même règle que partout ailleurs : en secondes
+      // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
       const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * growTime(c);
-      const clics = Math.max(1, Math.ceil((cible - (c.over || 0)) / clickPower()));
-      setText($('stage-timer'), 'adulte · ' + fmt(clics) + ' clics → ' + rank.next.name +
+      setText($('stage-timer'), 'adulte · ' +
+        remaining(cible - (c.over || 0), FATTEN_X * lvl('mangeoire')) + ' → ' + rank.next.name +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
