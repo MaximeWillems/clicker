@@ -1,5 +1,22 @@
 # Illustrations
 
+Les sprites sont **générés**, pas dessinés à la main. Chaque créature est décrite en formes
+géométriques dans `tools/`, rastérisée sur une grille, puis contournée automatiquement — le
+contour est ce qui fait qu'un pixel art simple a l'air fini plutôt que bâclé.
+
+```bash
+node tools/crapaud.js --apercu
+```
+
+`--apercu` affiche la grille en texte dans le terminal : c'est là qu'on juge une silhouette
+avant de l'écrire. Pour retoucher une créature, on déplace un rayon ou un sommet dans
+`tools/crapaud.js` et on relance.
+
+Une leçon des premières passes : **ce qui distingue une créature est sa silhouette**, pas ses
+taches de couleur intérieures. Une crête ou une pointe doit dépasser du corps, et donc être
+tracée *après* lui — sinon le corps la recouvre.
+
+
 Ce dossier remplace les emoji, **une lignée à la fois**. Tant qu'un dessin n'est pas là,
 le jeu affiche l'emoji : rien ne casse jamais, et on peut s'arrêter à tout moment.
 

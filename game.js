@@ -254,7 +254,15 @@ const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
    Exemple, une fois les fichiers en place :
      crapaud: { 1: 'crapaud-tetard.png', 3: 'crapaud-buffle.png', 5: 'crapaud-gama.png' },
 */
-const ART = {};
+const ART = {
+  crapaud: {
+    1: 'crapaud-1-tetard.svg',
+    2: 'crapaud-2-crapaud.svg',
+    3: 'crapaud-3-buffle.svg',
+    4: 'crapaud-4-colosse.svg',
+    5: 'crapaud-5-gama.svg',
+  },
+};
 
 /* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
    le plus proche en dessous. La scène, les vignettes et la collection s'en servent toutes,
