@@ -56,6 +56,10 @@
     <p class="strip-meta" id="strip-meta"></p>
   </section>
 
+  <p class="foot">Prototype jetable — sauvegarde locale, aucun compte, aucun serveur.
+     <b>Barre espace</b> pour cliquer sans la souris. Les créatures sont des emoji en
+     attendant les vrais dessins.</p>
+
 </main>
 
 <aside class="side">
@@ -68,9 +72,17 @@
   <section class="panel">
     <div class="panel-head"><h2>Améliorations</h2></div>
     <ul class="shop" id="autos"></ul>
+  </section>
+
+  <section class="panel" id="panel-reglages" hidden>
+    <div class="panel-head">
+      <h2>Réglages de la ferme</h2>
+      <span class="panel-meta">la chaîne</span>
+    </div>
 
     <div class="config" id="cfg-acheteur" hidden>
-      <label for="sel-acheteur">L'acheteur rachète des</label>
+      <p class="config-step"><span class="step-n">1</span> Acheteur</p>
+      <label for="sel-acheteur">rachète des</label>
       <select id="sel-acheteur">
         <option value="commun">œufs communs — 12</option>
         <option value="rare">œufs rares — 3 000</option>
@@ -81,7 +93,8 @@
     </div>
 
     <div class="config" id="cfg-evolution" hidden>
-      <label for="sel-evolution">Faire évoluer les adultes jusqu'au palier</label>
+      <p class="config-step"><span class="step-n">2</span> Évolution</p>
+      <label for="sel-evolution">fait monter les adultes jusqu'au palier</label>
       <select id="sel-evolution">
         <option value="0">aucun — je fais évoluer moi-même</option>
         <option value="2">2</option>
@@ -92,7 +105,8 @@
     </div>
 
     <div class="config" id="cfg-marchand" hidden>
-      <label for="sel-marchand">Le marchand vend les adultes jusqu'au palier</label>
+      <p class="config-step"><span class="step-n">3</span> Marchand</p>
+      <label for="sel-marchand">vend les adultes jusqu'au palier</label>
       <select id="sel-marchand">
         <option value="0">aucun — je vends moi-même</option>
         <option value="1">1</option>
@@ -102,7 +116,7 @@
         <option value="5">5 — tout vendre</option>
       </select>
 
-      <label for="sel-rank">… et seulement une fois qu'elles ont atteint</label>
+      <label for="sel-rank">mais pas avant qu'elles aient atteint</label>
       <select id="sel-rank">
         <option value="0">l'âge adulte — vendre tout de suite</option>
         <option value="1">la taille grand — ×1,30</option>
@@ -111,25 +125,19 @@
         <option value="4">la taille titanesque — ×3,20</option>
         <option value="5">la taille démesurée — ×4,50</option>
       </select>
-      <p class="config-note">Laisse le temps à la mangeoire d'engraisser avant la vente.
-        Sans mangeoire, seuls tes clics feront grossir la bête.</p>
+      <p class="config-note" id="note-marchand"></p>
     </div>
   </section>
 
   <section class="panel">
     <div class="panel-head">
       <h2>Collection</h2>
-      <span class="panel-meta" id="coll-meta">0 / 25</span>
+      <span class="panel-meta" id="coll-meta">0 / 55</span>
     </div>
     <div class="collection" id="collection"></div>
   </section>
 
 </aside>
-
-<footer class="foot">
-  <p>Prototype jetable — sauvegarde locale au navigateur, aucun compte, aucun serveur.
-     Les créatures sont des emoji en attendant les vrais dessins.</p>
-</footer>
 
 <div id="fx" class="fx" aria-hidden="true"></div>
 

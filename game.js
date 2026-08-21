@@ -1128,6 +1128,15 @@ function tickView() {
   $('cfg-marchand').hidden = !state.up.marchand;
   $('cfg-evolution').hidden = !state.up.evolution;
   $('cfg-acheteur').hidden = !state.up.acheteur;
+  $('panel-reglages').hidden = !state.up.marchand && !state.up.evolution && !state.up.acheteur;
+
+  // ce que la consigne du marchand donne concrètement, sur la bête en scène
+  if (state.up.marchand) {
+    const r = RANKS[state.sellRank] || RANKS[0];
+    setText($('note-marchand'), state.sellRank
+      ? 'La mangeoire a le temps d’engraisser jusqu’à ' + r.name + ' avant la vente.'
+      : 'Vendues dès l’âge adulte : la mangeoire n’aura jamais le temps d’agir.');
+  }
 }
 
 function refresh() {
@@ -1144,6 +1153,17 @@ function refresh() {
 
 function bindTools() {
   $('subject').addEventListener('click', tapStage);
+
+  /* La barre espace martèle la scène. Sans ce garde-fou elle ferait défiler la page, ce qui
+     rend le martèlement au clavier impraticable. On laisse le navigateur faire son travail
+     quand le focus est sur un vrai contrôle — un bouton focalisé s'active déjà à l'espace. */
+  window.addEventListener('keydown', e => {
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    const t = e.target;
+    if (t && /^(SELECT|INPUT|TEXTAREA|BUTTON|A)$/.test(t.tagName)) return;
+    e.preventDefault();
+    tapStage();
+  });
 
   $('btn-speed').addEventListener('click', () => {
     state.speed = state.speed === 1 ? 10 : state.speed === 10 ? 100 : 1;
@@ -1164,6 +1184,11 @@ function bindTools() {
     try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
     location.reload();
   });
+
+  // Un menu qui garde le focus détournerait la barre espace : on le relâche après usage.
+  for (const id of ['sel-marchand', 'sel-rank', 'sel-evolution', 'sel-acheteur']) {
+    $(id).addEventListener('change', e => e.target.blur());
+  }
 
   $('sel-marchand').addEventListener('change', e => {
     state.sellUpTo = parseInt(e.target.value, 10) || 0;

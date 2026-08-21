@@ -179,6 +179,20 @@ n'y a plus rien de vivant à regarder, et c'est alors le plus avancé.
 Dès que la couveuse automatique est achetée, les œufs cessent d'être le sujet : les créatures
 passent devant eux dans la bande, pour rester à portée de clic même avec dix incubateurs.
 
+**La page ne défile jamais** sur écran large : elle occupe exactement la fenêtre, et seules les
+deux colonnes défilent en interne. Ce n'est pas cosmétique — une barre de défilement rend le
+martèlement à la **barre espace** impraticable, puisque l'espace ferait avancer la page au
+lieu de cliquer. L'espace est d'ailleurs branché sur la scène, avec `preventDefault`, sauf
+quand le focus est sur un vrai contrôle : un menu déroulant garde son comportement normal, et
+se relâche après usage pour ne pas détourner les touches suivantes. Sur mobile la page défile
+normalement — le clavier n'y est pas le sujet.
+
+**Les réglages ont leur propre panneau**, séparé des sept boutons d'amélioration sous lesquels
+ils étaient noyés. Ils y sont présentés comme la chaîne qu'ils forment vraiment :
+1 · l'acheteur rachète, 2 · l'évolution fait monter, 3 · le marchand vend. Le panneau
+n'apparaît que lorsqu'on possède au moins un automate à régler, et la consigne du marchand
+affiche sa conséquence en clair plutôt que de la laisser deviner.
+
 ### Étapes de vie
 
 Une créature traverse cinq états visibles, et l'échelle est **continue** — elle grossit à
