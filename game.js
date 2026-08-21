@@ -793,21 +793,24 @@ function hatchAll() {
     hatched++;
   }
   if (hatched) {
-    // la bête qui vient de sortir prend la scène — on ne reste pas devant une coquille vide
-    if (!state.sel || state.sel.startsWith('i:')) state.sel = lastKey;
-    // un coup de chance doit s'entendre et se voir : c'est le seul moment de loterie du jeu
-    if (best && RARITY[best.rarity].rank > 0) {
-      state.sel = 'c:' + bestCreature.id;
+    /* Une éclosion ne prend jamais la scène à une bête vivante. Le joueur qui clique sur sa
+       créature doit pouvoir la mener au bout sans qu'un œuf la lui enlève des mains — même
+       un œuf rare, et même s'il vient d'une lignée qu'il n'a jamais vue. On ne bascule donc
+       que si la scène montrait une coquille ou rien du tout. */
+    const libre = !state.sel || state.sel.startsWith('i:');
+    const rare = best && RARITY[best.rarity].rank > 0;
+    if (libre) state.sel = rare ? 'c:' + bestCreature.id : lastKey;
+    // Un coup de chance doit s'entendre : c'est le seul moment de loterie du jeu. Il ne se
+    // voit en revanche que si la nouvelle venue est bien celle qu'on a sous les yeux —
+    // annoncer « lignée rare ! » au-dessus d'une autre bête serait un contresens.
+    if (rare) chord([523, 659, 784, 1046, 1319], 90);
+    else chord([523, 659, 784]);
+    if (libre) {
       const pt = centerOf($('subject'));
-      burst(pt.x, pt.y, '✦', 10 + RARITY[best.rarity].rank * 8);
-      floatText(pt.x, pt.y - 90, 'lignée ' + RARITY[best.rarity].name + ' !', 'gain');
-      chord([523, 659, 784, 1046, 1319], 90);
-    } else {
-      const pt = centerOf($('subject'));
-      burst(pt.x, pt.y, '✦', 12);
-      chord([523, 659, 784]);
+      burst(pt.x, pt.y, '✦', rare ? 10 + RARITY[best.rarity].rank * 8 : 12);
+      if (rare) floatText(pt.x, pt.y - 90, 'lignée ' + RARITY[best.rarity].name + ' !', 'gain');
+      popNext = true;
     }
-    popNext = true;
   }
   refresh();
   return hatched;
@@ -1155,6 +1158,10 @@ function renderStrip() {
   stripSig = sig;
 
   const host = $('strip');
+  // Vider la bande remet sa barre horizontale à zéro. Sans ce report, la bête qu'on suivait
+  // à droite de la bande sautait à gauche à chaque changement d'étape — au moment précis où
+  // on la regardait grandir.
+  const defilement = host.scrollLeft;
   host.textContent = '';
   thumbs.clear();
 
@@ -1195,6 +1202,7 @@ function renderStrip() {
     host.appendChild(b);
     thumbs.set(s.key, { el: b, bar: fill, tag });
   }
+  host.scrollLeft = defilement;
 }
 
 function renderCollection() {

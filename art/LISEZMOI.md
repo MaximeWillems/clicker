@@ -27,6 +27,21 @@ tracée *après* lui — sinon le corps la recouvre.
 Ce dossier remplace les emoji, **une lignée à la fois**. Tant qu'un dessin n'est pas là,
 le jeu affiche l'emoji : rien ne casse jamais, et on peut s'arrêter à tout moment.
 
+## Le prompt d'une lignée
+
+```bash
+node tools/prompt.js --liste     # les 19 lignées
+node tools/prompt.js poisson     # le prompt, prêt à coller
+```
+
+Il sort le prompt complet, puis la ligne de découpe et le bloc à coller dans `ART` — tout
+l'enchaînement en une commande. Les noms des formes sont lus dans `game.js`, donc ils ne
+peuvent pas dériver du jeu.
+
+Les descriptions décrivent la **masse et la posture** de chaque stade, jamais les
+accessoires. C'est la leçon la plus chère de la lignée du crapaud : cinq bêtes qui ne
+diffèrent que par leur décor se ressemblent toutes, quelle que soit la qualité du dessin.
+
 ## Découper une planche générée
 
 Les modèles d'images sortent les cinq stades sur une seule planche, sur fond blanc. Pour la

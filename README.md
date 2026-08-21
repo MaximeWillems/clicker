@@ -162,7 +162,8 @@ jamais être **silencieuse**. Deux garde-fous :
 
 La lignée est tirée **à la mise en couvaison**, pas à l'éclosion — c'est ce qui permet de
 recalculer une absence sans rejouer le hasard. Le joueur, lui, ne la découvre qu'à l'éclosion,
-et une lignée non commune déclenche gerbe, accord et mise en scène immédiate.
+et une lignée non commune déclenche un accord qui la distingue. Elle prend aussi la scène —
+mais **seulement si la scène était libre** : voir la règle de l'interface plus bas.
 
 **L'acheteur automatique se règle** sur la sorte d'œuf à racheter. Il écoule d'abord la
 réserve, en commençant par les plus rares — un œuf cher acheté exprès ne doit pas dormir en
@@ -399,8 +400,19 @@ cours d'élevage. Quand la bête en scène est vendue, c'est une autre bête qui
 — la plus avancée, celle qui demande une décision. Un œuf ne passe au premier plan que s'il
 n'y a plus rien de vivant à regarder, et c'est alors le plus avancé.
 
+**Rien ne prend la scène à une bête vivante — pas même une éclosion rare.** L'éclosion d'une
+lignée précieuse mérite une fanfare, mais pas au prix d'arracher au joueur l'animal qu'il est
+en train de cliquer. Elle ne bascule donc que si la scène montrait une coquille ou rien du
+tout ; sinon elle se contente de son accord, et sa vignette porte déjà sa couleur de rareté
+dans la bande. Afficher « lignée rare ! » au-dessus d'une *autre* bête serait un contresens.
+
 Dès que la couveuse automatique est achetée, les œufs cessent d'être le sujet : les créatures
 passent devant eux dans la bande, pour rester à portée de clic même avec dix incubateurs.
+
+**La bande garde sa position de défilement** quand elle se redessine. Elle est reconstruite à
+chaque changement d'étape ou de palier, et vider un conteneur remet sa barre horizontale à
+zéro : la bête qu'on suivait à droite sautait à gauche au moment précis où on la regardait
+grandir. La position est donc relevée avant, reposée après.
 
 **La page ne défile jamais** sur écran large : elle occupe exactement la fenêtre, et seules les
 deux colonnes défilent en interne. Ce n'est pas cosmétique — une barre de défilement rend le
