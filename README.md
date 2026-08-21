@@ -145,10 +145,16 @@ Aux anciens prix, le marchand tombait à 78 min.
 jusqu'à l'âge adulte, la mangeoire prend le relais et engraisse les adultes. Aucune des deux
 ne dépense de pièces.
 
-**Le marchand et l'évolution automatique se règlent**, chacun avec son palier plafond, et
-l'évolution passe avant la vente : une bête qu'on peut faire monter ne part jamais au prix de
-son palier actuel. Régler l'évolution sur 4 et la vente sur 4 construit ainsi une chaîne
-complète — couver, élever, faire monter de palier, vendre — sans y toucher.
+**Le marchand attend deux conditions : le palier et la taille.** Sans la seconde il vendait
+tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce soit :
+les deux automates se marchaient dessus. On règle donc « jusqu'au palier N » **et** « pas
+avant la taille R ». Au palier 1 : vendue tout de suite elle rapporte 40, à *grand* 52 après
+18 secondes, à *énorme* 68 après 59 secondes.
+
+**L'évolution passe avant la vente**, pour qu'une bête qu'on peut faire monter ne parte jamais
+au prix de son palier actuel. L'enchaînement complet se règle donc en trois cases — évoluer
+jusqu'au palier 3, engraisser jusqu'à *énorme*, vendre — et la ferme tourne seule : couver,
+élever, faire monter, engraisser, vendre, racheter.
 
 La force du clic vaut aussi pour l'engraissement d'un adulte, et les compteurs en tiennent
 compte : « 2 clics » plutôt que « 15 clics » une fois le clic monté à 7 secondes.

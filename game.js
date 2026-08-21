@@ -107,7 +107,7 @@ const UPGRADES = [
     desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
     value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
-    desc: 'Vend les adultes selon la règle que tu définis.' },
+    desc: 'Vend les adultes selon ta règle : jusqu’à tel palier, et pas avant telle taille.' },
   { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
     desc: 'Fait monter les adultes de palier tout seul, jusqu’où tu décides.' },
 ];
@@ -186,6 +186,7 @@ function freshState() {
     sel: 'i:0',
     up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0 },
     sellUpTo: 0,
+    sellRank: 0,        // taille minimale exigée avant la vente (0 = dès l'âge adulte)
     evolveUpTo: 0,
     seen: {},
     speed: 1,
@@ -311,7 +312,7 @@ const sellValue  = c => Math.max(1, Math.round(baseValue(c) * stageMult(c)));
 function rankOf(sf) {
   let i = 0;
   while (i + 1 < RANKS.length && sf >= RANKS[i + 1].at) i++;
-  return { name: RANKS[i].name, from: RANKS[i].at, next: RANKS[i + 1] || null };
+  return { i, name: RANKS[i].name, from: RANKS[i].at, next: RANKS[i + 1] || null };
 }
 
 /* L'étape de vie : ce que le joueur voit changer sous ses clics.
@@ -693,8 +694,12 @@ function runAutomations(dt) {
       markSeen(c.line, c.tier);
     }
   }
+  /* Le marchand attend deux conditions : le palier ET la taille. Sans la seconde il vendait
+     tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce
+     soit — les deux automates se marchaient dessus. */
   if (state.up.marchand && state.sellUpTo > 0) {
-    const ready = state.pen.filter(c => isAdult(c) && c.tier <= state.sellUpTo);
+    const ready = state.pen.filter(c => isAdult(c) && c.tier <= state.sellUpTo &&
+                                        rankOf(sizeFactor(c)).i >= state.sellRank);
     for (const c of ready) {
       state.coins += sellValue(c);
       state.pen = state.pen.filter(x => x.id !== c.id);
@@ -1164,6 +1169,10 @@ function bindTools() {
     state.sellUpTo = parseInt(e.target.value, 10) || 0;
   });
 
+  $('sel-rank').addEventListener('change', e => {
+    state.sellRank = parseInt(e.target.value, 10) || 0;
+  });
+
   $('sel-evolution').addEventListener('change', e => {
     state.evolveUpTo = parseInt(e.target.value, 10) || 0;
   });
@@ -1181,6 +1190,7 @@ function start() {
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   $('sel-marchand').value = String(state.sellUpTo);
+  $('sel-rank').value = String(state.sellRank || 0);
   $('sel-evolution').value = String(state.evolveUpTo);
   $('sel-acheteur').value = state.buyKind;
 
