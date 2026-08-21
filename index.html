@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Éclosion</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">🥚</span>
+    <span class="brand-name">Éclosion</span>
+    <span class="brand-tag">jalon 0</span>
+  </div>
+
+  <div class="purse">
+    <span class="purse-value" id="coins">0</span>
+    <span class="purse-label">pièces</span>
+  </div>
+
+  <div class="tools">
+    <button type="button" id="btn-speed" class="tool" title="Accélérer le temps (test)">×1</button>
+    <button type="button" id="btn-sound" class="tool" title="Couper le son" aria-pressed="true">♪</button>
+    <button type="button" id="btn-reset" class="tool tool-danger" title="Effacer la partie">⟲</button>
+  </div>
+</header>
+
+<div id="offline-note" class="offline-note" hidden></div>
+
+<main class="board">
+
+  <section class="panel" aria-labelledby="h-incub">
+    <div class="panel-head">
+      <h2 id="h-incub">Incubateurs</h2>
+      <span class="panel-meta" id="incub-meta">1 place</span>
+    </div>
+    <p class="hint" id="hint-incub">Clique sur l'œuf pour l'aider à éclore. Chaque clic vaut une seconde.</p>
+    <div class="grid" id="incubators"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-pen">
+    <div class="panel-head">
+      <h2 id="h-pen">Enclos</h2>
+      <span class="panel-meta" id="pen-meta">1 place</span>
+    </div>
+    <div class="grid" id="pen"></div>
+    <p class="empty" id="pen-empty">Rien n'a encore éclos.</p>
+  </section>
+
+</main>
+
+<aside class="side">
+
+  <section class="panel">
+    <div class="panel-head"><h2>Boutique</h2></div>
+    <ul class="shop" id="shop"></ul>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Automatisations</h2></div>
+    <ul class="shop" id="autos"></ul>
+
+    <div class="config" id="cfg-mangeoire" hidden>
+      <label class="check" for="chk-mangeoire">
+        <input type="checkbox" id="chk-mangeoire">
+        Mangeoire active — dépense les pièces pour accélérer la croissance
+      </label>
+    </div>
+
+    <div class="config" id="cfg-marchand" hidden>
+      <label for="sel-marchand">Le marchand vend les adultes jusqu'au palier</label>
+      <select id="sel-marchand">
+        <option value="0">aucun — je vends moi-même</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5 — tout vendre</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Collection</h2>
+      <span class="panel-meta" id="coll-meta">0 / 25</span>
+    </div>
+    <div class="collection" id="collection"></div>
+  </section>
+
+</aside>
+
+<footer class="foot">
+  <p>Prototype jetable — sauvegarde locale au navigateur, aucun compte, aucun serveur.
+     Les créatures sont des emoji en attendant les vrais dessins.</p>
+</footer>
+
+<div id="fx" class="fx" aria-hidden="true"></div>
+
+<script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+/* Éclosion — jalon 0
+   Thème unique assumé : la pièce d'incubation. Sombre, chaud aux endroits vivants. */
+
+:root {
+  --ground:   #0E1310;
+  --surface:  #161D18;
+  --raised:   #1D2620;
+  --sunken:   #0A0E0B;
+  --ink:      #E3E7DD;
+  --soft:     #8C998C;
+  --faint:    #5C665C;
+  --rule:     #26302A;
+  --rule-hi:  #3A4740;
+  --amber:    #E4A63E;
+  --amber-dim:#5A4218;
+  --jade:     #66B79E;
+  --jade-dim: #1B3A32;
+  --red:      #C9705C;
+
+  --f-ui:   "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-num:  "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+  --f-name: "Young Serif", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  grid-template-areas:
+    "top  top"
+    "note note"
+    "main side"
+    "foot foot";
+  align-content: start;
+  gap: 0 1.25rem;
+  padding: 0 1.25rem 2rem;
+}
+
+@media (max-width: 60rem) {
+  body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "top" "note" "main" "side" "foot";
+  }
+}
+
+/* ── barre du haut ───────────────────────────── */
+.topbar {
+  grid-area: top;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ground);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 0;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 0.6rem; }
+.brand-mark { font-size: 1.35rem; line-height: 1; }
+.brand-name { font-family: var(--f-name); font-size: 1.3rem; }
+.brand-tag {
+  font-family: var(--f-num); font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--faint);
+}
+.purse { margin-left: auto; display: flex; align-items: baseline; gap: 0.45rem; }
+.purse-value {
+  font-family: var(--f-num); font-size: 1.5rem; font-weight: 500;
+  color: var(--amber); font-variant-numeric: tabular-nums;
+}
+.purse-label {
+  font-family: var(--f-num); font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--faint);
+}
+.tools { display: flex; gap: 0.4rem; }
+.tool {
+  font-family: var(--f-num); font-size: 0.78rem;
+  background: var(--surface); color: var(--soft);
+  border: 1px solid var(--rule); border-radius: 3px;
+  padding: 0.35rem 0.6rem; cursor: pointer; min-width: 2.2rem;
+}
+.tool:hover { border-color: var(--rule-hi); color: var(--ink); }
+.tool[aria-pressed="false"] { color: var(--faint); text-decoration: line-through; }
+.tool-danger:hover { border-color: var(--red); color: var(--red); }
+
+/* ── bandeau retour ──────────────────────────── */
+.offline-note {
+  grid-area: note;
+  background: var(--jade-dim);
+  border-left: 3px solid var(--jade);
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+}
+.offline-note b { color: var(--jade); font-weight: 500; }
+
+/* ── panneaux ────────────────────────────────── */
+.board { grid-area: main; display: flex; flex-direction: column; gap: 1.25rem; }
+.side  { grid-area: side; display: flex; flex-direction: column; gap: 1.25rem; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1rem 1.1rem 1.15rem;
+}
+.panel-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; padding-bottom: 0.7rem; margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--rule);
+}
+.panel-head h2 {
+  font-family: var(--f-name); font-weight: 400; font-size: 1.05rem;
+  margin: 0; letter-spacing: 0.01em;
+}
+.panel-meta {
+  font-family: var(--f-num); font-size: 0.72rem; color: var(--faint);
+  text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+}
+.hint { margin: -0.2rem 0 0.9rem; font-size: 0.82rem; color: var(--soft); }
+.empty { margin: 0; font-size: 0.85rem; color: var(--faint); font-style: italic; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+/* ── cartes ──────────────────────────────────── */
+.card {
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.85rem 0.8rem 0.7rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  position: relative; overflow: hidden;
+}
+.card.tappable { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.card.tappable:hover { border-color: var(--rule-hi); }
+.card.tappable:active .glyph { transform: scale(0.9); }
+.card.ready { border-color: var(--amber); }
+.card.apex  { border-color: var(--jade); }
+.card.blocked { border-color: var(--red); }
+.card:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+.glyph {
+  line-height: 1; transition: transform 0.09s ease-out;
+  filter: drop-shadow(0 0 0 transparent);
+}
+.card.ready .glyph { filter: drop-shadow(0 0 12px var(--amber-dim)); }
+.card.apex  .glyph { filter: drop-shadow(0 0 16px var(--jade)); }
+.card.shake .glyph { animation: shake 0.28s ease-out; }
+@keyframes shake {
+  0%,100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-3px) rotate(-4deg); }
+  75% { transform: translateX(3px) rotate(4deg); }
+}
+.card.pop { animation: pop 0.45s cubic-bezier(.2,1.4,.4,1); }
+@keyframes pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+.cname { font-family: var(--f-name); font-size: 0.92rem; text-align: center; line-height: 1.2; }
+.ctier {
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--faint);
+}
+.card.apex .ctier { color: var(--jade); }
+
+.bar { width: 100%; height: 5px; background: var(--sunken); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--amber); width: 0; border-radius: 3px; }
+.card.apex .bar > i { background: var(--jade); }
+.timer {
+  font-family: var(--f-num); font-size: 0.7rem; color: var(--soft);
+  font-variant-numeric: tabular-nums;
+}
+.acts { display: flex; gap: 0.35rem; width: 100%; margin-top: 0.1rem; }
+
+button.act {
+  flex: 1; font-family: var(--f-num); font-size: 0.7rem;
+  background: transparent; color: var(--soft);
+  border: 1px solid var(--rule-hi); border-radius: 3px;
+  padding: 0.32rem 0.2rem; cursor: pointer; white-space: nowrap;
+}
+button.act:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }
+button.act:disabled { opacity: 0.38; cursor: not-allowed; }
+button.act.sell:hover:not(:disabled)  { color: var(--amber); border-color: var(--amber); }
+button.act.evo:hover:not(:disabled)   { color: var(--jade);  border-color: var(--jade); }
+
+.warn {
+  font-family: var(--f-num); font-size: 0.66rem; color: var(--red);
+  text-align: center; line-height: 1.35;
+}
+
+/* ── boutique ────────────────────────────────── */
+.shop { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.shop li { display: flex; }
+.buy {
+  width: 100%; text-align: left; cursor: pointer;
+  background: var(--raised); border: 1px solid var(--rule); border-radius: 3px;
+  color: var(--ink); font-family: var(--f-ui); font-size: 0.85rem;
+  padding: 0.55rem 0.7rem;
+  display: grid; grid-template-columns: 1fr auto; gap: 0.15rem 0.7rem; align-items: baseline;
+}
+.buy:hover:not(:disabled) { border-color: var(--amber); }
+.buy:disabled { opacity: 0.42; cursor: not-allowed; }
+.buy .t { font-weight: 500; }
+.buy .p {
+  font-family: var(--f-num); font-size: 0.8rem; color: var(--amber);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.buy .d { grid-column: 1 / -1; font-size: 0.76rem; color: var(--faint); line-height: 1.4; }
+.buy.owned { border-color: var(--jade-dim); }
+.buy.owned .p { color: var(--jade); }
+
+.config { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--rule); }
+.config label { display: block; font-size: 0.78rem; color: var(--soft); margin-bottom: 0.35rem; }
+.config select {
+  width: 100%; font-family: var(--f-num); font-size: 0.8rem;
+  background: var(--sunken); color: var(--ink);
+  border: 1px solid var(--rule-hi); border-radius: 3px; padding: 0.35rem 0.4rem;
+}
+.config label.check {
+  display: flex; align-items: flex-start; gap: 0.55rem;
+  margin: 0; cursor: pointer; line-height: 1.4;
+}
+.config label.check input { margin: 0.2rem 0 0; accent-color: var(--jade); flex: none; }
+
+/* ── collection ──────────────────────────────── */
+.collection { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.cell {
+  aspect-ratio: 1; display: grid; place-items: center;
+  background: var(--sunken); border-radius: 2px; font-size: 1.05rem;
+  color: var(--faint); cursor: default;
+}
+.cell.got { background: var(--raised); }
+.cell.got.t5 { background: var(--jade-dim); }
+.cell.locked::after { content: "·"; font-family: var(--f-num); color: var(--rule-hi); }
+
+/* ── pied ────────────────────────────────────── */
+.foot { grid-area: foot; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+.foot p { margin: 0; font-size: 0.76rem; color: var(--faint); max-width: 60ch; }
+
+/* ── effets ──────────────────────────────────── */
+.fx { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
+.float {
+  position: absolute; font-family: var(--f-num); font-size: 0.8rem;
+  color: var(--amber); animation: rise 0.75s ease-out forwards;
+  transform: translate(-50%, -50%); white-space: nowrap;
+}
+.float.gain { color: var(--jade); font-size: 0.95rem; }
+@keyframes rise {
+  0%   { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -190%); }
+}
+.spark {
+  position: absolute; font-size: 1rem;
+  animation: burst 0.65s ease-out forwards; transform: translate(-50%, -50%);
+}
+@keyframes burst {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

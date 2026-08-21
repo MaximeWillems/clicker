@@ -1,0 +1,8 @@
+# En-têtes lus automatiquement par Cloudflare Pages.
+# Phase de test : on ne veut pas être indexé, et on veut voir ses changements tout de suite.
+
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Cache-Control: no-cache
