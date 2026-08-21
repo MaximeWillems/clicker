@@ -281,6 +281,13 @@ const ART = {
     4: 'crapaud-4-colosse.png',
     5: 'crapaud-5-gama.png',
   },
+  poisson: {
+    1: 'poisson-1-alevin.png',
+    2: 'poisson-2-carpe.png',
+    3: 'poisson-3-centenaire.png',
+    4: 'poisson-4-serpent.png',
+    5: 'poisson-5-leviathan.png',
+  },
 };
 
 /* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
@@ -634,15 +641,45 @@ const seenCount = () => Object.keys(state.seen).length;
    Le sujet à l'écran — un seul à la fois
    ───────────────────────────────────────────── */
 
+/* L'ordre de la bande, et donc celui des cases. Dès que les œufs couvent seuls ils cessent
+   d'être le sujet : les bêtes passent devant, pour rester à portée de clic même avec dix
+   incubateurs. Dans les deux ordres, les bêtes forment un bloc d'un seul tenant — c'est ce
+   qui permet de raisonner en « case » sans que les œufs s'intercalent. */
 function subjects() {
   const list = state.incub.map((slot, i) => ({ key: 'i:' + i, kind: 'egg', i, slot }));
   for (const c of state.pen) list.push({ key: 'c:' + c.id, kind: 'creature', c });
+  if (state.up.couveuse) {
+    list.sort((a, b) => (a.kind === 'creature' ? 0 : 1) - (b.kind === 'creature' ? 0 : 1));
+  }
   return list;
 }
 
-/* Ce qu'on met en scène quand la sélection a disparu — une bête vendue, un œuf éclos.
-   Toujours du vivant en priorité, et le plus avancé : c'est lui qui demande une décision.
-   Un œuf ne passe au premier plan que s'il n'y a rien d'autre à regarder. */
+const caseCourante = () => subjects().findIndex(s => s.key === state.sel);
+
+/* Vendre ne doit pas déplacer le regard. Si on était sur la case 6, on reste sur la case 6 :
+   c'est la voisine qui glisse dedans, exactement comme dans une liste dont on retire une
+   ligne. Sauter à « la bête la plus avancée » faisait traverser la bande à chaque vente,
+   et rendait impossible d'écouler un enclos case par case.
+
+   Seule entorse : on ne quitte jamais le vivant pour un œuf. Si la case libérée retombe sur
+   une coquille alors qu'il reste des bêtes, on s'arrête au bord du bloc vivant. */
+function tenirLaCase(place) {
+  const list = subjects();
+  if (!list.length) { state.sel = null; return; }
+  const vivants = list.filter(s => s.kind === 'creature');
+  if (!vivants.length) {
+    state.sel = list[Math.min(place, list.length - 1)].key;
+    return;
+  }
+  const debut = list.indexOf(vivants[0]);
+  const dans = Math.min(Math.max(place - debut, 0), vivants.length - 1);
+  state.sel = vivants[dans].key;
+}
+
+/* Ce qu'on met en scène quand la sélection a disparu sans qu'on sache d'où — une sauvegarde
+   rechargée, un état incohérent. Toujours du vivant en priorité, et le plus avancé : c'est
+   lui qui demande une décision. Un œuf ne passe au premier plan que s'il n'y a rien d'autre
+   à regarder. Une vente, elle, ne passe jamais par ici : elle tient sa case. */
 function fallback(list) {
   const vivants = list.filter(s => s.kind === 'creature');
   if (vivants.length) {
@@ -849,9 +886,11 @@ function hatchAll() {
 // n'achète que des adultes : brader un enfant ne doit jamais arriver tout seul.
 function sell(c) {
   const gain = sellValue(c);
+  // la case se relève AVANT le retrait : après, la bête n'est plus dans la bande
+  const place = state.sel === 'c:' + c.id ? caseCourante() : -1;
   state.coins += gain;
   state.pen = state.pen.filter(x => x.id !== c.id);
-  if (state.sel === 'c:' + c.id) state.sel = null;
+  if (place >= 0) tenirLaCase(place);
   const pt = centerOf($('subject'));
   floatText(pt.x, pt.y, '+' + fmt(gain), 'gain');
   burst(pt.x, pt.y, '🪙', 8);
@@ -993,10 +1032,14 @@ function runAutomations(dt) {
                                         c.tier >= state.sellFrom &&
                                         rankOf(sizeFactor(c)).i >= state.sellRank &&
                                         rarityOf(c).rank <= state.sellRarity);
+    // même règle que la vente à la main : le marchand ne déplace pas le regard du joueur
+    const place = caseCourante();
+    const enScene = ready.some(c => 'c:' + c.id === state.sel);
     for (const c of ready) {
       state.coins += sellValue(c);
       state.pen = state.pen.filter(x => x.id !== c.id);
     }
+    if (enScene) tenirLaCase(place);
   }
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les adultes,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
@@ -1182,12 +1225,9 @@ function buildChrome() {
 }
 
 function renderStrip() {
+  // subjects() porte déjà l'ordre de la bande : c'est ce qui garantit que « la case 6 »
+  // désigne la même chose ici et dans tenirLaCase.
   const list = subjects();
-  // Dès que les œufs couvent seuls, ils cessent d'être le sujet : les bêtes passent devant
-  // dans la bande, pour rester à portée de clic même avec dix incubateurs.
-  if (state.up.couveuse) {
-    list.sort((a, b) => (a.kind === 'creature' ? 0 : 1) - (b.kind === 'creature' ? 0 : 1));
-  }
   // l'étape de vie entre dans la signature : la vignette se redessine quand la bête
   // change de silhouette, soit trois ou quatre fois par créature — c'est négligeable.
   const sig = list.map(s => s.kind === 'egg'
@@ -1546,6 +1586,11 @@ function noteMarchand() {
         state.sellFrom + ' toutes seules, et tes enclos vont s’engorger.';
   } else if (!state.sellRank && lvl('mangeoire')) {
     txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
+  }
+  // Le marchand et la rente visent la même bête : celle qui vient d'atteindre « énorme »
+  // est à la fois la première à rapporter et la première à partir. On le dit.
+  if (state.sellRank >= RENTE_RANG) {
+    txt += ' Il vendra aussi celles qui commencent à rapporter : protège celles que tu veux garder.';
   }
   return txt;
 }

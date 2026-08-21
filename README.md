@@ -38,6 +38,8 @@ pas une protection, juste une discrétion suffisante pour un test privé.
   l'argent. Un adulte continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
 - Sept améliorations : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand, évolution
+- **Rente** : une bête adulte *énorme* ou plus rapporte toute seule, à proportion de ce
+  qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
 - Collection des 25 formes découvertes
 
@@ -245,7 +247,8 @@ d'éleveur** : l'un fait tourner l'enclos, l'autre l'immobilise pour grossir.
 
 Il y a donc un optimum net à *grand*, puis une longue traîne de plaisir payé en temps. C'est
 la décision qu'on veut, et elle se règle une fois pour toutes dans la taille exigée par le
-marchand.
+marchand. Ces chiffres ne comptent que la vente : à partir d'*énorme*, la **rente** ci-dessous
+paie par-dessus, ce qui adoucit la traîne sans en faire l'optimum.
 
 La mangeoire était auparavant à 2 500 × 2,0 avec un débit de ×2 : monter au niveau 5 coûtait
 **quatorze fois** le prix de l'éleveur, pour un rendement de 0,83 à niveaux égaux — donc
@@ -261,6 +264,46 @@ l'engraisser, elle. Le bouton *Vendre* se verrouille tant qu'elle est gardée.
 
 Ce que ça coûte est une place d'enclos immobilisée, et c'est tout l'intérêt : on choisit de
 continuer l'aventure avec une bête plutôt que de la faire entrer dans la chaîne.
+
+### La rente
+
+Tout le reste du jeu pousse à vendre : l'enclos est la ressource rare, et une bête gardée est
+un enclos qui ne tourne pas. **La rente est la seule règle qui paie pour ne pas vendre.**
+
+Une bête **adulte énorme ou plus** rapporte toute seule, sans rien faire — même absent. Elle
+vaut sa propre valeur de vente **étalée sur une heure**, et le seuil ne s'ouvre qu'à *énorme*,
+là où l'engraissement a déjà coûté très cher.
+
+Ses facteurs sont exactement ceux du prix de vente — **palier, rareté, teinte, taille** — si
+bien qu'une bête rapporte à proportion de ce qu'elle vaut. Le **chromatique** est le seul à
+recevoir un bonus par-dessus : sa rente est **doublée**, en plus du ×5 que sa valeur porte
+déjà. C'est la bête qu'un joueur garde, c'est elle qu'on récompense.
+
+| Bête, arrivée *énorme* | Rente |
+|---|---|
+| commune p1 | 0,02 / s |
+| commune p3 | 2,83 / s |
+| commune p5 | 708 / s |
+| rare p5 | 17 708 / s |
+| mythique p5 | 10,6 M / s |
+| mythique p5 **chromatique** | 106,3 M / s |
+
+Pousser la taille rapporte, mais bien moins vite que ça ne coûte — une commune p3 passe de
+2,83 à 7,50 par seconde entre *énorme* et *démesuré*, quand l'engraissement nécessaire, lui,
+est multiplié par plus de deux cents. La rente prolonge donc la longue traîne de la mangeoire
+sans la rendre optimale : elle **console** le joueur qui pousse une bête pour le plaisir.
+
+Elle ne remplace jamais l'élevage. Un enclos qui enchaîne les cycles rapporte environ le
+double d'un enclos qui garde. Garder deux bêtes sur dix coûte donc à peu près 10 % du débit
+de la ferme — le juste prix d'une collection, et pas plus.
+
+**Le marchand vise la même bête que la rente.** Réglé sur *énorme*, il vend exactement celles
+qui viennent de se mettre à payer ; sa note le dit alors, et ☆ *Garder* est la parade.
+
+La rente s'affiche à trois endroits : `+2,83 / s` à côté de la bourse pour le total,
+`rente +2,83 / s` dans la ligne des boosts de la bête en scène, et le bandeau de retour
+compte les pièces gagnées pendant l'absence. L'indice sous une bête qui n'y est pas encore
+l'annonce d'avance — sans ça, personne ne devine qu'il faut pousser jusqu'à *énorme*.
 
 ### Automatisations
 
@@ -396,9 +439,21 @@ l'animal qu'on fait grandir. C'est lui qu'on clique. La bande en dessous liste l
 
 **La scène suit l'animal, jamais l'œuf.** Acheter un œuf, le placer, le voir arriver par
 l'acheteur automatique ou en voir un autre éclore ne détourne jamais le regard de la bête en
-cours d'élevage. Quand la bête en scène est vendue, c'est une autre bête qui prend le relais
-— la plus avancée, celle qui demande une décision. Un œuf ne passe au premier plan que s'il
-n'y a plus rien de vivant à regarder, et c'est alors le plus avancé.
+cours d'élevage. Un œuf ne passe au premier plan que s'il n'y a plus rien de vivant à
+regarder, et c'est alors le plus avancé.
+
+**Vendre ne déplace pas le regard : on garde sa case.** Si on était sur la case 6, on reste
+sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une liste dont on
+retire une ligne. Sauter « à la bête la plus avancée » faisait traverser la bande à chaque
+vente et rendait impossible d'écouler un enclos case par case. La règle vaut pour la vente à
+la main comme pour le marchand automatique, y compris quand il rafle plusieurs bêtes d'un
+coup.
+
+Seule entorse, celle de la règle du dessus : on ne quitte jamais le vivant pour un œuf. Si la
+case libérée retombe sur une coquille alors qu'il reste des bêtes, on s'arrête au bord du bloc
+vivant. Les bêtes forment toujours un bloc d'un seul tenant dans la bande, avant ou après les
+œufs selon que la couveuse est achetée — c'est ce qui permet de raisonner en « case » sans
+que les incubateurs s'intercalent.
 
 **Rien ne prend la scène à une bête vivante — pas même une éclosion rare.** L'éclosion d'une
 lignée précieuse mérite une fanfare, mais pas au prix d'arracher au joueur l'animal qu'il est
@@ -407,7 +462,9 @@ tout ; sinon elle se contente de son accord, et sa vignette porte déjà sa coul
 dans la bande. Afficher « lignée rare ! » au-dessus d'une *autre* bête serait un contresens.
 
 Dès que la couveuse automatique est achetée, les œufs cessent d'être le sujet : les créatures
-passent devant eux dans la bande, pour rester à portée de clic même avec dix incubateurs.
+passent devant eux dans la bande, pour rester à portée de clic même avec dix incubateurs. Cet
+ordre vit dans `subjects()`, pas dans le rendu : c'est ce qui garantit que « la case 6 »
+désigne la même vignette pour l'affichage et pour la sélection.
 
 **La bande garde sa position de défilement** quand elle se redessine. Elle est reconstruite à
 chaque changement d'étape ou de palier, et vider un conteneur remet sa barre horizontale à
