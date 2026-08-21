@@ -393,6 +393,7 @@ function freshState() {
        une consigne unique forçait à choisir entre les deux. */
     sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     sellRank: 0,        // taille minimale exigée avant la vente (0 = dès l'âge adulte)
+    tri: 'arrivee',     // l'ordre de la bande — voir TRIS
     evolveUpTo: 0,
     seen: {},
     speed: 1,
@@ -720,13 +721,32 @@ const seenCount = () => Object.keys(state.seen).length;
    d'être le sujet : les bêtes passent devant, pour rester à portée de clic même avec dix
    incubateurs. Dans les deux ordres, les bêtes forment un bloc d'un seul tenant — c'est ce
    qui permet de raisonner en « case » sans que les œufs s'intercalent. */
+/* Trois façons de ranger l'enclos, et une seule règle : la clé de tri ne doit jamais bouger
+   toute seule. Trier par avancement de la barre serait le classement le plus parlant, mais
+   la bande se réordonnerait dix fois par seconde et la vignette visée fuirait sous le doigt.
+   Rareté et palier ne changent qu'à l'éclosion et à l'évolution : la bande tient en place.
+
+   Le chromatique passe devant tout le reste. Il ignore la lignée — on peut avoir un têtard
+   chromatique — donc aucun tri par rareté ne le remonterait, alors que c'est précisément la
+   bête qu'on cherche des yeux. */
+const TRIS = {
+  arrivee: null,
+  rarete: (a, b) => (b.c.prodige ? 1 : 0) - (a.c.prodige ? 1 : 0)
+                 || RARITY[lineOf(b.c).rarity].rank - RARITY[lineOf(a.c).rarity].rank
+                 || b.c.tier - a.c.tier || a.c.id - b.c.id,
+  palier: (a, b) => b.c.tier - a.c.tier
+                 || RARITY[lineOf(b.c).rarity].rank - RARITY[lineOf(a.c).rarity].rank
+                 || a.c.id - b.c.id,
+};
+
 function subjects() {
   const list = state.incub.map((slot, i) => ({ key: 'i:' + i, kind: 'egg', i, slot }));
-  for (const c of state.pen) list.push({ key: 'c:' + c.id, kind: 'creature', c });
-  if (state.up.couveuse) {
-    list.sort((a, b) => (a.kind === 'creature' ? 0 : 1) - (b.kind === 'creature' ? 0 : 1));
-  }
-  return list;
+  const betes = state.pen.map(c => ({ key: 'c:' + c.id, kind: 'creature', c }));
+  const tri = TRIS[state.tri];
+  if (tri) betes.sort(tri);
+  /* Les bêtes d'abord : la bande les montre dans deux groupes séparés, mais tenirLaCase et
+     fallback lisent cette liste-ci, et pour eux c'est le vivant qui compte. */
+  return betes.concat(list);
 }
 
 const caseCourante = () => subjects().findIndex(s => s.key === state.sel);
@@ -1047,7 +1067,8 @@ function buyUpgrade(u) {
 // niveau va changer.
 function upLabel(u) {
   const n = lvl(u.key);
-  if (!u.value || upMaxed(u)) return u.desc;
+  if (!u.value) return u.desc;
+  if (upMaxed(u)) return 'Au maximum · ' + u.value(n) + u.unit + '.';
   if (n === 0) return u.desc + ' Niveau 1 : ' + u.value(1) + u.unit + '.';
   return 'Niveau ' + n + ' → ' + (n + 1) + ' · ' + u.value(n) + ' → ' + u.value(n + 1) + u.unit;
 }
@@ -1319,52 +1340,90 @@ function renderStrip() {
   if (sig === stripSig) return;
   stripSig = sig;
 
-  const host = $('strip');
-  // Vider la bande remet sa barre horizontale à zéro. Sans ce report, la bête qu'on suivait
-  // à droite de la bande sautait à gauche à chaque changement d'étape — au moment précis où
-  // on la regardait grandir.
-  const defilement = host.scrollLeft;
-  host.textContent = '';
-  thumbs.clear();
-
-  for (const s of list) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'thumb';
-    b.addEventListener('click', () => select(s.key));
-
-    const glyph = document.createElement('span');
-    glyph.className = 'thumb-glyph';
-    const bar = document.createElement('span');
-    bar.className = 'thumb-bar';
-    const fill = document.createElement('i');
-    bar.appendChild(fill);
-    const tag = document.createElement('span');
-    tag.className = 'thumb-tag';
-
-    if (s.kind === 'egg') {
-      const k = s.slot ? EGG_BY_KEY[s.slot.kind] || EGG_BY_KEY.commun : null;
-      glyph.textContent = s.slot ? k.glyph : '◌';
-      if (!s.slot) b.classList.add('empty'); else b.classList.add('egg-' + k.key);
-      tag.textContent = s.slot ? (k.key === 'commun' ? 'œuf' : k.key) : 'libre';
-    } else {
-      b.classList.add('rar-' + lineOf(s.c).rarity);
-      if (s.c.prodige) b.classList.add('prodige');
-      if (s.c.keep) b.classList.add('gardee');
-      glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
-      setCreature(glyph, artFor(s.c), glyphOf(s.c));
-      // la vignette reprend l'échelle de la scène, en réduction
-      glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
-      tag.textContent = stageOf(s.c).key === 'enfant' ? 'enfant'
-                      : stageOf(s.c).key === 'ado' ? 'ado' : 'p.' + s.c.tier;
-      if (s.c.tier === 5) b.classList.add('apex');
-    }
-
-    b.append(glyph, bar, tag);
-    host.appendChild(b);
-    thumbs.set(s.key, { el: b, bar: fill, tag });
+  /* La bande se met à jour vignette par vignette, jamais en la vidant. Tout reconstruire
+     détruisait le bouton sous le doigt entre l'appui et le relâchement : le navigateur
+     n'émet alors aucun « click », et la sélection ne se faisait pas. Sur une ferme de vingt
+     enclos, une éclosion, une vente ou une évolution suffit à redessiner la bande — près
+     d'un clic sur cinq se perdait, et d'autant plus souvent que la ferme tournait bien. */
+  /* Retirer d'abord, replacer ensuite. Dans l'autre sens, vendre la première bête décalait
+     toutes les suivantes d'un cran et la bande entière se faisait déplacer ; une vignette
+     qui bouge sous le doigt fait retomber le clic sur sa voisine, ce qui est le même défaut
+     sous une autre forme. En vidant les places libérées avant de comparer, il ne reste à
+     déplacer que ce qui a réellement changé d'ordre — une vignette, pas vingt-huit. */
+  const vivantes = new Set(list.map(s => s.key));
+  for (const key of [...thumbs.keys()]) {
+    if (vivantes.has(key)) continue;
+    thumbs.get(key).el.remove();
+    thumbs.delete(key);
   }
-  host.scrollLeft = defilement;
+
+  peupler($('strip-pen'), list.filter(s => s.kind === 'creature'));
+  peupler($('strip-incub'), list.filter(s => s.kind === 'egg'));
+}
+
+// Poser les vignettes d'un groupe dans l'ordre voulu, en ne touchant qu'à ce qui a bougé.
+function peupler(host, sujets) {
+  // Retirer des vignettes déplace la barre de défilement. Sans ce report, la bête qu'on
+  // suivait en bas de la bande sautait en haut — au moment précis où on la regardait grandir.
+  const defilement = host.scrollTop;
+  sujets.forEach((s, i) => {
+    let t = thumbs.get(s.key);
+    if (!t) {
+      t = creerVignette(s.key);
+      thumbs.set(s.key, t);
+    }
+    peindreVignette(t, s);
+    if (host.children[i] !== t.el) host.insertBefore(t.el, host.children[i] || null);
+  });
+  host.scrollTop = defilement;
+}
+
+// La coquille d'une vignette, créée une fois et gardée tant que le sujet existe. C'est
+// l'élément lui-même qui porte le clic, donc c'est lui qu'il ne faut jamais recréer.
+function creerVignette(key) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'thumb';
+  b.addEventListener('click', () => select(key));
+
+  const glyph = document.createElement('span');
+  glyph.className = 'thumb-glyph';
+  const bar = document.createElement('span');
+  bar.className = 'thumb-bar';
+  const fill = document.createElement('i');
+  bar.appendChild(fill);
+  const tag = document.createElement('span');
+  tag.className = 'thumb-tag';
+
+  b.append(glyph, bar, tag);
+  return { el: b, glyph, bar: fill, tag };
+}
+
+// Le contenu, lui, se repeint à chaque changement d'étape ou de palier. Les classes sont
+// remises à plat d'abord : une vignette qui a vécu porte celles de son état précédent.
+// 'done' et 'aria-current' appartiennent à tickView, qui les repose juste après.
+function peindreVignette(t, s) {
+  const b = t.el, garder = b.classList.contains('done');
+  b.className = 'thumb';
+  if (garder) b.classList.add('done');
+
+  if (s.kind === 'egg') {
+    const k = s.slot ? EGG_BY_KEY[s.slot.kind] || EGG_BY_KEY.commun : null;
+    t.glyph.textContent = s.slot ? k.glyph : '◌';
+    if (!s.slot) b.classList.add('empty'); else b.classList.add('egg-' + k.key);
+    t.tag.textContent = s.slot ? (k.key === 'commun' ? 'œuf' : k.key) : 'libre';
+  } else {
+    b.classList.add('rar-' + lineOf(s.c).rarity);
+    if (s.c.prodige) b.classList.add('prodige');
+    if (s.c.keep) b.classList.add('gardee');
+    t.glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
+    setCreature(t.glyph, artFor(s.c), glyphOf(s.c));
+    // la vignette reprend l'échelle de la scène, en réduction
+    t.glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
+    t.tag.textContent = stageOf(s.c).key === 'enfant' ? 'enfant'
+                      : stageOf(s.c).key === 'ado' ? 'ado' : 'p.' + s.c.tier;
+    if (s.c.tier === 5) b.classList.add('apex');
+  }
 }
 
 function renderCollection() {
@@ -1642,18 +1701,19 @@ function noteAcheteur() {
 
 function noteEvolution() {
   if (!state.evolveUpTo) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
-  const cumul = EVOLVE.slice(0, state.evolveUpTo - 1).reduce((a, b) => a + (b || 0), 0);
-  const tot = fmt(cumul);
+  const cumul = EVOLVE.slice(0, state.evolveUpTo - 1).reduce((a, b) => a + (b || 0), 0) * evoRemise();
+  const tot = fmt(cumul) + ' pièces pour une commune et ' + fmt(cumul * RARITY.rare.mult) +
+              ' pour une rare';
   const coupees = Object.entries(RARITY)
     .filter(([cle]) => state.sellAt[cle] > 0 && state.sellAt[cle] < state.evolveUpTo)
     .map(([cle, r]) => r.plur + ' au ' + state.sellAt[cle]);
-  return 'Chaque bête sera menée au palier ' + state.evolveUpTo + ', ce qui lui coûtera ' +
-    tot + ' pièces en tout. Elle passe avant le marchand, donc une bête qui peut encore ' +
+  return ('Chaque bête sera menée au palier ' + state.evolveUpTo + ', ce qui coûtera ' +
+    tot + ' — la facture suit la rareté. Elle passe avant le marchand, donc une bête qui peut encore ' +
     'monter n’est jamais vendue au prix du palier d’en dessous. ' +
     (coupees.length
       ? 'Sauf là où tu as demandé de vendre plus tôt : elle s’arrête pour les ' +
         liste(coupees) + ' et laisse le vendeur prendre le relais.'
-      : '');
+      : '')).trimEnd();
 }
 
 function noteMarchand() {
@@ -1662,8 +1722,8 @@ function noteMarchand() {
   if (!reglees.length) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
 
   const taille = state.sellRank ? ', et devenues ' + RANKS[state.sellRank].fem + 's ou plus' : '';
-  let txt = 'En clair : il vend les ' +
-    liste(reglees.map(([cle, r]) => r.plur + ' arrivées au palier ' + state.sellAt[cle])) +
+  let txt = 'En clair : il vend ' +
+    liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' arrivées au palier ' + state.sellAt[cle])) +
     taille + '. ';
   txt += gardees.length
     ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
@@ -1718,10 +1778,11 @@ function tickView() {
   }
 
   const stock = totalEggs();
-  $('strip-meta').textContent =
-    state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur') + ' · ' +
-    state.pen.length + '/' + state.pens + ' enclos' +
-    (stock ? ' · ' + stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve' : '');
+  setText($('compte-pen'), state.pen.length + ' / ' + state.pens);
+  setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
+  // La réserve n'existe que si on a acheté des œufs d'avance : pas de ligne vide sinon.
+  $('strip-meta').hidden = !stock;
+  if (stock) setText($('strip-meta'), stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve');
 
   for (const key of Object.keys(refs.shop)) {
     const r = refs.shop[key];
@@ -1738,7 +1799,7 @@ function tickView() {
     const r = refs.up[u.key];
     const n = lvl(u.key), maxed = upMaxed(u), cost = upCost(u);
     r.el.classList.toggle('owned', n > 0);
-    setText(r.title, u.name + (n > 0 && !u.max ? ' · niv. ' + n : ''));
+    setText(r.title, u.name + (n > 0 && u.max !== 1 ? ' · niv. ' + n : ''));
     setText(r.price, maxed ? 'acquis' : fmt(cost));
     setText(r.desc, upLabel(u));
     r.el.disabled = maxed || state.coins < cost;
@@ -1825,6 +1886,11 @@ function bindTools() {
   $('sel-acheteur').addEventListener('change', e => {
     state.buyKind = EGG_BY_KEY[e.target.value] ? e.target.value : 'commun';
   });
+
+  $('sel-tri').addEventListener('change', e => {
+    state.tri = e.target.value in TRIS ? e.target.value : 'arrivee';
+    refresh();
+  });
 }
 
 function start() {
@@ -1838,6 +1904,8 @@ function start() {
   $('sel-rank').value = String(state.sellRank || 0);
   $('sel-evolution').value = String(state.evolveUpTo);
   $('sel-acheteur').value = state.buyKind;
+  if (!(state.tri in TRIS)) state.tri = 'arrivee';
+  $('sel-tri').value = state.tri;
 
   catchUp();
   refresh();

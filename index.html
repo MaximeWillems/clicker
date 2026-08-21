@@ -54,8 +54,30 @@
   </section>
 
   <section class="strip-wrap" aria-label="Tes œufs et tes créatures">
-    <div class="strip" id="strip"></div>
-    <p class="strip-meta" id="strip-meta"></p>
+    <div class="strip-groupe">
+      <div class="strip-titre">
+        <h2>Enclos</h2>
+        <span id="compte-pen"></span>
+        <label class="strip-tri">trier
+          <select id="sel-tri">
+            <option value="arrivee">par arrivée</option>
+            <option value="rarete">par rareté</option>
+            <option value="palier">par palier</option>
+          </select>
+        </label>
+      </div>
+      <div class="strip" id="strip-pen"></div>
+    </div>
+
+    <div class="strip-groupe">
+      <div class="strip-titre">
+        <h2>Couvaison</h2>
+        <span id="compte-incub"></span>
+      </div>
+      <div class="strip" id="strip-incub"></div>
+    </div>
+
+    <p class="strip-meta" id="strip-meta" hidden></p>
   </section>
 
   <p class="foot">Prototype jetable — sauvegarde locale, aucun compte, aucun serveur.

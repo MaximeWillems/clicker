@@ -291,10 +291,32 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
   border: 1px solid var(--rule);
   border-radius: 6px;
   padding: 0.85rem 0.9rem 0.7rem;
+  display: flex; flex-direction: column; gap: 0.85rem;
 }
+/* Un œuf et une bête ne se pilotent pas pareil : l'un attend son heure, l'autre réclame des
+   décisions. Les mêler dans une seule file obligeait à chercher la frontière du regard. */
+.strip-groupe { display: flex; flex-direction: column; gap: 0.45rem; }
+.strip-titre {
+  display: flex; align-items: baseline; gap: 0.6rem;
+  font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--faint);
+}
+.strip-titre h2 { font: inherit; margin: 0; color: var(--soft); }
+.strip-tri { margin-left: auto; display: flex; align-items: center; gap: 0.4rem; }
+.strip-tri select { font-family: var(--f-num); font-size: 0.7rem; text-transform: none; letter-spacing: 0; }
+/* Passé une quinzaine d'enclos, la file horizontale sortait de l'écran et il fallait la
+   faire défiler pour voir sa propre ferme. Elle s'enroule donc sur autant de rangées qu'il
+   faut, et ne se met à défiler qu'au-delà de trois — la scène doit rester la plus grande
+   chose de la page. */
 .strip {
-  display: flex; gap: 0.5rem; overflow-x: auto;
-  padding-bottom: 0.4rem; scrollbar-width: thin;
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  max-height: 15.5rem; overflow-y: auto; scrollbar-width: thin;
+  padding-bottom: 0.2rem;
+}
+.strip:empty::after {
+  content: 'rien ici'; font-family: var(--f-num); font-size: 0.7rem;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint);
+  padding: 0.6rem 0;
 }
 .thumb {
   flex: none; width: 4.4rem;
@@ -320,7 +342,7 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 .thumb.done .thumb-tag { color: var(--accent); }
 .strip-meta {
   font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--faint); margin: 0.35rem 0 0;
+  text-transform: uppercase; color: var(--faint); margin: 0;
 }
 
 /* ── panneaux latéraux ───────────────────────── */
