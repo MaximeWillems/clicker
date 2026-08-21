@@ -94,13 +94,26 @@ l'animal qu'on fait grandir. C'est lui qu'on clique. La bande en dessous liste l
 Une créature traverse cinq états visibles, et l'échelle est **continue** — elle grossit à
 chaque clic plutôt que de sauter d'un cran à l'autre.
 
-| État | Quand | Échelle | Silhouette |
-|---|---|---|---|
-| œuf | en couvaison | 0,80 → 1,05 | 🥚, halo qui bat après 65 % |
-| enfant | 0 – 40 % de la croissance | 0,50 | forme juvénile |
-| adolescent | 40 – 100 % | 0,50 → 1,00 | forme juvénile |
-| adulte | croissance terminée | 1,00 | forme définitive |
-| adulte grand… | engraissement | jusqu'à 1,50 | forme définitive |
+| État | Quand | Échelle | Valeur | Silhouette |
+|---|---|---|---|---|
+| œuf | en couvaison | 0,80 → 1,05 | — | 🥚, halo qui bat après 65 % |
+| enfant | 0 – 40 % de la croissance | 0,50 | 15 % | forme juvénile |
+| adolescent | 40 – 100 % | 0,50 → 1,00 | 40 % | forme juvénile |
+| adulte | croissance terminée | 1,00 | 100 % | forme définitive |
+| adulte grand… | engraissement | jusqu'à 1,50 | ×taille | forme définitive |
+
+**La valeur est plate à l'intérieur d'une étape et saute d'un coup au passage.** Au palier 1 :
+6 pièces pendant toute l'enfance, puis **16 sur le clic qui fait passer adolescent** (×2,7),
+puis **40 sur celui qui fait passer adulte** (×2,5). C'est ce clic-là qui paie, pas les
+quarante d'avant — et la barre de progression vise la prochaine étape, plus l'âge adulte.
+
+Vendre est possible à toute étape, au prix de l'étape. Ça ne devient jamais une stratégie :
+0,19 pièce par clic en vendant un enfant, 0,27 un adolescent, 0,67 en menant la bête à terme.
+C'est une porte de sortie quand un enclos bloque. Le marchand automatique, lui, n'achète que
+des adultes — brader un juvénile ne doit jamais arriver tout seul.
+
+Les rangs de taille comptent aussi comme des étapes : au palier 1, *grand* tombe à 32 clics
+après l'âge adulte, *énorme* à 115, *colossal* à 433.
 
 Le tout est multiplié par l'échelle du palier (×1 à ×1,5), donc un nouveau-né de palier 1
 fait 0,50 et un légendaire engraissé 2,25 : un rapport de 4,5 entre les deux extrêmes.

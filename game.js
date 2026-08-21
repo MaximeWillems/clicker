@@ -50,6 +50,13 @@ const RANKS = [
 const ENFANT_JUSQU = 0.40;
 const LIFE_MIN     = 0.5;   // taille d'un nouveau-né, en fraction de sa taille adulte
 
+/* Ce que vaut une bête selon son étape, en fraction de la valeur adulte. La valeur est
+   PLATE à l'intérieur d'une étape et saute d'un coup au passage : c'est le clic qui fait
+   basculer d'enfant à adolescent qui paie, pas les quarante d'avant. Vendre tôt reste
+   toujours moins rentable au clic que mener la bête à terme — c'est une porte de sortie
+   quand un enclos bloque, jamais une stratégie. */
+const STAGE_MULT = { enfant: 0.15, ado: 0.40 };   // 1 par défaut pour tout adulte
+
 const UPGRADES = [
   { key: 'couveuse',  name: 'Couveuse automatique', cost: 120,
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.' },
@@ -167,8 +174,9 @@ const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens -
 // à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
 // une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
 const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / growTime(c));
-const sellValue  = c => Math.round(baseValue(c) * sizeFactor(c));
 const isFat      = c => sizeFactor(c) > 1.005;
+// stageMult est défini plus bas : sellValue n'est appelée qu'une fois le fichier chargé.
+const sellValue  = c => Math.max(1, Math.round(baseValue(c) * stageMult(c) * sizeFactor(c)));
 
 function rankOf(sf) {
   let i = 0;
@@ -182,9 +190,12 @@ function stageOf(c) {
   const ratio = c.p / growTime(c);
   if (ratio < ENFANT_JUSQU) return { key: 'enfant', name: 'enfant' };
   if (ratio < 1) return { key: 'ado', name: 'adolescent' };
+  // le rang entre dans la clé pour que chaque palier de taille compte aussi comme une étape
   const rank = rankOf(sizeFactor(c)).name;
-  return { key: rank ? 'grand' : 'adulte', name: rank ? 'adulte ' + rank : 'adulte' };
+  return { key: rank ? 'adulte-' + rank : 'adulte', name: rank ? 'adulte ' + rank : 'adulte' };
 }
+
+const stageMult = c => STAGE_MULT[stageOf(c).key] || 1;
 
 // Juvénile tant qu'il n'est pas adulte, puis la forme définitive.
 function glyphOf(c) {
@@ -331,10 +342,22 @@ function flash(el, cls) {
   el.classList.add(cls);
 }
 
-// Le coup de grossissement, réservé au changement de rang de taille.
+// Le coup de grossissement, réservé au changement d'étape.
 function pulse() {
   const el = document.querySelector('.subject-scale');
   if (el) flash(el, 'grew');
+}
+
+// Le passage d'une étape à la suivante : nouvelle silhouette, nouvelle échelle, et un
+// bond de valeur qu'il faut voir passer.
+function celebrate(c, valueBefore, pt) {
+  refresh();                                   // la nouvelle échelle avant l'animation
+  const gain = sellValue(c) - valueBefore;
+  burst(pt.x, pt.y, '✦', 12);
+  floatText(pt.x, pt.y - 70, stageOf(c).name, 'gain');
+  if (gain > 0) floatText(pt.x, pt.y - 100, '+' + fmt(gain) + ' à la vente', 'gain');
+  chord([523, 659, 784, 1046], 70);
+  pulse();
 }
 
 /* ─────────────────────────────────────────────
@@ -360,21 +383,15 @@ function tapStage() {
   }
 
   const c = s.c;
-  const before = isAdult(c) ? sizeFactor(c) : 0;
+  const wasStage = stageOf(c).key;
+  const wasValue = sellValue(c);
   // Un clic vaut une seconde de vie, avant comme après l'âge adulte : la créature
   // ne cesse jamais de grandir, seul le rendement diminue.
   if (isAdult(c)) c.over = (c.over || 0) + 1; else c.p += 1;
   flash(el, 'shake');
   floatText(jitter(), pt.y - 20, '+1 s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
-  if (before && rankOf(sizeFactor(c)).name !== rankOf(before).name) {
-    refresh();                                  // la nouvelle échelle avant l'animation
-    burst(pt.x, pt.y, '✦', 10);
-    floatText(pt.x, pt.y - 70, rankOf(sizeFactor(c)).name, 'gain');
-    chord([523, 659, 784]);
-    pulse();
-    return;
-  }
+  if (stageOf(c).key !== wasStage) { celebrate(c, wasValue, pt); return; }
   refresh();
 }
 
@@ -417,8 +434,8 @@ function feed(c) {
   const q = adult ? overfeedQuote(c) : feedQuote(c);
   if (!q || state.coins < q.cost) return;
 
-  const before = adult ? sellValue(c) : 0;
-  const rankBefore = adult ? rankOf(sizeFactor(c)).name : null;
+  const wasStage = stageOf(c).key;
+  const wasValue = sellValue(c);
   state.coins -= q.cost;
   if (adult) c.over = (c.over || 0) + q.seconds;
   else c.p = Math.min(growTime(c), c.p + q.seconds);
@@ -426,24 +443,18 @@ function feed(c) {
   const el = $('subject');
   const pt = centerOf(el);
   floatText(pt.x, pt.y, '−' + fmt(q.cost));
-  if (adult) {
-    floatText(pt.x, pt.y - 40, '+' + fmt(sellValue(c) - before) + ' de valeur', 'gain');
-    flash(el, 'shake');
-    if (rankOf(sizeFactor(c)).name !== rankBefore) {
-      refresh();
-      burst(pt.x, pt.y, '✦', 10);
-      chord([523, 659, 784]);
-      pulse();
-      blip(320, 0.05, 'sine', 0.03);
-      return;
-    }
-  }
+  flash(el, 'shake');
   blip(adult ? 320 : 400, 0.05, 'sine', 0.03);
+
+  if (stageOf(c).key !== wasStage) { celebrate(c, wasValue, pt); return; }
+  const gain = sellValue(c) - wasValue;
+  if (gain > 0) floatText(pt.x, pt.y - 40, '+' + fmt(gain) + ' de valeur', 'gain');
   refresh();
 }
 
+// Vendre est possible à toute étape — au prix de l'étape. Le marchand automatique, lui,
+// n'achète que des adultes : brader un enfant ne doit jamais arriver tout seul.
 function sell(c) {
-  if (!isAdult(c)) return;
   const gain = sellValue(c);
   state.coins += gain;
   state.pen = state.pen.filter(x => x.id !== c.id);
@@ -817,8 +828,14 @@ function renderStage() {
     (isFat(c) ? ' · ×' + dec(sf) : ''));
 
   if (!adult) {
-    setWidth($('stage-fill'), Math.min(100, (c.p / growTime(c)) * 100) + '%');
-    setText($('stage-timer'), remaining(growTime(c) - c.p, state.up.eleveur));
+    // la barre vise la prochaine étape, pas l'âge adulte : c'est elle qui paie
+    const cible = stg.key === 'enfant' ? ENFANT_JUSQU : 1;
+    const depuis = stg.key === 'enfant' ? 0 : ENFANT_JUSQU;
+    const g = growTime(c);
+    setWidth($('stage-fill'),
+      Math.min(100, ((c.p / g - depuis) / (cible - depuis)) * 100).toFixed(1) + '%');
+    setText($('stage-timer'), remaining(cible * g - c.p, state.up.eleveur) +
+      ' → ' + (stg.key === 'enfant' ? 'adolescent' : 'adulte'));
     $('stage-timer').classList.remove('done');
     setText($('stage-hint'), state.up.eleveur
       ? '' : 'Clique dessus pour la faire grandir. Elle ne pousse pas toute seule sans éleveur.');
@@ -847,7 +864,9 @@ function renderStage() {
 
   acts.sell.hidden = false;
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
-  acts.sell.disabled = !adult;
+  acts.sell.title = adult ? 'Au prix fort.'
+    : 'Un ' + stg.name + ' ne vaut qu’une fraction de sa valeur adulte — mais ça libère la place.';
+  acts.sell.disabled = false;
 
   acts.evo.hidden = false;
   if (c.tier >= 5) {
@@ -883,7 +902,7 @@ function tickView() {
       setWidth(t.bar, Math.min(100, (s.c.p / growTime(s.c)) * 100).toFixed(1) + '%');
       t.el.classList.toggle('done', adult);
       setText(t.tag, k === 'enfant' ? 'enfant' : k === 'ado' ? 'ado'
-              : 'p.' + s.c.tier + (k === 'grand' ? ' ✦' : ''));
+              : 'p.' + s.c.tier + (k.indexOf('adulte-') === 0 ? ' ✦' : ''));
     }
   }
 
