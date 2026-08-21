@@ -103,25 +103,25 @@
 
     <div class="config" id="cfg-marchand" hidden>
       <p class="config-step"><span class="step-n">3</span> Le marchand vend</p>
-      <p class="config-what">Il ne vend une bête que si <b>les trois conditions</b> sont
-        remplies en même temps.</p>
+      <p class="config-what">Chaque rareté a <b>son propre palier de vente</b> : on écoule les
+        communes tôt pendant qu'on garde les mythiques pour la fin. L'évolution automatique
+        s'arrête d'elle-même au palier où le vendeur doit prendre le relais.</p>
 
       <div class="cond">
-        <label for="sel-marchand">Le vendeur vend</label>
-        <select id="sel-marchand">
-          <option value="0">rien</option>
-          <option value="1">le palier 1 et au-dessus</option>
-          <option value="2">le palier 2 et au-dessus</option>
-          <option value="3">le palier 3 et au-dessus</option>
-          <option value="4">le palier 4 et au-dessus</option>
-          <option value="5">le palier 5 seulement</option>
-        </select>
+        <label for="vente-commune">Il vend les communes</label>
+        <select id="vente-commune" class="sel-vente"></select>
 
-        <label for="sel-rank">dès que la taille est</label>
+        <label for="vente-rare">les rares</label>
+        <select id="vente-rare" class="sel-vente"></select>
+
+        <label for="vente-epique">les épiques</label>
+        <select id="vente-epique" class="sel-vente"></select>
+
+        <label for="vente-mythique">les mythiques</label>
+        <select id="vente-mythique" class="sel-vente"></select>
+
+        <label for="sel-rank">et dans tous les cas, seulement si la taille est</label>
         <select id="sel-rank"></select>
-
-        <label for="sel-rarete">et pour les raretés</label>
-        <select id="sel-rarete"></select>
       </div>
 
       <p class="config-note" id="note-marchand"></p>

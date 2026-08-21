@@ -11,6 +11,7 @@
 const GROW       = [45, 180, 900, 3600, 21600];               // croissance par palier
 const VALUE      = [40, 500, 6000, 80000, 1500000];           // valeur à la vente
 const EVOLVE     = [200, 3000, 40000, 600000, null];          // coût pour passer au palier suivant
+const EVO_RABAIS = 0.10;                                      // remise d'évolution par niveau d'intendant
 const TIER_SCALE = [1, 1.1, 1.22, 1.35, 1.5];                 // grossissement visuel par palier
 
 const INCUB_BASE = 150;
@@ -61,16 +62,29 @@ const EGG_KINDS = [
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
 
 /* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
-   mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids —
-   et ça donne enfin une raison de monter la couveuse au-delà du niveau 2. */
+   mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
+
+   Mais la couvaison ne pèse jamais lourd dans la vie d'une bête : 30 s de coquille contre
+   sept heures de croissance jusqu'au palier 5, soit un millième du cycle. Un incubateur au
+   niveau 1 nourrit vingt enclos, et les niveaux de couveuse au-delà s'achetaient pour ne
+   jamais servir. La couveuse est donc plafonnée à 5 : passé ce point, c'est en incubateurs
+   qu'on élargit la couvaison — ils montent en 1,6 par palier au lieu de 1,9, et seuls les
+   œufs mythiques en réclament vraiment. */
 const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
 
 /* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
    L'éleveur pousse les jeunes jusqu'à l'âge adulte, la mangeoire prend le relais ensuite
    et engraisse les adultes sans fin. Le prix d'un animal énorme n'est donc pas en pièces
    mais en temps et en place d'enclos — une bête qu'on engraisse est une bête qu'on ne
-   vend pas, et l'enclos qu'elle occupe ne produit rien pendant ce temps. */
-const FATTEN_X  = 3;        // secondes d'engraissement par seconde et par niveau de mangeoire
+   vend pas, et l'enclos qu'elle occupe ne produit rien pendant ce temps.
+
+   Encore faut-il que le compte y soit. À 3 s par niveau, mener une bête de « adulte » à
+   « énorme » demandait 55 000 s d'enclos pour +70 % de valeur, quand élever une bête neuve
+   de zéro au palier 5 en demande 26 000 pour +100 % : engraisser était toujours perdant, et
+   la mangeoire coûtait cinq fois l'éleveur pour un effet négatif. À 6 s par niveau et à la
+   moitié du prix, engraisser jusqu'à énorme rapporte enfin — de l'ordre de +20 % par enclos —
+   pendant que « colossal » et au-dessus restent le luxe qu'ils doivent être. */
+const FATTEN_X  = 6;        // secondes d'engraissement par seconde et par niveau de mangeoire
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
 const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever la scène
 
@@ -111,10 +125,20 @@ const TINTS = [
   { key: 'albatre',   name: 'albâtre',   fem: 'albâtre',   filter: 'saturate(0) brightness(1.4)',                      mult: 1.40, poids: 3 },
 ];
 
-// Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
-// raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
+/* Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
+   raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
+
+   Il vaut exactement DEUX CRANS DE RARETÉ — 25², puisque chaque rareté vaut vingt-cinq fois
+   la précédente. À palier et taille égaux, une commune chromatique passe donc devant une
+   rare ordinaire (×125 contre ×25) et reste derrière une épique ordinaire (×600). La règle
+   se propage d'elle-même : une rare chromatique se glisse entre l'épique et la mythique,
+   une épique chromatique dépasse la mythique.
+
+   À ×5, un chromatique commun valait cinq fois une commune ordinaire et restait cinq fois
+   sous la moindre rare : la plus belle bête du jeu ne pesait rien face à un tirage banal,
+   et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. */
 const PRODIGE_ODDS  = 1 / 500;
-const PRODIGE_MULT  = 5;
+const PRODIGE_MULT  = 125;
 const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
 
 // grow : divise la durée de croissance. fat : multiplie la vitesse d'engraissement.
@@ -160,26 +184,41 @@ const STAGE_MULT = { enfant: 0.15, ado: 0.40 };   // 1 par défaut pour tout adu
 
 /* Améliorations à niveaux. Le coût du prochain niveau est base × mult^niveau : l'effet
    monte linéairement pendant que le prix double presque, donc chaque palier se mérite.
-   `max: 1` marque les deux achats qui débloquent une capacité sans avoir de puissance. */
+   `max` borne celles qui ne doivent pas monter indéfiniment — à 1 pour les trois achats qui
+   débloquent une capacité sans avoir de puissance, à 5 pour la couveuse.
+
+   Le multiplicateur dit surtout à quelle vitesse une amélioration meurt. Les enclos montent
+   en 1,6 ; tout ce qui est en 1,9 se fait distancer par eux — au niveau 10 l'éleveur coûtait
+   déjà onze fois l'enclos pour le même gain de débit, et cent quarante-sept fois au niveau 25.
+   Ce qui produit du débit est donc calé en 1,65 : à peine plus cher que l'enclos, qui reste le
+   meilleur achat du jeu comme il se doit. Restent en 1,9 le clic et la couveuse, l'un marginal
+   et l'autre borné, à qui cette pente ne coûte rien. */
 const UPGRADES = [
   { key: 'clic', name: 'Force du clic', base: 60, mult: 1.6,
     desc: 'Chaque clic fait gagner une seconde de plus — une seconde de ce que tes automates produisent, pas une seconde de vie brute.',
     value: n => 1 + n, unit: ' s gagnées par clic' },
-  { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9,
-    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.',
+  { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9, max: 5,
+    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Au-delà du niveau 5, c’est en incubateurs qu’on couve plus vite.',
     value: n => n, unit: '× la vitesse de couvaison' },
-  { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.9,
+  { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.65,
     desc: 'Les jeunes grandissent tout seuls jusqu’à l’âge adulte.',
     value: n => n, unit: '× la vitesse de croissance' },
-  { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
-    desc: 'Rachète un œuf et le met à couver dès qu’un incubateur se libère.' },
-  { key: 'mangeoire', name: 'Mangeoire automatique', base: 2500, mult: 1.9,
+  { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
     desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
     value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
+  { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
+    desc: 'Rachète un œuf et le met à couver dès qu’un incubateur se libère.' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
     desc: 'Vend les adultes tout seul, selon trois conditions que tu règles : palier, taille et rareté.' },
   { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
     desc: 'Fait monter les adultes de palier en palier, jusqu’où tu décides. Elle agit avant le marchand.' },
+  /* Passé l'ère commune, ce n'est plus la vitesse qui freine mais la mise de fonds : un cycle
+     épique immobilise 401 M et un cycle mythique 10 Md, quand la boutique entière n'en coûte
+     que 50. Rien n'agissait sur ce mur-là — l'intendant est la seule amélioration qui attaque
+     le coût au lieu du temps, et la seule qui ait de quoi grandir avec l'économie. */
+  { key: 'intendant', name: 'Intendant', base: 250000, mult: 1.65,
+    desc: 'Négocie chaque montée de palier : toutes les évolutions coûtent moins cher, à toutes les raretés.',
+    value: n => Math.round(100 - 100 / (1 + EVO_RABAIS * n)), unit: ' % de moins sur chaque évolution' },
 ];
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
@@ -288,6 +327,13 @@ const ART = {
     4: 'poisson-4-serpent.png',
     5: 'poisson-5-leviathan.png',
   },
+  lezard: {
+    1: 'lezard-1-lezardeau.png',
+    2: 'lezard-2-lezard.png',
+    3: 'lezard-3-varan.png',
+    4: 'lezard-4-wyverne.png',
+    5: 'lezard-5-dragon-de-terre.png',
+  },
 };
 
 /* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
@@ -340,10 +386,13 @@ function freshState() {
     incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
     pen: [],
     sel: 'i:0',
-    up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0 },
-    sellFrom: 0,        // palier À PARTIR duquel le marchand vend (0 = il ne vend rien)
+    up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0,
+          intendant: 0 },
+    /* Un palier de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
+       d'écouler les communes au palier 3 pendant qu'on mène les mythiques jusqu'au 5 :
+       une consigne unique forçait à choisir entre les deux. */
+    sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     sellRank: 0,        // taille minimale exigée avant la vente (0 = dès l'âge adulte)
-    sellRarity: 0,      // le marchand ne touche qu'aux communes tant qu'on ne l'élargit pas
     evolveUpTo: 0,
     seen: {},
     speed: 1,
@@ -411,6 +460,17 @@ function load() {
       ? Object.assign({}, vide, { commun: merged.eggs })
       : Object.assign({}, vide, merged.eggs || {});
     if (!EGG_BY_KEY[merged.buyKind]) merged.buyKind = 'commun';
+    /* Le marchand n'avait qu'un palier unique et un plafond de rareté. On les convertit en
+       consignes par rareté : celles que le plafond couvrait gardent le palier, les autres
+       passent à « jamais » — exactement ce que la sauvegarde faisait déjà. */
+    if (s.sellFrom !== undefined && !s.sellAt) {
+      merged.sellAt = { commune: 0, rare: 0, epique: 0, mythique: 0 };
+      for (const [cle, r] of Object.entries(RARITY)) {
+        if (r.rank <= (s.sellRarity || 0)) merged.sellAt[cle] = s.sellFrom || 0;
+      }
+    }
+    merged.sellAt = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 }, merged.sellAt || {});
+    delete merged.sellFrom; delete merged.sellRarity;
     // les œufs déjà en couvaison n'avaient pas de sorte
     for (const slot of merged.incub || []) if (slot && !slot.kind) slot.kind = 'commun';
     // l'array des incubateurs doit toujours suivre le nombre acheté
@@ -517,8 +577,11 @@ const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
 // Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
 // palier 5 pour le prix d'une commune, et toute la progression se court-circuitait.
+// L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
+// une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
+const evoRemise = () => 1 / (1 + EVO_RABAIS * lvl('intendant'));
 const evoCost   = c => EVOLVE[c.tier - 1] === null ? null
-                     : Math.round(EVOLVE[c.tier - 1] * rarityOf(c).mult);
+                     : Math.round(EVOLVE[c.tier - 1] * rarityOf(c).mult * evoRemise());
 const isAdult   = c => c.p >= growTime(c);
 const form      = (lineKey, tier) => LINE_BY_KEY[lineKey].forms[tier - 1];
 const penFull   = () => state.pen.length >= state.pens;
@@ -560,6 +623,18 @@ const renteOf = c => isAdult(c) && rankOf(sizeFactor(c)).i >= RENTE_RANG
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
                    : 0;
 const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
+
+/* La consigne du marchand pour CETTE bête : le palier à partir duquel il la vend, 0 s'il n'y
+   touche jamais. Chaque rareté a la sienne — c'est ce qui permet d'écouler les communes au
+   palier 3 pendant qu'on mène les mythiques jusqu'au 5. */
+const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
+
+/* Jusqu'où l'évolution automatique a le droit de pousser cette bête. Le vendeur commande :
+   inutile de payer une évolution vers un palier auquel on a demandé de vendre avant. */
+const plafondEvolution = c => {
+  const vise = venteAu(c);
+  return vise ? Math.min(state.evolveUpTo, vise) : state.evolveUpTo;
+};
 
 function rankOf(sf) {
   let i = 0;
@@ -1008,10 +1083,15 @@ function advance(dt) {
 function runAutomations(dt) {
   /* L'évolution automatique passe avant la vente : une bête qu'on peut faire monter ne doit
      pas partir au prix de son palier actuel. Elle ne monte que d'un palier par passage —
-     l'évolution remet la croissance à zéro, donc la bête n'est plus adulte juste après. */
+     l'évolution remet la croissance à zéro, donc la bête n'est plus adulte juste après.
+
+     Mais elle s'arrête au palier où le marchand doit prendre le relais. Sans ce frein,
+     régler « vendre les communes au palier 3 » ne servait à rien : l'évolution les poussait
+     jusqu'au 5 avant que le vendeur n'ait son mot à dire, et la consigne de vente était
+     muette. C'est le vendeur qui commande le plafond, rareté par rareté. */
   if (lvl('evolution') && state.evolveUpTo > 1) {
     for (const c of state.pen) {
-      if (c.keep || !isAdult(c) || c.tier >= state.evolveUpTo) continue;
+      if (c.keep || !isAdult(c) || c.tier >= plafondEvolution(c)) continue;
       const cost = evoCost(c);
       if (state.coins < cost) continue;
       state.coins -= cost;
@@ -1021,25 +1101,26 @@ function runAutomations(dt) {
       markSeen(c.line, c.tier);
     }
   }
-  /* Le marchand attend deux conditions : le palier ET la taille. Sans la seconde il vendait
-     tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce
-     soit — les deux automates se marchaient dessus. */
-  if (state.up.marchand && state.sellFrom > 0) {
-    /* Les trois conditions se cumulent, et deux d'entre elles sont des SEUILS BAS : le
-       vendeur récolte ce qui a assez monté, pendant que l'évolution pousse vers le haut.
-       La rareté, elle, est un plafond : on vend le tout-venant et on garde le précieux. */
-    const ready = state.pen.filter(c => !c.keep && isAdult(c) &&
-                                        c.tier >= state.sellFrom &&
-                                        rankOf(sizeFactor(c)).i >= state.sellRank &&
-                                        rarityOf(c).rank <= state.sellRarity);
-    // même règle que la vente à la main : le marchand ne déplace pas le regard du joueur
-    const place = caseCourante();
-    const enScene = ready.some(c => 'c:' + c.id === state.sel);
+  /* Le marchand attend deux conditions : le palier de SA rareté, et la taille. Sans la
+     seconde il vendait tout dès l'âge adulte, et la mangeoire n'avait jamais le temps
+     d'engraisser quoi que ce soit — les deux automates se marchaient dessus. */
+  if (state.up.marchand) {
+    /* Le marchand ne touche jamais à la bête en scène. C'est la même règle que pour les
+       éclosions : rien ne prend la scène à une bête vivante, et rien ne l'y enlève non plus.
+       Sans ça, le joueur menait une bête à l'âge adulte à la main et se retrouvait, au clic
+       suivant, en train de marteler une autre bête — la sienne avait été vendue à l'instant
+       précis où elle devenait vendable. Tenir la case ne suffisait pas : la case était bien
+       la bonne, c'est l'animal dedans qui avait changé.
+
+       Elle n'est pas protégée pour autant : dès que le joueur regarde ailleurs, elle part au
+       tour suivant. Une seule bête échappe au marchand à la fois, l'enclos ne s'engorge pas. */
+    const ready = state.pen.filter(c => !c.keep && 'c:' + c.id !== state.sel && isAdult(c) &&
+                                        venteAu(c) > 0 && c.tier >= venteAu(c) &&
+                                        rankOf(sizeFactor(c)).i >= state.sellRank);
     for (const c of ready) {
       state.coins += sellValue(c);
       state.pen = state.pen.filter(x => x.id !== c.id);
     }
-    if (enScene) tenirLaCase(place);
   }
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les adultes,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
@@ -1150,14 +1231,16 @@ function remplirMenus() {
       ' — vaut ×' + dec(r.at)));
   });
 
-  const rar = $('sel-rarete');
-  rar.textContent = '';
-  const noms = Object.values(RARITY);
-  noms.forEach((x, i) => {
-    rar.appendChild(option(i, i === noms.length - 1
-      ? 'toutes, mythiques comprises'
-      : liste(noms.slice(0, i + 1).map(y => y.plur)) + (i ? '' : ' seulement')));
-  });
+  // un menu par rareté : même liste de paliers, réglée séparément
+  for (const cle of Object.keys(RARITY)) {
+    const sel = $('vente-' + cle);
+    sel.textContent = '';
+    sel.appendChild(option(0, 'jamais — je les garde'));
+    for (let t = 1; t <= 5; t++) {
+      sel.appendChild(option(t, 'au palier ' + t + (t < 5 ? ' et au-dessus' : ', la forme finale') +
+        ' — ' + fmt(VALUE[t - 1] * RARITY[cle].mult)));
+    }
+  }
 }
 
 function buildChrome() {
@@ -1457,10 +1540,12 @@ function renderStage() {
        automatique est réglée assez haut. Dans les deux cas, pas de rouge. */
     const prisEnCharge = !seuil ? false
       : c.tier >= seuil ? true
-      : (!c.keep && !!lvl('evolution') && state.evolveUpTo >= seuil);
+      // le plafond qui compte est celui de SA rareté : une consigne de vente précoce
+      // arrête l'évolution avant, et la bête ne remboursera peut-être jamais son œuf
+      : (!c.keep && !!lvl('evolution') && plafondEvolution(c) >= seuil);
     setText($('stage-hint'), prisEnCharge
       ? 'Son œuf a coûté ' + fmt(c.cost) + '. Ton évolution la mènera au palier ' +
-        state.evolveUpTo + ', où elle vaudra ' + fmt(valeurAu(c, state.evolveUpTo)) + '.'
+        plafondEvolution(c) + ', où elle vaudra ' + fmt(valeurAu(c, plafondEvolution(c))) + '.'
       : 'Son œuf a coûté ' + fmt(c.cost) + ', elle en vaut ' + fmt(sellValue(c)) + '. ' +
         (seuil ? 'Elle le remboursera au palier ' + seuil + '.' : 'Elle ne le remboursera jamais.'));
     $('stage-hint').classList.toggle('alerte', !prisEnCharge);
@@ -1558,32 +1643,43 @@ function noteAcheteur() {
 function noteEvolution() {
   if (!state.evolveUpTo) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
   const cumul = EVOLVE.slice(0, state.evolveUpTo - 1).reduce((a, b) => a + (b || 0), 0);
+  const tot = fmt(cumul);
+  const coupees = Object.entries(RARITY)
+    .filter(([cle]) => state.sellAt[cle] > 0 && state.sellAt[cle] < state.evolveUpTo)
+    .map(([cle, r]) => r.plur + ' au ' + state.sellAt[cle]);
   return 'Chaque bête sera menée au palier ' + state.evolveUpTo + ', ce qui lui coûtera ' +
-    fmt(cumul) + ' pièces en tout. Elle passe avant le marchand, donc une bête qui peut ' +
-    'encore monter n’est jamais vendue au prix du palier d’en dessous.';
+    tot + ' pièces en tout. Elle passe avant le marchand, donc une bête qui peut encore ' +
+    'monter n’est jamais vendue au prix du palier d’en dessous. ' +
+    (coupees.length
+      ? 'Sauf là où tu as demandé de vendre plus tôt : elle s’arrête pour les ' +
+        liste(coupees) + ' et laisse le vendeur prendre le relais.'
+      : '');
 }
 
 function noteMarchand() {
-  if (!state.sellFrom) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
-  const vend = Object.values(RARITY).filter(x => x.rank <= state.sellRarity).map(x => x.plur);
-  const garde = Object.values(RARITY).filter(x => x.rank > state.sellRarity).map(x => x.plur);
-  const taille = state.sellRank
-    ? ', devenues ' + RANKS[state.sellRank].fem + 's ou plus'
-    : '';
-  let txt = 'En clair : il vend les ' + liste(vend) + ' arrivées au palier ' + state.sellFrom +
-            (state.sellFrom < 5 ? ' ou au-dessus' : '') + taille + '. ';
-  txt += garde.length
-    ? 'Les ' + liste(garde) + ' restent dans l’enclos. '
+  const reglees = Object.entries(RARITY).filter(([cle]) => state.sellAt[cle] > 0);
+  const gardees = Object.entries(RARITY).filter(([cle]) => !state.sellAt[cle]).map(([, r]) => r.plur);
+  if (!reglees.length) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
+
+  const taille = state.sellRank ? ', et devenues ' + RANKS[state.sellRank].fem + 's ou plus' : '';
+  let txt = 'En clair : il vend les ' +
+    liste(reglees.map(([cle, r]) => r.plur + ' arrivées au palier ' + state.sellAt[cle])) +
+    taille + '. ';
+  txt += gardees.length
+    ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
     : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’au palier 4. ';
 
-  // le piège de la combinaison : rien n'atteint jamais le seuil, et l'enclos s'engorge
+  /* Le piège de la combinaison : une consigne au-dessus de ce que l'évolution sait atteindre,
+     et cette rareté-là ne part jamais. On nomme les raretés concernées, sinon le joueur voit
+     l'enclos s'engorger sans savoir laquelle de ses quatre consignes est en cause. */
   const plafond = lvl('evolution') ? state.evolveUpTo : 1;
-  if (state.sellFrom > plafond) {
+  const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond).map(([, r]) => r.plur);
+  if (bloquees.length) {
     txt += lvl('evolution') && state.evolveUpTo
-      ? '⚠ Ton évolution s’arrête au palier ' + state.evolveUpTo + ' : rien n’atteindra jamais le palier ' +
-        state.sellFrom + ', et tes enclos vont s’engorger.'
-      : '⚠ Rien ne fait monter tes bêtes de palier : elles n’atteindront jamais le palier ' +
-        state.sellFrom + ' toutes seules, et tes enclos vont s’engorger.';
+      ? '⚠ Ton évolution s’arrête au palier ' + state.evolveUpTo + ' : les ' + liste(bloquees) +
+        ' n’y arriveront jamais, et tes enclos vont s’engorger.'
+      : '⚠ Rien ne fait monter tes bêtes de palier : les ' + liste(bloquees) +
+        ' n’atteindront jamais leur palier de vente toutes seules, et tes enclos vont s’engorger.';
   } else if (!state.sellRank && lvl('mangeoire')) {
     txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
   }
@@ -1707,20 +1803,19 @@ function bindTools() {
   });
 
   // Un menu qui garde le focus détournerait la barre espace : on le relâche après usage.
-  for (const id of ['sel-marchand', 'sel-rank', 'sel-rarete', 'sel-evolution', 'sel-acheteur']) {
+  for (const id of ['vente-commune', 'vente-rare', 'vente-epique', 'vente-mythique',
+                    'sel-rank', 'sel-evolution', 'sel-acheteur']) {
     $(id).addEventListener('change', e => e.target.blur());
   }
 
-  $('sel-marchand').addEventListener('change', e => {
-    state.sellFrom = parseInt(e.target.value, 10) || 0;
-  });
+  for (const cle of Object.keys(RARITY)) {
+    $('vente-' + cle).addEventListener('change', e => {
+      state.sellAt[cle] = parseInt(e.target.value, 10) || 0;
+    });
+  }
 
   $('sel-rank').addEventListener('change', e => {
     state.sellRank = parseInt(e.target.value, 10) || 0;
-  });
-
-  $('sel-rarete').addEventListener('change', e => {
-    state.sellRarity = parseInt(e.target.value, 10) || 0;
   });
 
   $('sel-evolution').addEventListener('change', e => {
@@ -1739,9 +1834,8 @@ function start() {
 
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
-  $('sel-marchand').value = String(state.sellFrom);
+  for (const cle of Object.keys(RARITY)) $('vente-' + cle).value = String(state.sellAt[cle] || 0);
   $('sel-rank').value = String(state.sellRank || 0);
-  $('sel-rarete').value = String(state.sellRarity || 0);
   $('sel-evolution').value = String(state.evolveUpTo);
   $('sel-acheteur').value = state.buyKind;
 

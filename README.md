@@ -193,9 +193,31 @@ où les cinq formes partagent le même glyphe.
 | albâtre | 1,6 % | ×1,40 |
 
 **Le prodige** ignore la lignée : une bête sur cinq cents naît *chromatique*, quelle que soit
-sa rareté — on peut avoir un têtard chromatique. Halo doré battant, valeur **×5**, et elle
-naît **protégée d'office** : perdre une bête sur cinq cents parce qu'un automate l'a vendue
-avant qu'on l'ait vue serait impardonnable.
+sa rareté — on peut avoir un têtard chromatique. Halo doré battant, et elle naît **protégée
+d'office** : perdre une bête sur cinq cents parce qu'un automate l'a vendue avant qu'on l'ait
+vue serait impardonnable.
+
+**Un chromatique vaut exactement deux crans de rareté** : ×125, soit 25², puisque chaque
+rareté vaut vingt-cinq fois la précédente. À palier et taille égaux, une commune chromatique
+passe donc devant une rare ordinaire et reste derrière une épique ordinaire — et la règle se
+propage d'elle-même à toute l'échelle.
+
+| À palier 1, adulte | Valeur |
+|---|---|
+| commune | 40 |
+| rare | 1 000 |
+| **commune chromatique** | **5 000** |
+| épique | 24 000 |
+| **rare chromatique** | **125 000** |
+| mythique | 600 000 |
+| **épique chromatique** | **3 M** |
+| **mythique chromatique** | **75 M** |
+
+À ×5, un chromatique commun valait cinq fois une commune ordinaire et restait cinq fois sous
+la moindre rare : la plus belle bête du jeu ne pesait rien face à un tirage banal, et le seul
+coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. Le coût d'évolution,
+lui, ne suit **que** la rareté — faire monter un chromatique coûte le prix de sa lignée, ce
+qui en fait l'affaire du jeu.
 
 **Le tempérament** ne se lit qu'en texte, mais il agit : `grow` raccourcit la croissance,
 `fat` accélère l'engraissement. Docile (neutre), nerveux (croissance ×1,25 / engraissement
@@ -276,7 +298,7 @@ là où l'engraissement a déjà coûté très cher.
 
 Ses facteurs sont exactement ceux du prix de vente — **palier, rareté, teinte, taille** — si
 bien qu'une bête rapporte à proportion de ce qu'elle vaut. Le **chromatique** est le seul à
-recevoir un bonus par-dessus : sa rente est **doublée**, en plus du ×5 que sa valeur porte
+recevoir un bonus par-dessus : sa rente est **doublée**, en plus du ×125 que sa valeur porte
 déjà. C'est la bête qu'un joueur garde, c'est elle qu'on récompense.
 
 | Bête, arrivée *énorme* | Rente |
@@ -286,7 +308,9 @@ déjà. C'est la bête qu'un joueur garde, c'est elle qu'on récompense.
 | commune p5 | 708 / s |
 | rare p5 | 17 708 / s |
 | mythique p5 | 10,6 M / s |
-| mythique p5 **chromatique** | 106,3 M / s |
+| commune p1 **chromatique** | 4,72 / s |
+| commune p5 **chromatique** | 177 083 / s |
+| mythique p5 **chromatique** | 2,66 Md / s |
 
 Pousser la taille rapporte, mais bien moins vite que ça ne coûte — une commune p3 passe de
 2,83 à 7,50 par seconde entre *énorme* et *démesuré*, quand l'engraissement nécessaire, lui,
@@ -442,12 +466,20 @@ l'acheteur automatique ou en voir un autre éclore ne détourne jamais le regard
 cours d'élevage. Un œuf ne passe au premier plan que s'il n'y a plus rien de vivant à
 regarder, et c'est alors le plus avancé.
 
-**Vendre ne déplace pas le regard : on garde sa case.** Si on était sur la case 6, on reste
-sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une liste dont on
-retire une ligne. Sauter « à la bête la plus avancée » faisait traverser la bande à chaque
-vente et rendait impossible d'écouler un enclos case par case. La règle vaut pour la vente à
-la main comme pour le marchand automatique, y compris quand il rafle plusieurs bêtes d'un
-coup.
+**Le marchand ne touche jamais à la bête en scène.** C'est le pendant de la règle du dessus :
+rien ne prend la scène à une bête vivante, et rien ne l'y enlève non plus. Sans ça, on menait
+une bête à l'âge adulte à la main et, au clic suivant, on martelait une autre bête — la sienne
+avait été vendue à l'instant précis où elle devenait vendable. Tenir la case ne suffisait pas :
+la case était la bonne, c'est l'animal dedans qui avait changé.
+
+Elle n'est pas protégée pour autant — ☆ *Garder* reste la seule vraie protection. Dès qu'on
+regarde ailleurs, elle part au tour suivant. Une seule bête échappe au marchand à la fois :
+mesuré sur une ferme de dix-huit bêtes, il en vend 17 au lieu de 18, l'enclos ne s'engorge pas.
+
+**Vendre soi-même ne déplace pas le regard non plus : on garde sa case.** Si on était sur la
+case 6, on reste sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une
+liste dont on retire une ligne. Sauter « à la bête la plus avancée » faisait traverser la bande
+à chaque vente et rendait impossible d'écouler un enclos case par case.
 
 Seule entorse, celle de la règle du dessus : on ne quitte jamais le vivant pour un œuf. Si la
 case libérée retombe sur une coquille alors qu'il reste des bêtes, on s'arrête au bord du bloc
