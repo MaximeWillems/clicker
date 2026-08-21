@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny round worm, simple oval body, two huge eyes
+2. small grass snake coiled once, round head, tiny smile
+3. feathered serpent, soft small feathers along a round coiled body
+4. amphithere, feathered serpent with two rounded soft wings
+5. quetzalcoatl, large coiled feathered serpent with a small soft feather crown, sleepy face
+
+
+--- une fois la planche enregistrée dans art/source-serpent.png ---
+
+python tools/decouper.py art/source-serpent.png serpent vermisseau,couleuvre,serpent-plume,amphithere,quetzalcoatl
+
+--- puis dans la table ART, en haut de game.js ---
+
+  serpent: {
+    1: 'serpent-1-vermisseau.png',   // Vermisseau
+    2: 'serpent-2-couleuvre.png',   // Couleuvre
+    3: 'serpent-3-serpent-plume.png',   // Serpent-plume
+    4: 'serpent-4-amphithere.png',   // Amphithère
+    5: 'serpent-5-quetzalcoatl.png',   // Quetzalcóatl
+  },

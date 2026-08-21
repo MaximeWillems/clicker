@@ -74,6 +74,23 @@ const FATTEN_X  = 3;        // secondes d'engraissement par seconde et par nivea
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
 const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever la scène
 
+/* ── La rente ─────────────────────────────────────────────────────────────────
+   Tout le reste du jeu pousse à vendre : l'enclos est la ressource rare, et une bête qu'on
+   garde est un enclos qui ne tourne pas. La rente est la seule règle qui paie pour NE PAS
+   vendre — sans elle, garder une mythique chromatique était un pur sacrifice sentimental.
+
+   Elle ne s'ouvre qu'à « énorme », là où l'engraissement a déjà coûté très cher, et elle
+   vaut la valeur de la bête étalée sur une heure. C'est peu : un enclos qui enchaîne les
+   cycles rapporte bien davantage. Elle ne remplace donc jamais l'élevage, elle récompense
+   la poignée de bêtes qu'on avait de toute façon décidé de ne pas vendre.
+
+   Ses quatre facteurs sont déjà ceux du prix de vente — palier, rareté, teinte et taille —
+   si bien qu'une bête rapporte à proportion exacte de ce qu'elle vaut. Le chromatique est
+   le seul à recevoir un bonus par-dessus : c'est LA bête qu'un joueur garde. */
+const RENTE_RANG    = 2;      // rang minimal : « énorme ». En deçà, rien du tout.
+const RENTE_H       = 3600;   // une bête rapporte sa propre valeur en une heure
+const RENTE_PRODIGE = 2;      // un chromatique double la sienne
+
 /* ── Variantes ────────────────────────────────────────────────────────────────
    Tirées à l'éclosion et gardées À VIE, contrairement à la taille qu'une évolution
    remet à zéro : ce sont des identités, pas des états. C'est ce qui en fait une
@@ -529,6 +546,14 @@ const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / tierTime(c)
 // rangs, et c'est le clic qui franchit le rang qui paie.
 const sellValue  = c => Math.max(1, Math.round(baseValue(c) * stageMult(c)));
 
+/* Ce qu'une bête rapporte par seconde en restant simplement là. La valeur de vente porte
+   déjà palier, rareté, teinte et taille : la rente en découle directement, et une bête
+   rapporte donc à proportion exacte de ce qu'elle vaut. */
+const renteOf = c => isAdult(c) && rankOf(sizeFactor(c)).i >= RENTE_RANG
+                   ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
+                   : 0;
+const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
+
 function rankOf(sf) {
   let i = 0;
   while (i + 1 < RANKS.length && sf >= RANKS[i + 1].at) i++;
@@ -579,6 +604,10 @@ function fmt(n) {
 }
 
 function dec(n, d) { return n.toFixed(d === undefined ? 2 : d).replace('.', ','); }
+
+// Une rente commence à deux centièmes de pièce par seconde : fmt l'arrondirait à zéro et
+// donnerait l'impression que rien ne tombe. On garde donc les décimales tant qu'il en faut.
+const fmtRente = n => n < 10 ? dec(n) : n < 1000 ? dec(n, 1) : fmt(n);
 
 function fmtTime(s) {
   s = Math.max(0, Math.ceil(s));
@@ -930,6 +959,11 @@ function advance(dt) {
       if (c.p < g) c.p = Math.min(g, c.p + dt * eleve);
     }
   }
+  /* La rente ne s'achète pas, elle se mérite en gardant : elle tombe donc ici, avec ce que
+     le temps fait tout seul, et non parmi les automates. Elle tombe aussi pendant une
+     absence — une bête qu'on garde travaille, présent ou pas. */
+  const rente = renteTotale();
+  if (rente) state.coins += rente * dt;
 }
 
 function runAutomations(dt) {
@@ -1003,16 +1037,21 @@ function catchUp() {
   // une première partie ne doit pas s'ouvrir sur « pendant ton absence », et tant que rien
   // n'est automatisé il ne s'est effectivement rien passé pendant l'absence
   if (isNewGame || elapsed < 30) return;
-  if (!state.up.couveuse && !state.up.eleveur) return;
+  // une bête assez grosse pour renter travaille même sans le moindre automate acheté
+  if (!state.up.couveuse && !state.up.eleveur && !renteTotale()) return;
 
   const adultsBefore = state.pen.filter(isAdult).length;
+  const coinsBefore = state.coins;
   advance(elapsed);
   const hatched = hatchAll();
   const grown = state.pen.filter(isAdult).length - adultsBefore;
+  const rente = state.coins - coinsBefore;
 
   const bits = [];
   if (hatched) bits.push(hatched + (hatched > 1 ? ' œufs ont éclos' : ' œuf a éclos'));
   if (grown > 0) bits.push(grown + (grown > 1 ? ' créatures sont devenues adultes' : ' créature est devenue adulte'));
+  // les pièces gagnées sans rien vendre : c'est la seule preuve que garder paie
+  if (rente >= 1) bits.push('tes bêtes gardées ont rapporté ' + fmt(rente) + ' pièces');
   const note = $('offline-note');
   note.innerHTML = '<b>Pendant ton absence (' + fmtTime(elapsed) + ')</b> — ' +
     (bits.length ? bits.join(', ') + '.' : 'rien de neuf, tout tournait déjà.');
@@ -1355,7 +1394,14 @@ function renderStage() {
       setText($('stage-timer'), 'adulte · plus aucun rang au-dessus');
     }
     $('stage-timer').classList.add('done');
-    setText($('stage-hint'), 'Continue à cliquer : elle grandit sans fin, de plus en plus lentement.');
+    // La rente doit s'annoncer avant d'exister : sans ça, personne ne devine qu'il faut
+    // pousser une bête jusqu'à « énorme » pour qu'elle se mette à payer.
+    const r = renteOf(c);
+    setText($('stage-hint'), r
+      ? 'Elle rapporte ' + fmtRente(r) + ' pièce' + (r >= 2 ? 's' : '') +
+        ' par seconde rien qu’en restant là. La garder paie.'
+      : 'Continue à cliquer : elle grandit sans fin, de plus en plus lentement. Arrivée ' +
+        RANKS[RENTE_RANG].fem + ', elle se mettra à rapporter toute seule.');
   }
 
   // Un œuf cher ne se rembourse qu'en menant la bête assez haut : on le dit, plutôt que
@@ -1446,6 +1492,8 @@ function ligneBoosts(sujet) {
                                        : 'rien sans toi'));
       if (n && t.fat !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.fat));
       if (n) bouts.push('mangeoire ×' + n);
+      const r = renteOf(c);
+      if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
     }
   }
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
@@ -1504,6 +1552,10 @@ function noteMarchand() {
 
 function tickView() {
   $('coins').textContent = fmt(state.coins);
+
+  const rente = renteTotale();
+  $('rente').hidden = !rente;
+  if (rente) setText($('rente'), '+' + fmtRente(rente) + ' / s');
 
   for (const s of subjects()) {
     const t = thumbs.get(s.key);

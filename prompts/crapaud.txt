@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny round tadpole, almost entirely head, huge sparkling eyes, one small wiggly tail
+2. small chubby toad sitting, big round eyes, tiny smile, two stubby feet
+3. very round fat toad, soft pale belly, happy sleepy eyes, tiny feet under a huge body
+4. big round mossy toad, still chubby, soft rounded bumps on the back instead of horns, drowsy eyes
+5. enormous gentle mountain toad, a soft rounded green hill on its back with one small white snow cap, tiny sleepy face at the bottom
+
+
+--- une fois la planche enregistrée dans art/source-crapaud.png ---
+
+python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,crapaud-buffle,colosse-fangeux,gama
+
+--- puis dans la table ART, en haut de game.js ---
+
+  crapaud: {
+    1: 'crapaud-1-tetard.png',   // Têtard
+    2: 'crapaud-2-crapaud.png',   // Crapaud
+    3: 'crapaud-3-crapaud-buffle.png',   // Crapaud-buffle
+    4: 'crapaud-4-colosse-fangeux.png',   // Colosse fangeux
+    5: 'crapaud-5-gama.png',   // Gama, crapaud-montagne
+  },

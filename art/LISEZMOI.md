@@ -31,11 +31,16 @@ le jeu affiche l'emoji : rien ne casse jamais, et on peut s'arrêter à tout mom
 
 ```bash
 node tools/prompt.js --liste     # les 19 lignées
-node tools/prompt.js poisson     # le prompt, prêt à coller
+node tools/prompt.js poisson     # le prompt d'une lignée
+node tools/prompt.js --tout      # les dix-neuf d'un coup
 ```
 
-Il sort le prompt complet, puis la ligne de découpe et le bloc à coller dans `ART` — tout
-l'enchaînement en une commande. Les noms des formes sont lus dans `game.js`, donc ils ne
+Le prompt est **écrit dans `prompts/<lignée>.txt`** en plus d'être affiché. Lancée depuis un
+bouton, une commande n'affiche pas forcément son retour, et un prompt qu'on ne retrouve pas
+ne sert à rien.
+
+Chaque fichier contient le prompt complet, la ligne de découpe correspondante et le bloc à
+coller dans `ART` — tout l'enchaînement. Les noms des formes sont lus dans `game.js`, donc ils ne
 peuvent pas dériver du jeu.
 
 Les descriptions décrivent la **masse et la posture** de chaque stade, jamais les

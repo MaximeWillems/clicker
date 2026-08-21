@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny glowing larva, round and legless, two huge eyes, faint warm glow
+2. small salamander, four tiny legs, round body, soft orange spots
+3. ember salamander, plump body with warm glowing patches on the back
+4. ash salamander, dark round body with soft glowing cracks, drowsy eyes
+5. ifrit, round fiery creature with a small soft flame crown, sleepy friendly face
+
+
+--- une fois la planche enregistrée dans art/source-salamandre.png ---
+
+python tools/decouper.py art/source-salamandre.png salamandre larve-ardente,salamandre,salamandre-de-braise,salamandre-de-cendre,ifrit
+
+--- puis dans la table ART, en haut de game.js ---
+
+  salamandre: {
+    1: 'salamandre-1-larve-ardente.png',   // Larve ardente
+    2: 'salamandre-2-salamandre.png',   // Salamandre
+    3: 'salamandre-3-salamandre-de-braise.png',   // Salamandre de braise
+    4: 'salamandre-4-salamandre-de-cendre.png',   // Salamandre de cendre
+    5: 'salamandre-5-ifrit.png',   // Ifrit
+  },

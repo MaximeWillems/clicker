@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny bat pup, huge ears, wings wrapped around itself like a blanket
+2. small round bat, wings folded, big ears, tiny fangs but friendly
+3. fruit bat, plump body, larger rounded wings folded
+4. night drinker, dark round bat with a small cape-like wing fold, drowsy eyes
+5. camazotz, enormous bat with wings spread wide, tiny sleepy face in the middle
+
+
+--- une fois la planche enregistrée dans art/source-chiroptere.png ---
+
+python tools/decouper.py art/source-chiroptere.png chiroptere chiroptere,chauve-souris,roussette,buveur-de-nuit,camazotz
+
+--- puis dans la table ART, en haut de game.js ---
+
+  chiroptere: {
+    1: 'chiroptere-1-chiroptere.png',   // Chiroptère
+    2: 'chiroptere-2-chauve-souris.png',   // Chauve-souris
+    3: 'chiroptere-3-roussette.png',   // Roussette
+    4: 'chiroptere-4-buveur-de-nuit.png',   // Buveur de nuit
+    5: 'chiroptere-5-camazotz.png',   // Camazotz, l’éclipse
+  },

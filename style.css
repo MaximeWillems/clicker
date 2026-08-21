@@ -100,6 +100,11 @@ body {
   font-family: var(--f-num); font-size: 0.72rem; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--faint);
 }
+/* la rente : discrète, mais de la couleur des pièces — c'est bien de l'argent qui tombe */
+.purse-rente {
+  font-family: var(--f-num); font-size: 0.8rem;
+  color: var(--coin); opacity: 0.75; font-variant-numeric: tabular-nums;
+}
 .tools { display: flex; gap: 0.4rem; }
 .tool {
   font-family: var(--f-num); font-size: 0.78rem;

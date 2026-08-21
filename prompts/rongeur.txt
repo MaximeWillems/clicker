@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny mouse pup, huge head and ears, thin tail, eyes barely open
+2. small round rat, long thin tail, whiskers, bright eyes
+3. plump coypu, very round body, small round ears, calm face
+4. colossal rodent, enormous round body, tiny ears, short legs
+5. ratatosk, giant squirrel with an enormous fluffy tail curled around it, sleepy face
+
+
+--- une fois la planche enregistrée dans art/source-rongeur.png ---
+
+python tools/decouper.py art/source-rongeur.png rongeur souriceau,rat,ragondin,rongeur-colossal,ratatosk
+
+--- puis dans la table ART, en haut de game.js ---
+
+  rongeur: {
+    1: 'rongeur-1-souriceau.png',   // Souriceau
+    2: 'rongeur-2-rat.png',   // Rat
+    3: 'rongeur-3-ragondin.png',   // Ragondin
+    4: 'rongeur-4-rongeur-colossal.png',   // Rongeur colossal
+    5: 'rongeur-5-ratatosk.png',   // Ratatosk, messager des cimes
+  },

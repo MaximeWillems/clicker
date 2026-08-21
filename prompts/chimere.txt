@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny two-headed runt, round fuzzy body, four huge eyes
+2. small chimera cub, round lion body with a tiny goat head on its back
+3. chimera, plump lion body, small goat head on the back, round snake tail
+4. royal chimera, larger and rounder, small golden crown, three calm faces
+5. primordial chimera, enormous fluffy body with three tiny sleepy heads
+
+
+--- une fois la planche enregistrée dans art/source-chimere.png ---
+
+python tools/decouper.py art/source-chimere.png chimere avorton,chimereau,chimere,chimere-royale,chimere-primordiale
+
+--- puis dans la table ART, en haut de game.js ---
+
+  chimere: {
+    1: 'chimere-1-avorton.png',   // Avorton
+    2: 'chimere-2-chimereau.png',   // Chimèreau
+    3: 'chimere-3-chimere.png',   // Chimère
+    4: 'chimere-4-chimere-royale.png',   // Chimère royale
+    5: 'chimere-5-chimere-primordiale.png',   // Chimère primordiale
+  },

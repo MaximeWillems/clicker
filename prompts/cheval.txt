@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny foal, huge head, wobbly thin legs, small tuft of mane
+2. small round pony, short legs, soft mane, friendly eyes
+3. sturdy warhorse, thick round body, braided mane
+4. unicorn, round white horse with one small spiral horn and a soft flowing mane
+5. pegasus, round horse with two big soft feathered wings, gentle sleepy eyes
+
+
+--- une fois la planche enregistrée dans art/source-cheval.png ---
+
+python tools/decouper.py art/source-cheval.png cheval poulain,cheval,destrier,licorne,pegase
+
+--- puis dans la table ART, en haut de game.js ---
+
+  cheval: {
+    1: 'cheval-1-poulain.png',   // Poulain
+    2: 'cheval-2-cheval.png',   // Cheval
+    3: 'cheval-3-destrier.png',   // Destrier
+    4: 'cheval-4-licorne.png',   // Licorne
+    5: 'cheval-5-pegase.png',   // Pégase
+  },

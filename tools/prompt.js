@@ -180,6 +180,37 @@ const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
 
 const cle = process.argv[2];
 
+/* Le prompt est TOUJOURS écrit dans un fichier, en plus du terminal. Lancée depuis un
+   bouton de la conversation, une commande n'affiche pas forcément son retour — et un
+   prompt qu'on ne retrouve pas ne sert à rien. */
+function ecrire(ligne) {
+  const stades = STADES[ligne.key];
+  const suffixes = ligne.forms.map(f => sansAccents(f[0].split(',')[0]));
+  const l = [ENTETE, '', 'The 5 stages, in order:'];
+  ligne.forms.forEach((f, i) => l.push((i + 1) + '. ' + stades[i]));
+  l.push('', '', '--- une fois la planche enregistrée dans art/source-' + ligne.key + '.png ---', '');
+  l.push('python tools/decouper.py art/source-' + ligne.key + '.png ' + ligne.key + ' ' + suffixes.join(','));
+  l.push('', '--- puis dans la table ART, en haut de game.js ---', '');
+  l.push('  ' + ligne.key + ': {');
+  ligne.forms.forEach((f, i) =>
+    l.push('    ' + (i + 1) + ": '" + ligne.key + '-' + (i + 1) + '-' + suffixes[i] + ".png',   // " + f[0]));
+  l.push('  },', '');
+
+  const texte = l.join('\n');
+  if (!fs.existsSync('prompts')) fs.mkdirSync('prompts');
+  const chemin = 'prompts/' + ligne.key + '.txt';
+  fs.writeFileSync(chemin, texte);
+  return { chemin, texte };
+}
+
+if (cle === '--tout') {
+  const faits = LINES.filter(l => STADES[l.key]).map(l => ecrire(l).chemin);
+  console.log('\n' + faits.length + ' prompts écrits :\n');
+  faits.forEach(c => console.log('  ' + c));
+  console.log('');
+  process.exit(0);
+}
+
 if (!cle || cle === '--liste') {
   console.log('\nLignées disponibles :\n');
   for (const l of LINES) {
@@ -196,21 +227,12 @@ if (!ligne || !STADES[cle]) {
   process.exit(1);
 }
 
-const stades = STADES[cle];
-const suffixes = ligne.forms.map(f => sansAccents(f[0].split(',')[0]));
+const { chemin, texte } = ecrire(ligne);
 
 console.log('\n' + '='.repeat(78));
 console.log('  ' + ligne.name + ' — ' + ligne.rarity);
 console.log('='.repeat(78) + '\n');
-console.log(ENTETE + '\n\nThe 5 stages, in order:');
-ligne.forms.forEach((f, i) => console.log((i + 1) + '. ' + stades[i]));
-
-console.log('\n' + '-'.repeat(78));
-console.log('  Une fois la planche enregistrée dans art/source-' + cle + '.png :');
-console.log('-'.repeat(78) + '\n');
-console.log('python tools/decouper.py art/source-' + cle + '.png ' + cle + ' ' + suffixes.join(',') + '\n');
-console.log('Puis ajouter dans la table ART, en haut de game.js :\n');
-console.log('  ' + cle + ': {');
-ligne.forms.forEach((f, i) =>
-  console.log('    ' + (i + 1) + ": '" + cle + '-' + (i + 1) + '-' + suffixes[i] + ".png',   // " + f[0]));
-console.log('  },\n');
+console.log(texte);
+console.log('='.repeat(78));
+console.log('  Écrit dans ' + chemin + ' — ouvre ce fichier et copie tout.');
+console.log('='.repeat(78) + '\n');

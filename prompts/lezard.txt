@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny lizard hatchling, huge head, stubby curled tail, four dot legs
+2. small round lizard, four little legs, long tail curled around the body
+3. chunky monitor lizard, thick heavy body, broad tail, calm eyes
+4. small wyvern, no front legs, two big soft rounded wings folded like a cape
+5. enormous earth dragon, round heavy body, small folded wings, two tiny rounded horns, sleepy
+
+
+--- une fois la planche enregistrée dans art/source-lezard.png ---
+
+python tools/decouper.py art/source-lezard.png lezard lezardeau,lezard,varan,wyverne,dragon-de-terre
+
+--- puis dans la table ART, en haut de game.js ---
+
+  lezard: {
+    1: 'lezard-1-lezardeau.png',   // Lézardeau
+    2: 'lezard-2-lezard.png',   // Lézard
+    3: 'lezard-3-varan.png',   // Varan
+    4: 'lezard-4-wyverne.png',   // Wyverne
+    5: 'lezard-5-dragon-de-terre.png',   // Dragon de terre
+  },

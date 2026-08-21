@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny round fish fry, almost all head, huge eyes, one small transparent tail fin
+2. small plump carp, round body, tiny rounded fins, cheerful eyes
+3. very round old carp, two soft drooping whiskers, sleepy half-closed eyes, wide heavy body
+4. long sea serpent, soft body coiled once into a loose loop, small round head on top
+5. enormous leviathan, thick body coiled filling the frame, tiny sleepy face in front
+
+
+--- une fois la planche enregistrée dans art/source-poisson.png ---
+
+python tools/decouper.py art/source-poisson.png poisson alevin,carpe,carpe-centenaire,serpent-de-mer,leviathan
+
+--- puis dans la table ART, en haut de game.js ---
+
+  poisson: {
+    1: 'poisson-1-alevin.png',   // Alevin
+    2: 'poisson-2-carpe.png',   // Carpe
+    3: 'poisson-3-carpe-centenaire.png',   // Carpe centenaire
+    4: 'poisson-4-serpent-de-mer.png',   // Serpent de mer
+    5: 'poisson-5-leviathan.png',   // Léviathan
+  },

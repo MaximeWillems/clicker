@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny bone fragment with two glowing round eyes, nothing else
+2. small round dinosaur, stubby legs, short tail, curious eyes
+3. behemoth, heavy round body, thick short legs, small head
+4. ancient behemoth, rounded armor plates along the back, drowsy eyes
+5. primordial behemoth, colossal round body filling the frame, tiny sleepy head at the bottom
+
+
+--- une fois la planche enregistrée dans art/source-behemoth.png ---
+
+python tools/decouper.py art/source-behemoth.png behemoth ossement,saurien,behemoth,behemoth-ancien,behemoth-primordial
+
+--- puis dans la table ART, en haut de game.js ---
+
+  behemoth: {
+    1: 'behemoth-1-ossement.png',   // Ossement
+    2: 'behemoth-2-saurien.png',   // Saurien
+    3: 'behemoth-3-behemoth.png',   // Béhémoth
+    4: 'behemoth-4-behemoth-ancien.png',   // Béhémoth ancien
+    5: 'behemoth-5-behemoth-primordial.png',   // Béhémoth primordial
+  },

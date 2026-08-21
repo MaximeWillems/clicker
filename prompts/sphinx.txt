@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny hairless kitten, huge ears and eyes, thin curled tail
+2. sphinx cat, slender round body, very big ears, curious eyes
+3. royal sphinx, small lion body with a soft striped headdress
+4. tomb guardian, stone lion sitting upright, heavy paws, calm face
+5. great sphinx, enormous stone lion lying down, tiny sleepy face
+
+
+--- une fois la planche enregistrée dans art/source-sphinx.png ---
+
+python tools/decouper.py art/source-sphinx.png sphinx chaton-sans-poil,sphinx,sphinx-royal,gardien-de-tombeau,grand-sphinx
+
+--- puis dans la table ART, en haut de game.js ---
+
+  sphinx: {
+    1: 'sphinx-1-chaton-sans-poil.png',   // Chaton sans poil
+    2: 'sphinx-2-sphinx.png',   // Sphinx
+    3: 'sphinx-3-sphinx-royal.png',   // Sphinx royal
+    4: 'sphinx-4-gardien-de-tombeau.png',   // Gardien de tombeau
+    5: 'sphinx-5-grand-sphinx.png',   // Grand Sphinx
+  },

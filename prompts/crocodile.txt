@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny crocodile hatchling, huge head, short rounded snout, stubby tail
+2. small chubby crocodile, four stubby legs, rounded snout, friendly eyes
+3. thick ancient crocodile, heavy armored back, broad rounded snout, half-closed eyes
+4. draco-saurian, thick crocodile body with two small rounded wings on its back
+5. enormous thunder dragon, massive round body, one small round storm cloud floating above, sleepy face
+
+
+--- une fois la planche enregistrée dans art/source-crocodile.png ---
+
+python tools/decouper.py art/source-crocodile.png crocodile crocodillon,crocodile,crocodile-ancien,draco-saurien,dragon-tonnerre
+
+--- puis dans la table ART, en haut de game.js ---
+
+  crocodile: {
+    1: 'crocodile-1-crocodillon.png',   // Crocodillon
+    2: 'crocodile-2-crocodile.png',   // Crocodile
+    3: 'crocodile-3-crocodile-ancien.png',   // Crocodile ancien
+    4: 'crocodile-4-draco-saurien.png',   // Draco-saurien
+    5: 'crocodile-5-dragon-tonnerre.png',   // Dragon-tonnerre
+  },

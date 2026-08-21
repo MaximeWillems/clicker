@@ -1,0 +1,42 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny wolf pup, huge head and paws, floppy ears, big eyes
+2. small round wolf, thick fluffy fur, bushy tail, friendly eyes
+3. steppe wolf, larger and shaggier, thick neck fur, calm eyes
+4. werewolf standing upright, round belly, soft fur, harmless expression
+5. fenrir, enormous fluffy wolf lying down, tiny sleepy face, huge paws in front
+
+
+--- une fois la planche enregistrée dans art/source-loup.png ---
+
+python tools/decouper.py art/source-loup.png loup louveteau,loup,loup-des-steppes,garou,fenrir
+
+--- puis dans la table ART, en haut de game.js ---
+
+  loup: {
+    1: 'loup-1-louveteau.png',   // Louveteau
+    2: 'loup-2-loup.png',   // Loup
+    3: 'loup-3-loup-des-steppes.png',   // Loup des steppes
+    4: 'loup-4-garou.png',   // Garou
+    5: 'loup-5-fenrir.png',   // Fenrir, dévoreur
+  },
