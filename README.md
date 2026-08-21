@@ -201,8 +201,30 @@ confiné à la phase de croissance — la durée de référence des rangs de tai
 palier, sinon un tempérament vif cumulerait deux bonus.
 
 **Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé — n'a aucun
-effet. C'est de l'identité pure : « un Ouroboros chromatique doré marbré placide » se
-reconnaît entre mille.
+effet. C'est de l'identité pure.
+
+### Une seule épithète, accolée au nom
+
+Les variantes ne s'affichent pas en liste sous le nom. La bête porte **un seul mot en plus
+du sien** : `Varan cendré`, `Carpe gloutonne`, `Wyverne dorée`. Empiler
+`chromatique · écarlate · rayé · placide` donnait une fiche technique à déchiffrer sous
+chaque animal ; un nom composé se retient et se raconte.
+
+L'épithète retenue est **celle qui distingue le plus** : le prodige d'abord, puis la teinte —
+c'est elle qu'on voit à l'écran —, puis le tempérament, et le motif quand la bête n'a rien
+d'autre à montrer. Une bête ordinaire, docile et unie garde son nom nu.
+
+Ce qui est écarté du nom **reste lisible là où ça compte** : le tempérament dans la ligne des
+boosts (`gloutonne ×1,40`), la teinte dans le multiplicateur de valeur. Rien ne se perd, tout
+se lit au bon endroit.
+
+L'épithète **s'accorde en genre**. Chaque forme féminine est marquée `'f'` dans sa
+déclaration (18 des 95 : carpe, wyverne, méduse, salamandre, licorne, chimère…), et chaque
+teinte et tempérament porte sa forme féminine à côté de la masculine. Sans ça, la moitié du
+bestiaire se serait appelée « Carpe cendré ».
+
+Les noms à titre reçoivent leur épithète **sur le nom propre**, pas à la fin :
+`Khépri doré, porteur du soleil` — jamais `Khépri, porteur du soleil doré`.
 
 ### Ce que vaut la mangeoire
 
@@ -244,13 +266,14 @@ continuer l'aventure avec une bête plutôt que de la faire entrer dans la chaî
 Le jeu commence entièrement à la main : un œuf ne couve pas et une créature ne grandit pas
 tant qu'on ne clique pas dessus.
 
-**Les compteurs suivent une règle unique** : des secondes quand quelque chose fait avancer la
-chose tout seul, des clics sinon — annoncer « 15 s » alors que rien ne s'écoule serait un
-mensonge. Quand les deux valent, ils s'affichent ensemble : `30 s ou 30 clics`. Le raccourci
-au clic disparaît au-delà de soixante clics, là où marteler ne sert plus à rien.
+**Les compteurs suivent une règle unique, et n'affichent jamais deux unités à la fois** :
+des clics tant que rien n'avance tout seul — annoncer « 15 s » alors qu'aucune seconde ne
+s'écoule serait un mensonge — et des secondes dès qu'un automate tourne. Faire cohabiter les
+deux (`30 s ou 30 clics`) donnait deux mesures pour une même attente et invitait à marteler
+une barre qui montait déjà sans nous.
 
 La règle vaut aussi pour un adulte qui s'engraisse : `33 clics → grand` sans mangeoire,
-`17 s ou 33 clics → grand` avec.
+`17 s → grand` avec.
 
 **Une ligne détaille les boosts en cours**, sous le compteur : la durée de base, ce qu'elle
 devient avec ce qu'on possède, et chaque facteur qui y contribue.
@@ -270,7 +293,7 @@ double presque, donc chaque palier se mérite et les rendements décroissent d'e
 
 | Amélioration | Base | Mult. | Effet au niveau *n* |
 |---|---|---|---|
-| Force du clic | 60 | ×1,6 | *n*+1 secondes de vie par clic |
+| Force du clic | 60 | ×1,6 | *n*+1 secondes gagnées par clic, à la vitesse des automates |
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
 | Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
 | Acheteur automatique | 2 000 | — | achat unique |
@@ -356,7 +379,7 @@ au prix de son palier actuel. L'enchaînement complet se règle donc en trois ca
 jusqu'au palier 3, engraisser jusqu'à *énorme*, vendre — et la ferme tourne seule : couver,
 élever, faire monter, engraisser, vendre, racheter.
 
-La force du clic vaut aussi pour l'engraissement d'un adulte, et les compteurs en tiennent
+La force du clic vaut aussi pour l'engraissement d'un adulte, et le compteur en clics en tient
 compte : « 4 clics » plutôt que « 30 clics » une fois le clic monté à 8 secondes.
 
 Les sauvegardes d'avant les niveaux sont converties au chargement : `true` devient niveau 1.
@@ -453,9 +476,21 @@ dessins manquent le plus.
 
 ### Croissance sans fin
 
-Un clic vaut toujours **une seconde de vie**, avant comme après l'âge adulte : l'animal ne
-cesse jamais de grandir. Ce qui s'essouffle, c'est le rendement — la taille suit un
-logarithme, donc chaque rang coûte bien plus cher que le précédent.
+Un clic fait gagner du temps avant comme après l'âge adulte : l'animal ne cesse jamais de
+grandir. Ce qui s'essouffle, c'est le rendement — la taille suit un logarithme, donc chaque
+rang coûte bien plus cher que le précédent.
+
+### Le clic gagne du temps, il n'ajoute pas des secondes brutes
+
+Un clic apporte **la force du clic en secondes de ce que tes automates produisent** : à
+éleveur ×7 et force du clic 14, il ajoute 98 secondes de croissance, c'est-à-dire quatorze
+secondes gagnées sur la machine.
+
+Sans cette règle, chaque automate acheté nerfait le clic au moment même où on payait pour
+aller plus vite : le « +14 s » affiché ne représentait plus que deux secondes de ce que
+l'éleveur faisait déjà tout seul, et cliquer devenait dérisoire. La même règle vaut pour la
+couveuse et pour la mangeoire — le clic reste un raccourci qui se sent, du premier œuf au
+dernier palier.
 
 **Le seuil d'un rang est aussi son multiplicateur de valeur**, et la valeur reste plate entre
 deux rangs : comme pour les juvéniles, c'est le clic qui franchit le rang qui paie.

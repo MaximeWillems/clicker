@@ -27,6 +27,29 @@ tracée *après* lui — sinon le corps la recouvre.
 Ce dossier remplace les emoji, **une lignée à la fois**. Tant qu'un dessin n'est pas là,
 le jeu affiche l'emoji : rien ne casse jamais, et on peut s'arrêter à tout moment.
 
+## Découper une planche générée
+
+Les modèles d'images sortent les cinq stades sur une seule planche, sur fond blanc. Pour la
+découper :
+
+```bash
+python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,colosse,gama
+```
+
+L'outil détoure, sépare les créatures, rogne chacune au plus juste, la centre dans un carré
+et réduit à 256 px — le jeu n'affiche jamais au-delà de 211.
+
+**Deux pièges que l'outil gère, et qu'il faut connaître si tu détoures à la main :**
+
+Un détourage qui efface *tout* pixel blanc perce aussi **les reflets dans les yeux** et la
+neige des sommets. Les bêtes se retrouvent avec des trous à la place du regard, ce qui est
+franchement inquiétant. Seul le blanc **relié au bord** est du fond : on remplit depuis les
+bords, on n'efface pas par couleur.
+
+Les images générées arrivent avec quelques pixels quasi transparents à l'intérieur (alpha 1
+à 8), résidus de compression. Ils percent la bête eux aussi et sont rebouchés avec la couleur
+des voisins.
+
 ## Ajouter un dessin
 
 1. Poser le fichier ici, par exemple `crapaud-tetard.png`.

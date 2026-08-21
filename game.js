@@ -84,14 +84,14 @@ const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever 
    donnent une identité à chaque bête sans rien demander aux graphismes. */
 
 const TINTS = [
-  { key: 'ordinaire', name: '',           filter: '',                                             mult: 1,    poids: 100 },
-  { key: 'cendre',    name: 'cendré',     filter: 'saturate(.3) brightness(.88)',                 mult: 1.10, poids: 22 },
-  { key: 'ecarlate',  name: 'écarlate',   filter: 'hue-rotate(-40deg) saturate(1.7)',             mult: 1.15, poids: 18 },
-  { key: 'azur',      name: 'azur',       filter: 'hue-rotate(150deg) saturate(1.4)',             mult: 1.15, poids: 18 },
-  { key: 'jade',      name: 'jade',       filter: 'hue-rotate(80deg) saturate(1.5)',              mult: 1.20, poids: 14 },
-  { key: 'amethyste', name: 'améthyste',  filter: 'hue-rotate(230deg) saturate(1.5)',             mult: 1.25, poids: 10 },
-  { key: 'dore',      name: 'doré',       filter: 'hue-rotate(25deg) saturate(2.2) brightness(1.15)', mult: 1.30, poids: 6 },
-  { key: 'albatre',   name: 'albâtre',    filter: 'saturate(0) brightness(1.4)',                  mult: 1.40, poids: 3 },
+  { key: 'ordinaire', name: '',          fem: '',          filter: '',                                                 mult: 1,    poids: 100 },
+  { key: 'cendre',    name: 'cendré',    fem: 'cendrée',   filter: 'saturate(.3) brightness(.88)',                     mult: 1.10, poids: 22 },
+  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  filter: 'hue-rotate(-40deg) saturate(1.7)',                 mult: 1.15, poids: 18 },
+  { key: 'azur',      name: 'azur',      fem: 'azur',      filter: 'hue-rotate(150deg) saturate(1.4)',                 mult: 1.15, poids: 18 },
+  { key: 'jade',      name: 'jade',      fem: 'jade',      filter: 'hue-rotate(80deg) saturate(1.5)',                  mult: 1.20, poids: 14 },
+  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', filter: 'hue-rotate(230deg) saturate(1.5)',                 mult: 1.25, poids: 10 },
+  { key: 'dore',      name: 'doré',      fem: 'dorée',     filter: 'hue-rotate(25deg) saturate(2.2) brightness(1.15)', mult: 1.30, poids: 6 },
+  { key: 'albatre',   name: 'albâtre',   fem: 'albâtre',   filter: 'saturate(0) brightness(1.4)',                      mult: 1.40, poids: 3 },
 ];
 
 // Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
@@ -102,12 +102,12 @@ const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A6
 
 // grow : divise la durée de croissance. fat : multiplie la vitesse d'engraissement.
 const TEMPERS = [
-  { key: 'docile',   name: 'docile',   grow: 1.00, fat: 1.00 },
-  { key: 'nerveux',  name: 'nerveux',  grow: 1.25, fat: 0.85 },
-  { key: 'placide',  name: 'placide',  grow: 0.85, fat: 1.25 },
-  { key: 'glouton',  name: 'glouton',  grow: 1.00, fat: 1.40 },
-  { key: 'farouche', name: 'farouche', grow: 1.15, fat: 0.95 },
-  { key: 'rêveur',   name: 'rêveur',   grow: 0.90, fat: 1.15 },
+  { key: 'docile',   name: 'docile',   fem: 'docile',    grow: 1.00, fat: 1.00 },
+  { key: 'nerveux',  name: 'nerveux',  fem: 'nerveuse',  grow: 1.25, fat: 0.85 },
+  { key: 'placide',  name: 'placide',  fem: 'placide',   grow: 0.85, fat: 1.25 },
+  { key: 'glouton',  name: 'glouton',  fem: 'gloutonne', grow: 1.00, fat: 1.40 },
+  { key: 'farouche', name: 'farouche', fem: 'farouche',  grow: 1.15, fat: 0.95 },
+  { key: 'rêveur',   name: 'rêveur',   fem: 'rêveuse',   grow: 0.90, fat: 1.15 },
 ];
 
 // Purement descriptif : aucun effet, juste de quoi reconnaître une bête entre mille.
@@ -146,8 +146,8 @@ const STAGE_MULT = { enfant: 0.15, ado: 0.40 };   // 1 par défaut pour tout adu
    `max: 1` marque les deux achats qui débloquent une capacité sans avoir de puissance. */
 const UPGRADES = [
   { key: 'clic', name: 'Force du clic', base: 60, mult: 1.6,
-    desc: 'Chaque clic vaut une seconde de vie de plus.',
-    value: n => 1 + n, unit: ' s par clic' },
+    desc: 'Chaque clic fait gagner une seconde de plus — une seconde de ce que tes automates produisent, pas une seconde de vie brute.',
+    value: n => 1 + n, unit: ' s gagnées par clic' },
   { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9,
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.',
     value: n => n, unit: '× la vitesse de couvaison' },
@@ -167,22 +167,24 @@ const UPGRADES = [
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
 
-/* Chaque forme : [nom, glyphe adulte, glyphe juvénile].
+/* Chaque forme : [nom, glyphe adulte, glyphe juvénile, genre].
    Le juvénile sert pendant l'enfance et l'adolescence — c'est ce qui fait qu'une wyverne
    commence sa vie en lézard et qu'un léviathan commence en serpent de mer. Là où les emoji
    n'offrent aucune variante (toute la lignée du crapaud), les deux sont identiques et seule
-   l'échelle raconte la croissance : ce sont ces cases-là qui réclament de vrais dessins. */
+   l'échelle raconte la croissance : ce sont ces cases-là qui réclament de vrais dessins.
+   Le genre n'est noté que pour les formes féminines ('f') : l'épithète du nom doit
+   s'accorder, et « Carpe gloutonne » ne s'écrit pas comme « Varan glouton ». */
 const LINES = [
   // ── communes ────────────────────────────────────────────────────────────
   { key: 'crapaud', name: 'Crapaud', rarity: 'commune', forms: [
     ['Têtard', '🐸', '🐸'], ['Crapaud', '🐸', '🐸'], ['Crapaud-buffle', '🐸', '🐸'],
     ['Colosse fangeux', '🐸', '🐸'], ['Gama, crapaud-montagne', '🐸', '🐸'] ] },
   { key: 'poisson', name: 'Poisson', rarity: 'commune', forms: [
-    ['Alevin', '🐟', '🐟'], ['Carpe', '🐟', '🐟'], ['Carpe centenaire', '🐠', '🐟'],
+    ['Alevin', '🐟', '🐟'], ['Carpe', '🐟', '🐟', 'f'], ['Carpe centenaire', '🐠', '🐟', 'f'],
     ['Serpent de mer', '🐍', '🐠'], ['Léviathan', '🐉', '🐍'] ] },
   { key: 'lezard', name: 'Lézard', rarity: 'commune', forms: [
     ['Lézardeau', '🦎', '🦎'], ['Lézard', '🦎', '🦎'], ['Varan', '🦎', '🦎'],
-    ['Wyverne', '🐲', '🦎'], ['Dragon de terre', '🐉', '🐲'] ] },
+    ['Wyverne', '🐲', '🦎', 'f'], ['Dragon de terre', '🐉', '🐲'] ] },
   { key: 'oiseau', name: 'Oiseau', rarity: 'commune', forms: [
     ['Oisillon', '🐤', '🐣'], ['Passereau', '🐦', '🐤'], ['Rapace', '🦅', '🐦'],
     ['Roc', '🦅', '🦅'], ['Phénix', '🔥', '🦅'] ] },
@@ -191,13 +193,13 @@ const LINES = [
     ['Draco-saurien', '🐲', '🐊'], ['Dragon-tonnerre', '🐉', '🐲'] ] },
 
   { key: 'insecte', name: 'Insecte', rarity: 'commune', forms: [
-    ['Larve', '🐛', '🐛'], ['Scarabée', '🪲', '🐛'], ['Lucane', '🪲', '🪲'],
+    ['Larve', '🐛', '🐛', 'f'], ['Scarabée', '🪲', '🐛'], ['Lucane', '🪲', '🪲'],
     ['Scarabée-titan', '🪲', '🪲'], ['Khépri, porteur du soleil', '🌞', '🪲'] ] },
   { key: 'rongeur', name: 'Rongeur', rarity: 'commune', forms: [
     ['Souriceau', '🐁', '🐁'], ['Rat', '🐀', '🐁'], ['Ragondin', '🦫', '🐀'],
     ['Rongeur colossal', '🦫', '🦫'], ['Ratatosk, messager des cimes', '🐿️', '🦫'] ] },
   { key: 'chiroptere', name: 'Chauve-souris', rarity: 'commune', forms: [
-    ['Chiroptère', '🦇', '🦇'], ['Chauve-souris', '🦇', '🦇'], ['Roussette', '🦇', '🦇'],
+    ['Chiroptère', '🦇', '🦇'], ['Chauve-souris', '🦇', '🦇', 'f'], ['Roussette', '🦇', '🦇', 'f'],
     ['Buveur de nuit', '🧛', '🦇'], ['Camazotz, l’éclipse', '🌑', '🧛'] ] },
 
   // ── rares ───────────────────────────────────────────────────────────────
@@ -205,13 +207,13 @@ const LINES = [
     ['Louveteau', '🐕', '🐕'], ['Loup', '🐺', '🐕'], ['Loup des steppes', '🐺', '🐺'],
     ['Garou', '🧌', '🐺'], ['Fenrir, dévoreur', '🌘', '🧌'] ] },
   { key: 'meduse', name: 'Méduse', rarity: 'rare', forms: [
-    ['Éphyrule', '🫧', '🫧'], ['Méduse', '🪼', '🫧'], ['Méduse abyssale', '🪼', '🪼'],
-    ['Cnidaire colossal', '🪼', '🪼'], ['Physalie-monde', '🌊', '🪼'] ] },
+    ['Éphyrule', '🫧', '🫧', 'f'], ['Méduse', '🪼', '🫧', 'f'], ['Méduse abyssale', '🪼', '🪼', 'f'],
+    ['Cnidaire colossal', '🪼', '🪼'], ['Physalie-monde', '🌊', '🪼', 'f'] ] },
   { key: 'salamandre', name: 'Salamandre', rarity: 'rare', forms: [
-    ['Larve ardente', '🐛', '🐛'], ['Salamandre', '🦎', '🐛'], ['Salamandre de braise', '🦎', '🦎'],
-    ['Salamandre de cendre', '🔥', '🦎'], ['Ifrit', '👹', '🔥'] ] },
+    ['Larve ardente', '🐛', '🐛', 'f'], ['Salamandre', '🦎', '🐛', 'f'], ['Salamandre de braise', '🦎', '🦎', 'f'],
+    ['Salamandre de cendre', '🔥', '🦎', 'f'], ['Ifrit', '👹', '🔥'] ] },
   { key: 'serpent', name: 'Serpent-plume', rarity: 'rare', forms: [
-    ['Vermisseau', '🐛', '🐛'], ['Couleuvre', '🐍', '🐛'], ['Serpent-plume', '🐍', '🐍'],
+    ['Vermisseau', '🐛', '🐛'], ['Couleuvre', '🐍', '🐛', 'f'], ['Serpent-plume', '🐍', '🐍'],
     ['Amphithère', '🐲', '🐍'], ['Quetzalcóatl', '🐉', '🐲'] ] },
 
   // ── épiques ─────────────────────────────────────────────────────────────
@@ -226,12 +228,12 @@ const LINES = [
     ['Gardien de tombeau', '🗿', '🦁'], ['Grand Sphinx', '🏜️', '🗿'] ] },
   { key: 'cheval', name: 'Cheval', rarity: 'epique', forms: [
     ['Poulain', '🐴', '🐴'], ['Cheval', '🐎', '🐴'], ['Destrier', '🐎', '🐎'],
-    ['Licorne', '🦄', '🐎'], ['Pégase', '🌠', '🦄'] ] },
+    ['Licorne', '🦄', '🐎', 'f'], ['Pégase', '🌠', '🦄'] ] },
 
   // ── mythiques ───────────────────────────────────────────────────────────
   { key: 'chimere', name: 'Chimère', rarity: 'mythique', forms: [
-    ['Avorton', '🐁', '🐁'], ['Chimèreau', '🐐', '🐁'], ['Chimère', '🦁', '🐐'],
-    ['Chimère royale', '🦁', '🦁'], ['Chimère primordiale', '👹', '🦁'] ] },
+    ['Avorton', '🐁', '🐁'], ['Chimèreau', '🐐', '🐁'], ['Chimère', '🦁', '🐐', 'f'],
+    ['Chimère royale', '🦁', '🦁', 'f'], ['Chimère primordiale', '👹', '🦁', 'f'] ] },
   { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
     ['Ossement', '🦴', '🦴'], ['Saurien', '🦕', '🦴'], ['Béhémoth', '🦖', '🦕'],
     ['Béhémoth ancien', '🦖', '🦖'], ['Béhémoth primordial', '☄️', '🦖'] ] },
@@ -256,11 +258,11 @@ const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
 */
 const ART = {
   crapaud: {
-    1: 'crapaud-1-tetard.svg',
-    2: 'crapaud-2-crapaud.svg',
-    3: 'crapaud-3-buffle.svg',
-    4: 'crapaud-4-colosse.svg',
-    5: 'crapaud-5-gama.svg',
+    1: 'crapaud-1-tetard.png',
+    2: 'crapaud-2-crapaud.png',
+    3: 'crapaud-3-buffle.png',
+    4: 'crapaud-4-colosse.png',
+    5: 'crapaud-5-gama.png',
   },
 };
 
@@ -458,13 +460,32 @@ function seuilRentable(c) {
 
 const aPerte = c => (c.cost || 0) > sellValue(c);
 
-// La description d'une bête : ce qui la distingue de toutes les autres de sa forme.
-function traitsOf(c) {
-  const bouts = [];
-  if (c.prodige) bouts.push('chromatique');
-  if (tintOf(c).name) bouts.push(tintOf(c).name);
-  bouts.push(motifOf(c), temperOf(c).name);
-  return bouts.join(' · ');
+/* Une bête porte UNE épithète, jamais quatre. « chromatique · écarlate · rayé · placide »
+   sous chaque nom, c'était une fiche technique à déchiffrer ; « Varan cendré » se retient et
+   se raconte. On garde donc ce qui distingue le plus : le prodige d'abord, puis la teinte —
+   c'est elle qu'on voit à l'écran —, puis le tempérament, et le motif quand la bête n'a
+   rien d'autre à montrer. Les traits écartés du nom restent lisibles là où ils comptent :
+   le tempérament dans la ligne des boosts, la teinte dans le multiplicateur de valeur. */
+// Un trait dit au genre de la bête qui le porte : « Carpe gloutonne », « glouton ×1,40 »
+// sous un varan. Les traits invariables portent la même forme dans les deux cases.
+const accord = (trait, c) => form(c.line, c.tier)[3] === 'f' ? trait.fem : trait.name;
+
+function epithetOf(c) {
+  if (c.prodige) return 'chromatique';
+  if (tintOf(c).name) return accord(tintOf(c), c);
+  if (temperOf(c).key !== 'docile') return accord(temperOf(c), c);
+  const motif = motifOf(c);
+  return motif === 'uni' ? '' : motif + (form(c.line, c.tier)[3] === 'f' ? 'e' : '');
+}
+
+/* Les noms à titre reçoivent leur épithète sur le nom propre, pas à la fin :
+   « Khépri doré, porteur du soleil » et non « Khépri, porteur du soleil doré ». */
+function fullName(c) {
+  const nom = form(c.line, c.tier)[0], ep = epithetOf(c);
+  if (!ep) return nom;
+  const virgule = nom.indexOf(', ');
+  return virgule < 0 ? nom + ' ' + ep
+                     : nom.slice(0, virgule) + ' ' + ep + nom.slice(virgule);
 }
 const eggStock  = k => (state.eggs && state.eggs[k]) || 0;
 const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
@@ -485,6 +506,19 @@ const lvl         = key => state.up[key] || 0;
 const upCost      = u => Math.round(u.base * Math.pow(u.mult, lvl(u.key)));
 const upMaxed     = u => !!u.max && lvl(u.key) >= u.max;
 const clickPower  = () => 1 + lvl('clic');
+
+/* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
+   instant précis, et 0 tant qu'aucun n'est acheté. */
+const autoRate = s => s.kind === 'egg' ? lvl('couveuse')
+                    : isAdult(s.c) ? FATTEN_X * lvl('mangeoire') * temperOf(s.c).fat
+                    : lvl('eleveur');
+
+/* Un clic vaut toujours le même temps réel, quoi qu'on ait automatisé. Sans ça les
+   automates nerfaient le clic au moment même où on payait pour aller plus vite :
+   à éleveur ×7, un « +14 s » n'avançait la bête que de deux secondes de ce que la
+   machine faisait déjà. Le clic apporte donc clickPower secondes d'automate — il reste
+   un raccourci qui se sent, du premier œuf au dernier palier. */
+const clickGain = s => clickPower() * Math.max(1, autoRate(s));
 
 // La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
 // à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
@@ -553,15 +587,15 @@ function fmtTime(s) {
   return Math.floor(s / 3600) + ' h ' + String(Math.floor((s % 3600) / 60)).padStart(2, '0') + ' m';
 }
 
-// Tant que rien ne pousse tout seul, afficher un compte à rebours en secondes serait un
-// mensonge : ce qui reste à faire se mesure en clics.
+/* Deux compteurs, jamais les deux à la fois. Tant que rien ne pousse tout seul, annoncer
+   des secondes serait un mensonge : ce qui reste à faire se mesure en clics. Dès qu'un
+   automate tourne, c'est le temps qui compte — et lui seul. Afficher « ou n clics » à
+   côté donnait deux unités pour une même attente, et invitait à marteler une barre qui
+   avançait déjà. */
 function remaining(left, speed) {
+  if (speed > 0) return fmtTime(left / speed);
   const n = Math.max(1, Math.ceil(left / clickPower()));
-  const clics = n + (n > 1 ? ' clics' : ' clic');
-  if (speed <= 0) return clics;
-  // Automatisé : on annonce le temps, et le raccourci au clic tant qu'il reste à portée
-  // de main. Au-delà, cliquer ne sert plus à rien et l'afficher serait du bruit.
-  return fmtTime(left / speed) + (n <= 60 ? ' ou ' + clics : '');
+  return n + (n > 1 ? ' clics' : ' clic');
 }
 
 function markSeen(lineKey, tier) { state.seen[lineKey + ':' + tier] = true; }
@@ -695,7 +729,7 @@ function tapStage() {
   const pt = centerOf(el);
   const jitter = () => pt.x + (Math.random() * 60 - 30);
 
-  const power = clickPower();
+  const power = clickGain(s);
 
   if (s.kind === 'egg') {
     if (!s.slot) { placeEgg(s.i); return; }
@@ -703,7 +737,7 @@ function tapStage() {
     if (s.slot.p >= dure) return;
     s.slot.p = Math.min(dure, s.slot.p + power);
     flash(el, 'shake');
-    floatText(jitter(), pt.y - 20, '+' + power + ' s');
+    floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
     blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
     if (s.slot.p >= dure) hatchAll(); else refresh();
     return;
@@ -712,12 +746,12 @@ function tapStage() {
   const c = s.c;
   const wasStage = stageOf(c).key;
   const wasValue = sellValue(c);
-  // Un clic vaut une seconde de vie, avant comme après l'âge adulte : la créature
-  // ne cesse jamais de grandir, seul le rendement diminue.
+  // Un clic ajoute de la vie avant comme après l'âge adulte : la créature ne cesse
+  // jamais de grandir, seul le rendement diminue.
   if (isAdult(c)) c.over = (c.over || 0) + power;
   else c.p = Math.min(growTime(c), c.p + power);
   flash(el, 'shake');
-  floatText(jitter(), pt.y - 20, '+' + power + ' s');
+  floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
   if (stageOf(c).key !== wasStage) { celebrate(c, wasValue, pt); return; }
   refresh();
@@ -807,7 +841,7 @@ function evolve(c) {
   markSeen(c.line, c.tier);
   const pt = centerOf($('subject'));
   burst(pt.x, pt.y, c.tier === 5 ? '✦' : '✧', 14);
-  floatText(pt.x, pt.y - 80, form(c.line, c.tier)[0], 'gain');
+  floatText(pt.x, pt.y - 80, fullName(c), 'gain');
   chord([440, 554, 659, 880], 80);
   popNext = true;
   refresh();
@@ -1226,7 +1260,6 @@ function renderStage() {
     setFilter($('stage-glyph'), '');
     stage.classList.remove('prodige');
     setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
-    $('stage-traits').hidden = true;
     setStageRarity(stage, slot ? 'egg-' + kind.key : null);
     stage.classList.toggle('cracking', !!slot && ratio > 0.65);
 
@@ -1237,7 +1270,7 @@ function renderStage() {
       setWidth($('stage-fill'), Math.min(100, (slot.p / hatchTime(slot)) * 100) + '%');
       setText($('stage-timer'), ready
         ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
-        : remaining(hatchTime(slot) - slot.p, state.up.couveuse));
+        : remaining(hatchTime(slot) - slot.p, autoRate(s)));
       $('stage-timer').classList.toggle('done', ready);
       setText($('stage-hint'), state.up.couveuse
         ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
@@ -1262,7 +1295,6 @@ function renderStage() {
   }
 
   const c = s.c;
-  const f = form(c.line, c.tier);
   const adult = isAdult(c);
   const sf = sizeFactor(c);
   const rank = rankOf(sf);
@@ -1278,9 +1310,7 @@ function renderStage() {
   setFilter($('stage-glyph'), c.prodige ? PRODIGE_FILTER : tintOf(c).filter);
   stage.classList.toggle('prodige', !!c.prodige);
   setCreature($('stage-glyph'), artFor(c), glyphOf(c));
-  setText($('stage-name'), f[0]);
-  setText($('stage-traits'), traitsOf(c));
-  $('stage-traits').hidden = false;
+  setText($('stage-name'), fullName(c));
 
   const mult = stageMult(c);
   setHtml($('stage-meta'),
@@ -1296,7 +1326,7 @@ function renderStage() {
     const g = growTime(c);
     setWidth($('stage-fill'),
       Math.min(100, ((c.p / g - depuis) / (cible - depuis)) * 100).toFixed(1) + '%');
-    setText($('stage-timer'), remaining(cible * g - c.p, state.up.eleveur) +
+    setText($('stage-timer'), remaining(cible * g - c.p, autoRate(s)) +
       ' → ' + (stg.key === 'enfant' ? 'adolescent' : 'adulte'));
     $('stage-timer').classList.remove('done');
     setText($('stage-hint'), state.up.eleveur
@@ -1310,7 +1340,7 @@ function renderStage() {
       // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
       const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * tierTime(c);
       setText($('stage-timer'), 'adulte · ' +
-        remaining(cible - (c.over || 0), FATTEN_X * lvl('mangeoire')) + ' → ' + rank.next.name +
+        remaining(cible - (c.over || 0), autoRate(s)) + ' → ' + rank.next.name +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
@@ -1400,17 +1430,17 @@ function ligneBoosts(sujet) {
       const base = tierTime(c), n = lvl('eleveur');
       bouts.push('Croissance ' + fmtTime(base) + ' → ' +
                  (n ? fmtTime(growTime(c) / n) : 'rien sans toi'));
-      if (t.grow !== 1) bouts.push(t.name + ' ×' + dec(t.grow));
+      if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));
       if (n) bouts.push('éleveur ×' + n);
     } else {
       const n = lvl('mangeoire');
       bouts.push('Engraissement ' + (n ? '+' + dec(FATTEN_X * n * t.fat, 1) + ' s par seconde'
                                        : 'rien sans toi'));
-      if (n && t.fat !== 1) bouts.push(t.name + ' ×' + dec(t.fat));
+      if (n && t.fat !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.fat));
       if (n) bouts.push('mangeoire ×' + n);
     }
   }
-  bouts.push('un clic vaut ' + clickPower() + ' s');
+  bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
   return bouts.join('  ·  ');
 }
 
