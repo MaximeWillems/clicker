@@ -89,12 +89,20 @@ Un œuf par rareté. Chacun donne surtout la sienne, avec une **chance de tomber
 grandit avec le prix** — 3,5 % pour un commun, 12 % pour un rare, 25 % pour un épique.
 L'œuf mythique n'a rien au-dessus de lui : il garantit.
 
-| Œuf | Prix | commune | rare | épique | mythique | chance de monter |
-|---|---|---|---|---|---|---|
-| Œuf commun | 12 | 96,5 % | 3 % | 0,45 % | **0,05 %** | 3,5 % |
-| Œuf rare | 3 000 | — | 88 % | 10 % | 2 % | 12 % |
-| Œuf épique | 40 000 | — | — | 75 % | 25 % | 25 % |
-| Œuf mythique | 200 000 | — | — | — | 100 % | — |
+| Œuf | Prix | Couvaison | commune | rare | épique | mythique | chance de monter |
+|---|---|---|---|---|---|---|---|
+| Œuf commun | 12 | 30 s | 96,5 % | 3 % | 0,45 % | **0,05 %** | 3,5 % |
+| Œuf rare | 3 000 | 3 min | — | 88 % | 10 % | 2 % | 12 % |
+| Œuf épique | 40 000 | 12 min | — | — | 75 % | 25 % | 25 % |
+| Œuf mythique | 200 000 | 45 min | — | — | — | 100 % | — |
+
+**La couvaison s'allonge avec la rareté.** Une bête précieuse doit se faire attendre, sinon la
+rareté n'a pas de poids : un mythique qui éclosait en quinze secondes comme un têtard ne
+valait rien à regarder. Ça donne aussi enfin une raison de monter la couveuse au-delà du
+niveau 2 — elle divise la durée par son niveau.
+
+Débit mesuré, par incubateur et par heure, avec une couveuse de niveau 3 : 327 communs,
+59 rares, 14 épiques, 3 mythiques.
 
 L'œuf commun garde sa chance sur deux mille de donner une mythique : le coup de chance doit
 rester possible dès la première minute, c'est ce qui rend chaque éclosion tendue. Les œufs

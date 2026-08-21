@@ -8,7 +8,6 @@
    Données — tout ce qui s'équilibre est ici.
    ───────────────────────────────────────────── */
 
-const HATCH      = 15;                                        // secondes de couvaison
 const GROW       = [45, 180, 900, 3600, 21600];               // croissance par palier
 const VALUE      = [40, 500, 6000, 80000, 1500000];           // valeur à la vente
 const EVOLVE     = [200, 3000, 40000, 600000, null];          // coût pour passer au palier suivant
@@ -37,20 +36,25 @@ const RARITY = {
    doit rester possible dès la première minute, c'est ce qui rend chaque éclosion tendue. */
 const EGG_KINDS = [
   { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
-    up: '3,5 %',
+    up: '3,5 %', hatch: 30,
     odds: { commune: 0.9650, rare: 0.0300, epique: 0.0045, mythique: 0.0005 } },
   { key: 'rare', name: 'Œuf rare', price: 3000, glyph: '🥚', rarity: 'rare',
-    up: '12 %',
+    up: '12 %', hatch: 180,
     odds: { rare: 0.88, epique: 0.10, mythique: 0.02 } },
   { key: 'epique', name: 'Œuf épique', price: 40000, glyph: '🥚', rarity: 'epique',
-    up: '25 %',
+    up: '25 %', hatch: 720,
     odds: { epique: 0.75, mythique: 0.25 } },
   { key: 'mythique', name: 'Œuf mythique', price: 200000, glyph: '🥚', rarity: 'mythique',
-    up: null,
+    up: null, hatch: 2700,
     odds: { mythique: 1 } },
 ];
 
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
+
+/* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
+   mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids —
+   et ça donne enfin une raison de monter la couveuse au-delà du niveau 2. */
+const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
 
 /* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
    L'éleveur pousse les jeunes jusqu'à l'âge adulte, la mangeoire prend le relais ensuite
@@ -286,7 +290,8 @@ function eggDesc(e) {
     .filter(k => k !== e.rarity && e.odds[k])
     .map(k => pourcent(e.odds[k]) + ' ' + de(RARITY[k].name));
   const base = RARITY[e.rarity].name.replace(/^./, m => m.toUpperCase());
-  return dessus.length ? base + '. Au-dessus : ' + dessus.join(', ') + '.' : base + ' garantie.';
+  const duree = 'Couve en ' + fmtTime(e.hatch) + '. ';
+  return duree + (dessus.length ? base + '. Au-dessus : ' + dessus.join(', ') + '.' : base + ' garantie.');
 }
 
 // « de rare » mais « d'épique »
@@ -622,12 +627,13 @@ function tapStage() {
 
   if (s.kind === 'egg') {
     if (!s.slot) { placeEgg(s.i); return; }
-    if (s.slot.p >= HATCH) return;
-    s.slot.p = Math.min(HATCH, s.slot.p + power);
+    const dure = hatchTime(s.slot);
+    if (s.slot.p >= dure) return;
+    s.slot.p = Math.min(dure, s.slot.p + power);
     flash(el, 'shake');
     floatText(jitter(), pt.y - 20, '+' + power + ' s');
     blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
-    if (s.slot.p >= HATCH) hatchAll(); else refresh();
+    if (s.slot.p >= dure) hatchAll(); else refresh();
     return;
   }
 
@@ -661,7 +667,7 @@ function hatchAll() {
   let hatched = 0, lastKey = null, best = null, bestCreature = null;
   for (let i = 0; i < state.incub.length; i++) {
     const slot = state.incub[i];
-    if (!slot || slot.p < HATCH) continue;
+    if (!slot || slot.p < hatchTime(slot)) continue;
     if (penFull()) continue;
     // on retient le prix de l'œuf : c'est la seule façon de dire au joueur, plus tard,
     // qu'il est en train de vendre à perte
@@ -804,7 +810,9 @@ function advance(dt) {
   const couve = lvl('couveuse'), eleve = lvl('eleveur');
   if (couve) {
     for (const slot of state.incub) {
-      if (slot && slot.p < HATCH) slot.p = Math.min(HATCH, slot.p + dt * couve);
+      if (!slot) continue;
+      const dure = hatchTime(slot);
+      if (slot.p < dure) slot.p = Math.min(dure, slot.p + dt * couve);
     }
   }
   if (eleve) {
@@ -1101,7 +1109,7 @@ function renderStage() {
     const slot = s.slot;
     stage.classList.remove('apex');
     // l'œuf gonfle doucement à mesure qu'il couve
-    const ratio = slot ? Math.min(1, slot.p / HATCH) : 0;
+    const ratio = slot ? Math.min(1, slot.p / hatchTime(slot)) : 0;
     const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
     setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
     setText($('stage-glyph'), slot ? kind.glyph : '◌');
@@ -1113,13 +1121,13 @@ function renderStage() {
     stage.classList.toggle('cracking', !!slot && ratio > 0.65);
 
     if (slot) {
-      const ready = slot.p >= HATCH;
+      const ready = slot.p >= hatchTime(slot);
       stage.classList.toggle('ready', ready);
       setHtml($('stage-meta'), ready ? 'ça sort !' : (ratio > 0.65 ? 'ça craque' : 'en couvaison'));
-      setWidth($('stage-fill'), Math.min(100, (slot.p / HATCH) * 100) + '%');
+      setWidth($('stage-fill'), Math.min(100, (slot.p / hatchTime(slot)) * 100) + '%');
       setText($('stage-timer'), ready
         ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
-        : remaining(HATCH - slot.p, state.up.couveuse));
+        : remaining(hatchTime(slot) - slot.p, state.up.couveuse));
       $('stage-timer').classList.toggle('done', ready);
       setText($('stage-hint'), state.up.couveuse
         ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
@@ -1258,8 +1266,8 @@ function tickView() {
     if (!t) continue;
     t.el.setAttribute('aria-current', String(s.key === state.sel));
     if (s.kind === 'egg') {
-      const ready = s.slot && s.slot.p >= HATCH;
-      setWidth(t.bar, s.slot ? Math.min(100, (s.slot.p / HATCH) * 100).toFixed(1) + '%' : '0%');
+      const ready = s.slot && s.slot.p >= hatchTime(s.slot);
+      setWidth(t.bar, s.slot ? Math.min(100, (s.slot.p / hatchTime(s.slot)) * 100).toFixed(1) + '%' : '0%');
       t.el.classList.toggle('done', !!ready);
       if (s.slot) setText(t.tag, ready ? 'prêt' : 'œuf');
     } else {
