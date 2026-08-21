@@ -36,7 +36,29 @@ function poly(g, pts, c) {
   }
 }
 
-function gomme(g, forme) { forme(g, '.'); }
+/* Un contour qui ne marque que le bord SUPÉRIEUR : c'est ce qui donne l'impression d'une
+   lumière rasante venue du haut, sans encercler la bête. */
+function contourHaut(g, c) {
+  const src = g.map(r => r.slice());
+  for (let y = 0; y < g.length; y++) for (let x = 0; x < g.length; x++) {
+    if (src[y][x] === '.') continue;
+    const dessus = !src[y - 1] || src[y - 1][x] === '.';
+    const cote = src[y][x - 1] === '.' || src[y][x + 1] === '.' || src[y][x - 1] === undefined || src[y][x + 1] === undefined;
+    if (dessus || (cote && y < g.length * 0.45)) g[y][x] = c;
+  }
+}
+
+/* Les créatures sont décrites une fois dans un repère de 32 unités. Ce proxy les rastérise
+   dans n'importe quelle taille de grille — c'est ce qui permet de sortir la même bête en
+   32×32 et en 16×16 sans réécrire une coordonnée. */
+function aLEchelle(k) {
+  return {
+    ellipse: (g, cx, cy, rx, ry, c) => ellipse(g, cx * k, cy * k, rx * k, ry * k, c),
+    poly: (g, pts, c) => poly(g, pts.map(([x, y]) => [x * k, y * k]), c),
+    rect: (g, x, y, w, h, c) => rect(g, Math.round(x * k), Math.round(y * k),
+                                     Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k)), c),
+  };
+}
 
 /* Contour automatique : tout pixel plein bordé de vide devient contour. On travaille sur
    une copie, sinon le contour se propagerait vers l'intérieur. */
@@ -74,4 +96,4 @@ function apercu(g) {
   return g.map(r => r.map(c => c === '.' ? ' ' : c).join('')).join('\n');
 }
 
-module.exports = { grille, ellipse, rect, poly, contour, versSVG, apercu, gomme };
+module.exports = { grille, ellipse, rect, poly, contour, contourHaut, aLEchelle, versSVG, apercu };
