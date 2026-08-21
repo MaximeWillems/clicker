@@ -33,8 +33,11 @@ const OVER_COST  = 0.5;     // ce que coûte une seconde d'engraissement
 const OVER_GAIN  = 0.55;    // ce qu'elle rapporte, en rendement décroissant
 const SIZE_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas crever la scène
 
-// Les rangs de taille qualifient l'adulte : « adulte », puis « adulte grand », « adulte
-// énorme »… Ils donnent un cap à viser une fois la croissance terminée.
+/* Les rangs de taille qualifient l'adulte : « adulte », puis « adulte grand », « adulte
+   énorme »… Le seuil d'un rang est aussi son multiplicateur de valeur : franchir un rang
+   fait donc bondir le prix de vente, exactement comme passer d'enfant à adolescent.
+   Ces seuils valent ce que valait l'ancienne courbe continue au même point — l'engraissement
+   coûte toujours plus qu'il ne rapporte, il paie juste par à-coups au lieu de goutte à goutte. */
 const RANKS = [
   { at: 1.00, name: '' },
   { at: 1.30, name: 'grand' },
@@ -174,9 +177,10 @@ const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens -
 // à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
 // une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
 const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / growTime(c));
-const isFat      = c => sizeFactor(c) > 1.005;
 // stageMult est défini plus bas : sellValue n'est appelée qu'une fois le fichier chargé.
-const sellValue  = c => Math.max(1, Math.round(baseValue(c) * stageMult(c) * sizeFactor(c)));
+// Le multiplicateur d'étape porte déjà la taille — la valeur est donc plate entre deux
+// rangs, et c'est le clic qui franchit le rang qui paie.
+const sellValue  = c => Math.max(1, Math.round(baseValue(c) * stageMult(c)));
 
 function rankOf(sf) {
   let i = 0;
@@ -195,7 +199,12 @@ function stageOf(c) {
   return { key: rank ? 'adulte-' + rank : 'adulte', name: rank ? 'adulte ' + rank : 'adulte' };
 }
 
-const stageMult = c => STAGE_MULT[stageOf(c).key] || 1;
+// Multiplicateur de valeur, plat à l'intérieur d'une étape : 0,15 enfant, 0,40 adolescent,
+// puis le seuil du rang atteint pour un adulte (1 tant qu'il est de taille normale).
+function stageMult(c) {
+  const k = stageOf(c).key;
+  return STAGE_MULT[k] !== undefined ? STAGE_MULT[k] : rankOf(sizeFactor(c)).from;
+}
 
 // Juvénile tant qu'il n'est pas adulte, puis la forme définitive.
 function glyphOf(c) {
@@ -839,9 +848,10 @@ function renderStage() {
   setText($('stage-glyph'), glyphOf(c));
   setText($('stage-name'), f[0]);
 
+  const mult = stageMult(c);
   setHtml($('stage-meta'), 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
     ' · <span class="rank">' + stg.name + '</span>' +
-    (isFat(c) ? ' · ×' + dec(sf) : ''));
+    (mult > 1 ? ' · valeur ×' + dec(mult) : ''));
 
   if (!adult) {
     // la barre vise la prochaine étape, pas l'âge adulte : c'est elle qui paie
@@ -860,7 +870,8 @@ function renderStage() {
     if (rank.next) {
       const span = rank.next.at - rank.from;
       setWidth($('stage-fill'), Math.min(100, ((sf - rank.from) / span) * 100).toFixed(1) + '%');
-      setText($('stage-timer'), 'adulte · ' + rank.next.name + ' à ×' + dec(rank.next.at));
+      setText($('stage-timer'), 'adulte · ' + rank.next.name + ' → ' +
+        fmt(baseValue(c) * rank.next.at) + ' pièces');
     } else {
       setWidth($('stage-fill'), '100%');
       setText($('stage-timer'), 'adulte · plus aucun rang au-dessus');
@@ -891,11 +902,13 @@ function renderStage() {
     acts.evo.disabled = true;
     acts.evo.classList.remove('warn-evo');
   } else {
+    // on n'alerte que s'il y a réellement de la valeur à perdre, pas au moindre gramme pris
+    const perte = mult > 1;
     setText(acts.evo, 'Évoluer ' + fmt(evoCost(c)));
-    acts.evo.title = isFat(c)
-      ? 'Attention : évoluer ramène la taille à ×1. Vends-la d’abord si tu l’as engraissée pour ça.'
+    acts.evo.title = perte
+      ? 'Attention : évoluer ramène la taille à ×1 et fait retomber la valeur. Vends-la d’abord si tu l’as engraissée pour ça.'
       : 'Passe au palier suivant. La croissance repart de zéro.';
-    acts.evo.classList.toggle('warn-evo', isFat(c));
+    acts.evo.classList.toggle('warn-evo', perte);
     acts.evo.disabled = !adult || state.coins < evoCost(c);
   }
 }

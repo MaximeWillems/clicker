@@ -109,7 +109,7 @@ chaque clic plutôt que de sauter d'un cran à l'autre.
 | enfant | 0 – 40 % de la croissance | 0,50 | 15 % | forme juvénile |
 | adolescent | 40 – 100 % | 0,50 → 1,00 | 40 % | forme juvénile |
 | adulte | croissance terminée | 1,00 | 100 % | forme définitive |
-| adulte grand… | engraissement | jusqu'à 1,50 | ×taille | forme définitive |
+| adulte grand… | engraissement | jusqu'à 1,50 | 130 % → 450 % | forme définitive |
 
 **La valeur est plate à l'intérieur d'une étape et saute d'un coup au passage.** Au palier 1 :
 6 pièces pendant toute l'enfance, puis **16 sur le clic qui fait passer adolescent** (×2,7),
@@ -142,14 +142,17 @@ Un clic vaut toujours **une seconde de vie**, avant comme après l'âge adulte :
 cesse jamais de grandir. Ce qui s'essouffle, c'est le rendement — la taille suit un
 logarithme, donc chaque rang coûte bien plus cher que le précédent.
 
-| Rang | À partir de | Clics cumulés au palier 1 |
-|---|---|---|
-| taille normale | ×1,00 | — |
-| grand | ×1,30 | ~30 |
-| énorme | ×1,70 | ~110 |
-| colossal | ×2,30 | ~390 |
-| titanesque | ×3,20 | ~2 400 |
-| démesuré | ×4,50 | ~28 000 |
+**Le seuil d'un rang est aussi son multiplicateur de valeur**, et la valeur reste plate entre
+deux rangs : comme pour les juvéniles, c'est le clic qui franchit le rang qui paie.
+
+| Rang | À partir de | Valeur | Clics au palier 1 | Vente (base 40) |
+|---|---|---|---|---|
+| adulte | ×1,00 | ×1,00 | — | 40 |
+| adulte grand | ×1,30 | ×1,30 | 33 | 52 (+30 %) |
+| adulte énorme | ×1,70 | ×1,70 | 116 | 68 (+31 %) |
+| adulte colossal | ×2,30 | ×2,30 | 434 | 92 (+35 %) |
+| adulte titanesque | ×3,20 | ×3,20 | 2 412 | 128 (+39 %) |
+| adulte démesuré | ×4,50 | ×4,50 | ~28 000 | 180 (+41 %) |
 
 La barre de progression vise le rang suivant une fois l'animal adulte, et l'animal grossit
 vraiment à l'écran — jusqu'à `SIZE_VIS` (×1,5) de grossissement visuel, cumulé avec l'échelle
@@ -162,16 +165,20 @@ au même rythme décroissant (`OVER_GAIN`, logarithmique) pendant que la nourrit
 toujours le même prix à la seconde (`OVER_COST`, linéaire). Le rapport est identique à tous
 les paliers.
 
-| Taille atteinte | Valeur gagnée | Résultat net |
-|---|---|---|
-| ×1,05 | +5 % | **+0,24 %** — le maximum possible |
-| ×1,22 | +22 % | −2,7 % |
-| ×1,38 | +38 % | −11,9 % |
-| ×1,99 | +99 % | −151 % |
-| ×3,92 | +292 % | −9 700 % |
+Au palier 1, en payant la nourriture plutôt qu'en cliquant :
 
-Autrement dit : grossir est un plaisir et un puits à pièces, jamais une stratégie. Le meilleur
-coup possible rapporte 0,24 % — trop peu pour valoir le clic, même automatisé.
+| Rang atteint | Payé | Gagné | Net |
+|---|---|---|---|
+| grand | 15 | 12 | **−3** |
+| énorme | 51 | 28 | −23 |
+| colossal | 193 | 52 | −141 |
+| titanesque | 1 072 | 88 | −984 |
+| démesuré | 11 587 | 140 | −11 447 |
+
+Autrement dit : grossir est un plaisir et un puits à pièces, jamais une stratégie. Même le
+premier rang reste légèrement perdant. Au clic — donc gratuitement — c'est jouable mais
+médiocre : 0,36 pièce par clic pour atteindre *grand*, contre 0,67 en menant simplement une
+nouvelle bête à terme.
 
 Deux garde-fous en découlent :
 
