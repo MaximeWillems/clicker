@@ -1276,7 +1276,12 @@ function renderStage() {
      faire peur à un joueur qui a tout bien réglé. */
   if (aPerte(c)) {
     const seuil = seuilRentable(c);
-    const prisEnCharge = !c.keep && lvl('evolution') && seuil && state.evolveUpTo >= seuil;
+    /* Une bête sous le prix de son œuf n'est alarmante que si rien ne va l'en sortir :
+       soit il lui suffit de finir de grandir à son palier actuel, soit l'évolution
+       automatique est réglée assez haut. Dans les deux cas, pas de rouge. */
+    const prisEnCharge = !seuil ? false
+      : c.tier >= seuil ? true
+      : (!c.keep && !!lvl('evolution') && state.evolveUpTo >= seuil);
     setText($('stage-hint'), prisEnCharge
       ? 'Son œuf a coûté ' + fmt(c.cost) + '. Ton évolution la mènera au palier ' +
         state.evolveUpTo + ', où elle vaudra ' + fmt(valeurAu(c, state.evolveUpTo)) + '.'
@@ -1284,8 +1289,11 @@ function renderStage() {
         (seuil ? 'Elle le remboursera au palier ' + seuil + '.' : 'Elle ne le remboursera jamais.'));
     $('stage-hint').classList.toggle('alerte', !prisEnCharge);
     acts.sell.classList.toggle('perte', !prisEnCharge && !c.keep);
+    acts.sell.classList.remove('bon');
   } else {
     $('stage-hint').classList.remove('alerte');
+    acts.sell.classList.remove('perte');
+    acts.sell.classList.toggle('bon', !c.keep);   // vente rentable : c'est vert
   }
 
   acts.place.hidden = true;
@@ -1293,8 +1301,8 @@ function renderStage() {
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
   const perte = aPerte(c);
   acts.sell.title = c.keep ? 'Elle est gardée : relâche-la d’abord.'
-    : perte ? 'À perte : son œuf a coûté ' + fmt(c.cost) + '.'
-    : adult ? 'Au prix fort.'
+    : perte ? 'Elle vaut moins que son œuf, qui a coûté ' + fmt(c.cost) + '.'
+    : adult ? 'Vente rentable, au prix fort.'
     : 'Un ' + stg.name + ' ne vaut qu’une fraction de sa valeur adulte — mais ça libère la place.';
   acts.sell.disabled = !!c.keep;
 

@@ -288,6 +288,30 @@ Aux anciens prix, le marchand tombait à 78 min.
 jusqu'à l'âge adulte, la mangeoire prend le relais et engraisse les adultes. Aucune des deux
 ne dépense de pièces.
 
+### Le code couleur
+
+Une couleur ne doit vouloir dire qu'une chose. L'or, notamment, servait partout — bourse,
+jauges, prix, focus, sélection — ce qui vidait de son sens le rang des mythiques.
+
+| Couleur | Sens, et rien d'autre |
+|---|---|
+| gris-vert, bleu, violet, **or** | les quatre raretés, et le prodige pour l'or |
+| beige `--coin` | la monnaie et les prix |
+| vert `--accent` | la progression, la sélection, le focus |
+| vert `--good` | une vente rentable |
+| rouge | une vente à perte que rien ne va corriger |
+
+Deux conséquences :
+
+**Le palier 5 n'a pas de couleur à lui.** Il fait briller plus fort la teinte de sa propre
+rareté — la teinte dit la rareté, l'intensité dit le palier. Un légendaire commun reste donc
+gris-vert, seul un mythique brille en or.
+
+**Le bouton *Vendre* est vert quand la vente est rentable et rouge quand elle ne l'est pas.**
+Il était rouge dans un cas et doré dans l'autre, ce qui donnait deux alarmes et aucune bonne
+nouvelle. Et le rouge tient compte de ce qui est prévu : une bête qui n'a qu'à finir de
+grandir, ou que l'évolution automatique va mener au-delà du seuil, reste neutre.
+
 ### Un panneau qui s'explique
 
 Les réglages se lisaient comme des phrases à trous — un bout de texte, un menu, un autre bout

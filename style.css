@@ -12,8 +12,13 @@
   --faint:    #5C665C;
   --rule:     #26302A;
   --rule-hi:  #3A4740;
+  /* L'or est RÉSERVÉ aux mythiques et aux prodiges. S'en servir pour une jauge ou un prix
+     viderait le code de rareté de son sens — c'est ce qui se passait. */
   --amber:    #E4A63E;
   --amber-dim:#5A4218;
+  --coin:     #D8C48E;   /* la monnaie : chaude, mais ce n'est pas l'or des mythiques */
+  --good:     #79B36A;   /* une vente rentable */
+  --accent:   #66B79E;   /* progression, sélection, focus — le vert de la vie */
   --jade:     #66B79E;
   --jade-dim: #1B3A32;
   --red:      #C9705C;
@@ -89,7 +94,7 @@ body {
 .purse { margin-left: auto; display: flex; align-items: baseline; gap: 0.45rem; }
 .purse-value {
   font-family: var(--f-num); font-size: 1.6rem; font-weight: 500;
-  color: var(--amber); font-variant-numeric: tabular-nums;
+  color: var(--coin); font-variant-numeric: tabular-nums;
 }
 .purse-label {
   font-family: var(--f-num); font-size: 0.72rem; text-transform: uppercase;
@@ -156,18 +161,20 @@ body {
   width: 100%;
   min-height: clamp(10rem, 32vmin, 16rem);
 }
-.subject:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; border-radius: 6px; }
+.subject:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
 
 .subject-glow {
   position: absolute;
   width: clamp(10rem, 34vmin, 18rem);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--amber-dim) 0%, transparent 68%);
+  background: radial-gradient(circle, var(--rule-hi) 0%, transparent 68%);
   opacity: 0.5;
   transition: opacity 0.4s ease;
 }
-.stage.apex .subject-glow { background: radial-gradient(circle, var(--jade-dim) 0%, transparent 68%); opacity: 0.9; }
+/* Le palier 5 ne prend pas une couleur à lui : il fait briller PLUS FORT la teinte de sa
+   propre rareté. La teinte dit la rareté, l'intensité dit le palier. */
+.stage.apex .subject-glow { opacity: 0.45; }
 .stage.ready .subject-glow { opacity: 0.95; }
 /* l'œuf s'échauffe dans le dernier tiers de la couvaison */
 .stage.cracking .subject-glow { opacity: 0.85; animation: throb 1.1s ease-in-out infinite; }
@@ -224,8 +231,8 @@ body {
   margin: 0;
   text-align: center;
 }
-.stage.apex .subject-meta { color: var(--jade); }
-.subject-meta .rank { color: var(--amber); }
+.stage.apex .subject-meta { color: var(--rar, var(--soft)); }
+.subject-meta .rank { color: var(--accent); }
 
 .stage-bar {
   width: min(100%, 30rem);
@@ -237,15 +244,15 @@ body {
 }
 .stage-bar > i {
   display: block; height: 100%; width: 0;
-  background: var(--amber); border-radius: 4px;
+  background: var(--accent); border-radius: 4px;
   transition: width 0.12s linear;
 }
-.stage.apex .stage-bar > i { background: var(--jade); }
+.stage.apex .stage-bar > i { background: var(--rar, var(--accent)); }
 .stage-timer {
   font-family: var(--f-num); font-size: 0.85rem;
   color: var(--soft); margin: 0; font-variant-numeric: tabular-nums;
 }
-.stage-timer.done { color: var(--amber); }
+.stage-timer.done { color: var(--accent); }
 
 .stage-acts {
   display: flex; flex-wrap: wrap; justify-content: center;
@@ -260,7 +267,9 @@ button.act {
 button.act:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }
 button.act:disabled { opacity: 0.35; cursor: not-allowed; }
 button.act.grow:hover:not(:disabled) { color: var(--jade);  border-color: var(--jade); }
-button.act.sell:hover:not(:disabled) { color: var(--amber); border-color: var(--amber); }
+/* vert quand la vente est rentable, rouge quand elle ne l'est pas : une seule lecture */
+button.act.sell.bon:not(:disabled) { color: var(--good); border-color: var(--good); }
+button.act.sell:hover:not(:disabled) { color: var(--good); border-color: var(--good); }
 button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--jade); }
 /* évoluer une créature engraissée lui fait perdre sa taille : on prévient */
 button.act.warn-evo:not(:disabled),
@@ -290,20 +299,20 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
   color: var(--soft); position: relative;
 }
 .thumb:hover { border-color: var(--rule-hi); }
-.thumb[aria-current="true"] { border-color: var(--amber); background: var(--sunken); }
-.thumb.apex[aria-current="true"] { border-color: var(--jade); }
-.thumb:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.thumb[aria-current="true"] { border-color: var(--accent); background: var(--sunken); }
+.thumb.apex[aria-current="true"] { border-color: var(--rar, var(--accent)); }
+.thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .thumb-glyph { font-size: 1.5rem; line-height: 1; }
 .thumb.empty .thumb-glyph { opacity: 0.3; }
 .thumb-bar { width: 100%; height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
 .thumb[aria-current="true"] .thumb-bar { background: var(--ground); }
-.thumb-bar > i { display: block; height: 100%; width: 0; background: var(--amber); }
-.thumb.apex .thumb-bar > i { background: var(--jade); }
+.thumb-bar > i { display: block; height: 100%; width: 0; background: var(--accent); }
+.thumb.apex .thumb-bar > i { background: var(--rar, var(--accent)); }
 .thumb-tag {
   font-family: var(--f-num); font-size: 0.6rem; letter-spacing: 0.04em;
   text-transform: uppercase; color: var(--faint);
 }
-.thumb.done .thumb-tag { color: var(--amber); }
+.thumb.done .thumb-tag { color: var(--accent); }
 .strip-meta {
   font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--faint); margin: 0.35rem 0 0;
@@ -349,11 +358,11 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
   padding: 0.55rem 0.7rem;
   display: grid; grid-template-columns: 1fr auto; gap: 0.15rem 0.7rem; align-items: baseline;
 }
-.buy:hover:not(:disabled) { border-color: var(--amber); }
+.buy:hover:not(:disabled) { border-color: var(--accent); }
 .buy:disabled { opacity: 0.42; cursor: not-allowed; }
 .buy .t { font-weight: 500; }
 .buy .p {
-  font-family: var(--f-num); font-size: 0.8rem; color: var(--amber);
+  font-family: var(--f-num); font-size: 0.8rem; color: var(--coin);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .buy .d { grid-column: 1 / -1; font-size: 0.76rem; color: var(--faint); line-height: 1.4; }
@@ -370,7 +379,7 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 .step-n {
   flex: none; width: 1.25rem; height: 1.25rem; border-radius: 50%;
   display: grid; place-items: center; font-size: 0.66rem;
-  background: var(--sunken); color: var(--amber); border: 1px solid var(--rule-hi);
+  background: var(--sunken); color: var(--accent); border: 1px solid var(--rule-hi);
 }
 .config select + label { margin-top: 0.55rem; }
 .config label { display: block; font-size: 0.78rem; color: var(--soft); margin-bottom: 0.35rem; }
@@ -401,7 +410,7 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
   color: var(--faint);
 }
 .cell.got { background: var(--raised); box-shadow: inset 0 0 0 1px var(--rar, transparent); }
-.cell.got.t5 { background: var(--jade-dim); }
+.cell.got.t5 { box-shadow: inset 0 0 0 1px var(--rar, transparent), inset 0 0 8px -3px var(--rar, transparent); }
 .cell.locked::after { content: "·"; font-family: var(--f-num); color: var(--rule-hi); }
 
 /* ── rareté : une variable, portée par la classe de la lignée ── */
@@ -461,10 +470,10 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 .fx { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
 .float {
   position: absolute; font-family: var(--f-num); font-size: 0.85rem;
-  color: var(--amber); animation: rise 0.8s ease-out forwards;
+  color: var(--coin); animation: rise 0.8s ease-out forwards;
   transform: translate(-50%, -50%); white-space: nowrap;
 }
-.float.gain { color: var(--jade); font-size: 1rem; }
+.float.gain { color: var(--good); font-size: 1rem; }
 @keyframes rise {
   0%   { opacity: 1; transform: translate(-50%, -50%); }
   100% { opacity: 0; transform: translate(-50%, -200%); }
@@ -495,13 +504,13 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 .stage.prodige .subject-name { color: var(--amber); }
 
 button.act.keep { border-color: var(--rule-hi); }
-button.act.keep.on { color: var(--amber); border-color: var(--amber); }
-button.act.keep:hover:not(:disabled) { color: var(--amber); border-color: var(--amber); }
+button.act.keep.on { color: var(--accent); border-color: var(--accent); }
+button.act.keep:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
 
 .thumb.prodige { border-color: var(--amber); }
 .thumb.gardee::after {
   content: "★"; position: absolute; top: 2px; right: 4px;
-  font-size: 0.6rem; color: var(--amber); line-height: 1;
+  font-size: 0.6rem; color: var(--accent); line-height: 1;
 }
 
 /* vendre à perte : ça doit se voir avant de cliquer, pas après */
