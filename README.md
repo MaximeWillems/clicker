@@ -120,9 +120,15 @@ double presque, donc chaque palier se mérite et les rendements décroissent d'e
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
 | Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
 | Acheteur automatique | 2 000 | — | achat unique |
-| Mangeoire automatique | 15 000 | ×2,0 | *n*×2 s d'engraissement par seconde |
-| Marchand automatique | 100 000 | — | achat unique |
-| Évolution automatique | 400 000 | — | achat unique |
+| Mangeoire automatique | 6 000 | ×2,0 | *n*×2 s d'engraissement par seconde |
+| Marchand automatique | 15 000 | — | achat unique |
+| Évolution automatique | 50 000 | — | achat unique |
+
+L'échelle est calée pour qu'une partie **bascule en pilote automatique en une demi-heure**
+plutôt qu'en une heure et demie. Simulation d'un joueur cliquant quatre fois par seconde,
+achetant toujours l'option la moins chère à sa portée et menant ses bêtes au palier 3 :
+couveuse à 1 min, éleveur à 6 min, acheteur à 14 min, mangeoire à 24 min, marchand à 35 min.
+Aux anciens prix, le marchand tombait à 78 min.
 
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à l'âge adulte, la mangeoire prend le relais et engraisse les adultes. Aucune des deux

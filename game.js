@@ -98,12 +98,12 @@ const UPGRADES = [
     value: n => n, unit: '× la vitesse de croissance' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
-  { key: 'mangeoire', name: 'Mangeoire automatique', base: 15000, mult: 2,
+  { key: 'mangeoire', name: 'Mangeoire automatique', base: 6000, mult: 2,
     desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
     value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
-  { key: 'marchand', name: 'Marchand automatique', base: 100000, mult: 1, max: 1,
+  { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
     desc: 'Vend les adultes selon la règle que tu définis.' },
-  { key: 'evolution', name: 'Évolution automatique', base: 400000, mult: 1, max: 1,
+  { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
     desc: 'Fait monter les adultes de palier tout seul, jusqu’où tu décides.' },
 ];
 
