@@ -76,7 +76,7 @@ const UPGRADES = [
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 15000, mult: 2,
-    desc: 'Nourrit en continu pour accélérer la croissance, tant qu’il reste des pièces.',
+    desc: 'Nourrit en continu jusqu’à l’âge adulte. Engraisser les adultes reste une option à cocher, parce que c’est une perte nette.',
     value: n => n * AUTOFEED_X, unit: ' s de croissance par seconde' },
   { key: 'marchand', name: 'Marchand automatique', base: 100000, mult: 1, max: 1,
     desc: 'Vend les adultes selon la règle que tu définis.' },
@@ -131,6 +131,7 @@ function freshState() {
     up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0 },
     sellUpTo: 0,
     autoFeed: true,
+    autoFatten: false,      // engraisser tout seul est perdant : ça se coche à la main
     seen: {},
     speed: 1,
     sound: true,
@@ -598,16 +599,25 @@ function advance(dt) {
 }
 
 function runAutomations(dt) {
-  if (lvl('mangeoire') && state.autoFeed) {
+  if (lvl('mangeoire')) {
+    const debit = dt * AUTOFEED_X * lvl('mangeoire');
     for (const c of state.pen) {
-      // la mangeoire s'arrête à l'âge adulte : engraisser est une décision, pas un automatisme
       const left = growTime(c) - c.p;
-      if (left <= 0) continue;
-      const extra = Math.min(left, dt * AUTOFEED_X * lvl('mangeoire'));
-      const cost = extra * (baseValue(c) / growTime(c)) * FEED_RATIO;
-      if (state.coins < cost) break;
-      state.coins -= cost;
-      c.p += extra;
+      if (left > 0) {
+        if (!state.autoFeed) continue;
+        const extra = Math.min(left, debit);
+        const cost = extra * (baseValue(c) / growTime(c)) * FEED_RATIO;
+        if (state.coins < cost) break;
+        state.coins -= cost;
+        c.p += extra;
+      } else if (state.autoFatten) {
+        // Engraissement automatique : perdant par construction, donc explicitement coché.
+        // On garde de quoi racheter un œuf, sinon la boucle du jeu s'arrête net.
+        const cost = debit * (baseValue(c) / growTime(c)) * OVER_COST;
+        if (state.coins - cost < EGG_PRICE) break;
+        state.coins -= cost;
+        c.over = (c.over || 0) + debit;
+      }
     }
   }
   if (state.up.marchand && state.sellUpTo > 0) {
@@ -1044,6 +1054,10 @@ function bindTools() {
   $('chk-mangeoire').addEventListener('change', e => {
     state.autoFeed = e.target.checked;
   });
+
+  $('chk-fatten').addEventListener('change', e => {
+    state.autoFatten = e.target.checked;
+  });
 }
 
 function start() {
@@ -1055,6 +1069,7 @@ function start() {
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   $('sel-marchand').value = String(state.sellUpTo);
   $('chk-mangeoire').checked = !!state.autoFeed;
+  $('chk-fatten').checked = !!state.autoFatten;
 
   catchUp();
   refresh();

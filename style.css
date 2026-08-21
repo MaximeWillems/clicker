@@ -347,6 +347,8 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
   margin: 0; cursor: pointer; line-height: 1.4;
 }
 .config label.check input { margin: 0.2rem 0 0; accent-color: var(--jade); flex: none; }
+.config label.check + label.check { margin-top: 0.7rem; }
+.warn-txt { color: var(--red); font-weight: 500; }
 
 .collection { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
 .cell {

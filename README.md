@@ -192,6 +192,12 @@ premier rang reste légèrement perdant. Au clic — donc gratuitement — c'est
 médiocre : 0,36 pièce par clic pour atteindre *grand*, contre 0,67 en menant simplement une
 nouvelle bête à terme.
 
+**C'est pourquoi la mangeoire automatique s'arrête à l'âge adulte par défaut** : une
+automatisation ne doit pas vider la bourse en silence dans une opération perdante. Engraisser
+automatiquement se coche à part, sous le panneau des améliorations, avec l'avertissement.
+Une réserve égale au prix d'un œuf est toujours préservée, sans quoi la boucle du jeu
+s'arrêterait faute de pouvoir racheter quoi que ce soit.
+
 Deux garde-fous en découlent :
 
 - **L'évolution remet la taille à ×1.** Sans ça, engraisser au palier 1 — où la nourriture
