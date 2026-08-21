@@ -289,7 +289,18 @@ donc réécrit sur trois principes :
 Une phrase qu'on relit après avoir bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une
 seule fois.
 
-**Le marchand attend deux conditions : le palier et la taille.** Sans la seconde il vendait
+**Le marchand attend trois conditions, cumulées.** Deux sont des **seuils bas** — il récolte
+ce qui a assez monté, pendant que l'évolution pousse vers le haut — et la troisième est un
+plafond, puisqu'on vend le tout-venant et qu'on garde le précieux :
+
+> Le vendeur vend **le palier 4 et au-dessus**, dès que la taille est **énorme ou plus**, et
+> pour les raretés **communes et rares**.
+
+Un réglage incohérent est signalé : si l'évolution s'arrête au palier 2 pendant que le vendeur
+attend le palier 4, rien n'atteindra jamais le seuil et les enclos s'engorgeront. La note le
+dit avant que ça n'arrive.
+
+**Le marchand attendait auparavant deux conditions : le palier et la taille.** Sans la seconde il vendait
 tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce soit :
 les deux automates se marchaient dessus. On règle donc « jusqu'au palier N » **et** « pas
 avant la taille R ». Au palier 1 : vendue tout de suite elle rapporte 40, à *grand* 52 après

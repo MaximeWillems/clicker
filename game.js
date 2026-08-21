@@ -262,7 +262,7 @@ function freshState() {
     pen: [],
     sel: 'i:0',
     up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0 },
-    sellUpTo: 0,
+    sellFrom: 0,        // palier À PARTIR duquel le marchand vend (0 = il ne vend rien)
     sellRank: 0,        // taille minimale exigée avant la vente (0 = dès l'âge adulte)
     sellRarity: 0,      // le marchand ne touche qu'aux communes tant qu'on ne l'élargit pas
     evolveUpTo: 0,
@@ -861,8 +861,12 @@ function runAutomations(dt) {
   /* Le marchand attend deux conditions : le palier ET la taille. Sans la seconde il vendait
      tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce
      soit — les deux automates se marchaient dessus. */
-  if (state.up.marchand && state.sellUpTo > 0) {
-    const ready = state.pen.filter(c => !c.keep && isAdult(c) && c.tier <= state.sellUpTo &&
+  if (state.up.marchand && state.sellFrom > 0) {
+    /* Les trois conditions se cumulent, et deux d'entre elles sont des SEUILS BAS : le
+       vendeur récolte ce qui a assez monté, pendant que l'évolution pousse vers le haut.
+       La rareté, elle, est un plafond : on vend le tout-venant et on garde le précieux. */
+    const ready = state.pen.filter(c => !c.keep && isAdult(c) &&
+                                        c.tier >= state.sellFrom &&
                                         rankOf(sizeFactor(c)).i >= state.sellRank &&
                                         rarityOf(c).rank <= state.sellRarity);
     for (const c of ready) {
@@ -1296,18 +1300,29 @@ function noteEvolution() {
 }
 
 function noteMarchand() {
-  if (!state.sellUpTo) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes.';
+  if (!state.sellFrom) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
   const vend = Object.values(RARITY).filter(x => x.rank <= state.sellRarity).map(x => x.plur);
   const garde = Object.values(RARITY).filter(x => x.rank > state.sellRarity).map(x => x.plur);
   const taille = state.sellRank
-    ? 'une fois qu’elles ont atteint la taille ' + RANKS[state.sellRank].name
-    : 'dès qu’elles sont adultes';
-  let txt = 'En clair : il vend les ' + liste(vend) + ' jusqu’au palier ' +
-            state.sellUpTo + ', ' + taille + '. ';
+    ? ', devenues ' + RANKS[state.sellRank].name + 's ou plus'
+    : '';
+  let txt = 'En clair : il vend les ' + liste(vend) + ' arrivées au palier ' + state.sellFrom +
+            (state.sellFrom < 5 ? ' ou au-dessus' : '') + taille + '. ';
   txt += garde.length
-    ? 'Les ' + liste(garde) + ' restent dans l’enclos.'
-    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’au palier 3.';
-  if (!state.sellRank && lvl('mangeoire')) txt += ' Ta mangeoire n’aura jamais le temps de les engraisser.';
+    ? 'Les ' + liste(garde) + ' restent dans l’enclos. '
+    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’au palier 4. ';
+
+  // le piège de la combinaison : rien n'atteint jamais le seuil, et l'enclos s'engorge
+  const plafond = lvl('evolution') ? state.evolveUpTo : 1;
+  if (state.sellFrom > plafond) {
+    txt += lvl('evolution') && state.evolveUpTo
+      ? '⚠ Ton évolution s’arrête au palier ' + state.evolveUpTo + ' : rien n’atteindra jamais le palier ' +
+        state.sellFrom + ', et tes enclos vont s’engorger.'
+      : '⚠ Rien ne fait monter tes bêtes de palier : elles n’atteindront jamais le palier ' +
+        state.sellFrom + ' toutes seules, et tes enclos vont s’engorger.';
+  } else if (!state.sellRank && lvl('mangeoire')) {
+    txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
+  }
   return txt;
 }
 
@@ -1424,7 +1439,7 @@ function bindTools() {
   }
 
   $('sel-marchand').addEventListener('change', e => {
-    state.sellUpTo = parseInt(e.target.value, 10) || 0;
+    state.sellFrom = parseInt(e.target.value, 10) || 0;
   });
 
   $('sel-rank').addEventListener('change', e => {
@@ -1451,7 +1466,7 @@ function start() {
 
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
-  $('sel-marchand').value = String(state.sellUpTo);
+  $('sel-marchand').value = String(state.sellFrom);
   $('sel-rank').value = String(state.sellRank || 0);
   $('sel-rarete').value = String(state.sellRarity || 0);
   $('sel-evolution').value = String(state.evolveUpTo);
