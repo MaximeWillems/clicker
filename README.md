@@ -83,11 +83,37 @@ c'est le moment précis où le jeu bascule de clicker à idle.
 La progression hors ligne suit la même règle : sans couveuse ni éleveur, une absence ne
 produit rien, et le bandeau de retour ne s'affiche pas.
 
+### Interface
+
+L'écran n'a **qu'un seul sujet à la fois**, en grand au centre : l'œuf qu'on fait éclore ou
+l'animal qu'on fait grandir. C'est lui qu'on clique. La bande en dessous liste les autres
+œufs et créatures en vignettes ; on clique une vignette pour la mettre en scène.
+
+### Croissance sans fin
+
+Un clic vaut toujours **une seconde de vie**, avant comme après l'âge adulte : l'animal ne
+cesse jamais de grandir. Ce qui s'essouffle, c'est le rendement — la taille suit un
+logarithme, donc chaque rang coûte bien plus cher que le précédent.
+
+| Rang | À partir de | Clics cumulés au palier 1 |
+|---|---|---|
+| taille normale | ×1,00 | — |
+| grand | ×1,30 | ~30 |
+| énorme | ×1,70 | ~110 |
+| colossal | ×2,30 | ~390 |
+| titanesque | ×3,20 | ~2 400 |
+| démesuré | ×4,50 | ~28 000 |
+
+La barre de progression vise le rang suivant une fois l'animal adulte, et l'animal grossit
+vraiment à l'écran — jusqu'à `SIZE_VIS` (×1,5) de grossissement visuel, cumulé avec l'échelle
+du palier, soit ×2,25 au maximum.
+
 ### Engraissement
 
-Un adulte peut être nourri à l'infini. Sa taille et sa valeur montent en **rendement
-décroissant** (`OVER_GAIN`, logarithmique) pendant que la nourriture coûte toujours le même
-prix à la seconde (`OVER_COST`, linéaire). Le rapport est identique à tous les paliers.
+Un adulte peut aussi être nourri à l'infini contre des pièces. Sa taille et sa valeur montent
+au même rythme décroissant (`OVER_GAIN`, logarithmique) pendant que la nourriture coûte
+toujours le même prix à la seconde (`OVER_COST`, linéaire). Le rapport est identique à tous
+les paliers.
 
 | Taille atteinte | Valeur gagnée | Résultat net |
 |---|---|---|

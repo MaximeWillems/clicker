@@ -1,5 +1,6 @@
 /* Éclosion — jalon 0
-   Thème unique assumé : la pièce d'incubation. Sombre, chaud aux endroits vivants. */
+   Thème unique assumé : la pièce d'incubation. Sombre, chaud aux endroits vivants.
+   L'écran a un seul sujet à la fois — l'animal — et tout le reste lui laisse la place. */
 
 :root {
   --ground:   #0E1310;
@@ -35,18 +36,18 @@ body {
   -webkit-font-smoothing: antialiased;
 
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 22rem;
+  grid-template-columns: minmax(0, 1fr) 21rem;
   grid-template-areas:
     "top  top"
     "note note"
     "main side"
     "foot foot";
   align-content: start;
-  gap: 0 1.25rem;
+  gap: 0 1.5rem;
   padding: 0 1.25rem 2rem;
 }
 
-@media (max-width: 60rem) {
+@media (max-width: 62rem) {
   body {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "top" "note" "main" "side" "foot";
@@ -64,20 +65,15 @@ body {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  padding: 0.85rem 0;
-  margin-bottom: 1.25rem;
+  padding: 0.8rem 0;
   flex-wrap: wrap;
 }
-.brand { display: flex; align-items: baseline; gap: 0.6rem; }
-.brand-mark { font-size: 1.35rem; line-height: 1; }
-.brand-name { font-family: var(--f-name); font-size: 1.3rem; }
-.brand-tag {
-  font-family: var(--f-num); font-size: 0.7rem; text-transform: uppercase;
-  letter-spacing: 0.12em; color: var(--faint);
-}
+.brand { display: flex; align-items: baseline; gap: 0.55rem; }
+.brand-mark { font-size: 1.25rem; line-height: 1; }
+.brand-name { font-family: var(--f-name); font-size: 1.2rem; }
 .purse { margin-left: auto; display: flex; align-items: baseline; gap: 0.45rem; }
 .purse-value {
-  font-family: var(--f-num); font-size: 1.5rem; font-weight: 500;
+  font-family: var(--f-num); font-size: 1.6rem; font-weight: 500;
   color: var(--amber); font-variant-numeric: tabular-nums;
 }
 .purse-label {
@@ -101,116 +97,226 @@ body {
   background: var(--jade-dim);
   border-left: 3px solid var(--jade);
   padding: 0.7rem 1rem;
-  margin-bottom: 1.25rem;
+  margin-top: 1.25rem;
   font-size: 0.85rem;
 }
 .offline-note b { color: var(--jade); font-weight: 500; }
 
-/* ── panneaux ────────────────────────────────── */
-.board { grid-area: main; display: flex; flex-direction: column; gap: 1.25rem; }
-.side  { grid-area: side; display: flex; flex-direction: column; gap: 1.25rem; }
+/* ── la scène : un seul sujet, au centre ─────── */
+.stage-col {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  min-width: 0;
+}
+
+.stage {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 2rem 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.subject {
+  --sz: 1;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: clamp(10rem, 32vmin, 16rem);
+}
+.subject:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; border-radius: 6px; }
+
+.subject-glow {
+  position: absolute;
+  width: clamp(10rem, 34vmin, 18rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--amber-dim) 0%, transparent 68%);
+  opacity: 0.5;
+  transition: opacity 0.4s ease;
+}
+.stage.apex .subject-glow { background: radial-gradient(circle, var(--jade-dim) 0%, transparent 68%); opacity: 0.9; }
+.stage.ready .subject-glow { opacity: 0.95; }
+
+/* L'échelle vit sur un conteneur, en transform, et SANS transition : la scène se redessine
+   dix fois par seconde, et une transition relancée à ce rythme n'atteint jamais sa cible —
+   l'animal restait visuellement figé. Le grossissement s'applique donc immédiatement, et
+   l'effet est réservé au moment qui le mérite : le passage d'un rang de taille au suivant. */
+.subject-scale {
+  position: relative;
+  display: block;
+  transform: scale(var(--sz, 1));
+  transform-origin: center;
+}
+.subject-scale.grew { animation: grew 0.55s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes grew {
+  0%   { transform: scale(calc(var(--sz, 1) * 0.8)); }
+  58%  { transform: scale(calc(var(--sz, 1) * 1.1)); }
+  100% { transform: scale(var(--sz, 1)); }
+}
+.subject-glyph {
+  display: block;
+  line-height: 1;
+  font-size: clamp(3.4rem, 13vmin, 6rem);
+  transition: transform 0.09s ease-out;
+}
+.subject:active .subject-glyph { transform: scale(0.93); }
+.subject.shake .subject-glyph { animation: shake 0.26s ease-out; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-4px) rotate(-3deg); }
+  75% { transform: translateX(4px) rotate(3deg); }
+}
+.subject.pop .subject-glyph { animation: pop 0.5s cubic-bezier(.2, 1.5, .4, 1); }
+@keyframes pop {
+  0% { transform: scale(0.55); } 62% { transform: scale(1.1); } 100% { transform: scale(1); }
+}
+
+.subject-name {
+  font-family: var(--f-name);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  margin: 0;
+  text-align: center;
+  text-wrap: balance;
+}
+.subject-meta {
+  font-family: var(--f-num);
+  font-size: 0.76rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 0;
+  text-align: center;
+}
+.stage.apex .subject-meta { color: var(--jade); }
+.subject-meta .rank { color: var(--amber); }
+
+.stage-bar {
+  width: min(100%, 30rem);
+  height: 7px;
+  background: var(--sunken);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+.stage-bar > i {
+  display: block; height: 100%; width: 0;
+  background: var(--amber); border-radius: 4px;
+  transition: width 0.12s linear;
+}
+.stage.apex .stage-bar > i { background: var(--jade); }
+.stage-timer {
+  font-family: var(--f-num); font-size: 0.85rem;
+  color: var(--soft); margin: 0; font-variant-numeric: tabular-nums;
+}
+.stage-timer.done { color: var(--amber); }
+
+.stage-acts {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 0.5rem; margin-top: 0.6rem; width: 100%;
+}
+button.act {
+  font-family: var(--f-num); font-size: 0.8rem;
+  background: transparent; color: var(--soft);
+  border: 1px solid var(--rule-hi); border-radius: 4px;
+  padding: 0.5rem 0.9rem; cursor: pointer; white-space: nowrap;
+}
+button.act:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }
+button.act:disabled { opacity: 0.35; cursor: not-allowed; }
+button.act.grow:hover:not(:disabled) { color: var(--jade);  border-color: var(--jade); }
+button.act.sell:hover:not(:disabled) { color: var(--amber); border-color: var(--amber); }
+button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--jade); }
+/* évoluer une créature engraissée lui fait perdre sa taille : on prévient */
+button.act.warn-evo:not(:disabled),
+button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+
+.stage-hint {
+  font-size: 0.82rem; color: var(--faint); margin: 0.3rem 0 0;
+  text-align: center; max-width: 44ch; line-height: 1.5;
+}
+
+/* ── la bande des sujets ─────────────────────── */
+.strip-wrap {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.85rem 0.9rem 0.7rem;
+}
+.strip {
+  display: flex; gap: 0.5rem; overflow-x: auto;
+  padding-bottom: 0.4rem; scrollbar-width: thin;
+}
+.thumb {
+  flex: none; width: 4.4rem;
+  background: var(--raised); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 0.5rem 0.35rem 0.4rem; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  color: var(--soft); position: relative;
+}
+.thumb:hover { border-color: var(--rule-hi); }
+.thumb[aria-current="true"] { border-color: var(--amber); background: var(--sunken); }
+.thumb.apex[aria-current="true"] { border-color: var(--jade); }
+.thumb:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.thumb-glyph { font-size: 1.5rem; line-height: 1; }
+.thumb.empty .thumb-glyph { opacity: 0.3; }
+.thumb-bar { width: 100%; height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+.thumb[aria-current="true"] .thumb-bar { background: var(--ground); }
+.thumb-bar > i { display: block; height: 100%; width: 0; background: var(--amber); }
+.thumb.apex .thumb-bar > i { background: var(--jade); }
+.thumb-tag {
+  font-family: var(--f-num); font-size: 0.6rem; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--faint);
+}
+.thumb.done .thumb-tag { color: var(--amber); }
+.strip-meta {
+  font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--faint); margin: 0.35rem 0 0;
+}
+
+/* ── panneaux latéraux ───────────────────────── */
+.side { grid-area: side; display: flex; flex-direction: column; gap: 1rem; padding-top: 1.25rem; }
 
 .panel {
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 1rem 1.1rem 1.15rem;
+  border-radius: 6px;
+  padding: 0.9rem 1rem 1.05rem;
 }
 .panel-head {
   display: flex; align-items: baseline; justify-content: space-between;
-  gap: 1rem; padding-bottom: 0.7rem; margin-bottom: 0.9rem;
+  gap: 1rem; padding-bottom: 0.65rem; margin-bottom: 0.85rem;
   border-bottom: 1px solid var(--rule);
 }
 .panel-head h2 {
-  font-family: var(--f-name); font-weight: 400; font-size: 1.05rem;
-  margin: 0; letter-spacing: 0.01em;
+  font-family: var(--f-name); font-weight: 400; font-size: 1rem; margin: 0;
 }
 .panel-meta {
   font-family: var(--f-num); font-size: 0.72rem; color: var(--faint);
   text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
 }
-.hint { margin: -0.2rem 0 0.9rem; font-size: 0.82rem; color: var(--soft); }
-.empty { margin: 0; font-size: 0.85rem; color: var(--faint); font-style: italic; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
-  gap: 0.75rem;
-}
-
-/* ── cartes ──────────────────────────────────── */
-.card {
-  background: var(--raised);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 0.85rem 0.8rem 0.7rem;
-  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-  position: relative; overflow: hidden;
-}
-.card.tappable { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
-.card.tappable:hover { border-color: var(--rule-hi); }
-.card.tappable:active .glyph { transform: scale(0.9); }
-.card.ready { border-color: var(--amber); }
-.card.apex  { border-color: var(--jade); }
-.card.blocked { border-color: var(--red); }
-.card:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-
-.glyph {
-  line-height: 1; transition: transform 0.09s ease-out;
-  filter: drop-shadow(0 0 0 transparent);
-}
-.card.ready .glyph { filter: drop-shadow(0 0 12px var(--amber-dim)); }
-.card.apex  .glyph { filter: drop-shadow(0 0 16px var(--jade)); }
-.card.shake .glyph { animation: shake 0.28s ease-out; }
-@keyframes shake {
-  0%,100% { transform: translateX(0) rotate(0); }
-  25% { transform: translateX(-3px) rotate(-4deg); }
-  75% { transform: translateX(3px) rotate(4deg); }
-}
-.card.pop { animation: pop 0.45s cubic-bezier(.2,1.4,.4,1); }
-@keyframes pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
-
-.cname { font-family: var(--f-name); font-size: 0.92rem; text-align: center; line-height: 1.2; }
-.ctier {
-  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--faint);
-}
-.card.apex .ctier { color: var(--jade); }
-
-.bar { width: 100%; height: 5px; background: var(--sunken); border-radius: 3px; overflow: hidden; }
-.bar > i { display: block; height: 100%; background: var(--amber); width: 0; border-radius: 3px; }
-.card.apex .bar > i { background: var(--jade); }
-.timer {
-  font-family: var(--f-num); font-size: 0.7rem; color: var(--soft);
-  font-variant-numeric: tabular-nums;
-}
-.acts { display: flex; gap: 0.35rem; width: 100%; margin-top: 0.1rem; }
-
-button.act {
-  flex: 1; font-family: var(--f-num); font-size: 0.7rem;
-  background: transparent; color: var(--soft);
-  border: 1px solid var(--rule-hi); border-radius: 3px;
-  padding: 0.32rem 0.2rem; cursor: pointer; white-space: nowrap;
-}
-button.act:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }
-button.act:disabled { opacity: 0.38; cursor: not-allowed; }
-button.act.sell:hover:not(:disabled)  { color: var(--amber); border-color: var(--amber); }
-button.act.evo:hover:not(:disabled)   { color: var(--jade);  border-color: var(--jade); }
-/* évoluer une créature engraissée lui fait perdre sa taille : on prévient */
-button.act.warn-evo:not(:disabled)    { border-color: var(--red); color: var(--red); }
-button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
-
-.warn {
-  font-family: var(--f-num); font-size: 0.66rem; color: var(--red);
-  text-align: center; line-height: 1.35;
-}
-
-/* ── boutique ────────────────────────────────── */
 .shop { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .shop li { display: flex; }
 .buy {
   width: 100%; text-align: left; cursor: pointer;
-  background: var(--raised); border: 1px solid var(--rule); border-radius: 3px;
+  background: var(--raised); border: 1px solid var(--rule); border-radius: 4px;
   color: var(--ink); font-family: var(--f-ui); font-size: 0.85rem;
   padding: 0.55rem 0.7rem;
   display: grid; grid-template-columns: 1fr auto; gap: 0.15rem 0.7rem; align-items: baseline;
@@ -239,12 +345,11 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 }
 .config label.check input { margin: 0.2rem 0 0; accent-color: var(--jade); flex: none; }
 
-/* ── collection ──────────────────────────────── */
 .collection { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
 .cell {
   aspect-ratio: 1; display: grid; place-items: center;
   background: var(--sunken); border-radius: 2px; font-size: 1.05rem;
-  color: var(--faint); cursor: default;
+  color: var(--faint);
 }
 .cell.got { background: var(--raised); }
 .cell.got.t5 { background: var(--jade-dim); }
@@ -257,22 +362,22 @@ button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(
 /* ── effets ──────────────────────────────────── */
 .fx { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
 .float {
-  position: absolute; font-family: var(--f-num); font-size: 0.8rem;
-  color: var(--amber); animation: rise 0.75s ease-out forwards;
+  position: absolute; font-family: var(--f-num); font-size: 0.85rem;
+  color: var(--amber); animation: rise 0.8s ease-out forwards;
   transform: translate(-50%, -50%); white-space: nowrap;
 }
-.float.gain { color: var(--jade); font-size: 0.95rem; }
+.float.gain { color: var(--jade); font-size: 1rem; }
 @keyframes rise {
   0%   { opacity: 1; transform: translate(-50%, -50%); }
-  100% { opacity: 0; transform: translate(-50%, -190%); }
+  100% { opacity: 0; transform: translate(-50%, -200%); }
 }
 .spark {
-  position: absolute; font-size: 1rem;
-  animation: burst 0.65s ease-out forwards; transform: translate(-50%, -50%);
+  position: absolute; font-size: 1.1rem;
+  animation: burst 0.7s ease-out forwards; transform: translate(-50%, -50%);
 }
 @keyframes burst {
   0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
-  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15); }
 }
 
 @media (prefers-reduced-motion: reduce) {

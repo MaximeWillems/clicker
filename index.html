@@ -17,7 +17,6 @@
   <div class="brand">
     <span class="brand-mark" aria-hidden="true">🥚</span>
     <span class="brand-name">Éclosion</span>
-    <span class="brand-tag">jalon 0</span>
   </div>
 
   <div class="purse">
@@ -34,25 +33,27 @@
 
 <div id="offline-note" class="offline-note" hidden></div>
 
-<main class="board">
+<main class="stage-col">
 
-  <section class="panel" aria-labelledby="h-incub">
-    <div class="panel-head">
-      <h2 id="h-incub">Incubateurs</h2>
-      <span class="panel-meta" id="incub-meta">1 place</span>
-    </div>
-    <p class="hint" id="hint-incub">Clique sur l'œuf pour le faire éclore. Rien n'avance tout seul au début : le clic est ta seule force.</p>
-    <div class="grid" id="incubators"></div>
+  <section class="stage" aria-labelledby="stage-name">
+    <button type="button" class="subject" id="subject">
+      <span class="subject-glow" aria-hidden="true"></span>
+      <span class="subject-scale"><span class="subject-glyph" id="stage-glyph">🥚</span></span>
+    </button>
+
+    <h1 class="subject-name" id="stage-name">Œuf</h1>
+    <p class="subject-meta" id="stage-meta">en couvaison</p>
+
+    <div class="stage-bar" role="presentation"><i id="stage-fill"></i></div>
+    <p class="stage-timer" id="stage-timer">15 clics</p>
+
+    <div class="stage-acts" id="stage-acts"></div>
+    <p class="stage-hint" id="stage-hint"></p>
   </section>
 
-  <section class="panel" aria-labelledby="h-pen">
-    <div class="panel-head">
-      <h2 id="h-pen">Enclos</h2>
-      <span class="panel-meta" id="pen-meta">1 place</span>
-    </div>
-    <p class="hint" id="hint-pen" hidden>Clique sur la créature pour la faire grandir. Elle ne poussera pas toute seule tant que tu n'auras pas d'éleveur.</p>
-    <div class="grid" id="pen"></div>
-    <p class="empty" id="pen-empty">Rien n'a encore éclos.</p>
+  <section class="strip-wrap" aria-label="Tes œufs et tes créatures">
+    <div class="strip" id="strip"></div>
+    <p class="strip-meta" id="strip-meta"></p>
   </section>
 
 </main>

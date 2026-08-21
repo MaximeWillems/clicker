@@ -12,7 +12,7 @@ const HATCH      = 15;                                        // secondes de cou
 const GROW       = [45, 180, 900, 3600, 21600];               // croissance par palier
 const VALUE      = [40, 500, 6000, 80000, 1500000];           // valeur à la vente
 const EVOLVE     = [200, 3000, 40000, 600000, null];          // coût pour passer au palier suivant
-const GLYPH_REM  = [2, 2.45, 2.95, 3.5, 4.2];
+const TIER_SCALE = [1, 1.1, 1.22, 1.35, 1.5];                 // grossissement visuel par palier
 
 const EGG_PRICE  = 12;
 const INCUB_BASE = 150;
@@ -23,24 +23,31 @@ const FEED_CHUNK = 60;      // secondes ajoutées par ration
 const FEED_RATIO = 0.8;     // une ration coûte 80 % de ce qu'elle fait gagner
 const AUTOFEED_X = 2;       // la mangeoire ajoute 2 s par seconde (croissance ×3)
 
-/* Engraissement — nourrir un adulte le fait grossir, sans limite.
-   La valeur suit un logarithme (OVER_GAIN) pendant que le coût reste linéaire (OVER_COST).
-   Comme OVER_GAIN dépasse à peine OVER_COST, la toute première bouchée est
-   marginalement gagnante puis ça devient une perte : grossir est un plaisir,
-   jamais une stratégie. Le rapport est le même à tous les paliers. */
+/* Croissance après l'âge adulte — elle ne s'arrête jamais.
+   Un clic vaut toujours une seconde de vie, avant comme après l'âge adulte ; c'est le
+   rendement qui s'essouffle (OVER_GAIN, logarithmique) pendant que le coût de la nourriture
+   reste linéaire (OVER_COST). Faire un animal énorme est donc un vrai effort, et jamais
+   un moyen de gagner sa vie. Le rapport est le même à tous les paliers. */
 const OVER_CHUNK = 60;      // secondes d'engraissement par ration
 const OVER_COST  = 0.5;     // ce que coûte une seconde d'engraissement
 const OVER_GAIN  = 0.55;    // ce qu'elle rapporte, en rendement décroissant
-const OVER_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas casser les cartes
+const SIZE_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas crever la scène
 
-/* Au départ, rien n'avance tout seul : le clic est la seule force du jeu.
-   Les deux premières automatisations n'accélèrent pas la partie, elles mettent
-   le temps au travail — c'est là que le jeu devient un idle. */
+// Les paliers de taille donnent un cap à viser une fois l'animal adulte.
+const RANKS = [
+  { at: 1.00, name: 'taille normale' },
+  { at: 1.30, name: 'grand' },
+  { at: 1.70, name: 'énorme' },
+  { at: 2.30, name: 'colossal' },
+  { at: 3.20, name: 'titanesque' },
+  { at: 4.50, name: 'démesuré' },
+];
+
 const UPGRADES = [
   { key: 'couveuse',  name: 'Couveuse automatique', cost: 120,
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.' },
   { key: 'eleveur',   name: 'Éleveur automatique', cost: 500,
-    desc: 'Les créatures grandissent toutes seules, même quand tu n’es pas là.' },
+    desc: 'Les créatures grandissent toutes seules jusqu’à l’âge adulte.' },
   { key: 'acheteur',  name: 'Acheteur automatique', cost: 2000,
     desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
   { key: 'mangeoire', name: 'Mangeoire automatique', cost: 15000,
@@ -76,17 +83,18 @@ const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
 const SAVE_KEY = 'eclosion.jalon0';
 const OFFLINE_CAP = 24 * 3600;
 
-let state, nextId = 1, lastFrame = Date.now(), isNewGame = false;
+let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
 
 function freshState() {
   return {
-    v: 1,
+    v: 2,
     coins: 0,
     eggs: 0,
     incubators: 1,
     pens: 1,
-    incub: [{ line: randomLine(), p: 0 }],   // le premier œuf est offert, déjà en couvaison
+    incub: [{ line: randomLine(), p: 0 }],   // le premier œuf est offert, déjà en place
     pen: [],
+    sel: 'i:0',
     up: { couveuse: false, eleveur: false, acheteur: false, mangeoire: false, marchand: false },
     sellUpTo: 0,
     autoFeed: true,
@@ -116,11 +124,13 @@ function load() {
     nextId = merged.pen.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
     return merged;
   } catch (e) {
+    isNewGame = true;
     return freshState();
   }
 }
 
 function save() {
+  if (stopSaving) return;          // le bouton ⟲ coupe la sauvegarde avant de recharger
   state.t = Date.now();
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* quota / privé */ }
 }
@@ -134,19 +144,25 @@ const $ = id => document.getElementById(id);
 const growTime  = c => GROW[c.tier - 1];
 const baseValue = c => VALUE[c.tier - 1];
 const evoCost   = c => EVOLVE[c.tier - 1];
-
-// La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
-// à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
-// une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
-const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / growTime(c));
-const isFat      = c => sizeFactor(c) > 1.005;
-const sellValue  = c => Math.round(baseValue(c) * sizeFactor(c));
 const isAdult   = c => c.p >= growTime(c);
 const form      = (lineKey, tier) => LINE_BY_KEY[lineKey].forms[tier - 1];
 const penFull   = () => state.pen.length >= state.pens;
 
 const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incubators - 1));
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
+
+// La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
+// à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
+// une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
+const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / growTime(c));
+const sellValue  = c => Math.round(baseValue(c) * sizeFactor(c));
+const isFat      = c => sizeFactor(c) > 1.005;
+
+function rankOf(sf) {
+  let i = 0;
+  while (i + 1 < RANKS.length && sf >= RANKS[i + 1].at) i++;
+  return { name: RANKS[i].name, from: RANKS[i].at, next: RANKS[i + 1] || null };
+}
 
 // prix d'une ration : proportionnel au temps réellement gagné
 function feedQuote(c) {
@@ -167,8 +183,10 @@ function overfeedQuote(c) {
 function fmt(n) {
   n = Math.floor(n);
   if (n >= 1e9) return (n / 1e9).toFixed(2).replace('.', ',') + ' Md';
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
+
+function dec(n, d) { return n.toFixed(d === undefined ? 2 : d).replace('.', ','); }
 
 function fmtTime(s) {
   s = Math.max(0, Math.ceil(s));
@@ -187,6 +205,30 @@ function remaining(left, automated) {
 
 function markSeen(lineKey, tier) { state.seen[lineKey + ':' + tier] = true; }
 const seenCount = () => Object.keys(state.seen).length;
+
+/* ─────────────────────────────────────────────
+   Le sujet à l'écran — un seul à la fois
+   ───────────────────────────────────────────── */
+
+function subjects() {
+  const list = state.incub.map((slot, i) => ({ key: 'i:' + i, kind: 'egg', i, slot }));
+  for (const c of state.pen) list.push({ key: 'c:' + c.id, kind: 'creature', c });
+  return list;
+}
+
+function current() {
+  const list = subjects();
+  return list.find(s => s.key === state.sel)
+      || list.find(s => s.kind === 'creature')
+      || list.find(s => s.kind === 'egg' && s.slot)
+      || list[0]
+      || null;
+}
+
+function select(key) {
+  state.sel = key;
+  refresh();
+}
 
 /* ─────────────────────────────────────────────
    Effets — le clic doit être agréable
@@ -231,7 +273,7 @@ function burst(x, y, glyph, count) {
   for (let i = 0; i < (count || 8); i++) {
     const el = document.createElement('span');
     const a = (Math.PI * 2 * i) / (count || 8) + Math.random() * 0.5;
-    const d = 40 + Math.random() * 45;
+    const d = 55 + Math.random() * 60;
     el.className = 'spark';
     el.textContent = glyph;
     el.style.left = x + 'px';
@@ -254,30 +296,50 @@ function flash(el, cls) {
   el.classList.add(cls);
 }
 
+// Le coup de grossissement, réservé au changement de rang de taille.
+function pulse() {
+  const el = document.querySelector('.subject-scale');
+  if (el) flash(el, 'grew');
+}
+
 /* ─────────────────────────────────────────────
    Actions
    ───────────────────────────────────────────── */
 
-function tapIncubator(i, el) {
-  const slot = state.incub[i];
-  if (!slot) { placeEgg(i); return; }
-  if (slot.p >= HATCH) return;
-  slot.p += 1;
-  flash(el, 'shake');
-  const c = centerOf(el);
-  floatText(c.x + (Math.random() * 30 - 15), c.y - 10, '+1 s');
-  blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
-  if (slot.p >= HATCH) hatchAll();
-  else refresh();
-}
-
-function tapCreature(c, el) {
-  if (isAdult(c)) return;
-  c.p += 1;
-  flash(el, 'shake');
+function tapStage() {
+  const s = current();
+  if (!s) return;
+  const el = $('subject');
   const pt = centerOf(el);
-  floatText(pt.x + (Math.random() * 30 - 15), pt.y - 10, '+1 s');
+  const jitter = () => pt.x + (Math.random() * 60 - 30);
+
+  if (s.kind === 'egg') {
+    if (!s.slot) { placeEgg(s.i); return; }
+    if (s.slot.p >= HATCH) return;
+    s.slot.p += 1;
+    flash(el, 'shake');
+    floatText(jitter(), pt.y - 20, '+1 s');
+    blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
+    if (s.slot.p >= HATCH) hatchAll(); else refresh();
+    return;
+  }
+
+  const c = s.c;
+  const before = isAdult(c) ? sizeFactor(c) : 0;
+  // Un clic vaut une seconde de vie, avant comme après l'âge adulte : la créature
+  // ne cesse jamais de grandir, seul le rendement diminue.
+  if (isAdult(c)) c.over = (c.over || 0) + 1; else c.p += 1;
+  flash(el, 'shake');
+  floatText(jitter(), pt.y - 20, '+1 s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
+  if (before && rankOf(sizeFactor(c)).name !== rankOf(before).name) {
+    refresh();                                  // la nouvelle échelle avant l'animation
+    burst(pt.x, pt.y, '✦', 10);
+    floatText(pt.x, pt.y - 70, rankOf(sizeFactor(c)).name, 'gain');
+    chord([523, 659, 784]);
+    pulse();
+    return;
+  }
   refresh();
 }
 
@@ -285,66 +347,80 @@ function placeEgg(i) {
   if (state.incub[i] || state.eggs <= 0) return;
   state.eggs--;
   state.incub[i] = { line: randomLine(), p: 0 };   // la lignée est tirée ici, révélée à l'éclosion
+  state.sel = 'i:' + i;
   blip(330, 0.05, 'sine', 0.03);
   refresh();
 }
 
 function hatchAll() {
-  let hatched = 0;
+  let hatched = 0, lastKey = null;
   for (let i = 0; i < state.incub.length; i++) {
     const slot = state.incub[i];
     if (!slot || slot.p < HATCH) continue;
     if (penFull()) continue;
-    state.pen.push({ id: nextId++, line: slot.line, tier: 1, p: 0, over: 0 });
+    const c = { id: nextId++, line: slot.line, tier: 1, p: 0, over: 0 };
+    state.pen.push(c);
     state.incub[i] = null;
     markSeen(slot.line, 1);
+    lastKey = 'c:' + c.id;
     hatched++;
   }
   if (hatched) {
-    const host = $('pen');
-    const pt = centerOf(host);
-    burst(pt.x, pt.y - 40, '✦', 10);
+    // la bête qui vient de sortir prend la scène
+    if (state.sel && state.sel.startsWith('i:')) state.sel = lastKey;
+    const pt = centerOf($('subject'));
+    burst(pt.x, pt.y, '✦', 12);
     chord([523, 659, 784]);
+    popNext = true;
   }
   refresh();
   return hatched;
 }
 
-function feed(c, el) {
+function feed(c) {
   const adult = isAdult(c);
   const q = adult ? overfeedQuote(c) : feedQuote(c);
   if (!q || state.coins < q.cost) return;
 
   const before = adult ? sellValue(c) : 0;
+  const rankBefore = adult ? rankOf(sizeFactor(c)).name : null;
   state.coins -= q.cost;
   if (adult) c.over = (c.over || 0) + q.seconds;
   else c.p = Math.min(growTime(c), c.p + q.seconds);
 
+  const el = $('subject');
   const pt = centerOf(el);
   floatText(pt.x, pt.y, '−' + fmt(q.cost));
   if (adult) {
-    floatText(pt.x, pt.y - 26, '+' + fmt(sellValue(c) - before) + ' de valeur', 'gain');
+    floatText(pt.x, pt.y - 40, '+' + fmt(sellValue(c) - before) + ' de valeur', 'gain');
     flash(el, 'shake');
+    if (rankOf(sizeFactor(c)).name !== rankBefore) {
+      refresh();
+      burst(pt.x, pt.y, '✦', 10);
+      chord([523, 659, 784]);
+      pulse();
+      blip(320, 0.05, 'sine', 0.03);
+      return;
+    }
   }
   blip(adult ? 320 : 400, 0.05, 'sine', 0.03);
   refresh();
 }
 
-function sell(c, el) {
+function sell(c) {
   if (!isAdult(c)) return;
   const gain = sellValue(c);
   state.coins += gain;
   state.pen = state.pen.filter(x => x.id !== c.id);
-  if (el) {
-    const pt = centerOf(el);
-    floatText(pt.x, pt.y, '+' + fmt(gain), 'gain');
-    burst(pt.x, pt.y, '🪙', 6);
-  }
+  if (state.sel === 'c:' + c.id) state.sel = null;
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y, '+' + fmt(gain), 'gain');
+  burst(pt.x, pt.y, '🪙', 8);
   chord([392, 523], 55);
   refresh();
 }
 
-function evolve(c, el) {
+function evolve(c) {
   if (!isAdult(c) || c.tier >= 5) return;
   const cost = evoCost(c);
   if (state.coins < cost) return;
@@ -356,12 +432,11 @@ function evolve(c, el) {
   // la valeur montant ×12 par palier quand la croissance ne monte que ×4.
   c.over = 0;
   markSeen(c.line, c.tier);
-  if (el) {
-    const pt = centerOf(el);
-    burst(pt.x, pt.y, c.tier === 5 ? '✦' : '✧', 12);
-    floatText(pt.x, pt.y - 30, form(c.line, c.tier)[0], 'gain');
-  }
+  const pt = centerOf($('subject'));
+  burst(pt.x, pt.y, c.tier === 5 ? '✦' : '✧', 14);
+  floatText(pt.x, pt.y - 80, form(c.line, c.tier)[0], 'gain');
   chord([440, 554, 659, 880], 80);
+  popNext = true;
   refresh();
 }
 
@@ -423,9 +498,9 @@ function advance(dt) {
 function runAutomations(dt) {
   if (state.up.mangeoire && state.autoFeed) {
     for (const c of state.pen) {
+      // la mangeoire s'arrête à l'âge adulte : engraisser est une décision, pas un automatisme
       const left = growTime(c) - c.p;
       if (left <= 0) continue;
-      // la mangeoire s'arrête à l'âge adulte : engraisser est une décision, pas un automatisme
       const extra = Math.min(left, dt * AUTOFEED_X);
       const cost = extra * (baseValue(c) / growTime(c)) * FEED_RATIO;
       if (state.coins < cost) break;
@@ -456,7 +531,6 @@ function loop() {
   const dt = Math.min(5, (now - lastFrame) / 1000) * state.speed;
   lastFrame = now;
   if (dt <= 0) return;
-
   advance(dt);
   runAutomations(dt);
   hatchAll();          // hatchAll rafraîchit déjà l'affichage
@@ -488,138 +562,45 @@ function catchUp() {
    Rendu
    ───────────────────────────────────────────── */
 
-const cards = new Map();       // clé -> refs des éléments
-const popped = new Set();      // créatures déjà animées à l'apparition
-let incubSig = '', penSig = '', shopBuilt = false, collSig = '';
+const refs = {};           // éléments de la boutique et des actions, construits une fois
+const thumbs = new Map();
+let stripSig = '', collSig = '', popNext = false;
 
-function buildCard(key, opts) {
-  const el = document.createElement(opts.tappable ? 'button' : 'div');
-  el.className = 'card' + (opts.tappable ? ' tappable' : '');
-  if (opts.tappable) el.type = 'button';
+/* La scène se redessine dix fois par seconde. Réécrire une propriété avec la même valeur
+   n'est pas neutre : sur une propriété animée, chaque écriture relance la transition, qui
+   n'atteint donc jamais sa cible — c'est ce qui empêchait la créature de grossir à l'écran.
+   Ces trois helpers ne touchent au DOM que si la valeur a réellement changé. */
+function setText(el, v) { if (el.textContent !== v) el.textContent = v; }
+function setHtml(el, v) { if (el.__html !== v) { el.__html = v; el.innerHTML = v; } }
+function setVar(el, name, v) { if (el.__var !== v) { el.__var = v; el.style.setProperty(name, v); } }
+function setWidth(el, v) { if (el.__w !== v) { el.__w = v; el.style.width = v; } }
 
-  const glyph = document.createElement('div');
-  glyph.className = 'glyph';
-  el.appendChild(glyph);
-
-  const name = document.createElement('div');
-  name.className = 'cname';
-  el.appendChild(name);
-
-  const tier = document.createElement('div');
-  tier.className = 'ctier';
-  el.appendChild(tier);
-
-  const bar = document.createElement('div');
-  bar.className = 'bar';
-  const fill = document.createElement('i');
-  bar.appendChild(fill);
-  el.appendChild(bar);
-
-  const timer = document.createElement('div');
-  timer.className = 'timer';
-  el.appendChild(timer);
-
-  const refs = { el, glyph, name, tier, bar: fill, timer, acts: null, warn: null };
-  cards.set(key, refs);
-  return refs;
-}
-
-function addActions(refs, defs) {
-  const row = document.createElement('div');
-  row.className = 'acts';
+function buildChrome() {
+  // les actions de la scène : construites une fois, montrées selon le sujet
+  const host = $('stage-acts');
+  host.textContent = '';
   refs.acts = {};
+  const defs = [
+    { key: 'place', cls: 'grow', run: () => { const s = current(); if (s && s.kind === 'egg') placeEgg(s.i); } },
+    { key: 'grow',  cls: 'grow', run: () => { const s = current(); if (s && s.c) feed(s.c); } },
+    { key: 'sell',  cls: 'sell', run: () => { const s = current(); if (s && s.c) sell(s.c); } },
+    { key: 'evo',   cls: 'evo',  run: () => { const s = current(); if (s && s.c) evolve(s.c); } },
+  ];
   for (const d of defs) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'act ' + d.cls;
-    b.addEventListener('click', ev => { ev.stopPropagation(); d.run(refs.el); });
-    row.appendChild(b);
-    refs.acts[d.cls] = b;
+    b.addEventListener('click', d.run);
+    host.appendChild(b);
+    refs.acts[d.key] = b;
   }
-  refs.el.appendChild(row);
-}
-
-function renderIncubators() {
-  const sig = state.incubators + '|' + state.incub
-    .map(s => (s ? s.line + (s.p >= HATCH ? 'R' : 'G') : 'E')).join(',');
-  if (sig === incubSig) return;
-  incubSig = sig;
-
-  const host = $('incubators');
-  host.textContent = '';
-  for (const k of [...cards.keys()]) if (k.startsWith('i:')) cards.delete(k);
-
-  state.incub.forEach((slot, i) => {
-    const refs = buildCard('i:' + i, { tappable: true });
-    refs.el.addEventListener('click', () => tapIncubator(i, refs.el));
-    if (slot) {
-      refs.glyph.textContent = '🥚';
-      refs.glyph.style.fontSize = '2.1rem';
-      refs.name.textContent = 'Œuf';
-      refs.tier.textContent = 'en couvaison';
-    } else {
-      refs.glyph.textContent = '◌';
-      refs.glyph.style.fontSize = '2.1rem';
-      refs.glyph.style.opacity = '0.35';
-      refs.name.textContent = 'Incubateur libre';
-      refs.tier.textContent = state.eggs > 0 ? 'clique pour placer un œuf' : 'achète un œuf';
-      refs.bar.parentElement.style.visibility = 'hidden';
-    }
-    host.appendChild(refs.el);
-  });
-
-  $('incub-meta').textContent = state.incubators + (state.incubators > 1 ? ' places' : ' place');
-}
-
-function renderPen() {
-  const sig = state.pens + '|' + state.pen
-    .map(c => c.id + ':' + c.tier + (isAdult(c) ? 'A' : 'G')).join(',');
-  if (sig === penSig) return;
-  penSig = sig;
-
-  const host = $('pen');
-  host.textContent = '';
-  for (const k of [...cards.keys()]) if (k.startsWith('c:')) cards.delete(k);
-
-  for (const c of state.pen) {
-    const f = form(c.line, c.tier);
-    const refs = buildCard('c:' + c.id, { tappable: true });
-    refs.el.addEventListener('click', () => tapCreature(c, refs.el));
-    refs.glyph.textContent = f[1];
-    refs.glyph.style.fontSize = GLYPH_REM[c.tier - 1] + 'rem';
-    refs.name.textContent = f[0];
-    refs.tier.textContent = 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '');
-    if (c.tier === 5) refs.el.classList.add('apex');
-    addActions(refs, [
-      { cls: 'feed', run: el => feed(c, el) },
-      { cls: 'sell', run: el => sell(c, el) },
-      { cls: 'evo',  run: el => evolve(c, el) },
-    ]);
-    // n'anime que ce qui vient d'arriver, sinon toutes les cartes sautent à chaque redessin
-    const stamp = c.id + ':' + c.tier;
-    if (!popped.has(stamp)) { popped.add(stamp); flash(refs.el, 'pop'); }
-    host.appendChild(refs.el);
-  }
-  popped.forEach(s => {
-    const id = parseInt(s, 10);
-    if (!state.pen.some(c => c.id === id)) popped.delete(s);
-  });
-
-  $('pen-meta').textContent = state.pen.length + ' / ' + state.pens +
-    (state.pens > 1 ? ' places' : ' place');
-  $('pen-empty').hidden = state.pen.length > 0;
-}
-
-function renderShop() {
-  if (shopBuilt) return;
-  shopBuilt = true;
 
   const items = [
-    { key: 'egg',   title: 'Œuf',        desc: 'Lignée inconnue jusqu’à l’éclosion.', cost: () => EGG_PRICE,  run: buyEgg },
-    { key: 'incub', title: 'Incubateur', desc: 'Un œuf de plus en couvaison.',        cost: incubCost,        run: buyIncubator },
-    { key: 'pen',   title: 'Enclos',     desc: 'Une créature de plus en croissance.', cost: penCost,          run: buyPen },
+    { key: 'egg',   title: 'Œuf',        desc: 'Lignée inconnue jusqu’à l’éclosion.', cost: () => EGG_PRICE, run: buyEgg },
+    { key: 'incub', title: 'Incubateur', desc: 'Un œuf de plus en couvaison.',        cost: incubCost,       run: buyIncubator },
+    { key: 'pen',   title: 'Enclos',     desc: 'Une créature de plus en croissance.', cost: penCost,         run: buyPen },
   ];
-
+  refs.shop = {};
   const shop = $('shop');
   shop.textContent = '';
   for (const it of items) {
@@ -633,9 +614,10 @@ function renderShop() {
     b.addEventListener('click', it.run);
     li.appendChild(b);
     shop.appendChild(li);
-    cards.set('shop:' + it.key, { el: b, price: b.querySelector('.p'), cost: it.cost });
+    refs.shop[it.key] = { el: b, price: b.querySelector('.p'), desc: b.querySelector('.d'), cost: it.cost };
   }
 
+  refs.up = {};
   const autos = $('autos');
   autos.textContent = '';
   for (const u of UPGRADES) {
@@ -649,7 +631,50 @@ function renderShop() {
     b.addEventListener('click', () => buyUpgrade(u));
     li.appendChild(b);
     autos.appendChild(li);
-    cards.set('up:' + u.key, { el: b, price: b.querySelector('.p'), up: u });
+    refs.up[u.key] = { el: b, price: b.querySelector('.p'), up: u };
+  }
+}
+
+function renderStrip() {
+  const list = subjects();
+  const sig = list.map(s => s.kind === 'egg'
+    ? 'i' + s.i + (s.slot ? ':' + s.slot.line : ':-')
+    : 'c' + s.c.id + ':' + s.c.tier).join(',');
+  if (sig === stripSig) return;
+  stripSig = sig;
+
+  const host = $('strip');
+  host.textContent = '';
+  thumbs.clear();
+
+  for (const s of list) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'thumb';
+    b.addEventListener('click', () => select(s.key));
+
+    const glyph = document.createElement('span');
+    glyph.className = 'thumb-glyph';
+    const bar = document.createElement('span');
+    bar.className = 'thumb-bar';
+    const fill = document.createElement('i');
+    bar.appendChild(fill);
+    const tag = document.createElement('span');
+    tag.className = 'thumb-tag';
+
+    if (s.kind === 'egg') {
+      glyph.textContent = s.slot ? '🥚' : '◌';
+      if (!s.slot) b.classList.add('empty');
+      tag.textContent = s.slot ? 'œuf' : 'libre';
+    } else {
+      glyph.textContent = form(s.c.line, s.c.tier)[1];
+      tag.textContent = 'p.' + s.c.tier;
+      if (s.c.tier === 5) b.classList.add('apex');
+    }
+
+    b.append(glyph, bar, tag);
+    host.appendChild(b);
+    thumbs.set(s.key, { el: b, bar: fill, tag });
   }
 }
 
@@ -673,84 +698,164 @@ function renderCollection() {
   $('coll-meta').textContent = seenCount() + ' / 25';
 }
 
-// Mise à jour rapide : jauges, minuteurs, disponibilité des boutons
+function renderStage() {
+  const s = current();
+  const stage = document.querySelector('.stage');
+  const subject = $('subject');
+  const acts = refs.acts;
+  const hide = k => { acts[k].hidden = true; };
+
+  if (!s) {
+    setText($('stage-glyph'), '◌');
+    setText($('stage-name'), 'Rien en vue');
+    setHtml($('stage-meta'), '');
+    setText($('stage-timer'), '');
+    setWidth($('stage-fill'), '0%');
+    setText($('stage-hint'), 'Achète un œuf pour recommencer.');
+    ['place', 'grow', 'sell', 'evo'].forEach(hide);
+    return;
+  }
+
+  if (state.sel !== s.key) state.sel = s.key;
+
+  if (s.kind === 'egg') {
+    const slot = s.slot;
+    stage.classList.remove('apex');
+    setVar(subject, '--sz', '1');
+    setText($('stage-glyph'), slot ? '🥚' : '◌');
+    setText($('stage-name'), slot ? 'Œuf' : 'Incubateur libre');
+
+    if (slot) {
+      const ready = slot.p >= HATCH;
+      stage.classList.toggle('ready', ready);
+      setHtml($('stage-meta'), ready ? 'ça sort !' : 'en couvaison');
+      setWidth($('stage-fill'), Math.min(100, (slot.p / HATCH) * 100) + '%');
+      setText($('stage-timer'), ready
+        ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
+        : remaining(HATCH - slot.p, state.up.couveuse));
+      $('stage-timer').classList.toggle('done', ready);
+      setText($('stage-hint'), state.up.couveuse
+        ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
+      ['place', 'grow', 'sell', 'evo'].forEach(hide);
+    } else {
+      stage.classList.remove('ready');
+      setHtml($('stage-meta'), 'vide');
+      setWidth($('stage-fill'), '0%');
+      setText($('stage-timer'), '');
+      $('stage-timer').classList.remove('done');
+      setText($('stage-hint'), state.eggs > 0
+        ? 'Tu as ' + state.eggs + ' œuf(s) en réserve.'
+        : 'Achète un œuf dans la boutique.');
+      ['grow', 'sell', 'evo'].forEach(hide);
+      acts.place.hidden = false;
+      setText(acts.place, 'Placer un œuf');
+      acts.place.disabled = state.eggs <= 0;
+    }
+    return;
+  }
+
+  const c = s.c;
+  const f = form(c.line, c.tier);
+  const adult = isAdult(c);
+  const sf = sizeFactor(c);
+  const rank = rankOf(sf);
+
+  stage.classList.toggle('apex', c.tier === 5);
+  stage.classList.toggle('ready', adult);
+  // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
+  setVar(subject, '--sz', (TIER_SCALE[c.tier - 1] * Math.min(SIZE_VIS, sf)).toFixed(3));
+  setText($('stage-glyph'), f[1]);
+  setText($('stage-name'), f[0]);
+
+  setHtml($('stage-meta'), 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
+    (isFat(c) ? ' · <span class="rank">' + rank.name + '</span> · ×' + dec(sf) : ''));
+
+  if (!adult) {
+    setWidth($('stage-fill'), Math.min(100, (c.p / growTime(c)) * 100) + '%');
+    setText($('stage-timer'), remaining(growTime(c) - c.p, state.up.eleveur));
+    $('stage-timer').classList.remove('done');
+    setText($('stage-hint'), state.up.eleveur
+      ? '' : 'Clique dessus pour la faire grandir. Elle ne pousse pas toute seule sans éleveur.');
+  } else {
+    // adulte : la barre vise le rang de taille suivant, la croissance ne s'arrête jamais
+    if (rank.next) {
+      const span = rank.next.at - rank.from;
+      setWidth($('stage-fill'), Math.min(100, ((sf - rank.from) / span) * 100).toFixed(1) + '%');
+      setText($('stage-timer'), 'adulte · ' + rank.next.name + ' à ×' + dec(rank.next.at));
+    } else {
+      setWidth($('stage-fill'), '100%');
+      setText($('stage-timer'), 'adulte · plus aucun rang au-dessus');
+    }
+    $('stage-timer').classList.add('done');
+    setText($('stage-hint'), 'Continue à cliquer : elle grandit sans fin, de plus en plus lentement.');
+  }
+
+  acts.place.hidden = true;
+  const q = adult ? overfeedQuote(c) : feedQuote(c);
+  acts.grow.hidden = false;
+  setText(acts.grow, 'Nourrir ' + fmt(q ? q.cost : 0));
+  acts.grow.title = adult
+    ? 'Fait grossir sans limite. La valeur monte un peu moins vite que la nourriture ne coûte.'
+    : 'Accélère la croissance et libère la place plus vite.';
+  acts.grow.disabled = !q || state.coins < q.cost;
+
+  acts.sell.hidden = false;
+  setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
+  acts.sell.disabled = !adult;
+
+  acts.evo.hidden = false;
+  if (c.tier >= 5) {
+    setText(acts.evo, 'Forme finale');
+    acts.evo.title = 'Plus rien au-dessus — il ne reste qu’à la faire grossir.';
+    acts.evo.disabled = true;
+    acts.evo.classList.remove('warn-evo');
+  } else {
+    setText(acts.evo, 'Évoluer ' + fmt(evoCost(c)));
+    acts.evo.title = isFat(c)
+      ? 'Attention : évoluer ramène la taille à ×1. Vends-la d’abord si tu l’as engraissée pour ça.'
+      : 'Passe au palier suivant. La croissance repart de zéro.';
+    acts.evo.classList.toggle('warn-evo', isFat(c));
+    acts.evo.disabled = !adult || state.coins < evoCost(c);
+  }
+}
+
 function tickView() {
   $('coins').textContent = fmt(state.coins);
 
-  state.incub.forEach((slot, i) => {
-    const refs = cards.get('i:' + i);
-    if (!refs) return;
-    if (slot) {
-      const ratio = Math.min(1, slot.p / HATCH);
-      refs.bar.style.width = (ratio * 100) + '%';
-      const ready = slot.p >= HATCH;
-      refs.el.classList.toggle('ready', ready);
-      refs.el.classList.toggle('blocked', ready && penFull());
-      refs.timer.textContent = ready
-        ? (penFull() ? 'enclos plein' : 'ça sort !')
-        : remaining(HATCH - slot.p, state.up.couveuse);
+  for (const s of subjects()) {
+    const t = thumbs.get(s.key);
+    if (!t) continue;
+    t.el.setAttribute('aria-current', String(s.key === state.sel));
+    if (s.kind === 'egg') {
+      const ready = s.slot && s.slot.p >= HATCH;
+      setWidth(t.bar, s.slot ? Math.min(100, (s.slot.p / HATCH) * 100).toFixed(1) + '%' : '0%');
+      t.el.classList.toggle('done', !!ready);
+      if (s.slot) setText(t.tag, ready ? 'prêt' : 'œuf');
     } else {
-      refs.timer.textContent = '';
-    }
-  });
-
-  for (const c of state.pen) {
-    const refs = cards.get('c:' + c.id);
-    if (!refs) continue;
-    const g = growTime(c);
-    const adult = isAdult(c);
-    refs.bar.style.width = Math.min(100, (c.p / g) * 100) + '%';
-    refs.el.classList.toggle('ready', adult && c.tier < 5);
-    refs.timer.textContent = adult ? 'adulte' : remaining(g - c.p, state.up.eleveur);
-
-    // la taille change sans changer la structure : elle se met à jour ici, pas au redessin
-    const sf = sizeFactor(c);
-    const size = (GLYPH_REM[c.tier - 1] * Math.min(OVER_VIS, sf)).toFixed(2) + 'rem';
-    if (refs.lastSize !== size) { refs.glyph.style.fontSize = size; refs.lastSize = size; }
-    const label = 'palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
-      (sf > 1.005 ? ' · taille ×' + sf.toFixed(2).replace('.', ',') : '');
-    if (refs.lastLabel !== label) { refs.tier.textContent = label; refs.lastLabel = label; }
-
-    const q = adult ? overfeedQuote(c) : feedQuote(c);
-    const bFeed = refs.acts.feed, bSell = refs.acts.sell, bEvo = refs.acts.evo;
-    bFeed.textContent = (adult ? 'Grossir ' : 'Nourrir ') + fmt(q ? q.cost : 0);
-    bFeed.title = adult
-      ? 'Fait grossir sans limite. La valeur monte un peu moins vite que la nourriture ne coûte.'
-      : 'Accélère la croissance et libère la place plus vite.';
-    bFeed.disabled = !q || state.coins < q.cost;
-    bSell.textContent = 'Vendre ' + fmt(sellValue(c));
-    bSell.disabled = !adult;
-    if (c.tier >= 5) {
-      bEvo.textContent = 'Forme finale';
-      bEvo.title = 'Plus rien au-dessus — il ne reste qu’à la faire grossir.';
-      bEvo.disabled = true;
-    } else {
-      bEvo.textContent = 'Évoluer ' + fmt(evoCost(c));
-      bEvo.title = isFat(c)
-        ? 'Attention : évoluer ramène la taille à ×1. Vends-la d’abord si tu l’as engraissée pour ça.'
-        : 'Passe au palier suivant. La croissance repart de zéro.';
-      bEvo.classList.toggle('warn-evo', isFat(c));
-      bEvo.disabled = !adult || state.coins < evoCost(c);
+      const adult = isAdult(s.c);
+      setWidth(t.bar, Math.min(100, (s.c.p / growTime(s.c)) * 100).toFixed(1) + '%');
+      t.el.classList.toggle('done', adult);
+      setText(t.tag, adult ? 'p.' + s.c.tier + ' ✦' : 'p.' + s.c.tier);
     }
   }
 
+  $('strip-meta').textContent =
+    state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur') + ' · ' +
+    state.pen.length + '/' + state.pens + (state.pens > 1 ? ' enclos' : ' enclos') +
+    (state.eggs > 0 ? ' · ' + state.eggs + ' œuf(s) en réserve' : '');
+
   for (const key of ['egg', 'incub', 'pen']) {
-    const r = cards.get('shop:' + key);
-    if (!r) continue;
+    const r = refs.shop[key];
     const cost = r.cost();
     r.price.textContent = fmt(cost);
     r.el.disabled = state.coins < cost;
   }
-  const eggRef = cards.get('shop:egg');
-  if (eggRef) {
-    eggRef.el.querySelector('.d').textContent = state.eggs > 0
-      ? 'Lignée inconnue jusqu’à l’éclosion. En réserve : ' + state.eggs + '.'
-      : 'Lignée inconnue jusqu’à l’éclosion.';
-  }
+  refs.shop.egg.desc.textContent = state.eggs > 0
+    ? 'Lignée inconnue jusqu’à l’éclosion. En réserve : ' + state.eggs + '.'
+    : 'Lignée inconnue jusqu’à l’éclosion.';
 
   for (const u of UPGRADES) {
-    const r = cards.get('up:' + u.key);
-    if (!r) continue;
+    const r = refs.up[u.key];
     const owned = state.up[u.key];
     r.el.classList.toggle('owned', owned);
     r.price.textContent = owned ? 'acquis' : fmt(u.cost);
@@ -759,20 +864,14 @@ function tickView() {
 
   $('cfg-marchand').hidden = !state.up.marchand;
   $('cfg-mangeoire').hidden = !state.up.mangeoire;
-
-  // Ici et pas dans le rendu structurel : acheter une amélioration ne change pas
-  // la signature des cartes, donc le rendu structurel ne serait pas rejoué.
-  $('hint-incub').hidden = state.up.couveuse;
-  $('hint-pen').hidden = state.up.eleveur || state.pen.length === 0;
 }
 
-// Les fonctions de rendu se protègent elles-mêmes par signature :
-// elles ne reconstruisent le DOM que si la structure a réellement changé.
 function refresh() {
-  renderIncubators();
-  renderPen();
+  renderStrip();
   renderCollection();
+  renderStage();
   tickView();
+  if (popNext) { popNext = false; flash($('subject'), 'pop'); }
 }
 
 /* ─────────────────────────────────────────────
@@ -780,6 +879,8 @@ function refresh() {
    ───────────────────────────────────────────── */
 
 function bindTools() {
+  $('subject').addEventListener('click', tapStage);
+
   $('btn-speed').addEventListener('click', () => {
     state.speed = state.speed === 1 ? 10 : state.speed === 10 ? 100 : 1;
     $('btn-speed').textContent = '×' + state.speed;
@@ -793,6 +894,9 @@ function bindTools() {
 
   $('btn-reset').addEventListener('click', () => {
     if (!confirm('Effacer la partie et repartir de zéro ?')) return;
+    // couper la sauvegarde AVANT de recharger : sinon le beforeunload réécrit
+    // aussitôt ce qu'on vient d'effacer, et le bouton semble ne rien faire.
+    stopSaving = true;
     try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
     location.reload();
   });
@@ -808,6 +912,7 @@ function bindTools() {
 
 function start() {
   state = load();
+  buildChrome();
   bindTools();
 
   $('btn-speed').textContent = '×' + state.speed;
@@ -815,8 +920,6 @@ function start() {
   $('sel-marchand').value = String(state.sellUpTo);
   $('chk-mangeoire').checked = !!state.autoFeed;
 
-  // première partie : on note la lignée de l'œuf offert seulement à l'éclosion
-  renderShop();
   catchUp();
   refresh();
 
