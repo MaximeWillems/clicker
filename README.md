@@ -30,11 +30,12 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 - Les 5 lignées et leurs 25 formes, du têtard au Léviathan
 - Œuf → clic → éclosion → croissance → **vendre ou faire évoluer**
-- **Rien n'avance tout seul au départ** : seuls le clic (+1 s) et la nourriture (payante) font
-  éclore et grandir. Le temps ne se met à travailler qu'une fois les automatisations achetées
-- **Engraissement sans limite** : un adulte se nourrit indéfiniment et grossit à vue d'œil
+- **Rien n'avance tout seul au départ** : seul le clic fait éclore et grandir. Le temps ne se
+  met à travailler qu'une fois les automatisations achetées
+- **Rien ne se nourrit contre des pièces** : une bête grandit au clic et au temps, jamais à
+  l'argent. Un adulte continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
-- Six améliorations à niveaux : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand
+- Sept améliorations : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand, évolution
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
 - Collection des 25 formes découvertes
 
@@ -72,7 +73,7 @@ qu'annoncer des secondes quand rien ne s'écoule serait un mensonge.
 Les deux premiers achats n'accélèrent pas la partie, ils **mettent le temps au travail** —
 c'est le moment précis où le jeu bascule de clicker à idle.
 
-Quatre améliorations sur cinq se montent **niveau par niveau, sans plafond**. Le prix du
+Quatre améliorations sur sept se montent **niveau par niveau, sans plafond**. Le prix du
 prochain niveau vaut `base × mult^niveau` : l'effet monte linéairement pendant que le prix
 double presque, donc chaque palier se mérite et les rendements décroissent d'eux-mêmes.
 
@@ -82,13 +83,21 @@ double presque, donc chaque palier se mérite et les rendements décroissent d'e
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
 | Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
 | Acheteur automatique | 2 000 | — | achat unique |
-| Mangeoire automatique | 15 000 | ×2,0 | *n*×2 s de croissance par seconde |
+| Mangeoire automatique | 15 000 | ×2,0 | *n*×2 s d'engraissement par seconde |
 | Marchand automatique | 100 000 | — | achat unique |
+| Évolution automatique | 400 000 | — | achat unique |
+
+**L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
+jusqu'à l'âge adulte, la mangeoire prend le relais et engraisse les adultes. Aucune des deux
+ne dépense de pièces.
+
+**Le marchand et l'évolution automatique se règlent**, chacun avec son palier plafond, et
+l'évolution passe avant la vente : une bête qu'on peut faire monter ne part jamais au prix de
+son palier actuel. Régler l'évolution sur 4 et la vente sur 4 construit ainsi une chaîne
+complète — couver, élever, faire monter de palier, vendre — sans y toucher.
 
 La force du clic vaut aussi pour l'engraissement d'un adulte, et les compteurs en tiennent
-compte : « 2 clics » plutôt que « 15 clics » une fois le clic monté à 7 secondes. Elle ne
-déséquilibre rien — un cycle complet et un engraissement montent tous les deux avec elle,
-donc leur rapport (0,67 contre 0,36 pièce par clic) ne bouge pas.
+compte : « 2 clics » plutôt que « 15 clics » une fois le clic monté à 7 secondes.
 
 Les sauvegardes d'avant les niveaux sont converties au chargement : `true` devient niveau 1.
 
@@ -172,44 +181,31 @@ du palier, soit ×2,25 au maximum.
 
 ### Engraissement
 
-Un adulte peut aussi être nourri à l'infini contre des pièces. Sa taille et sa valeur montent
-au même rythme décroissant (`OVER_GAIN`, logarithmique) pendant que la nourriture coûte
-toujours le même prix à la seconde (`OVER_COST`, linéaire). Le rapport est identique à tous
-les paliers.
+Une bête ne se nourrit **jamais contre des pièces** : elle grandit au clic et au temps. Un
+adulte continue donc de grossir indéfiniment, gratuitement, et sa valeur monte de rang en
+rang (`OVER_GAIN`, rendement logarithmique).
 
-Au palier 1, en payant la nourriture plutôt qu'en cliquant :
+Ce que coûte un animal énorme n'est pas de l'argent mais **du temps et une place d'enclos** :
+une bête qu'on engraisse est une bête qu'on ne vend pas, et l'enclos qu'elle occupe ne
+produit rien pendant ce temps. Au palier 1, avec une mangeoire de niveau 1 :
 
-| Rang atteint | Payé | Gagné | Net |
+| Rang atteint | Temps d'engraissement | Valeur | Rendement de l'enclos |
 |---|---|---|---|
-| grand | 15 | 12 | **−3** |
-| énorme | 51 | 28 | −23 |
-| colossal | 193 | 52 | −141 |
-| titanesque | 1 072 | 88 | −984 |
-| démesuré | 11 587 | 140 | −11 447 |
+| grand | 16 s | 40 → 52 | 0,75 pièce/s — **mieux que recycler** |
+| énorme | 58 s | 52 → 68 | 0,48 pièce/s |
+| colossal | 217 s | 68 → 92 | 0,24 pièce/s |
+| titanesque | 1 206 s | 92 → 128 | 0,07 pièce/s |
 
-Autrement dit : grossir est un plaisir et un puits à pièces, jamais une stratégie. Même le
-premier rang reste légèrement perdant. Au clic — donc gratuitement — c'est jouable mais
-médiocre : 0,36 pièce par clic pour atteindre *grand*, contre 0,67 en menant simplement une
-nouvelle bête à terme.
+À comparer aux 0,67 pièce/s d'un enclos qui enchaîne les bêtes jusqu'à l'âge adulte et les
+vend. Il existe donc une fenêtre étroite où engraisser jusqu'à *grand* bat le recyclage, et
+tout ce qui va au-delà est du plaisir payé en temps. C'est une vraie décision, et elle se
+règle par le marchand automatique : allumé il vend avant que la mangeoire ait le temps
+d'agir, éteint il laisse grossir.
 
-**C'est pourquoi la mangeoire automatique s'arrête à l'âge adulte par défaut** : une
-automatisation ne doit pas vider la bourse en silence dans une opération perdante. Engraisser
-automatiquement se coche à part, sous le panneau des améliorations, avec l'avertissement.
-Une réserve égale au prix d'un œuf est toujours préservée, sans quoi la boucle du jeu
-s'arrêterait faute de pouvoir racheter quoi que ce soit.
-
-Deux garde-fous en découlent :
-
-- **L'évolution remet la taille à ×1.** Sans ça, engraisser au palier 1 — où la nourriture
-  est dérisoire — puis évoluer rapporterait des dizaines de fois la mise, la valeur montant
-  ×12 par palier quand la croissance ne monte que ×4. Le bouton *Évoluer* passe en rouge
-  quand la créature est engraissée.
-- **La mangeoire automatique s'arrête à l'âge adulte.** Elle ne doit jamais dépenser les
-  pièces du joueur dans une opération perdante.
-
-Pour rendre l'engraissement plus gratifiant, augmenter `OVER_GAIN` ou baisser `OVER_COST` —
-mais tant que `OVER_GAIN` dépasse `OVER_COST`, les premières bouchées redeviennent rentables
-et l'optimum se met à valoir le détour.
+Un garde-fou reste nécessaire : **l'évolution remet la taille à ×1.** Sans ça, engraisser au
+palier 1 puis évoluer rapporterait des dizaines de fois la mise, la valeur montant ×12 par
+palier quand la croissance ne monte que ×4. Le bouton *Évoluer* passe en rouge quand la
+créature a de la valeur à perdre.
 
 ## À vérifier en jouant
 

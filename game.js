@@ -19,19 +19,14 @@ const INCUB_BASE = 150;
 const PEN_BASE   = 400;
 const SLOT_MULT  = 1.6;
 
-const FEED_CHUNK = 60;      // secondes ajoutées par ration
-const FEED_RATIO = 0.8;     // une ration coûte 80 % de ce qu'elle fait gagner
-const AUTOFEED_X = 2;       // la mangeoire ajoute 2 s par seconde (croissance ×3)
-
-/* Croissance après l'âge adulte — elle ne s'arrête jamais.
-   Un clic vaut toujours une seconde de vie, avant comme après l'âge adulte ; c'est le
-   rendement qui s'essouffle (OVER_GAIN, logarithmique) pendant que le coût de la nourriture
-   reste linéaire (OVER_COST). Faire un animal énorme est donc un vrai effort, et jamais
-   un moyen de gagner sa vie. Le rapport est le même à tous les paliers. */
-const OVER_CHUNK = 60;      // secondes d'engraissement par ration
-const OVER_COST  = 0.5;     // ce que coûte une seconde d'engraissement
-const OVER_GAIN  = 0.55;    // ce qu'elle rapporte, en rendement décroissant
-const SIZE_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas crever la scène
+/* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
+   L'éleveur pousse les jeunes jusqu'à l'âge adulte, la mangeoire prend le relais ensuite
+   et engraisse les adultes sans fin. Le prix d'un animal énorme n'est donc pas en pièces
+   mais en temps et en place d'enclos — une bête qu'on engraisse est une bête qu'on ne
+   vend pas, et l'enclos qu'elle occupe ne produit rien pendant ce temps. */
+const FATTEN_X  = 2;        // secondes d'engraissement par seconde et par niveau de mangeoire
+const OVER_GAIN = 0.55;     // rendement décroissant de la taille
+const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever la scène
 
 /* Les rangs de taille qualifient l'adulte : « adulte », puis « adulte grand », « adulte
    énorme »… Le seuil d'un rang est aussi son multiplicateur de valeur : franchir un rang
@@ -71,15 +66,17 @@ const UPGRADES = [
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.',
     value: n => n, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.9,
-    desc: 'Les créatures grandissent toutes seules jusqu’à l’âge adulte.',
+    desc: 'Élève les jeunes tout seuls jusqu’à l’âge adulte.',
     value: n => n, unit: '× la vitesse de croissance' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 15000, mult: 2,
-    desc: 'Nourrit en continu jusqu’à l’âge adulte. Engraisser les adultes reste une option à cocher, parce que c’est une perte nette.',
-    value: n => n * AUTOFEED_X, unit: ' s de croissance par seconde' },
+    desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
+    value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
   { key: 'marchand', name: 'Marchand automatique', base: 100000, mult: 1, max: 1,
     desc: 'Vend les adultes selon la règle que tu définis.' },
+  { key: 'evolution', name: 'Évolution automatique', base: 400000, mult: 1, max: 1,
+    desc: 'Fait monter les adultes de palier tout seul, jusqu’où tu décides.' },
 ];
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
@@ -128,10 +125,9 @@ function freshState() {
     incub: [{ line: randomLine(), p: 0 }],   // le premier œuf est offert, déjà en place
     pen: [],
     sel: 'i:0',
-    up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0 },
+    up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0 },
     sellUpTo: 0,
-    autoFeed: true,
-    autoFatten: false,      // engraisser tout seul est perdant : ça se coche à la main
+    evolveUpTo: 0,
     seen: {},
     speed: 1,
     sound: true,
@@ -239,22 +235,6 @@ function visualScale(c) {
   const ratio = Math.min(1, c.p / growTime(c));
   const life = LIFE_MIN + (1 - LIFE_MIN) * ratio;
   return TIER_SCALE[c.tier - 1] * life * Math.min(SIZE_VIS, sizeFactor(c));
-}
-
-// prix d'une ration : proportionnel au temps réellement gagné
-function feedQuote(c) {
-  const left = growTime(c) - c.p;
-  if (left <= 0) return null;
-  const seconds = Math.min(FEED_CHUNK, left);
-  const rate = baseValue(c) / growTime(c);
-  return { seconds, cost: Math.max(1, Math.ceil(seconds * rate * FEED_RATIO)) };
-}
-
-// prix d'une ration donnée à un adulte : le tarif ne dépend jamais de la taille déjà atteinte,
-// donc engraisser reste au même prix à l'infini pendant que le gain, lui, s'essouffle.
-function overfeedQuote(c) {
-  const rate = baseValue(c) / growTime(c);
-  return { seconds: OVER_CHUNK, cost: Math.max(1, Math.ceil(OVER_CHUNK * rate * OVER_COST)) };
 }
 
 function fmt(n) {
@@ -474,29 +454,6 @@ function hatchAll() {
   return hatched;
 }
 
-function feed(c) {
-  const adult = isAdult(c);
-  const q = adult ? overfeedQuote(c) : feedQuote(c);
-  if (!q || state.coins < q.cost) return;
-
-  const wasStage = stageOf(c).key;
-  const wasValue = sellValue(c);
-  state.coins -= q.cost;
-  if (adult) c.over = (c.over || 0) + q.seconds;
-  else c.p = Math.min(growTime(c), c.p + q.seconds);
-
-  const el = $('subject');
-  const pt = centerOf(el);
-  floatText(pt.x, pt.y, '−' + fmt(q.cost));
-  flash(el, 'shake');
-  blip(adult ? 320 : 400, 0.05, 'sine', 0.03);
-
-  if (stageOf(c).key !== wasStage) { celebrate(c, wasValue, pt); return; }
-  const gain = sellValue(c) - wasValue;
-  if (gain > 0) floatText(pt.x, pt.y - 40, '+' + fmt(gain) + ' de valeur', 'gain');
-  refresh();
-}
-
 // Vendre est possible à toute étape — au prix de l'étape. Le marchand automatique, lui,
 // n'achète que des adultes : brader un enfant ne doit jamais arriver tout seul.
 function sell(c) {
@@ -599,25 +556,19 @@ function advance(dt) {
 }
 
 function runAutomations(dt) {
-  if (lvl('mangeoire')) {
-    const debit = dt * AUTOFEED_X * lvl('mangeoire');
+  /* L'évolution automatique passe avant la vente : une bête qu'on peut faire monter ne doit
+     pas partir au prix de son palier actuel. Elle ne monte que d'un palier par passage —
+     l'évolution remet la croissance à zéro, donc la bête n'est plus adulte juste après. */
+  if (lvl('evolution') && state.evolveUpTo > 1) {
     for (const c of state.pen) {
-      const left = growTime(c) - c.p;
-      if (left > 0) {
-        if (!state.autoFeed) continue;
-        const extra = Math.min(left, debit);
-        const cost = extra * (baseValue(c) / growTime(c)) * FEED_RATIO;
-        if (state.coins < cost) break;
-        state.coins -= cost;
-        c.p += extra;
-      } else if (state.autoFatten) {
-        // Engraissement automatique : perdant par construction, donc explicitement coché.
-        // On garde de quoi racheter un œuf, sinon la boucle du jeu s'arrête net.
-        const cost = debit * (baseValue(c) / growTime(c)) * OVER_COST;
-        if (state.coins - cost < EGG_PRICE) break;
-        state.coins -= cost;
-        c.over = (c.over || 0) + debit;
-      }
+      if (!isAdult(c) || c.tier >= state.evolveUpTo) continue;
+      const cost = evoCost(c);
+      if (state.coins < cost) continue;
+      state.coins -= cost;
+      c.tier++;
+      c.p = 0;
+      c.over = 0;
+      markSeen(c.line, c.tier);
     }
   }
   if (state.up.marchand && state.sellUpTo > 0) {
@@ -625,6 +576,14 @@ function runAutomations(dt) {
     for (const c of ready) {
       state.coins += sellValue(c);
       state.pen = state.pen.filter(x => x.id !== c.id);
+    }
+  }
+  // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les adultes,
+  // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
+  if (lvl('mangeoire')) {
+    const debit = dt * FATTEN_X * lvl('mangeoire');
+    for (const c of state.pen) {
+      if (isAdult(c)) c.over = (c.over || 0) + debit;
     }
   }
   if (state.up.acheteur) {
@@ -694,7 +653,6 @@ function buildChrome() {
   refs.acts = {};
   const defs = [
     { key: 'place', cls: 'grow', run: () => { const s = current(); if (s && s.kind === 'egg') placeEgg(s.i); } },
-    { key: 'grow',  cls: 'grow', run: () => { const s = current(); if (s && s.c) feed(s.c); } },
     { key: 'sell',  cls: 'sell', run: () => { const s = current(); if (s && s.c) sell(s.c); } },
     { key: 'evo',   cls: 'evo',  run: () => { const s = current(); if (s && s.c) evolve(s.c); } },
   ];
@@ -833,7 +791,7 @@ function renderStage() {
     setText($('stage-timer'), '');
     setWidth($('stage-fill'), '0%');
     setText($('stage-hint'), 'Achète un œuf pour recommencer.');
-    ['place', 'grow', 'sell', 'evo'].forEach(hide);
+    ['place', 'sell', 'evo'].forEach(hide);
     return;
   }
 
@@ -860,7 +818,7 @@ function renderStage() {
       $('stage-timer').classList.toggle('done', ready);
       setText($('stage-hint'), state.up.couveuse
         ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
-      ['place', 'grow', 'sell', 'evo'].forEach(hide);
+      ['place', 'sell', 'evo'].forEach(hide);
     } else {
       stage.classList.remove('ready');
       setHtml($('stage-meta'), 'vide');
@@ -870,7 +828,7 @@ function renderStage() {
       setText($('stage-hint'), state.eggs > 0
         ? 'Tu as ' + state.eggs + ' œuf(s) en réserve.'
         : 'Achète un œuf dans la boutique.');
-      ['grow', 'sell', 'evo'].forEach(hide);
+      ['sell', 'evo'].forEach(hide);
       acts.place.hidden = false;
       setText(acts.place, 'Placer un œuf');
       acts.place.disabled = state.eggs <= 0;
@@ -929,14 +887,6 @@ function renderStage() {
   }
 
   acts.place.hidden = true;
-  const q = adult ? overfeedQuote(c) : feedQuote(c);
-  acts.grow.hidden = false;
-  setText(acts.grow, 'Nourrir ' + fmt(q ? q.cost : 0));
-  acts.grow.title = adult
-    ? 'Fait grossir sans limite. La valeur monte un peu moins vite que la nourriture ne coûte.'
-    : 'Accélère la croissance et libère la place plus vite.';
-  acts.grow.disabled = !q || state.coins < q.cost;
-
   acts.sell.hidden = false;
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
   acts.sell.title = adult ? 'Au prix fort.'
@@ -1009,7 +959,7 @@ function tickView() {
   }
 
   $('cfg-marchand').hidden = !state.up.marchand;
-  $('cfg-mangeoire').hidden = !state.up.mangeoire;
+  $('cfg-evolution').hidden = !state.up.evolution;
 }
 
 function refresh() {
@@ -1051,12 +1001,8 @@ function bindTools() {
     state.sellUpTo = parseInt(e.target.value, 10) || 0;
   });
 
-  $('chk-mangeoire').addEventListener('change', e => {
-    state.autoFeed = e.target.checked;
-  });
-
-  $('chk-fatten').addEventListener('change', e => {
-    state.autoFatten = e.target.checked;
+  $('sel-evolution').addEventListener('change', e => {
+    state.evolveUpTo = parseInt(e.target.value, 10) || 0;
   });
 }
 
@@ -1068,8 +1014,7 @@ function start() {
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   $('sel-marchand').value = String(state.sellUpTo);
-  $('chk-mangeoire').checked = !!state.autoFeed;
-  $('chk-fatten').checked = !!state.autoFatten;
+  $('sel-evolution').value = String(state.evolveUpTo);
 
   catchUp();
   refresh();
