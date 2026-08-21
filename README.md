@@ -89,6 +89,15 @@ L'écran n'a **qu'un seul sujet à la fois**, en grand au centre : l'œuf qu'on 
 l'animal qu'on fait grandir. C'est lui qu'on clique. La bande en dessous liste les autres
 œufs et créatures en vignettes ; on clique une vignette pour la mettre en scène.
 
+**La scène suit l'animal, jamais l'œuf.** Acheter un œuf, le placer, le voir arriver par
+l'acheteur automatique ou en voir un autre éclore ne détourne jamais le regard de la bête en
+cours d'élevage. Quand la bête en scène est vendue, c'est une autre bête qui prend le relais
+— la plus avancée, celle qui demande une décision. Un œuf ne passe au premier plan que s'il
+n'y a plus rien de vivant à regarder, et c'est alors le plus avancé.
+
+Dès que la couveuse automatique est achetée, les œufs cessent d'être le sujet : les créatures
+passent devant eux dans la bande, pour rester à portée de clic même avec dix incubateurs.
+
 ### Étapes de vie
 
 Une créature traverse cinq états visibles, et l'échelle est **continue** — elle grossit à

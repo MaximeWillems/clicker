@@ -262,13 +262,22 @@ function subjects() {
   return list;
 }
 
+/* Ce qu'on met en scène quand la sélection a disparu — une bête vendue, un œuf éclos.
+   Toujours du vivant en priorité, et le plus avancé : c'est lui qui demande une décision.
+   Un œuf ne passe au premier plan que s'il n'y a rien d'autre à regarder. */
+function fallback(list) {
+  const vivants = list.filter(s => s.kind === 'creature');
+  if (vivants.length) {
+    return vivants.sort((a, b) => (b.c.p / growTime(b.c)) - (a.c.p / growTime(a.c)))[0];
+  }
+  const oeufs = list.filter(s => s.kind === 'egg' && s.slot);
+  if (oeufs.length) return oeufs.sort((a, b) => b.slot.p - a.slot.p)[0];
+  return list[0] || null;
+}
+
 function current() {
   const list = subjects();
-  return list.find(s => s.key === state.sel)
-      || list.find(s => s.kind === 'creature')
-      || list.find(s => s.kind === 'egg' && s.slot)
-      || list[0]
-      || null;
+  return list.find(s => s.key === state.sel) || fallback(list);
 }
 
 function select(key) {
@@ -399,7 +408,9 @@ function placeEgg(i) {
   if (state.incub[i] || state.eggs <= 0) return;
   state.eggs--;
   state.incub[i] = { line: randomLine(), p: 0 };   // la lignée est tirée ici, révélée à l'éclosion
-  state.sel = 'i:' + i;
+  // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
+  // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
+  if (!state.pen.length) state.sel = 'i:' + i;
   blip(330, 0.05, 'sine', 0.03);
   refresh();
 }
@@ -418,8 +429,8 @@ function hatchAll() {
     hatched++;
   }
   if (hatched) {
-    // la bête qui vient de sortir prend la scène
-    if (state.sel && state.sel.startsWith('i:')) state.sel = lastKey;
+    // la bête qui vient de sortir prend la scène — on ne reste pas devant une coquille vide
+    if (!state.sel || state.sel.startsWith('i:')) state.sel = lastKey;
     const pt = centerOf($('subject'));
     burst(pt.x, pt.y, '✦', 12);
     chord([523, 659, 784]);
@@ -683,6 +694,11 @@ function buildChrome() {
 
 function renderStrip() {
   const list = subjects();
+  // Dès que les œufs couvent seuls, ils cessent d'être le sujet : les bêtes passent devant
+  // dans la bande, pour rester à portée de clic même avec dix incubateurs.
+  if (state.up.couveuse) {
+    list.sort((a, b) => (a.kind === 'creature' ? 0 : 1) - (b.kind === 'creature' ? 0 : 1));
+  }
   // l'étape de vie entre dans la signature : la vignette se redessine quand la bête
   // change de silhouette, soit trois ou quatre fois par créature — c'est négligeable.
   const sig = list.map(s => s.kind === 'egg'
