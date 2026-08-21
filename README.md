@@ -151,8 +151,11 @@ un gain immédiat. Elle demande de rester attentif, et c'est très bien — mais
 jamais être **silencieuse**. Deux garde-fous :
 
 - Chaque bête retient **le prix de l'œuf dont elle sort**. Tant qu'elle vaut moins que lui, la
-  scène l'annonce en rouge — « son œuf a coûté 375,0 M, elle en vaut 600 000, elle le
-  remboursera au palier 4 » — et le bouton *Vendre* passe en rouge.
+  scène le dit, et le bouton *Vendre* passe en rouge — mais **seulement si rien n'est prévu
+  pour l'y mener**. Quand l'évolution automatique est réglée au-delà du seuil, la ferme fait
+  déjà le travail : la phrase devient neutre — « son œuf a coûté 375,0 M, ton évolution la
+  mènera au palier 4, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait
+  le pire des deux mondes.
 - **Le marchand automatique ne touche qu'aux communes par défaut.** Un troisième réglage
   élargit sa portée rareté par rareté ; tant qu'on ne le fait pas, il ne peut pas brader un
   mythique à 600 000. Le réglage prévient quand on lui ouvre les mythiques.
@@ -248,6 +251,15 @@ au clic disparaît au-delà de soixante clics, là où marteler ne sert plus à 
 
 La règle vaut aussi pour un adulte qui s'engraisse : `33 clics → grand` sans mangeoire,
 `17 s ou 33 clics → grand` avec.
+
+**Une ligne détaille les boosts en cours**, sous le compteur : la durée de base, ce qu'elle
+devient avec ce qu'on possède, et chaque facteur qui y contribue.
+
+> `Croissance 15 m 00 s → 1 m 20 s · nerveux ×1,25 · éleveur ×9 · un clic vaut 8 s`
+> `Engraissement +12,6 s par seconde · glouton ×1,40 · mangeoire ×3 · un clic vaut 8 s`
+> `Couvaison 30 s → rien sans toi · un clic vaut 1 s`
+
+Sans elle, on achetait des niveaux sans jamais voir ce qu'ils changeaient.
 
 Les deux premiers achats n'accélèrent pas la partie, ils **mettent le temps au travail** —
 c'est le moment précis où le jeu bascule de clicker à idle.

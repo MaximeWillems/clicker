@@ -1155,11 +1155,13 @@ function renderStage() {
     setText($('stage-timer'), '');
     setWidth($('stage-fill'), '0%');
     setText($('stage-hint'), 'Achète un œuf pour recommencer.');
+    setText($('stage-boost'), '');
     ['place', 'sell', 'evo', 'keep'].forEach(hide);
     return;
   }
 
   if (state.sel !== s.key) state.sel = s.key;
+  setText($('stage-boost'), ligneBoosts(s));
 
   if (s.kind === 'egg') {
     const slot = s.slot;
@@ -1268,11 +1270,20 @@ function renderStage() {
 
   // Un œuf cher ne se rembourse qu'en menant la bête assez haut : on le dit, plutôt que
   // de laisser le marchand la brader en silence.
+  /* Une bête vaut moins que son œuf tant qu'elle n'est pas montée assez haut. Ce n'est
+     alarmant que si rien n'est prévu pour l'y mener : quand l'évolution automatique est
+     réglée au-delà du seuil, la ferme fait déjà le travail et le rouge ne ferait que
+     faire peur à un joueur qui a tout bien réglé. */
   if (aPerte(c)) {
     const seuil = seuilRentable(c);
-    setText($('stage-hint'), 'Son œuf a coûté ' + fmt(c.cost) + ', elle en vaut ' + fmt(sellValue(c)) +
-      '. ' + (seuil ? 'Elle le remboursera au palier ' + seuil + '.' : 'Elle ne le remboursera jamais.'));
-    $('stage-hint').classList.add('alerte');
+    const prisEnCharge = !c.keep && lvl('evolution') && seuil && state.evolveUpTo >= seuil;
+    setText($('stage-hint'), prisEnCharge
+      ? 'Son œuf a coûté ' + fmt(c.cost) + '. Ton évolution la mènera au palier ' +
+        state.evolveUpTo + ', où elle vaudra ' + fmt(valeurAu(c, state.evolveUpTo)) + '.'
+      : 'Son œuf a coûté ' + fmt(c.cost) + ', elle en vaut ' + fmt(sellValue(c)) + '. ' +
+        (seuil ? 'Elle le remboursera au palier ' + seuil + '.' : 'Elle ne le remboursera jamais.'));
+    $('stage-hint').classList.toggle('alerte', !prisEnCharge);
+    acts.sell.classList.toggle('perte', !prisEnCharge && !c.keep);
   } else {
     $('stage-hint').classList.remove('alerte');
   }
@@ -1285,7 +1296,6 @@ function renderStage() {
     : perte ? 'À perte : son œuf a coûté ' + fmt(c.cost) + '.'
     : adult ? 'Au prix fort.'
     : 'Un ' + stg.name + ' ne vaut qu’une fraction de sa valeur adulte — mais ça libère la place.';
-  acts.sell.classList.toggle('perte', perte && !c.keep);
   acts.sell.disabled = !!c.keep;
 
   acts.keep.hidden = false;
@@ -1312,6 +1322,41 @@ function renderStage() {
     acts.evo.classList.toggle('warn-evo', perte);
     acts.evo.disabled = !adult || state.coins < evoCost(c);
   }
+}
+
+/* Ce que valent les améliorations, en clair et à l'instant : la durée de base, ce qu'elle
+   devient avec ce qu'on possède, et ce qu'un clic apporte. Sans ça on achète des niveaux
+   sans jamais voir ce qu'ils changent. */
+function ligneBoosts(sujet) {
+  const bouts = [];
+  if (sujet.kind === 'egg') {
+    if (!sujet.slot) return '';
+    const base = hatchTime(sujet.slot), n = lvl('couveuse');
+    bouts.push('Couvaison ' + fmtTime(base) + ' → ' + (n ? fmtTime(base / n) : 'rien sans toi'));
+    if (n) bouts.push('couveuse ×' + n);
+  } else {
+    const c = sujet.c, t = temperOf(c);
+    if (!isAdult(c)) {
+      const base = tierTime(c), n = lvl('eleveur');
+      bouts.push('Croissance ' + fmtTime(base) + ' → ' +
+                 (n ? fmtTime(growTime(c) / n) : 'rien sans toi'));
+      if (t.grow !== 1) bouts.push(t.name + ' ×' + dec(t.grow));
+      if (n) bouts.push('éleveur ×' + n);
+    } else {
+      const n = lvl('mangeoire');
+      bouts.push('Engraissement ' + (n ? '+' + dec(FATTEN_X * n * t.fat, 1) + ' s par seconde'
+                                       : 'rien sans toi'));
+      if (n && t.fat !== 1) bouts.push(t.name + ' ×' + dec(t.fat));
+      if (n) bouts.push('mangeoire ×' + n);
+    }
+  }
+  bouts.push('un clic vaut ' + clickPower() + ' s');
+  return bouts.join('  ·  ');
+}
+
+// ce que la bête vaudra une fois adulte à tel palier, taille ordinaire
+function valeurAu(c, tier) {
+  return Math.round(VALUE[tier - 1] * rarityOf(c).mult * variantMult(c));
 }
 
 function noteAcheteur() {
