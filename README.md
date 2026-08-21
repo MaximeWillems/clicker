@@ -30,11 +30,12 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 - Les 5 lignées et leurs 25 formes, du têtard au Léviathan
 - Œuf → clic → éclosion → croissance → **vendre ou faire évoluer**
-- Les trois accélérateurs : le temps (gratuit), le clic (+1 s), la nourriture (payante)
+- **Rien n'avance tout seul au départ** : seuls le clic (+1 s) et la nourriture (payante) font
+  éclore et grandir. Le temps ne se met à travailler qu'une fois les automatisations achetées
 - **Engraissement sans limite** : un adulte se nourrit indéfiniment et grossit à vue d'œil
 - Incubateurs et enclos, à prix croissant
-- Trois automatisations : couveuse, mangeoire (activable), marchand (avec règle de vente)
-- Progression hors ligne, plafonnée à 24 h
+- Cinq automatisations, dans cet ordre : couveuse, éleveur, acheteur, mangeoire, marchand
+- Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
 - Collection des 25 formes découvertes
 
 Absent volontairement : gènes, reproduction, fusion, lignées cachées, comptes, marché entre
@@ -61,6 +62,26 @@ crédible, pas une vérité — ils sont faits pour être retouchés en jouant.
 | 3 | 15 min | 3 000 | 6 000 |
 | 4 | 1 h | 40 000 | 80 000 |
 | 5 | 6 h | 600 000 | 1 500 000 |
+
+### Automatisations
+
+Le jeu commence entièrement à la main : un œuf ne couve pas et une créature ne grandit pas
+tant qu'on ne clique pas dessus. Les compteurs affichent donc `15 clics` et non `15 s`, parce
+qu'annoncer des secondes quand rien ne s'écoule serait un mensonge.
+
+Les deux premiers achats n'accélèrent pas la partie, ils **mettent le temps au travail** —
+c'est le moment précis où le jeu bascule de clicker à idle.
+
+| Achat | Coût | Effet |
+|---|---|---|
+| Couveuse automatique | 120 | Les œufs couvent tout seuls |
+| Éleveur automatique | 500 | Les créatures grandissent toutes seules |
+| Acheteur automatique | 2 000 | Rachète et place un œuf dès qu'un incubateur se libère |
+| Mangeoire automatique | 15 000 | Nourrit en continu pour dépasser la vitesse passive |
+| Marchand automatique | 100 000 | Vend les adultes selon une règle réglable |
+
+La progression hors ligne suit la même règle : sans couveuse ni éleveur, une absence ne
+produit rien, et le bandeau de retour ne s'affiche pas.
 
 ### Engraissement
 

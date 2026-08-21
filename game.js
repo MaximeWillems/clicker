@@ -33,11 +33,18 @@ const OVER_COST  = 0.5;     // ce que coûte une seconde d'engraissement
 const OVER_GAIN  = 0.55;    // ce qu'elle rapporte, en rendement décroissant
 const OVER_VIS   = 1.5;     // grossissement visuel maximal, pour ne pas casser les cartes
 
+/* Au départ, rien n'avance tout seul : le clic est la seule force du jeu.
+   Les deux premières automatisations n'accélèrent pas la partie, elles mettent
+   le temps au travail — c'est là que le jeu devient un idle. */
 const UPGRADES = [
-  { key: 'couveuse',  name: 'Couveuse automatique', cost: 2000,
-    desc: "Achète et place un œuf dès qu'un incubateur se libère." },
+  { key: 'couveuse',  name: 'Couveuse automatique', cost: 120,
+    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là.' },
+  { key: 'eleveur',   name: 'Éleveur automatique', cost: 500,
+    desc: 'Les créatures grandissent toutes seules, même quand tu n’es pas là.' },
+  { key: 'acheteur',  name: 'Acheteur automatique', cost: 2000,
+    desc: 'Achète et place un œuf dès qu’un incubateur se libère.' },
   { key: 'mangeoire', name: 'Mangeoire automatique', cost: 15000,
-    desc: 'Nourrit les créatures en continu, tant qu’il reste des pièces.' },
+    desc: 'Nourrit en continu pour accélérer la croissance, tant qu’il reste des pièces.' },
   { key: 'marchand',  name: 'Marchand automatique', cost: 100000,
     desc: 'Vend les adultes selon la règle que tu définis.' },
 ];
@@ -80,7 +87,7 @@ function freshState() {
     pens: 1,
     incub: [{ line: randomLine(), p: 0 }],   // le premier œuf est offert, déjà en couvaison
     pen: [],
-    up: { couveuse: false, mangeoire: false, marchand: false },
+    up: { couveuse: false, eleveur: false, acheteur: false, mangeoire: false, marchand: false },
     sellUpTo: 0,
     autoFeed: true,
     seen: {},
@@ -168,6 +175,14 @@ function fmtTime(s) {
   if (s < 60) return s + ' s';
   if (s < 3600) return Math.floor(s / 60) + ' m ' + String(s % 60).padStart(2, '0') + ' s';
   return Math.floor(s / 3600) + ' h ' + String(Math.floor((s % 3600) / 60)).padStart(2, '0') + ' m';
+}
+
+// Tant que rien ne pousse tout seul, afficher un compte à rebours en secondes serait un
+// mensonge : ce qui reste à faire se mesure en clics.
+function remaining(left, automated) {
+  if (automated) return fmtTime(left);
+  const n = Math.ceil(left);
+  return n + (n > 1 ? ' clics' : ' clic');
 }
 
 function markSeen(lineKey, tier) { state.seen[lineKey + ':' + tier] = true; }
@@ -389,13 +404,19 @@ function buyUpgrade(u) {
    Simulation
    ───────────────────────────────────────────── */
 
+// Le temps ne fait avancer que ce qui a été automatisé. Tant que rien n'est acheté,
+// seuls le clic et la nourriture font bouger quoi que ce soit.
 function advance(dt) {
-  for (const slot of state.incub) {
-    if (slot && slot.p < HATCH) slot.p = Math.min(HATCH, slot.p + dt);
+  if (state.up.couveuse) {
+    for (const slot of state.incub) {
+      if (slot && slot.p < HATCH) slot.p = Math.min(HATCH, slot.p + dt);
+    }
   }
-  for (const c of state.pen) {
-    const g = growTime(c);
-    if (c.p < g) c.p = Math.min(g, c.p + dt);
+  if (state.up.eleveur) {
+    for (const c of state.pen) {
+      const g = growTime(c);
+      if (c.p < g) c.p = Math.min(g, c.p + dt);
+    }
   }
 }
 
@@ -419,7 +440,7 @@ function runAutomations(dt) {
       state.pen = state.pen.filter(x => x.id !== c.id);
     }
   }
-  if (state.up.couveuse) {
+  if (state.up.acheteur) {
     for (let i = 0; i < state.incub.length; i++) {
       if (state.incub[i]) continue;
       if (state.eggs > 0) { state.eggs--; }
@@ -444,8 +465,10 @@ function loop() {
 function catchUp() {
   const elapsed = Math.min(OFFLINE_CAP, (Date.now() - (state.t || Date.now())) / 1000);
   lastFrame = Date.now();
-  // une première partie ne doit pas s'ouvrir sur « pendant ton absence »
+  // une première partie ne doit pas s'ouvrir sur « pendant ton absence », et tant que rien
+  // n'est automatisé il ne s'est effectivement rien passé pendant l'absence
   if (isNewGame || elapsed < 30) return;
+  if (!state.up.couveuse && !state.up.eleveur) return;
 
   const adultsBefore = state.pen.filter(isAdult).length;
   advance(elapsed);
@@ -546,7 +569,6 @@ function renderIncubators() {
   });
 
   $('incub-meta').textContent = state.incubators + (state.incubators > 1 ? ' places' : ' place');
-  $('hint-incub').hidden = state.pen.length > 0 || seenCount() > 1;
 }
 
 function renderPen() {
@@ -666,7 +688,7 @@ function tickView() {
       refs.el.classList.toggle('blocked', ready && penFull());
       refs.timer.textContent = ready
         ? (penFull() ? 'enclos plein' : 'ça sort !')
-        : fmtTime(HATCH - slot.p);
+        : remaining(HATCH - slot.p, state.up.couveuse);
     } else {
       refs.timer.textContent = '';
     }
@@ -679,7 +701,7 @@ function tickView() {
     const adult = isAdult(c);
     refs.bar.style.width = Math.min(100, (c.p / g) * 100) + '%';
     refs.el.classList.toggle('ready', adult && c.tier < 5);
-    refs.timer.textContent = adult ? 'adulte' : fmtTime(g - c.p);
+    refs.timer.textContent = adult ? 'adulte' : remaining(g - c.p, state.up.eleveur);
 
     // la taille change sans changer la structure : elle se met à jour ici, pas au redessin
     const sf = sizeFactor(c);
@@ -737,6 +759,11 @@ function tickView() {
 
   $('cfg-marchand').hidden = !state.up.marchand;
   $('cfg-mangeoire').hidden = !state.up.mangeoire;
+
+  // Ici et pas dans le rendu structurel : acheter une amélioration ne change pas
+  // la signature des cartes, donc le rendu structurel ne serait pas rejoué.
+  $('hint-incub').hidden = state.up.couveuse;
+  $('hint-pen').hidden = state.up.eleveur || state.pen.length === 0;
 }
 
 // Les fonctions de rendu se protègent elles-mêmes par signature :
