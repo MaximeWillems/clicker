@@ -58,6 +58,10 @@ Toutes les valeurs sont regroupées en haut de `game.js`, entre les commentaires
 « Données ». Rien n'est en dur ailleurs. Les chiffres actuels sont un point de départ
 crédible, pas une vérité — ils sont faits pour être retouchés en jouant.
 
+L'échelle de base, celle d'une lignée **commune**. Le coût d'évolution comme la valeur se
+multiplient ensuite par la rareté (×25 rare, ×600 épique, ×15 000 mythique) ; la durée de
+croissance, elle, ne bouge jamais.
+
 | Palier | Croissance | Coût d'évolution | Valeur |
 |---|---|---|---|
 | 1 | 45 s | — | 40 |
@@ -107,10 +111,10 @@ L'œuf mythique n'a rien au-dessus de lui : il garantit.
 
 | Œuf | Prix | Couvaison | commune | rare | épique | mythique | chance de monter |
 |---|---|---|---|---|---|---|---|
-| Œuf commun | 12 | 30 s | 96,5 % | 3 % | 0,45 % | **0,05 %** | 3,5 % |
-| Œuf rare | 3 000 | 3 min | — | 88 % | 10 % | 2 % | 12 % |
-| Œuf épique | 40 000 | 12 min | — | — | 75 % | 25 % | 25 % |
-| Œuf mythique | 200 000 | 45 min | — | — | — | 100 % | — |
+| Œuf commun | 12 | 30 s | 96,5 % | 3,5 % | — | — | 3,5 % |
+| Œuf rare | 600 000 | 3 min | — | 88 % | 12 % | — | 12 % |
+| Œuf épique | 15 M | 12 min | — | — | 75 % | 25 % | 25 % |
+| Œuf mythique | 375 M | 45 min | — | — | — | 100 % | — |
 
 **La couvaison s'allonge avec la rareté.** Une bête précieuse doit se faire attendre, sinon la
 rareté n'a pas de poids : un mythique qui éclosait en quinze secondes comme un têtard ne
@@ -125,32 +129,33 @@ n'atteint une mythique qu'avec des œufs épiques, qu'on ne s'offre qu'avec l'ar
 La chance de monter d'un cran grandit avec le prix — 3,5 %, 12 %, 25 % — et l'œuf mythique,
 n'ayant rien au-dessus de lui, garantit.
 
-L'œuf mythique est volontairement plus cher que son espérance : passer par des œufs épiques
-revient à 160 000 par mythique contre 200 000 pour la garantie. On paie 25 % de prime pour
-supprimer la variance, ce qui est le bon prix d'une certitude.
+Les prix suivent la règle des ères : **chaque œuf coûte 0,7 bête de l'ère précédente menée au
+palier 5**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
 
 ### Un œuf cher est un investissement, pas un lot
 
-**Tous les œufs payants se remboursent au palier 3, jamais avant.** Une mythique payée
-200 000 ne vaut que 1 600 à l'âge adulte de son premier palier — la vendre là serait ruineux.
+**Tous les œufs payants se remboursent au palier 4, jamais avant.** Une mythique payée 375 M
+ne vaut que 600 000 à l'âge adulte de son premier palier — la vendre là serait ruineux.
 
-| Œuf | p1 | p2 | **p3** | p4 |
-|---|---|---|---|---|
-| commun (12) | +28 | +288 | +2 788 | +36 788 |
-| rare (3 000) | −2 880 | −1 700 | **+11 800** | +193 800 |
-| épique (40 000) | −39 600 | −35 200 | **+16 800** | +716 800 |
-| mythique (200 000) | −198 400 | −180 200 | **+36 800** | +2 956 800 |
+Résultat net, œuf et évolutions déduits :
+
+| Œuf | p1 | p2 | p3 | **p4** | p5 |
+|---|---|---|---|---|---|
+| commun (12) | +28 | +288 | +2 788 | +36 788 | +856 788 |
+| rare (600 000) | −599 000 | −592 500 | −530 000 | **+320 000** | +20,8 M |
+| épique (15 M) | −15,0 M | −14,8 M | −13,3 M | **+7,08 M** | +499,1 M |
+| mythique (375 M) | −374,4 M | −370,5 M | −333,0 M | **+177,0 M** | +12,5 Md |
 
 C'est la mécanique voulue : ce qu'on achète avec un œuf cher, c'est le droit d'investir, pas
 un gain immédiat. Elle demande de rester attentif, et c'est très bien — mais elle ne doit
 jamais être **silencieuse**. Deux garde-fous :
 
 - Chaque bête retient **le prix de l'œuf dont elle sort**. Tant qu'elle vaut moins que lui, la
-  scène l'annonce en rouge — « son œuf a coûté 200 000, elle en vaut 1 600, elle le
-  remboursera au palier 3 » — et le bouton *Vendre* passe en rouge.
+  scène l'annonce en rouge — « son œuf a coûté 375,0 M, elle en vaut 600 000, elle le
+  remboursera au palier 4 » — et le bouton *Vendre* passe en rouge.
 - **Le marchand automatique ne touche qu'aux communes par défaut.** Un troisième réglage
   élargit sa portée rareté par rareté ; tant qu'on ne le fait pas, il ne peut pas brader un
-  mythique à 1 600. Le réglage prévient quand on lui ouvre les mythiques.
+  mythique à 600 000. Le réglage prévient quand on lui ouvre les mythiques.
 
 La lignée est tirée **à la mise en couvaison**, pas à l'éclosion — c'est ce qui permet de
 recalculer une absence sans rejouer le hasard. Le joueur, lui, ne la découvre qu'à l'éclosion,
@@ -238,7 +243,7 @@ tant qu'on ne clique pas dessus.
 
 **Les compteurs suivent une règle unique** : des secondes quand quelque chose fait avancer la
 chose tout seul, des clics sinon — annoncer « 15 s » alors que rien ne s'écoule serait un
-mensonge. Quand les deux valent, ils s'affichent ensemble : `15 s ou 15 clics`. Le raccourci
+mensonge. Quand les deux valent, ils s'affichent ensemble : `30 s ou 30 clics`. Le raccourci
 au clic disparaît au-delà de soixante clics, là où marteler ne sert plus à rien.
 
 La règle vaut aussi pour un adulte qui s'engraisse : `33 clics → grand` sans mangeoire,
@@ -289,6 +294,10 @@ donc réécrit sur trois principes :
 Une phrase qu'on relit après avoir bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une
 seule fois.
 
+Les menus qui listent des données du jeu — prix des œufs, rangs de taille, raretés — sont
+**construits depuis ces données** plutôt qu'écrits à la main. C'est la seule façon qu'ils ne
+mentent pas le jour où un prix bouge, et ils avaient déjà menti une fois.
+
 **Le marchand attend trois conditions, cumulées.** Deux sont des **seuils bas** — il récolte
 ce qui a assez monté, pendant que l'évolution pousse vers le haut — et la troisième est un
 plafond, puisqu'on vend le tout-venant et qu'on garde le précieux :
@@ -312,7 +321,7 @@ jusqu'au palier 3, engraisser jusqu'à *énorme*, vendre — et la ferme tourne 
 élever, faire monter, engraisser, vendre, racheter.
 
 La force du clic vaut aussi pour l'engraissement d'un adulte, et les compteurs en tiennent
-compte : « 2 clics » plutôt que « 15 clics » une fois le clic monté à 7 secondes.
+compte : « 4 clics » plutôt que « 30 clics » une fois le clic monté à 8 secondes.
 
 Les sauvegardes d'avant les niveaux sont converties au chargement : `true` devient niveau 1.
 

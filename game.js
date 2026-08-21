@@ -119,12 +119,13 @@ const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'z
    Ces seuils valent ce que valait l'ancienne courbe continue au même point — l'engraissement
    coûte toujours plus qu'il ne rapporte, il paie juste par à-coups au lieu de goutte à goutte. */
 const RANKS = [
-  { at: 1.00, name: '' },
-  { at: 1.30, name: 'grand' },
-  { at: 1.70, name: 'énorme' },
-  { at: 2.30, name: 'colossal' },
-  { at: 3.20, name: 'titanesque' },
-  { at: 4.50, name: 'démesuré' },
+  // name sert à qualifier un adulte (masculin), fem à qualifier une taille (féminin)
+  { at: 1.00, name: '',           fem: '' },
+  { at: 1.30, name: 'grand',      fem: 'grande' },
+  { at: 1.70, name: 'énorme',     fem: 'énorme' },
+  { at: 2.30, name: 'colossal',   fem: 'colossale' },
+  { at: 3.20, name: 'titanesque', fem: 'titanesque' },
+  { at: 4.50, name: 'démesuré',   fem: 'démesurée' },
 ];
 
 /* Étapes de vie, traversées à l'intérieur de chaque palier.
@@ -390,7 +391,7 @@ function rollVariants() {
 
 /* À partir de quel palier la bête rembourse l'œuf dont elle sort. Un œuf cher n'est pas un
    lot à encaisser : à palier 1 une mythique payée 200 000 ne vaut que 1 600. Tous les œufs
-   payants se remboursent au palier 3, jamais avant — autant le dire plutôt que de laisser
+   payants se remboursent au palier 4, jamais avant — autant le dire plutôt que de laisser
    le joueur le découvrir en perdant sa mise. */
 function seuilRentable(c) {
   const rar = rarityOf(c).mult;
@@ -957,7 +958,39 @@ function setStageRarity(stage, cls) {
   if (cls) stage.classList.add(cls);
 }
 
+/* Les menus qui listent des données du jeu sont construits depuis ces données, jamais
+   écrits à la main : c'est la seule façon qu'ils ne mentent pas le jour où un prix bouge. */
+function remplirMenus() {
+  const option = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; };
+
+  const ach = $('sel-acheteur');
+  ach.textContent = '';
+  for (const e of EGG_KINDS) {
+    ach.appendChild(option(e.key, e.name.replace('Œuf ', 'Œufs ') + 's — ' +
+      fmt(e.price) + ', couve en ' + fmtTime(e.hatch)));
+  }
+
+  const rang = $('sel-rank');
+  rang.textContent = '';
+  rang.appendChild(option(0, 'n’importe laquelle'));
+  RANKS.forEach((r, i) => {
+    if (!i) return;
+    rang.appendChild(option(i, r.fem + (i < RANKS.length - 1 ? ' ou plus' : '') +
+      ' — vaut ×' + dec(r.at)));
+  });
+
+  const rar = $('sel-rarete');
+  rar.textContent = '';
+  const noms = Object.values(RARITY);
+  noms.forEach((x, i) => {
+    rar.appendChild(option(i, i === noms.length - 1
+      ? 'toutes, mythiques comprises'
+      : liste(noms.slice(0, i + 1).map(y => y.plur)) + (i ? '' : ' seulement')));
+  });
+}
+
 function buildChrome() {
+  remplirMenus();
   // les actions de la scène : construites une fois, montrées selon le sujet
   const host = $('stage-acts');
   host.textContent = '';
@@ -1304,7 +1337,7 @@ function noteMarchand() {
   const vend = Object.values(RARITY).filter(x => x.rank <= state.sellRarity).map(x => x.plur);
   const garde = Object.values(RARITY).filter(x => x.rank > state.sellRarity).map(x => x.plur);
   const taille = state.sellRank
-    ? ', devenues ' + RANKS[state.sellRank].name + 's ou plus'
+    ? ', devenues ' + RANKS[state.sellRank].fem + 's ou plus'
     : '';
   let txt = 'En clair : il vend les ' + liste(vend) + ' arrivées au palier ' + state.sellFrom +
             (state.sellFrom < 5 ? ' ou au-dessus' : '') + taille + '. ';

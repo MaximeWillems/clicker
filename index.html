@@ -46,7 +46,7 @@
     <p class="subject-meta" id="stage-meta">en couvaison</p>
 
     <div class="stage-bar" role="presentation"><i id="stage-fill"></i></div>
-    <p class="stage-timer" id="stage-timer">15 clics</p>
+    <p class="stage-timer" id="stage-timer"></p>
 
     <div class="stage-acts" id="stage-acts"></div>
     <p class="stage-hint" id="stage-hint"></p>
@@ -83,12 +83,7 @@
     <div class="config" id="cfg-acheteur" hidden>
       <p class="config-step"><span class="step-n">1</span> L'acheteur remplit</p>
       <p class="config-what">Ce qu'il remet à couver dès qu'un incubateur se libère.</p>
-      <select id="sel-acheteur">
-        <option value="commun">Œufs communs — 12 pièces, couve en 30 s</option>
-        <option value="rare">Œufs rares — 3 000, couve en 3 min</option>
-        <option value="epique">Œufs épiques — 40 000, couve en 12 min</option>
-        <option value="mythique">Œufs mythiques — 200 000, couve en 45 min</option>
-      </select>
+      <select id="sel-acheteur"></select>
       <p class="config-note" id="note-acheteur"></p>
     </div>
 
@@ -122,22 +117,10 @@
         </select>
 
         <label for="sel-rank">dès que la taille est</label>
-        <select id="sel-rank">
-          <option value="0">n'importe laquelle</option>
-          <option value="1">grande ou plus — ×1,30</option>
-          <option value="2">énorme ou plus — ×1,70</option>
-          <option value="3">colossale ou plus — ×2,30</option>
-          <option value="4">titanesque ou plus — ×3,20</option>
-          <option value="5">démesurée — ×4,50</option>
-        </select>
+        <select id="sel-rank"></select>
 
         <label for="sel-rarete">et pour les raretés</label>
-        <select id="sel-rarete">
-          <option value="0">communes seulement</option>
-          <option value="1">communes et rares</option>
-          <option value="2">communes, rares et épiques</option>
-          <option value="3">toutes, mythiques comprises</option>
-        </select>
+        <select id="sel-rarete"></select>
       </div>
 
       <p class="config-note" id="note-marchand"></p>
@@ -147,7 +130,7 @@
   <section class="panel">
     <div class="panel-head">
       <h2>Collection</h2>
-      <span class="panel-meta" id="coll-meta">0 / 55</span>
+      <span class="panel-meta" id="coll-meta"></span>
     </div>
     <div class="collection" id="collection"></div>
   </section>
