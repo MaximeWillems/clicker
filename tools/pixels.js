@@ -36,6 +36,20 @@ function poly(g, pts, c) {
   }
 }
 
+/* Une bouche, une paupière : un arc épais qui ne peint QUE sur des pixels déjà pleins,
+   donc qui reste à l'intérieur de la bête au lieu de dépasser dans le vide. */
+function arc(g, x0, x1, y, creux, ep, c) {
+  const mid = (x0 + x1) / 2, demi = Math.max(1, (x1 - x0) / 2);
+  for (let x = Math.round(x0); x <= Math.round(x1); x++) {
+    const t = (x - mid) / demi;
+    const base = Math.round(y + creux * (1 - t * t));
+    for (let e = 0; e < ep; e++) {
+      const py = base + e;
+      if (g[py] && g[py][x] !== undefined && g[py][x] !== '.') g[py][x] = c;
+    }
+  }
+}
+
 /* Un contour qui ne marque que le bord SUPÉRIEUR : c'est ce qui donne l'impression d'une
    lumière rasante venue du haut, sans encercler la bête. */
 function contourHaut(g, c) {
@@ -57,6 +71,8 @@ function aLEchelle(k) {
     poly: (g, pts, c) => poly(g, pts.map(([x, y]) => [x * k, y * k]), c),
     rect: (g, x, y, w, h, c) => rect(g, Math.round(x * k), Math.round(y * k),
                                      Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k)), c),
+    arc: (g, x0, x1, y, creux, ep, c) => arc(g, x0 * k, x1 * k, y * k, creux * k,
+                                             Math.max(1, Math.round(ep * k)), c),
   };
 }
 
@@ -96,4 +112,4 @@ function apercu(g) {
   return g.map(r => r.map(c => c === '.' ? ' ' : c).join('')).join('\n');
 }
 
-module.exports = { grille, ellipse, rect, poly, contour, contourHaut, aLEchelle, versSVG, apercu };
+module.exports = { grille, ellipse, rect, poly, arc, contour, contourHaut, aLEchelle, versSVG, apercu };
