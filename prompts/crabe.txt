@@ -9,7 +9,7 @@ CUTE MASCOT STYLE — this is the most important instruction:
   with one single white highlight dot
 - tiny simple smiling mouth, never a wide slit, never fangs
 - small pink blush oval on each cheek
-- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- everything rounded and soft, no sharp angles, no spikes, no horns, no talons
 - chubby bean-shaped or egg-shaped bodies, tiny stubby feet
 - friendly, sleepy, harmless expression on every stage
 
@@ -27,11 +27,11 @@ Front-facing, centered, full body. Transparent background. No shadow, no ground 
 no background, no text, no frame.
 
 The 5 stages, in order:
-1. tiny zoea larva, almost all head, two huge round stalked eyes, one tiny pair of rounded claws, small curled tail
-2. small round crab, the same two rounded claws now bigger with the right one larger than the left, same stalked eyes, smooth domed carapace, six dot legs
-3. plump brown tourteau crab, the same asymmetric rounded claws now thick and heavy, same stalked eyes, wider domed carapace, calm face
-4. reef crab, the same thick asymmetric claws, same stalked eyes, the domed carapace now broad and dotted with small round coral bumps, drowsy eyes
-5. karkinos, enormous crab, the same asymmetric claws now massive and raised, same stalked eyes, the broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle
+1. tiny zoea larva, almost all head, two huge round stalked eyes, one tiny pair of rounded mitten pincers, small curled tail
+2. small round crab, the same two rounded mitten pincers now bigger with the right one larger than the left, same stalked eyes, smooth domed carapace, six dot legs
+3. plump brown tourteau crab, the same asymmetric rounded pincers now thick and heavy, same stalked eyes, wider domed carapace, calm face
+4. reef crab, the same thick asymmetric pincers held close to the body, same stalked eyes, the domed carapace now TALL and humped, crusted with small round coral bumps, drowsy eyes
+5. karkinos, enormous crab much WIDER than tall, the same asymmetric pincers now massive and raised high on each side, same stalked eyes, a low broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle
 
 
 --- une fois la planche enregistrée dans art/source-crabe.png ---

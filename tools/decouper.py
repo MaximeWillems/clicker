@@ -2,12 +2,14 @@
 """Découpe une planche de sprites en fichiers séparés, prêts pour art/.
 
     python tools/decouper.py art/source-crapaud.png crapaud
+    python tools/decouper.py art/source-crapaud.png crapaud --apercu
 
 Ce que ça fait, dans l'ordre :
   1. rend transparent le fond blanc (les modèles en peignent un même si on demande l'inverse) ;
   2. repère les créatures par les colonnes vides qui les séparent ;
   3. rogne chacune au plus juste, puis la centre dans un carré ;
-  4. écrit art/<lignee>-1-....png … art/<lignee>-5-....png
+  4. écrit art/<lignee>-1-....png … art/<lignee>-5-....png ;
+  5. avec --apercu, assemble art/apercu-<lignee>.png pour juger la lignée d'un coup d'œil.
 
 Chaque bête remplit son carré : c'est le JEU qui gère la croissance, via l'échelle du
 palier et de l'étape de vie. Conserver les tailles relatives de la planche doublerait
@@ -127,11 +129,30 @@ def carre(im):
         fond = fond.resize((COTE_MAX, COTE_MAX), Image.LANCZOS)
     return fond
 
+def apercu(lignee, chemins):
+    """Assemble les stades sur une bande, et sous chacun sa vignette de 24 px.
+
+    Les deux tailles ensemble sont le seul vrai jury : en grand on lit la continuité d'un
+    stade au suivant, en tout petit on voit si deux bêtes se confondent. Le défaut apparaît
+    TOUJOURS dans la vignette, jamais dans le grand — le porte-tour et Ammon se ressemblaient
+    à 24 px alors qu'ils se distinguaient très bien à 160."""
+    COTE, VIG = 160, 24
+    ims = [Image.open(c).convert('RGBA') for c in chemins]
+    bande = Image.new('RGBA', (COTE * len(ims), COTE + VIG + 4), (255, 255, 255, 255))
+    for i, im in enumerate(ims):
+        bande.alpha_composite(im.resize((COTE, COTE), Image.LANCZOS), (COTE * i, 0))
+        bande.alpha_composite(im.resize((VIG, VIG), Image.LANCZOS),
+                              (COTE * i + (COTE - VIG) // 2, COTE + 4))
+    chemin = os.path.join('art', 'apercu-' + lignee + '.png')
+    bande.convert('RGB').save(chemin)
+    return chemin
+
 def main():
-    if len(sys.argv) < 3:
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    if len(args) < 2:
         print(__doc__); sys.exit(1)
-    source, lignee = sys.argv[1], sys.argv[2]
-    noms = sys.argv[3].split(',') if len(sys.argv) > 3 else None
+    source, lignee = args[0], args[1]
+    noms = args[2].split(',') if len(args) > 2 else None
 
     im = transparent(Image.open(source))
     parts = blocs(colonnes_pleines(im), attendu=len(noms) if noms else None)
@@ -139,12 +160,17 @@ def main():
     if noms and len(parts) != len(noms):
         print(f'  ATTENTION : {len(noms)} noms fournis. Vérifie la planche.')
 
+    ecrits = []
     for i, (x0, x1) in enumerate(parts, 1):
         bete = carre(im.crop((x0, 0, x1, im.height)))
         suffixe = noms[i - 1] if noms and len(noms) >= i else str(i)
         chemin = os.path.join('art', f'{lignee}-{i}-{suffixe}.png')
         bete.save(chemin)
+        ecrits.append(chemin)
         print(f'  {chemin}  {bete.width}×{bete.height}  {os.path.getsize(chemin)//1024} Ko')
+
+    if '--apercu' in sys.argv and ecrits:
+        print(f'  aperçu : {apercu(lignee, ecrits)}')
 
 if __name__ == '__main__':
     main()

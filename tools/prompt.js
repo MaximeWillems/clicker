@@ -32,7 +32,7 @@ CUTE MASCOT STYLE — this is the most important instruction:
   with one single white highlight dot
 - tiny simple smiling mouth, never a wide slit, never fangs
 - small pink blush oval on each cheek
-- everything rounded and soft, no sharp angles, no spikes, no horns, no claws
+- everything rounded and soft, no sharp angles, no spikes, no horns, no talons
 - chubby bean-shaped or egg-shaped bodies, tiny stubby feet
 - friendly, sleepy, harmless expression on every stage
 
@@ -198,11 +198,11 @@ const STADES = {
   /* Le fil du crabe : deux pinces arrondies dont la droite est la plus grosse, des yeux sur
      tiges, et une carapace bombée qui s'élargit de stade en stade. */
   crabe: [
-    'tiny zoea larva, almost all head, two huge round stalked eyes, one tiny pair of rounded claws, small curled tail',
-    'small round crab, the same two rounded claws now bigger with the right one larger than the left, same stalked eyes, smooth domed carapace, six dot legs',
-    'plump brown tourteau crab, the same asymmetric rounded claws now thick and heavy, same stalked eyes, wider domed carapace, calm face',
-    'reef crab, the same thick asymmetric claws, same stalked eyes, the domed carapace now broad and dotted with small round coral bumps, drowsy eyes',
-    'karkinos, enormous crab, the same asymmetric claws now massive and raised, same stalked eyes, the broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle'],
+    'tiny zoea larva, almost all head, two huge round stalked eyes, one tiny pair of rounded mitten pincers, small curled tail',
+    'small round crab, the same two rounded mitten pincers now bigger with the right one larger than the left, same stalked eyes, smooth domed carapace, six dot legs',
+    'plump brown tourteau crab, the same asymmetric rounded pincers now thick and heavy, same stalked eyes, wider domed carapace, calm face',
+    'reef crab, the same thick asymmetric pincers held close to the body, same stalked eyes, the domed carapace now TALL and humped, crusted with small round coral bumps, drowsy eyes',
+    'karkinos, enormous crab much WIDER than tall, the same asymmetric pincers now massive and raised high on each side, same stalked eyes, a low broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle'],
 };
 
 const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
