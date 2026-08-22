@@ -30,9 +30,9 @@ le jeu affiche l'emoji : rien ne casse jamais, et on peut s'arrêter à tout mom
 ## Le prompt d'une lignée
 
 ```bash
-node tools/prompt.js --liste     # les 19 lignées
+node tools/prompt.js --liste     # les 21 lignées
 node tools/prompt.js poisson     # le prompt d'une lignée
-node tools/prompt.js --tout      # les dix-neuf d'un coup
+node tools/prompt.js --tout      # les vingt et une d'un coup
 ```
 
 Le prompt est **écrit dans `prompts/<lignée>.txt`** en plus d'être affiché. Lancée depuis un
@@ -54,10 +54,16 @@ découper :
 
 ```bash
 python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,colosse,gama
+python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,colosse,gama --apercu
 ```
 
 L'outil détoure, sépare les créatures, rogne chacune au plus juste, la centre dans un carré
 et réduit à 256 px — le jeu n'affiche jamais au-delà de 211.
+
+`--apercu` écrit en plus `art/apercu-<lignée>.png` : les cinq stades en bande, chacun doublé
+de sa vignette de 24 px. **Juge toujours sur cette image, jamais sur les fichiers un par un.**
+Le porte-tour et Ammon se distinguent très bien en grand et se confondent en vignette — le
+défaut n'apparaît que là. Le fichier n'est pas versionné.
 
 **Deux pièges que l'outil gère, et qu'il faut connaître si tu détoures à la main :**
 
