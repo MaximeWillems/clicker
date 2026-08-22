@@ -28,7 +28,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 19 lignées et leurs 95 formes, du têtard à l'Ouroboros éternel
+- 21 lignées et leurs 105 formes, du têtard à l'Ouroboros éternel
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, géant, titan — sur une seule
   vie qui ne repart jamais de zéro
 - **Variantes** : teinte, motif, tempérament, et un prodige sur cinq cents
@@ -43,7 +43,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
-- Collection des 95 formes découvertes
+- Collection des 105 formes découvertes
 
 Absent volontairement : gènes, reproduction, fusion, lignées cachées, comptes, marché entre
 joueurs. Tout cela demande le serveur.
@@ -746,4 +746,5 @@ avant de changer d'avis.
    paraît long ? Si oui, le levier n'est pas le découpage des niveaux mais la durée de la
    dernière tranche — `AGES[4].grow`, six heures aujourd'hui.
 
-Les créatures sont des emoji : ce sont des placeholders assumés, en attendant les 95 dessins.
+Les créatures sans dessin sont des emoji : des placeholders assumés, en attendant que les
+105 illustrations soient toutes là.
