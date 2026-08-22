@@ -355,6 +355,13 @@ const ART = {
     4: 'insecte-4-scarabee-titan.png',
     5: 'insecte-5-khepri.png',
   },
+  rongeur: {
+    1: 'rongeur-1-souriceau.png',
+    2: 'rongeur-2-rat.png',
+    3: 'rongeur-3-ragondin.png',
+    4: 'rongeur-4-rongeur-colossal.png',
+    5: 'rongeur-5-ratatosk.png',
+  },
 };
 
 /* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
