@@ -27,23 +27,23 @@ Front-facing, centered, full body. Transparent background. No shadow, no ground 
 no background, no text, no frame.
 
 The 5 stages, in order:
-1. tiny fluffy chick, huge round head, no visible wings, two dot feet
-2. small round songbird, tiny beak, plump body, bright eyes
-3. plump little raptor, small hooked beak, wings folded close, alert round eyes
-4. giant roc, enormous round feathered body, huge folded wings, small head on top
-5. phoenix, round bird with soft flame-shaped tail feathers, warm orange and gold, gentle eyes
+1. tiny soft snail hatchling, almost all head, two short eye stalks with huge round eyes, one small pale translucent spiral shell
+2. small round garden snail, the same spiral shell now solid and banded, the same two eye stalks longer, soft cream foot
+3. plump achatina snail, the same banded shell now tall and heavy on its back, same two eye stalks, thick cream foot, calm eyes
+4. tower bearer snail, the same shell grown into a tall rounded tower with soft round moss patches, same two eye stalks, same cream foot, drowsy eyes
+5. ammon, enormous snail, the same spiral now a huge smooth dome marked with soft golden rings, same two eye stalks, tiny sleepy face low at the front
 
 
---- une fois la planche enregistrée dans art/source-oiseau.png ---
+--- une fois la planche enregistrée dans art/source-escargot.png ---
 
-python tools/decouper.py art/source-oiseau.png oiseau oisillon,passereau,rapace,roc,phenix
+python tools/decouper.py art/source-escargot.png escargot naissain,escargot,achatine,porte-tour,ammon
 
 --- puis dans la table ART, en haut de game.js ---
 
-  oiseau: {
-    1: 'oiseau-1-oisillon.png',   // Oisillon
-    2: 'oiseau-2-passereau.png',   // Passereau
-    3: 'oiseau-3-rapace.png',   // Rapace
-    4: 'oiseau-4-roc.png',   // Roc
-    5: 'oiseau-5-phenix.png',   // Phénix
+  escargot: {
+    1: 'escargot-1-naissain.png',   // Naissain
+    2: 'escargot-2-escargot.png',   // Escargot
+    3: 'escargot-3-achatine.png',   // Achatine
+    4: 'escargot-4-porte-tour.png',   // Porte-tour
+    5: 'escargot-5-ammon.png',   // Ammon, la spirale sans fin
   },

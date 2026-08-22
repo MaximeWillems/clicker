@@ -6,7 +6,12 @@
    Les noms des formes sont lus dans game.js, donc ils ne peuvent pas dériver. Ce qui est
    décrit ici, ce sont les PROPORTIONS de chaque stade — jamais les ornements. C'est la
    leçon la plus chère de la lignée du crapaud : cinq bêtes qui ne diffèrent que par leur
-   décor se ressemblent toutes, quelle que soit la qualité du dessin. */
+   décor se ressemblent toutes, quelle que soit la qualité du dessin.
+
+   Deuxième leçon, celle de la chauve-souris : les cinq stades sont UNE bête qui grandit.
+   Ce qu'un stade gagne, les suivants le gardent et l'agrandissent — le pendentif apparu au
+   stade 4 avait disparu au stade 5, par oubli et non par choix. La règle se casse, mais
+   alors volontairement, et en l'écrivant dans la description du stade. */
 'use strict';
 const fs = require('fs');
 
@@ -30,6 +35,13 @@ CUTE MASCOT STYLE — this is the most important instruction:
 - everything rounded and soft, no sharp angles, no spikes, no horns, no claws
 - chubby bean-shaped or egg-shaped bodies, tiny stubby feet
 - friendly, sleepy, harmless expression on every stage
+
+CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept
 
 STRICT: maximum 6 flat colors per creature including the outline.
 No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
@@ -173,6 +185,24 @@ const STADES = {
     'abyssal jellyfish, glowing rounded bell, longer soft tentacles',
     'colossal cnidarian, huge smooth bell, many long soft tentacles',
     'world siphonophore, enormous glowing bell filling the frame, tiny sleepy face beneath'],
+
+  /* Le fil de l'escargot : la coquille en spirale et les deux tentacules oculaires, présents
+     dès le premier stade et jamais perdus — c'est la coquille qui grossit, pas la bête. */
+  escargot: [
+    'tiny soft snail hatchling, almost all head, two short eye stalks with huge round eyes, one small pale translucent spiral shell',
+    'small round garden snail, the same spiral shell now solid and banded, the same two eye stalks longer, soft cream foot',
+    'plump achatina snail, the same banded shell now tall and heavy on its back, same two eye stalks, thick cream foot, calm eyes',
+    'tower bearer snail, the same shell grown into a tall rounded tower with soft round moss patches, same two eye stalks, same cream foot, drowsy eyes',
+    'ammon, enormous snail, the same spiral now a huge smooth dome marked with soft golden rings, same two eye stalks, tiny sleepy face low at the front'],
+
+  /* Le fil du crabe : deux pinces arrondies dont la droite est la plus grosse, des yeux sur
+     tiges, et une carapace bombée qui s'élargit de stade en stade. */
+  crabe: [
+    'tiny zoea larva, almost all head, two huge round stalked eyes, one tiny pair of rounded claws, small curled tail',
+    'small round crab, the same two rounded claws now bigger with the right one larger than the left, same stalked eyes, smooth domed carapace, six dot legs',
+    'plump brown tourteau crab, the same asymmetric rounded claws now thick and heavy, same stalked eyes, wider domed carapace, calm face',
+    'reef crab, the same thick asymmetric claws, same stalked eyes, the domed carapace now broad and dotted with small round coral bumps, drowsy eyes',
+    'karkinos, enormous crab, the same asymmetric claws now massive and raised, same stalked eyes, the broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle'],
 };
 
 const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')

@@ -13,6 +13,13 @@ CUTE MASCOT STYLE — this is the most important instruction:
 - chubby bean-shaped or egg-shaped bodies, tiny stubby feet
 - friendly, sleepy, harmless expression on every stage
 
+CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept
+
 STRICT: maximum 6 flat colors per creature including the outline.
 No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
 

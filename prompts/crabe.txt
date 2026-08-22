@@ -27,23 +27,23 @@ Front-facing, centered, full body. Transparent background. No shadow, no ground 
 no background, no text, no frame.
 
 The 5 stages, in order:
-1. tiny fluffy chick, huge round head, no visible wings, two dot feet
-2. small round songbird, tiny beak, plump body, bright eyes
-3. plump little raptor, small hooked beak, wings folded close, alert round eyes
-4. giant roc, enormous round feathered body, huge folded wings, small head on top
-5. phoenix, round bird with soft flame-shaped tail feathers, warm orange and gold, gentle eyes
+1. tiny zoea larva, almost all head, two huge round stalked eyes, one tiny pair of rounded claws, small curled tail
+2. small round crab, the same two rounded claws now bigger with the right one larger than the left, same stalked eyes, smooth domed carapace, six dot legs
+3. plump brown tourteau crab, the same asymmetric rounded claws now thick and heavy, same stalked eyes, wider domed carapace, calm face
+4. reef crab, the same thick asymmetric claws, same stalked eyes, the domed carapace now broad and dotted with small round coral bumps, drowsy eyes
+5. karkinos, enormous crab, the same asymmetric claws now massive and raised, same stalked eyes, the broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle
 
 
---- une fois la planche enregistrée dans art/source-oiseau.png ---
+--- une fois la planche enregistrée dans art/source-crabe.png ---
 
-python tools/decouper.py art/source-oiseau.png oiseau oisillon,passereau,rapace,roc,phenix
+python tools/decouper.py art/source-crabe.png crabe zoe,crabe,tourteau,crabe-recif,karkinos
 
 --- puis dans la table ART, en haut de game.js ---
 
-  oiseau: {
-    1: 'oiseau-1-oisillon.png',   // Oisillon
-    2: 'oiseau-2-passereau.png',   // Passereau
-    3: 'oiseau-3-rapace.png',   // Rapace
-    4: 'oiseau-4-roc.png',   // Roc
-    5: 'oiseau-5-phenix.png',   // Phénix
+  crabe: {
+    1: 'crabe-1-zoe.png',   // Zoé
+    2: 'crabe-2-crabe.png',   // Crabe
+    3: 'crabe-3-tourteau.png',   // Tourteau
+    4: 'crabe-4-crabe-recif.png',   // Crabe-récif
+    5: 'crabe-5-karkinos.png',   // Karkinos, l’étoile des fonds
   },
