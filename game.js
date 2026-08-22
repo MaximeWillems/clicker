@@ -516,6 +516,17 @@ let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = f
    Le marchand s'en sert aussi pour lever sa règle « on ne vend pas la bête en scène » :
    personne ne regardait l'écran, la protéger n'aurait fait que bloquer un enclos. */
 let rattrapage = false;
+
+/* Le répit de la bête en scène. Elle n'est pas protégée, elle est en sursis : le marchand la
+   laisse tant qu'on s'occupe d'elle, et la prend dès qu'on l'a quittée depuis assez longtemps.
+
+   C'était une immunité à vie jusqu'ici, et ça ne se voyait pas tant qu'une bête grandissait
+   sans fin — on finissait toujours par passer à autre chose. Depuis les âges, une bête mûre
+   reste mûre indéfiniment : celle qu'on venait de faire évoluer à la main restait donc en
+   scène, vendable, et invendue pour toujours. Le seul symptôme visible était « le marchand
+   ne vend pas ». ☆ Garder reste la seule vraie protection. */
+const SCENE_REPIT = 10000;      // millisecondes depuis le dernier geste sur elle
+let dernierGeste = 0;
 const bilanAuto = { vendus: 0, gagne: 0, evolues: 0, depense: 0 };
 
 function freshState() {
@@ -990,6 +1001,7 @@ function current() {
 
 function select(key) {
   state.sel = key;
+  if (key && key.charAt(0) === 'c') dernierGeste = Date.now();
   refresh();
 }
 
@@ -1113,6 +1125,7 @@ function tapStage() {
   }
 
   const c = s.c;
+  dernierGeste = Date.now();          // tant qu'on la clique, le marchand n'y touche pas
   const avantNiv = niveau(c), avantMur = estMur(c);
   const avantRang = rankOf(sizeFactor(c)).i, avantValeur = sellValue(c);
   /* Un clic ajoute de la vie avant comme après la maturité : la créature ne cesse jamais de
@@ -1345,17 +1358,18 @@ function runAutomations(dt) {
      n'est qu'un supplément, et le réglage ne s'affiche même pas tant qu'aucune mangeoire
      n'existe : sans automate qui engraisse, la notion n'a pas à encombrer l'écran. */
   if (state.up.marchand) {
-    /* Le marchand ne touche jamais à la bête en scène. C'est la même règle que pour les
-       éclosions : rien ne prend la scène à une bête vivante, et rien ne l'y enlève non plus.
-       Sans ça, le joueur menait une bête à l'âge adulte à la main et se retrouvait, au clic
-       suivant, en train de marteler une autre bête — la sienne avait été vendue à l'instant
-       précis où elle devenait vendable. Tenir la case ne suffisait pas : la case était bien
-       la bonne, c'est l'animal dedans qui avait changé.
+    /* Le marchand laisse la bête en scène le temps d'un répit. Sans ce délai, le joueur
+       menait une bête à maturité à la main et se retrouvait, au clic suivant, en train de
+       marteler une autre bête — la sienne avait été vendue à l'instant précis où elle
+       devenait vendable. Tenir la case ne suffisait pas : la case était la bonne, c'est
+       l'animal dedans qui avait changé.
 
-       Elle n'est pas protégée pour autant : dès que le joueur regarde ailleurs, elle part au
-       tour suivant. Une seule bête échappe au marchand à la fois, l'enclos ne s'engorge pas. */
-    const ready = state.pen.filter(c => !c.keep && (rattrapage || 'c:' + c.id !== state.sel) && estMur(c) &&
-                                        venteAu(c) > 0 && c.age >= venteAu(c) &&
+       Mais le répit se compte en secondes depuis le dernier geste, PAS en « est-elle
+       sélectionnée ». Une bête qu'on laisse en scène et qu'on ne touche plus finit par
+       partir, comme n'importe quelle autre. Une seule bête échappe au marchand à la fois. */
+    const repit = Date.now() - dernierGeste < SCENE_REPIT;
+    const ready = state.pen.filter(c => !c.keep && (rattrapage || !repit || 'c:' + c.id !== state.sel) &&
+                                        estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= tailleExigee());
     for (const c of ready) {
       const gain = sellValue(c);
@@ -2031,11 +2045,17 @@ function noteMarchand() {
   const plafond = lvl('evolution') ? state.evolveUpTo : 1;
   const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond).map(([, r]) => r.plur);
   if (bloquees.length) {
+    /* Nommer le blocage ne suffit pas : sans la sortie, le joueur relit la même phrase et
+       reste coincé. Chaque avertissement dit donc quoi faire, et l'ordre des remèdes va du
+       gratuit au payant. */
     txt += lvl('evolution') && state.evolveUpTo
       ? '⚠ Ton évolution s’arrête à l’âge ' + AGES[state.evolveUpTo - 1].nom + ' : les ' +
-        liste(bloquees) + ' n’y arriveront jamais, et tes enclos vont s’engorger.'
+        liste(bloquees) + ' n’y arriveront jamais, et tes enclos vont s’engorger. ' +
+        'Monte son plafond, ou redescends leur âge de vente à ' + AGES[state.evolveUpTo - 1].nom + '.'
       : '⚠ Rien ne fait vieillir tes bêtes : les ' + liste(bloquees) +
-        ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger.';
+        ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger. ' +
+        'Fais-les évoluer à la main avec le bouton Évoluer, redescends-les à l’âge ' +
+        AGES[0].nom + ', ou achète l’évolution automatique.';
   } else if (!tailleExigee() && lvl('mangeoire')) {
     txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
   }

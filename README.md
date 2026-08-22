@@ -585,14 +585,21 @@ l'acheteur automatique ou en voir un autre éclore ne détourne jamais le regard
 cours d'élevage. Un œuf ne passe au premier plan que s'il n'y a plus rien de vivant à
 regarder, et c'est alors le plus avancé.
 
-**Le marchand ne touche jamais à la bête en scène.** C'est le pendant de la règle du dessus :
-rien ne prend la scène à une bête vivante, et rien ne l'y enlève non plus. Sans ça, on menait
-une bête à maturité à la main et, au clic suivant, on martelait une autre bête — la sienne
-avait été vendue à l'instant précis où elle devenait vendable. Tenir la case ne suffisait pas :
-la case était la bonne, c'est l'animal dedans qui avait changé.
+**Le marchand laisse un répit de dix secondes à la bête en scène.** C'est le pendant de la
+règle du dessus : rien ne prend la scène à une bête vivante, et rien ne l'y enlève tant qu'on
+s'en occupe. Sans ce délai, on menait une bête à maturité à la main et, au clic suivant, on
+martelait une autre bête — la sienne avait été vendue à l'instant précis où elle devenait
+vendable. Tenir la case ne suffisait pas : la case était la bonne, c'est l'animal dedans qui
+avait changé.
 
-Elle n'est pas protégée pour autant — ☆ *Garder* reste la seule vraie protection. Dès qu'on
-regarde ailleurs, elle part au tour suivant. Une seule bête échappe au marchand à la fois :
+**Le répit se compte depuis le dernier geste, pas depuis la sélection.** C'était une immunité
+à vie jusqu'ici, et ça ne se voyait pas tant qu'une bête grandissait sans fin — on finissait
+toujours par passer à autre chose. Depuis les âges, une bête mûre reste mûre indéfiniment :
+celle qu'on venait de faire évoluer à la main restait donc en scène, vendable, et invendue
+pour toujours. Le seul symptôme visible était « le marchand ne vend pas ».
+
+Une bête laissée en scène et qu'on ne touche plus part donc comme n'importe quelle autre, et
+☆ *Garder* reste la seule vraie protection. Une seule bête échappe au marchand à la fois :
 mesuré sur une ferme de dix-huit bêtes, il en vend 17 au lieu de 18, l'enclos ne s'engorge pas.
 
 **Vendre soi-même ne déplace pas le regard non plus : on garde sa case.** Si on était sur la
