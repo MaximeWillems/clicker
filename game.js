@@ -234,7 +234,27 @@ const RANKS = [
   { at: 4.50, name: 'démesuré',   fem: 'démesurée' },
 ];
 
-/* Améliorations à niveaux. Le coût du prochain niveau est base × mult^niveau : l'effet
+/* ── La granularité des améliorations ─────────────────────────────────────────
+   Un niveau qui double presque de prix et ne rend qu'un cran d'effet, c'est deux décroissances
+   qui se cumulent : chaque achat coûte plus et pèse moins. À l'essai, la cadence des
+   récompenses est trop lente bien avant que le rythme du jeu ne le soit.
+
+   Les améliorations se montent donc en TIERS de palier. L'astuce est qu'on ne change rien à
+   l'équilibrage : si l'effet est divisé par GRAIN et que le multiplicateur devient sa racine
+   GRAIN-ième, alors m^GRAIN = mult — trois achats coûtent exactement ce qu'un achat coûtait,
+   et rendent exactement le même effet. La base se rajuste pour que la somme géométrique
+   tombe juste. C'est une pure re-granulation : trois fois plus de « ça monte », pour le même
+   argent et la même puissance.
+
+   Baisser le seul multiplicateur ne marcherait PAS : l'éleveur passerait sous l'enclos (1,6)
+   et deviendrait le meilleur achat du jeu, ce que l'enclos doit rester. C'est parce que
+   l'effet baisse en même temps que le prix par unité de débit ne bouge pas. */
+const GRAIN = 3;
+const grainMult = mult => Math.pow(mult, 1 / GRAIN);
+const grainBase = (base, mult) => base * (grainMult(mult) - 1) / (mult - 1);
+
+/* Améliorations à niveaux, déclarées en paliers ENTIERS — ceux dont parle l'équilibrage.
+   La boucle sous la table les convertit en tiers. Le coût du prochain niveau est base × mult^niveau : l'effet
    monte linéairement pendant que le prix double presque, donc chaque niveau se mérite.
    `max` borne celles qui ne doivent pas monter indéfiniment — à 1 pour les trois achats qui
    débloquent une capacité sans avoir de puissance, à 5 pour la couveuse.
@@ -248,16 +268,16 @@ const RANKS = [
 const UPGRADES = [
   { key: 'clic', name: 'Force du clic', base: 60, mult: 1.6,
     desc: 'Chaque clic fait gagner une seconde de plus — une seconde de ce que tes automates produisent, pas une seconde de vie brute.',
-    value: n => 1 + n, unit: ' s gagnées par clic' },
+    value: n => 1 + n / GRAIN, unit: ' s gagnées par clic' },
   { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9, max: 5,
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Au-delà du niveau 5, c’est en incubateurs qu’on couve plus vite.',
-    value: n => n, unit: '× la vitesse de couvaison' },
+    value: n => n / GRAIN, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.65,
     desc: 'Les bêtes grandissent toutes seules jusqu’à leur maturité, âge après âge.',
-    value: n => n, unit: '× la vitesse de croissance' },
+    value: n => n / GRAIN, unit: '× la vitesse de croissance' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
     desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
-    value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
+    value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Rachète un œuf et le met à couver dès qu’un incubateur se libère.' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
@@ -270,8 +290,19 @@ const UPGRADES = [
      le coût au lieu du temps, et la seule qui ait de quoi grandir avec l'économie. */
   { key: 'intendant', name: 'Intendant', base: 250000, mult: 1.65,
     desc: 'Négocie chaque passage d’âge : toutes les évolutions coûtent moins cher, à toutes les raretés.',
-    value: n => Math.round(100 - 100 / (1 + EVO_RABAIS * n)), unit: ' % de moins sur chaque évolution' },
+    value: n => Math.round(100 - 100 / (1 + EVO_RABAIS * n / GRAIN)), unit: ' % de moins sur chaque évolution' },
 ];
+
+/* Les trois déblocages à un seul niveau (acheteur, marchand, évolution) n'ont pas de
+   puissance : ils ne se granulent pas. Tous les autres passent en tiers ici, et nulle part
+   ailleurs — c'est le seul endroit du fichier qui connaisse GRAIN avec les tables. */
+for (const u of UPGRADES) {
+  if (u.mult === 1) continue;
+  u.grain = true;
+  u.base = grainBase(u.base, u.mult);
+  u.mult = grainMult(u.mult);
+  if (u.max) u.max *= GRAIN;
+}
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
 
@@ -475,6 +506,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
+const SAVE_V = 4;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -488,7 +520,7 @@ const bilanAuto = { vendus: 0, gagne: 0, evolues: 0, depense: 0 };
 
 function freshState() {
   return {
-    v: 3,
+    v: SAVE_V,
     coins: 0,
     eggs: { commun: 0, rare: 0, epique: 0, mythique: 0 },
     buyKind: 'commun',      // ce que rachète l'acheteur automatique
@@ -602,8 +634,15 @@ function load() {
       delete c.tier;
     }
     if (merged.tri === 'palier') merged.tri = 'age';
-    // la sauvegarde porte désormais le numéro de ce qu'elle contient, pas celui d'où elle vient
-    merged.v = base.v;
+    /* v3 → v4 : les améliorations se montent en tiers de palier. Un niveau d'avant en vaut
+       donc trois, sans quoi une partie en cours verrait sa ferme divisée par trois. */
+    if ((s.v || 0) < 4) {
+      for (const u of UPGRADES) if (u.grain) merged.up[u.key] = (merged.up[u.key] || 0) * GRAIN;
+    }
+    /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
+       le relire dans `base` : Object.assign mute sa cible, donc `base` et `merged` sont le
+       même objet et `base.v` porte déjà l'ancien numéro. */
+    merged.v = SAVE_V;
     nextId = merged.pen.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
     return merged;
   } catch (e) {
@@ -727,7 +766,7 @@ const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)
 // l'âge titan pour le prix d'une commune, et toute la progression se court-circuitait.
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
-const evoRemise = () => 1 / (1 + EVO_RABAIS * lvl('intendant'));
+const evoRemise = () => 1 / (1 + EVO_RABAIS * force('intendant'));
 const evoCost   = c => EVOLVE[c.age - 1] === null ? null
                      : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise());
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
@@ -737,15 +776,20 @@ const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incuba
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
 
 const lvl         = key => state.up[key] || 0;
+/* Le NIVEAU est ce qui s'achète, la PUISSANCE est ce que ce niveau produit. Depuis que les
+   améliorations se montent en tiers, les deux ne sont plus le même nombre : tout ce qui
+   CALCULE passe par force(), tout ce qui compte des achats reste sur lvl(). Confondre les
+   deux ferait annoncer « éleveur ×9 » pour un ×3 réel. */
+const force       = key => (state.up[key] || 0) / GRAIN;
 const upCost      = u => Math.round(u.base * Math.pow(u.mult, lvl(u.key)));
 const upMaxed     = u => !!u.max && lvl(u.key) >= u.max;
-const clickPower  = () => 1 + lvl('clic');
+const clickPower  = () => 1 + force('clic');
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
-const autoRate = s => s.kind === 'egg' ? lvl('couveuse')
-                    : estMur(s.c) ? FATTEN_X * lvl('mangeoire') * temperOf(s.c).fat
-                    : lvl('eleveur');
+const autoRate = s => s.kind === 'egg' ? force('couveuse')
+                    : estMur(s.c) ? FATTEN_X * force('mangeoire') * temperOf(s.c).fat
+                    : force('eleveur');
 
 /* Un clic vaut toujours le même temps réel, quoi qu'on ait automatisé. Sans ça les
    automates nerfaient le clic au moment même où on payait pour aller plus vite :
@@ -1233,12 +1277,15 @@ function buyUpgrade(u) {
 
 // Ce qu'on lit sous le nom de l'amélioration : ce qu'elle fait, ou ce que le prochain
 // niveau va changer.
+// Un tiers de palier ne tombe pas rond : « ×1,33 » plutôt que « ×1.3333333333 ».
+const nb = v => (Number.isInteger(v) ? String(v) : dec(v, 2));
+
 function upLabel(u) {
   const n = lvl(u.key);
   if (!u.value) return u.desc;
-  if (upMaxed(u)) return 'Au maximum · ' + u.value(n) + u.unit + '.';
-  if (n === 0) return u.desc + ' Niveau 1 : ' + u.value(1) + u.unit + '.';
-  return 'Niveau ' + n + ' → ' + (n + 1) + ' · ' + u.value(n) + ' → ' + u.value(n + 1) + u.unit;
+  if (upMaxed(u)) return 'Au maximum · ' + nb(u.value(n)) + u.unit + '.';
+  if (n === 0) return u.desc + ' Niveau 1 : ' + nb(u.value(1)) + u.unit + '.';
+  return 'Niveau ' + n + ' → ' + (n + 1) + ' · ' + nb(u.value(n)) + ' → ' + nb(u.value(n + 1)) + u.unit;
 }
 
 /* ─────────────────────────────────────────────
@@ -1248,7 +1295,7 @@ function upLabel(u) {
 // Le temps ne fait avancer que ce qui a été automatisé. Tant que rien n'est acheté,
 // seuls le clic et la nourriture font bouger quoi que ce soit.
 function advance(dt) {
-  const couve = lvl('couveuse'), eleve = lvl('eleveur');
+  const couve = force('couveuse'), eleve = force('eleveur');
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -1321,7 +1368,7 @@ function runAutomations(dt) {
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
-    const debit = dt * FATTEN_X * lvl('mangeoire');
+    const debit = dt * FATTEN_X * force('mangeoire');
     for (const c of state.pen) {
       if (estMur(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
@@ -1898,24 +1945,24 @@ function ligneBoosts(sujet) {
   const bouts = [];
   if (sujet.kind === 'egg') {
     if (!sujet.slot) return '';
-    const base = hatchTime(sujet.slot), n = lvl('couveuse');
+    const base = hatchTime(sujet.slot), n = force('couveuse');
     bouts.push('Couvaison ' + fmtTime(base) + ' → ' + (n ? fmtTime(base / n) : 'rien sans toi'));
-    if (n) bouts.push('couveuse ×' + n);
+    if (n) bouts.push('couveuse ×' + dec(n, 2));
   } else {
     const c = sujet.c, t = temperOf(c);
     if (!estMur(c)) {
       // la durée annoncée est celle d'UN NIVEAU : c'est l'attente que le joueur vit
-      const pas = ageGrow(c) / nivDansAge(c.age), n = lvl('eleveur');
+      const pas = ageGrow(c) / nivDansAge(c.age), n = force('eleveur');
       bouts.push('Croissance ' + fmtTime(pas) + ' par niveau → ' +
                  (n ? fmtTime(pas / (n * t.grow)) : 'rien sans toi'));
       if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));
-      if (n) bouts.push('éleveur ×' + n);
+      if (n) bouts.push('éleveur ×' + dec(n, 2));
     } else {
-      const n = lvl('mangeoire');
+      const n = force('mangeoire');
       bouts.push('Engraissement ' + (n ? '+' + dec(FATTEN_X * n * t.fat, 1) + ' s par seconde'
                                        : 'rien sans toi'));
       if (n && t.fat !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.fat));
-      if (n) bouts.push('mangeoire ×' + n);
+      if (n) bouts.push('mangeoire ×' + dec(n, 2));
     }
     // la rente ne dépend plus de la maturité mais de l'âge : elle se lit dans les deux cas
     const r = renteOf(c);
@@ -1932,7 +1979,7 @@ function valeurAu(c, age) {
 
 function noteAcheteur() {
   const e = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
-  const parHeure = Math.floor(3600 / (e.hatch / Math.max(1, lvl('couveuse'))));
+  const parHeure = Math.floor(3600 / (e.hatch / Math.max(1, force('couveuse'))));
   return 'Environ ' + parHeure + ' éclosion' + (parHeure > 1 ? 's' : '') +
     ' par heure et par incubateur, à ta couveuse actuelle. ' +
     (e.price > 12
