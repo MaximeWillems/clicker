@@ -584,20 +584,34 @@ qu'une fois la mangeoire achetée** — avant, la notion n'existe pas à l'écra
 garde la revente simple en early game : rien n'oblige jamais à comprendre l'embonpoint pour
 vendre, et le bouton *Vendre* marche à tous les niveaux, au prix du niveau.
 
-**L'évolution automatique s'arrête à l'âge où le vendeur doit prendre le relais.** Sans ce
-frein, la consigne était muette : régler « vendre les communes dès l'âge adulte » ne servait à
-rien, puisque l'évolution les poussait jusqu'au titan avant que le vendeur n'ait son mot à
-dire. C'est donc le vendeur qui commande le plafond, rareté par rareté — et une rareté qu'il ne
-vend jamais monte jusqu'au plafond général.
+### Un plafond d'évolution par rareté, lui aussi
+
+**Chaque rareté a son propre plafond d'évolution**, pour la même raison que chacune a son âge
+de vente : ce n'est pas la même décision. Le péage suit la rareté, et l'écart est brutal.
+
+| Faire monter une bête | commune | rare | épique | mythique |
+|---|---|---|---|---|
+| d'adulte à géante | 40 000 | 1,00 M | 24,0 M | 600 M |
+| de géante à titan | 600 000 | 15,0 M | 360 M | **9,00 Md** |
+
+Pousser un seul mythique de géant à titan coûte quinze mille fois ce que coûte une commune.
+Un réglage unique forçait à choisir un compromis pour tout le monde : on pousse maintenant les
+communes jusqu'au bout pendant qu'on arrête les mythiques à l'âge adulte, en attendant d'avoir
+les moyens. Chaque menu affiche la facture complète du chemin qu'il finance.
+
+**L'évolution automatique s'arrête quand même à l'âge où le vendeur doit prendre le relais.**
+Sans ce frein, la consigne de vente serait muette : régler « vendre les communes dès l'âge
+adulte » ne servirait à rien, puisque l'évolution les pousserait jusqu'au titan avant que le
+vendeur n'ait son mot à dire. Des deux plafonds, c'est le plus bas qui commande.
 
 Un réglage incohérent est signalé, et **les raretés en cause sont nommées** : si l'évolution
-s'arrête à l'adolescence pendant que le vendeur attend les rares à l'âge géant, la note dit
+des rares s'arrête à l'adolescence pendant que le vendeur les attend à l'âge géant, la note dit
 lesquelles n'y arriveront jamais, avant que les enclos ne s'engorgent.
 
 **L'évolution passe avant la vente**, pour qu'une bête qu'on peut faire monter ne parte jamais
-au prix de l'âge d'en dessous. L'enchaînement complet se règle donc en trois cases — évoluer
-jusqu'à l'âge adulte, engraisser jusqu'à *énorme*, vendre — et la ferme tourne seule : couver,
-élever, faire monter, engraisser, vendre, racheter.
+au prix de l'âge d'en dessous. L'enchaînement complet se règle donc rareté par rareté — jusqu'où
+la faire monter, à partir de quel âge la vendre, et à quelle taille — et la ferme tourne seule :
+couver, élever, faire monter, engraisser, vendre, racheter.
 
 La force du clic vaut aussi pour l'engraissement, et le compteur en clics en tient compte :
 « 4 clics » plutôt que « 30 clics » une fois le clic monté à 8 secondes.

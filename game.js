@@ -512,7 +512,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 4;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 5;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -554,7 +554,11 @@ function freshState() {
     sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     sellRank: 0,        // taille minimale exigée avant la vente (0 = dès la maturité)
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
-    evolveUpTo: 0,
+    /* Un âge d'évolution PAR RARETÉ. Un péage ne coûte pas la même chose selon la lignée —
+       mener une géante au titan coûte 600 000 en commune et 9 milliards en mythique — donc
+       ce n'est pas la même décision, et un réglage unique ne pouvait pas l'exprimer. On
+       pousse les communes jusqu'au bout pendant qu'on arrête les mythiques à l'âge adulte. */
+    evolveUpTo: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     seen: {},
     speed: 1,
     sound: true,
@@ -651,6 +655,14 @@ function load() {
       delete c.tier;
     }
     if (merged.tri === 'palier') merged.tri = 'age';
+    /* v4 → v5 : l'évolution automatique avait un plafond unique. On le recopie sur les quatre
+       raretés — c'est exactement ce que la consigne faisait, en quatre exemplaires. */
+    if (typeof merged.evolveUpTo === 'number') {
+      const avant = merged.evolveUpTo;
+      merged.evolveUpTo = { commune: avant, rare: avant, epique: avant, mythique: avant };
+    }
+    merged.evolveUpTo = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 },
+                                      merged.evolveUpTo || {});
     /* v3 → v4 : les améliorations se montent en tiers de palier. Un niveau d'avant en vaut
        donc trois, sans quoi une partie en cours verrait sa ferme divisée par trois. */
     if ((s.v || 0) < 4) {
@@ -853,12 +865,18 @@ const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
    vente doit rester la chose la plus simple du jeu. */
 const tailleExigee = () => (lvl('mangeoire') ? state.sellRank : 0);
 
+// La consigne d'évolution pour CETTE bête, 0 si sa rareté ne doit pas monter.
+const evolueJusqu = c => (state.evolveUpTo && state.evolveUpTo[lineOf(c).rarity]) || 0;
+
 /* Jusqu'où l'évolution automatique a le droit de pousser cette bête. Le vendeur commande :
    inutile de payer une évolution vers un âge auquel on a demandé de vendre avant. */
 const plafondEvolution = c => {
-  const vise = venteAu(c);
-  return vise ? Math.min(state.evolveUpTo, vise) : state.evolveUpTo;
+  const monte = evolueJusqu(c), vise = venteAu(c);
+  return vise ? Math.min(monte, vise) : monte;
 };
+
+// Y a-t-il seulement une rareté à faire monter ? Sinon la boucle d'évolution ne tourne pas.
+const evolueQuelqueChose = () => Object.keys(RARITY).some(cle => (state.evolveUpTo[cle] || 0) > 1);
 
 function rankOf(sf) {
   let i = 0;
@@ -1360,7 +1378,7 @@ function runAutomations(dt) {
      « vendre les communes à l'âge adulte » ne servait à rien : l'évolution les poussait
      jusqu'au titan avant que le vendeur n'ait son mot à dire, et la consigne de vente était
      muette. C'est le vendeur qui commande le plafond, rareté par rareté. */
-  if (lvl('evolution') && state.evolveUpTo > 1) {
+  if (lvl('evolution') && evolueQuelqueChose()) {
     for (const c of state.pen) {
       if (c.keep || !estMur(c) || c.age >= plafondEvolution(c)) continue;
       const cost = evoCost(c);
@@ -1555,14 +1573,18 @@ function remplirMenus() {
     });
   }
 
-  const evo = $('sel-evolution');
-  evo.textContent = '';
-  evo.appendChild(option(0, 'Ne rien faire évoluer'));
-  AGES.forEach((a, i) => {
-    if (!i) return;
-    evo.appendChild(option(i + 1, 'Monter jusqu’à l’âge ' + a.nom +
-      (i === AGES.length - 1 ? ', la forme finale' : '')));
-  });
+  // un menu par rareté, et le prix du chemin en clair : c'est lui qui fait la décision
+  for (const cle of Object.keys(RARITY)) {
+    const sel = $('evolution-' + cle);
+    sel.textContent = '';
+    sel.appendChild(option(0, 'jamais — je les fais monter moi-même'));
+    AGES.forEach((a, i) => {
+      if (!i) return;
+      const facture = EVOLVE.slice(0, i).reduce((n, v) => n + (v || 0), 0) * RARITY[cle].mult;
+      sel.appendChild(option(i + 1, 'jusqu’à l’âge ' + a.nom +
+        (i === AGES.length - 1 ? ', la forme finale' : '') + ' — ' + fmt(facture)));
+    });
+  }
 }
 
 function buildChrome() {
@@ -2031,12 +2053,13 @@ function noteAcheteur() {
 }
 
 function noteEvolution() {
-  if (!state.evolveUpTo) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
-  /* La note annonçait la facture de l'âge maximal pour tout le monde. C'était faux dès qu'une
-     rareté se vendait plus tôt : plafondEvolution l'arrête à SON âge de vente, et la note
-     démentait son propre chiffre deux phrases plus loin. Chaque rareté annonce donc la sienne,
-     calculée là où elle s'arrête vraiment — c'est la seule façon que le chiffre ne mente pas. */
-  const cible = cle => Math.min(state.evolveUpTo, state.sellAt[cle] || state.evolveUpTo);
+  if (!evolueQuelqueChose()) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
+  /* Chaque rareté annonce SA facture, calculée là où elle s'arrête vraiment — son propre
+     plafond, rabattu sur son âge de vente si le marchand doit prendre le relais avant. */
+  const cible = cle => {
+    const monte = state.evolveUpTo[cle] || 0;
+    return state.sellAt[cle] ? Math.min(monte, state.sellAt[cle]) : monte;
+  };
   const facture = cle => EVOLVE.slice(0, cible(cle) - 1).reduce((a, b) => a + (b || 0), 0)
                        * RARITY[cle].mult * evoRemise();
   const phrase = ([cle, r]) => cible(cle) <= 1
@@ -2067,16 +2090,17 @@ function noteMarchand() {
   /* Le piège de la combinaison : une consigne au-dessus de ce que l'évolution sait atteindre,
      et cette rareté-là ne part jamais. On nomme les raretés concernées, sinon le joueur voit
      l'enclos s'engorger sans savoir laquelle de ses quatre consignes est en cause. */
-  const plafond = lvl('evolution') ? state.evolveUpTo : 1;
-  const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond).map(([, r]) => r.plur);
+  // le plafond qui compte est celui de SA rareté ; sans évolution du tout, rien ne dépasse l'âge 1
+  const plafond = cle => (lvl('evolution') ? (state.evolveUpTo[cle] || 0) : 0) || 1;
+  const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond(cle)).map(([, r]) => r.plur);
   if (bloquees.length) {
     /* Nommer le blocage ne suffit pas : sans la sortie, le joueur relit la même phrase et
        reste coincé. Chaque avertissement dit donc quoi faire, et l'ordre des remèdes va du
        gratuit au payant. */
-    txt += lvl('evolution') && state.evolveUpTo
-      ? '⚠ Ton évolution s’arrête à l’âge ' + AGES[state.evolveUpTo - 1].nom + ' : les ' +
-        liste(bloquees) + ' n’y arriveront jamais, et tes enclos vont s’engorger. ' +
-        'Monte son plafond, ou redescends leur âge de vente à ' + AGES[state.evolveUpTo - 1].nom + '.'
+    txt += lvl('evolution') && evolueQuelqueChose()
+      ? '⚠ Ton évolution ne mène pas les ' + liste(bloquees) + ' assez haut : elles ' +
+        'n’atteindront jamais leur âge de vente, et tes enclos vont s’engorger. ' +
+        'Monte leur plafond d’évolution, ou redescends leur âge de vente.'
       : '⚠ Rien ne fait vieillir tes bêtes : les ' + liste(bloquees) +
         ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger. ' +
         'Fais-les évoluer à la main avec le bouton Évoluer, redescends-les à l’âge ' +
@@ -2242,7 +2266,8 @@ function bindTools() {
 
   // Un menu qui garde le focus détournerait la barre espace : on le relâche après usage.
   for (const id of ['vente-commune', 'vente-rare', 'vente-epique', 'vente-mythique',
-                    'sel-rank', 'sel-evolution', 'sel-acheteur']) {
+                    'evolution-commune', 'evolution-rare', 'evolution-epique',
+                    'evolution-mythique', 'sel-rank', 'sel-acheteur']) {
     $(id).addEventListener('change', e => e.target.blur());
   }
 
@@ -2256,9 +2281,11 @@ function bindTools() {
     state.sellRank = parseInt(e.target.value, 10) || 0;
   });
 
-  $('sel-evolution').addEventListener('change', e => {
-    state.evolveUpTo = parseInt(e.target.value, 10) || 0;
-  });
+  for (const cle of Object.keys(RARITY)) {
+    $('evolution-' + cle).addEventListener('change', e => {
+      state.evolveUpTo[cle] = parseInt(e.target.value, 10) || 0;
+    });
+  }
 
   $('sel-acheteur').addEventListener('change', e => {
     state.buyKind = EGG_BY_KEY[e.target.value] ? e.target.value : 'commun';
@@ -2284,7 +2311,9 @@ function start() {
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   for (const cle of Object.keys(RARITY)) $('vente-' + cle).value = String(state.sellAt[cle] || 0);
   $('sel-rank').value = String(state.sellRank || 0);
-  $('sel-evolution').value = String(state.evolveUpTo);
+  for (const cle of Object.keys(RARITY)) {
+    $('evolution-' + cle).value = String(state.evolveUpTo[cle] || 0);
+  }
   $('sel-acheteur').value = state.buyKind;
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
   syncTri();

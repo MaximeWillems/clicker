@@ -116,7 +116,23 @@
       <p class="config-step"><span class="step-n">2</span> L'évolution fait monter</p>
       <p class="config-what">Jusqu'à quel âge pousser une bête mûre avant de la laisser
         tranquille. Elle garde tout ce qu'elle a acquis à chaque passage.</p>
-      <select id="sel-evolution"></select>
+      <p class="config-what">Chaque rareté a <b>son propre plafond</b> : un péage ne coûte pas
+        la même chose selon la lignée. Mener une géante au titan coûte 600&nbsp;000 en commune
+        et 9&nbsp;milliards en mythique — ce n'est pas la même décision.</p>
+
+      <div class="cond">
+        <label for="evolution-commune">Il fait monter les communes</label>
+        <select id="evolution-commune" class="sel-vente"></select>
+
+        <label for="evolution-rare">les rares</label>
+        <select id="evolution-rare" class="sel-vente"></select>
+
+        <label for="evolution-epique">les épiques</label>
+        <select id="evolution-epique" class="sel-vente"></select>
+
+        <label for="evolution-mythique">les mythiques</label>
+        <select id="evolution-mythique" class="sel-vente"></select>
+      </div>
       <p class="config-note" id="note-evolution"></p>
     </div>
 
