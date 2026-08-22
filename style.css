@@ -137,6 +137,12 @@ body {
   min-width: 0; min-height: 0;
   overflow-y: auto;
 }
+/* Une colonne flex ÉCRASE ses enfants avant d'accepter de défiler. Sur un écran bas, la
+   scène passait donc sous sa hauteur naturelle, et à l'intérieur c'était la jauge qui
+   encaissait tout : elle seule accepte de rétrécir (les autres tiennent par leur texte),
+   et elle tombait à zéro dès qu'une bête arrivait — l'œuf, plus court, tenait encore.
+   Rien ne s'écrase plus : la colonne défile, ce pour quoi elle a un ascenseur. */
+.stage-col > * { flex: none; }
 
 .stage {
   background: var(--surface);
@@ -240,6 +246,7 @@ body {
 .subject-meta .rank { color: var(--accent); }
 
 .stage-bar {
+  flex: none;
   width: min(100%, 30rem);
   height: 7px;
   background: var(--sunken);
@@ -352,7 +359,12 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
 .thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .thumb-glyph { font-size: 1.5rem; line-height: 1; }
 .thumb.empty .thumb-glyph { opacity: 0.3; }
-.thumb-bar { width: 100%; height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+/* « flex: none » sur les deux jauges : masquer son débordement rend un élément
+   compressible jusqu'à zéro, et une jauge de 7 px disparaît sans laisser de trace. */
+.thumb-bar {
+  flex: none;
+  width: 100%; height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden;
+}
 .thumb[aria-current="true"] .thumb-bar { background: var(--ground); }
 .thumb-bar > i { display: block; height: 100%; width: 0; background: var(--accent); }
 .thumb.apex .thumb-bar > i { background: var(--rar, var(--accent)); }
