@@ -29,19 +29,21 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 ## Ce qui est dans le jalon 0
 
 - 19 lignées et leurs 95 formes, du têtard à l'Ouroboros éternel
+- **Cent niveaux et cinq âges** — enfant, adolescent, adulte, géant, titan — sur une seule
+  vie qui ne repart jamais de zéro
 - **Variantes** : teinte, motif, tempérament, et un prodige sur cinq cents
-- **Quatre raretés** et trois sortes d'œufs, dont un coup de chance possible dès la première minute
-- Œuf → clic → éclosion → croissance → **vendre ou faire évoluer**
+- **Quatre raretés** et quatre sortes d'œufs, dont un coup de chance possible dès la première minute
+- Œuf → clic → éclosion → niveaux → **vendre, ou payer le péage de l'âge suivant**
 - **Rien n'avance tout seul au départ** : seul le clic fait éclore et grandir. Le temps ne se
   met à travailler qu'une fois les automatisations achetées
 - **Rien ne se nourrit contre des pièces** : une bête grandit au clic et au temps, jamais à
-  l'argent. Un adulte continue de grossir indéfiniment
+  l'argent. Une bête mûre continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
 - Sept améliorations : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand, évolution
-- **Rente** : une bête adulte *énorme* ou plus rapporte toute seule, à proportion de ce
+- **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
-- Collection des 25 formes découvertes
+- Collection des 95 formes découvertes
 
 Absent volontairement : gènes, reproduction, fusion, lignées cachées, comptes, marché entre
 joueurs. Tout cela demande le serveur.
@@ -60,44 +62,95 @@ Toutes les valeurs sont regroupées en haut de `game.js`, entre les commentaires
 « Données ». Rien n'est en dur ailleurs. Les chiffres actuels sont un point de départ
 crédible, pas une vérité — ils sont faits pour être retouchés en jouant.
 
-L'échelle de base, celle d'une lignée **commune**. Le coût d'évolution comme la valeur se
-multiplient ensuite par la rareté (×25 rare, ×600 épique, ×15 000 mythique) ; la durée de
-croissance, elle, ne bouge jamais.
+### Cent niveaux, cinq âges
 
-| Palier | Croissance | Coût d'évolution | Valeur |
-|---|---|---|---|
-| 1 | 45 s | — | 40 |
-| 2 | 3 min | 200 | 500 |
-| 3 | 15 min | 3 000 | 6 000 |
-| 4 | 1 h | 40 000 | 80 000 |
-| 5 | 6 h | 600 000 | 1 500 000 |
+**Une bête a une vie et un seul compteur.** Le niveau court de 1 à 100 et ne redescend jamais.
+Les cinq âges sont des tranches sur cette échelle, et l'évolution est le **péage** entre deux
+tranches : arrivée au dernier niveau de son âge la bête est *mûre*, son niveau se bloque là,
+et seul le paiement le débloque.
+
+| Âge | Niveaux | Croissance | Un niveau dure | Valeur par niveau | Péage | Vaut, mûre |
+|---|---|---|---|---|---|---|
+| enfant | 1 → **15** | 45 s | 3 s | +14 % | — | 40 |
+| adolescent | 16 → **35** | 3 min | 9 s | +10,5 % | 200 | 500 |
+| adulte | 36 → **65** | 15 min | 30 s | +6,8 % | 3 000 | 6 000 |
+| géant | 66 → **85** | 1 h | 3 min | +10,5 % | 40 000 | 80 000 |
+| titan | 86 → **100** | 6 h | 24 min | +14 % | 600 000 | 1 500 000 |
+
+15 · 20 · 30 · 20 · 15, et les péages tombent pile sur 15, 35, 65, 85. Le coût du péage comme
+la valeur se multiplient ensuite par la rareté (×25 rare, ×600 épique, ×15 000 mythique) ; les
+durées, elles, ne bougent jamais.
+
+**Le temps par niveau triple à chaque âge** — 3 s, 9 s, 30 s, 3 min, 24 min. C'est ce qui fait
+que l'enfance défile (trois clics par niveau au tout début, sans rien avoir acheté) pendant que
+le titan se mérite. Sans aucune automatisation : mûre à 45 s, adulte à 3 min 45, géante à
+18 min, titan à 1 h 19, niveau 100 à 7 h 19. C'est exactement le rythme d'avant, redécoupé.
+
+**Chaque niveau paie.** Le multiplicateur de valeur suit une courbe géométrique de 0,15 à 1,00
+à l'intérieur de chaque tranche : un niveau vaut donc entre +7 % et +14 % de prix de vente. Il
+n'y a plus un seul palier mort, la barre qui se remplit rapporte toujours quelque chose. Les
+bornes ne bougent pas — une bête mûre vaut toujours la valeur de son âge, une bête fraîchement
+évoluée toujours 15 % de la sienne.
+
+#### Ce que ça corrige
+
+Avant, une bête traversait trois échelles empilées qui racontaient trois histoires
+différentes : le palier (1 → 5), l'étape de vie (enfant → ado → adulte) et la taille (grand →
+démesuré). Les deux dernières étaient **remises à zéro à chaque évolution**. Le badge affichait
+donc `enfant`, `ado`, `p.2`, puis `enfant` à nouveau — et ce n'était pas qu'un mot : la bête
+rétrécissait vraiment de moitié à l'écran, jusqu'à ×0,37 si elle avait été engraissée.
+
+Le plus révélateur, c'est que **les dessins disaient déjà le contraire du texte**. Chaque forme
+portait un glyphe juvénile qui était exactement le glyphe adulte de la forme précédente (Alevin
+🐟 → Carpe 🐟 → Centenaire 🐠 → Serpent 🐍 → Léviathan 🐉), et le code affichait littéralement
+le dessin du palier `n − 1` tant que la bête n'était pas adulte. Les images formaient déjà une
+seule croissance continue ; seul le vocabulaire bouclait sur lui-même.
+
+Les quatre-vingt-quinze glyphes juvéniles sont partis avec le problème. Une forme par âge, et
+la silhouette change **au moment où l'on paie** — pas trois niveaux plus tard.
+
+#### Rien ne recule, jamais
+
+C'est la règle qui tient tout le reste, et elle est vérifiée par construction :
+
+- **le niveau** ne dépend que de la croissance avalée, qui ne fait que monter ;
+- **la taille à l'écran** ne se lit ni sur l'âge ni sur l'embonpoint séparément — l'un monte
+  au moment où l'autre se dégonfle — mais sur le total de croissance avalé, plus un petit bond
+  fixe à chaque évolution pour qu'on voie ce qu'on vient de payer ;
+- **la valeur** monte à chaque niveau, et l'évolution la multiplie par 1,8 à 2,8 sur le coup.
+
+L'embonpoint aussi survit désormais à l'évolution. Ça ne donne rien de plus : la taille divise
+les secondes de mangeoire par la durée de l'âge **courant**, quatre à six fois plus longue à
+chaque cran. Engraisser tôt puis évoluer rend donc exactement ce que les mêmes secondes
+auraient rendu plus tard. L'épithète se dégonfle d'elle-même — un *adulte démesuré* fait un
+*géant colossal* — sans qu'on ait à confisquer quoi que ce soit.
 
 ### Raretés
 
-Deux axes indépendants, à ne pas confondre : le **palier** est la progression d'une bête au
-fil de sa vie, la **rareté** est la lignée dont elle est issue et ne change jamais. Le palier,
-c'est le travail ; la rareté, c'est la chance.
+Deux axes indépendants, à ne pas confondre : l'**âge** est la progression d'une bête au fil de
+sa vie, la **rareté** est la lignée dont elle est issue et ne change jamais. L'âge, c'est le
+travail ; la rareté, c'est la chance.
 
 Les deux axes sont calés pour **s'enchaîner** plutôt que se concurrencer. Chaque rareté est
 une ère, pas un bonus : on épuise ce que les communes peuvent donner avant que les rares
 n'ouvrent.
 
-| Rareté | Valeur | Adulte p1 → p5 | Coût pour monter au p5 |
+| Rareté | Valeur | Mûre enfant → mûre titan | Coût des quatre péages |
 |---|---|---|---|
 | commune | ×1 | 40 → 1,5 M | 643 200 |
 | rare | ×25 | 1 000 → 37,5 M | 16,1 M |
 | épique | ×600 | 24 000 → 900 M | 385,9 M |
 | mythique | ×15 000 | 600 000 → 22,5 Md | 9,65 Md |
 
-**Le coût d'évolution suit la rareté.** C'est le pivot de tout l'équilibrage : sans lui, une
-rare tombée par chance se montait au palier 5 pour le prix d'une commune et court-circuitait
-toute la progression.
+**Le coût du péage suit la rareté.** C'est le pivot de tout l'équilibrage : sans lui, une rare
+tombée par chance atteignait l'âge titan pour le prix d'une commune et court-circuitait toute
+la progression.
 
-**Chaque œuf coûte 0,7 bête de l'ère précédente menée au palier 5** — la même proportion sur
-les trois transitions. On ne s'offre donc un œuf rare qu'après avoir mené des communes au
-bout, un épique qu'après des rares, et ainsi de suite.
+**Chaque œuf coûte 0,7 bête de l'ère précédente menée au bout** — la même proportion sur les
+trois transitions. On ne s'offre donc un œuf rare qu'après avoir mené des communes au titan,
+un épique qu'après des rares, et ainsi de suite.
 
-**Tous les œufs payants se remboursent au palier 4**, jamais avant : une règle unique, quelle
+**Tous les œufs payants se remboursent à l'âge géant**, jamais avant : une règle unique, quelle
 que soit l'ère.
 
 Rythme mesuré sur une partie simulée de quatre heures, joueur cliquant quatre fois par
@@ -131,17 +184,17 @@ n'atteint une mythique qu'avec des œufs épiques, qu'on ne s'offre qu'avec l'ar
 La chance de monter d'un cran grandit avec le prix — 3,5 %, 12 %, 25 % — et l'œuf mythique,
 n'ayant rien au-dessus de lui, garantit.
 
-Les prix suivent la règle des ères : **chaque œuf coûte 0,7 bête de l'ère précédente menée au
-palier 5**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
+Les prix suivent la règle des ères : **chaque œuf coûte 0,7 bête de l'ère précédente menée à
+l'âge titan**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
 
 ### Un œuf cher est un investissement, pas un lot
 
-**Tous les œufs payants se remboursent au palier 4, jamais avant.** Une mythique payée 375 M
-ne vaut que 600 000 à l'âge adulte de son premier palier — la vendre là serait ruineux.
+**Tous les œufs payants se remboursent à l'âge géant, jamais avant.** Une mythique payée 375 M
+ne vaut que 600 000 mûre à l'âge enfant — la vendre là serait ruineux.
 
-Résultat net, œuf et évolutions déduits :
+Résultat net, œuf et péages déduits, à chaque âge mûr :
 
-| Œuf | p1 | p2 | p3 | **p4** | p5 |
+| Œuf | enfant | adolescent | adulte | **géant** | titan |
 |---|---|---|---|---|---|
 | commun (12) | +28 | +288 | +2 788 | +36 788 | +856 788 |
 | rare (600 000) | −599 000 | −592 500 | −530 000 | **+320 000** | +20,8 M |
@@ -154,10 +207,11 @@ jamais être **silencieuse**. Deux garde-fous :
 
 - Chaque bête retient **le prix de l'œuf dont elle sort**. Tant qu'elle vaut moins que lui, la
   scène le dit, et le bouton *Vendre* passe en rouge — mais **seulement si rien n'est prévu
-  pour l'y mener**. Quand l'évolution automatique est réglée au-delà du seuil, la ferme fait
-  déjà le travail : la phrase devient neutre — « son œuf a coûté 375,0 M, ton évolution la
-  mènera au palier 4, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait
-  le pire des deux mondes.
+  pour l'y mener**. Deux façons de ne pas s'alarmer, et elles ne se racontent pas pareil : ou
+  la bête est déjà à l'âge qu'il faut et n'a plus qu'à finir de grandir, ou c'est l'évolution
+  automatique qui va l'y mener — « son œuf a coûté 375,0 M, ton évolution la mènera à l'âge
+  géant, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait le pire des
+  deux mondes.
 - **Le marchand automatique ne touche qu'aux communes par défaut.** Un troisième réglage
   élargit sa portée rareté par rareté ; tant qu'on ne le fait pas, il ne peut pas brader un
   mythique à 600 000. Le réglage prévient quand on lui ouvre les mythiques.
@@ -174,9 +228,9 @@ vide : rabattre sur du commun trahirait la consigne.
 
 ### Variantes
 
-Une variante est une **identité**, tirée à l'éclosion et gardée à vie — contrairement à la
-taille, qu'une évolution remet à zéro. C'est ce qui en fait une collection, et le brouillon
-direct des gènes du jalon 4 : le jour où la reproduction arrive, tout ça s'hérite.
+Une variante est une **identité**, tirée à l'éclosion et gardée à vie. C'est ce qui en fait une
+collection, et le brouillon direct des gènes du jalon 4 : le jour où la reproduction arrive,
+tout ça s'hérite.
 
 **La teinte** est la seule qui se voit. Un `filter: hue-rotate()` recolore vraiment l'emoji,
 ce qui multiplie le bestiaire visible sans un seul dessin — et règle le problème des lignées
@@ -198,11 +252,11 @@ d'office** : perdre une bête sur cinq cents parce qu'un automate l'a vendue ava
 vue serait impardonnable.
 
 **Un chromatique vaut exactement deux crans de rareté** : ×125, soit 25², puisque chaque
-rareté vaut vingt-cinq fois la précédente. À palier et taille égaux, une commune chromatique
+rareté vaut vingt-cinq fois la précédente. À âge et taille égaux, une commune chromatique
 passe donc devant une rare ordinaire et reste derrière une épique ordinaire — et la règle se
 propage d'elle-même à toute l'échelle.
 
-| À palier 1, adulte | Valeur |
+| Mûre à l'âge enfant | Valeur |
 |---|---|
 | commune | 40 |
 | rare | 1 000 |
@@ -219,11 +273,12 @@ coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. Le coû
 lui, ne suit **que** la rareté — faire monter un chromatique coûte le prix de sa lignée, ce
 qui en fait l'affaire du jeu.
 
-**Le tempérament** ne se lit qu'en texte, mais il agit : `grow` raccourcit la croissance,
+**Le tempérament** ne se lit qu'en texte, mais il agit : `grow` accélère la montée en niveau,
 `fat` accélère l'engraissement. Docile (neutre), nerveux (croissance ×1,25 / engraissement
-×0,85), placide (l'inverse), glouton (engraissement ×1,4), farouche, rêveur. L'effet est
-confiné à la phase de croissance — la durée de référence des rangs de taille reste celle du
-palier, sinon un tempérament vif cumulerait deux bonus.
+×0,85), placide (l'inverse), glouton (engraissement ×1,4), farouche, rêveur. L'effet porte sur
+la **vitesse** de croissance, pas sur les bornes — les seuils de niveau sont les mêmes pour
+tout le monde, et la durée de référence des rangs de taille reste celle de l'âge, sinon un
+tempérament vif cumulerait deux bonus.
 
 **Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé — n'a aucun
 effet. C'est de l'identité pure.
@@ -253,8 +308,14 @@ Les noms à titre reçoivent leur épithète **sur le nom propre**, pas à la fi
 
 ### Ce que vaut la mangeoire
 
-Le rendement de l'engraissement ne dépend **pas du palier** — 0,83 à p1 comme à p5 avec les
-mêmes niveaux. Il ne dépend que du **rapport entre le niveau de mangeoire et celui
+**L'embonpoint est le seul axe facultatif du jeu.** Il ne débloque plus rien : la rente s'ouvre
+à l'âge adulte, et le marchand ne réclame une taille minimale que si on possède une mangeoire.
+Ce que fait vraiment la mangeoire, c'est **remplir l'attente au péage** — la bête est mûre, les
+pièces de l'évolution ne sont pas encore là, elle grossit en attendant. Et ce temps n'est pas
+perdu : l'évolution ne remet plus l'embonpoint à zéro.
+
+Le rendement de l'engraissement ne dépend **pas de l'âge** — 0,83 à l'enfance comme au titan
+avec les mêmes niveaux. Il ne dépend que du **rapport entre le niveau de mangeoire et celui
 d'éleveur** : l'un fait tourner l'enclos, l'autre l'immobilise pour grossir.
 
 À niveaux égaux, en rendement d'enclos comparé à y enchaîner des bêtes :
@@ -269,8 +330,7 @@ d'éleveur** : l'un fait tourner l'enclos, l'autre l'immobilise pour grossir.
 
 Il y a donc un optimum net à *grand*, puis une longue traîne de plaisir payé en temps. C'est
 la décision qu'on veut, et elle se règle une fois pour toutes dans la taille exigée par le
-marchand. Ces chiffres ne comptent que la vente : à partir d'*énorme*, la **rente** ci-dessous
-paie par-dessus, ce qui adoucit la traîne sans en faire l'optimum.
+marchand — un réglage qui n'apparaît qu'une fois la mangeoire achetée.
 
 La mangeoire était auparavant à 2 500 × 2,0 avec un débit de ×2 : monter au niveau 5 coûtait
 **quatorze fois** le prix de l'éleveur, pour un rendement de 0,83 à niveaux égaux — donc
@@ -281,8 +341,9 @@ supplément, elle n'est plus un piège.
 ### Garder une bête
 
 Le bouton **☆ Garder** met une créature hors de portée des automates : ni vendue par le
-marchand, ni faite évoluer — évoluer lui ferait perdre sa taille. La mangeoire continue de
-l'engraisser, elle. Le bouton *Vendre* se verrouille tant qu'elle est gardée.
+marchand, ni faite évoluer — on veut parfois garder une forme précise, et non la pousser
+jusqu'au titan. La mangeoire continue de l'engraisser, elle. Le bouton *Vendre* se verrouille
+tant qu'elle est gardée.
 
 Ce que ça coûte est une place d'enclos immobilisée, et c'est tout l'intérêt : on choisit de
 continuer l'aventure avec une bête plutôt que de la faire entrer dans la chaîne.
@@ -292,42 +353,63 @@ continuer l'aventure avec une bête plutôt que de la faire entrer dans la chaî
 Tout le reste du jeu pousse à vendre : l'enclos est la ressource rare, et une bête gardée est
 un enclos qui ne tourne pas. **La rente est la seule règle qui paie pour ne pas vendre.**
 
-Une bête **adulte énorme ou plus** rapporte toute seule, sans rien faire — même absent. Elle
-vaut sa propre valeur de vente **étalée sur une heure**, et le seuil ne s'ouvre qu'à *énorme*,
-là où l'engraissement a déjà coûté très cher.
+**La rente s'ouvre à l'âge adulte — niveau 36.** Une bête de cet âge ou plus rapporte toute
+seule, sans rien faire, même absent : sa propre valeur de vente **étalée sur une heure**.
 
-Ses facteurs sont exactement ceux du prix de vente — **palier, rareté, teinte, taille** — si
-bien qu'une bête rapporte à proportion de ce qu'elle vaut. Le **chromatique** est le seul à
+Elle était auparavant branchée sur l'embonpoint (*énorme* ou plus), c'est-à-dire sur la
+mauvaise échelle. C'était un seuil que personne ne devine, qui obligeait à comprendre la
+mangeoire avant de toucher le premier revenu passif, et qui coûtait des dizaines de milliers de
+secondes d'enclos avant de rapporter la première pièce. **L'âge ouvre la rente, la taille
+l'augmente** — l'embonpoint est déjà dans la valeur de vente, donc il la pousse tout seul, sans
+qu'on ait besoin d'une règle de plus.
+
+Ses facteurs sont exactement ceux du prix de vente — **niveau, âge, rareté, teinte, taille** —
+si bien qu'une bête rapporte à proportion de ce qu'elle vaut. Le **chromatique** est le seul à
 recevoir un bonus par-dessus : sa rente est **doublée**, en plus du ×125 que sa valeur porte
 déjà. C'est la bête qu'un joueur garde, c'est elle qu'on récompense.
 
-| Bête, arrivée *énorme* | Rente |
-|---|---|
-| commune p1 | 0,02 / s |
-| commune p3 | 2,83 / s |
-| commune p5 | 708 / s |
-| rare p5 | 17 708 / s |
-| mythique p5 | 10,6 M / s |
-| commune p1 **chromatique** | 4,72 / s |
-| commune p5 **chromatique** | 177 083 / s |
-| mythique p5 **chromatique** | 2,66 Md / s |
+| Bête commune | Valeur | Rente |
+|---|---|---|
+| adulte fraîche, niv. 36 | 900 | 0,25 / s |
+| adulte mûre, niv. 65 | 6 000 | 1,67 / s |
+| géante mûre, niv. 85 | 80 000 | 22,2 / s |
+| titan mûr, niv. 100 | 1,5 M | 417 / s |
+| titan mûr **rare** | 37,5 M | 10 417 / s |
+| titan mûr **mythique** | 22,5 Md | 6,25 M / s |
+| titan mûr **mythique chromatique** | 2,81 Bn | 1,56 Md / s |
 
-Pousser la taille rapporte, mais bien moins vite que ça ne coûte — une commune p3 passe de
-2,83 à 7,50 par seconde entre *énorme* et *démesuré*, quand l'engraissement nécessaire, lui,
-est multiplié par plus de deux cents. La rente prolonge donc la longue traîne de la mangeoire
-sans la rendre optimale : elle **console** le joueur qui pousse une bête pour le plaisir.
+Le montant baisse (417 / s au lieu de 708 pour une commune au bout), mais le **volume** monte :
+toutes les bêtes de l'âge adulte et au-dessus rapportent, là où seules les engraissées le
+faisaient. C'est le vrai changement, et il tient dans les clous :
 
-Elle ne remplace jamais l'élevage. Un enclos qui enchaîne les cycles rapporte environ le
-double d'un enclos qui garde. Garder deux bêtes sur dix coûte donc à peu près 10 % du débit
-de la ferme — le juste prix d'une collection, et pas plus.
+- **au moment où elle s'ouvre**, elle pèse environ 2 % du revenu du joueur — qui vient
+  justement de payer 200 + 3 000 pièces de péages pour ce premier adulte. Elle arrive comme
+  une confirmation, pas comme un raccourci ;
+- **sur une ferme qui tourne** — dix enclos étalés de l'enfance au géant, éleveur 10 — elle
+  pèse 1,1 % du débit.
 
-**Le marchand vise la même bête que la rente.** Réglé sur *énorme*, il vend exactement celles
-qui viennent de se mettre à payer ; sa note le dit alors, et ☆ *Garder* est la parade.
+Elle ne remplace jamais l'élevage, et le rapport se calcule d'une ligne : un enclos qui
+recommence rapporte `valeur / (croissance / éleveur)`, un enclos qui garde `valeur / 3600`.
+**Cycler gagne dès que le niveau d'éleveur dépasse la croissance divisée par 3 600** — soit
+0,3 à l'âge adulte, 1,3 au géant, 7,3 au titan. Un joueur qui produit des titans a un éleveur
+autour de 15 : cycler lui rapporte alors le double de garder, exactement comme avant. L'ancien
+seuil à *énorme* était 1,7 fois plus haut, donc la rente d'aujourd'hui laisse **plus** de place
+à l'élevage que celle d'hier, pas moins.
 
-La rente s'affiche à trois endroits : `+2,83 / s` à côté de la bourse pour le total,
-`rente +2,83 / s` dans la ligne des boosts de la bête en scène, et le bandeau de retour
-compte les pièces gagnées pendant l'absence. L'indice sous une bête qui n'y est pas encore
-l'annonce d'avance — sans ça, personne ne devine qu'il faut pousser jusqu'à *énorme*.
+Pousser la taille rapporte, mais bien moins vite que ça ne coûte. La rente prolonge donc la
+longue traîne de la mangeoire sans la rendre optimale : elle **console** le joueur qui pousse
+une bête pour le plaisir.
+
+**Le marchand vise la même bête que la rente.** Réglé à partir de l'âge adulte, il vend celles
+qui rapportaient déjà ; sa note le dit alors, et ☆ *Garder* est la parade.
+
+Un effet secondaire heureux : le seuil devient **annonçable**. « À l'âge adulte — niveau 36 —
+elle se mettra à rapporter toute seule » se lit sous la barre. « Encore 12 000 secondes de
+mangeoire pour atteindre *énorme* » ne se lisait nulle part.
+
+La rente s'affiche à trois endroits : `+1,67 / s` à côté de la bourse pour le total,
+`rente +1,67 / s` dans la ligne des boosts de la bête en scène, et le bandeau de retour compte
+les pièces gagnées pendant l'absence.
 
 ### Automatisations
 
@@ -340,15 +422,18 @@ s'écoule serait un mensonge — et des secondes dès qu'un automate tourne. Fai
 deux (`30 s ou 30 clics`) donnait deux mesures pour une même attente et invitait à marteler
 une barre qui montait déjà sans nous.
 
-La règle vaut aussi pour un adulte qui s'engraisse : `33 clics → grand` sans mangeoire,
+La règle vaut aussi pour une bête mûre qui s'engraisse : `33 clics → grand` sans mangeoire,
 `17 s → grand` avec.
 
 **Une ligne détaille les boosts en cours**, sous le compteur : la durée de base, ce qu'elle
 devient avec ce qu'on possède, et chaque facteur qui y contribue.
 
-> `Croissance 15 m 00 s → 1 m 20 s · nerveux ×1,25 · éleveur ×9 · un clic vaut 8 s`
-> `Engraissement +12,6 s par seconde · glouton ×1,40 · mangeoire ×3 · un clic vaut 8 s`
+> `Croissance 30 s par niveau → 8 s · nerveux ×1,25 · éleveur ×3 · un clic vaut 9 s`
+> `Engraissement +12,6 s par seconde · glouton ×1,40 · mangeoire ×3 · rente +1,67 / s`
 > `Couvaison 30 s → rien sans toi · un clic vaut 1 s`
+
+La durée annoncée pour la croissance est celle d'**un niveau**, pas de la tranche entière :
+c'est l'attente que le joueur vit réellement, et c'est elle que les automates raccourcissent.
 
 Sans elle, on achetait des niveaux sans jamais voir ce qu'ils changeaient.
 
@@ -357,7 +442,7 @@ c'est le moment précis où le jeu bascule de clicker à idle.
 
 Quatre améliorations sur sept se montent **niveau par niveau, sans plafond**. Le prix du
 prochain niveau vaut `base × mult^niveau` : l'effet monte linéairement pendant que le prix
-double presque, donc chaque palier se mérite et les rendements décroissent d'eux-mêmes.
+double presque, donc chaque niveau se mérite et les rendements décroissent d'eux-mêmes.
 
 | Amélioration | Base | Mult. | Effet au niveau *n* |
 |---|---|---|---|
@@ -371,12 +456,12 @@ double presque, donc chaque palier se mérite et les rendements décroissent d'e
 
 L'échelle est calée pour qu'une partie **bascule en pilote automatique en une demi-heure**
 plutôt qu'en une heure et demie. Simulation d'un joueur cliquant quatre fois par seconde,
-achetant toujours l'option la moins chère à sa portée et menant ses bêtes au palier 3 :
+achetant toujours l'option la moins chère à sa portée et menant ses bêtes à l'âge adulte :
 couveuse à 1 min, éleveur à 6 min, acheteur à 14 min, mangeoire à 24 min, marchand à 35 min.
 Aux anciens prix, le marchand tombait à 78 min.
 
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
-jusqu'à l'âge adulte, la mangeoire prend le relais et engraisse les adultes. Aucune des deux
+jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
 
 ### Le code couleur
@@ -394,9 +479,9 @@ jauges, prix, focus, sélection — ce qui vidait de son sens le rang des mythiq
 
 Deux conséquences :
 
-**Le palier 5 n'a pas de couleur à lui.** Il fait briller plus fort la teinte de sa propre
-rareté — la teinte dit la rareté, l'intensité dit le palier. Un légendaire commun reste donc
-gris-vert, seul un mythique brille en or.
+**L'âge titan n'a pas de couleur à lui.** Il fait briller plus fort la teinte de sa propre
+rareté — la teinte dit la rareté, l'intensité dit l'âge. Un titan commun reste donc gris-vert,
+seul un mythique brille en or.
 
 **Le bouton *Vendre* est vert quand la vente est rentable et rouge quand elle ne l'est pas.**
 Il était rouge dans un cas et doré dans l'autre, ce qui donnait deux alarmes et aucune bonne
@@ -411,12 +496,13 @@ donc réécrit sur trois principes :
 
 - **Chaque étape est titrée et numérotée** dans l'ordre où les automates s'exécutent, avec une
   ligne qui dit ce qu'elle fait avant de montrer le menu.
-- **Les trois conditions du marchand sont trois lignes étiquetées** — palier au plus, taille au
-  moins, rareté au plus — au lieu de trois fragments de phrase à recoller.
+- **Le marchand a une ligne étiquetée par rareté**, plus une pour la taille — et cette
+  dernière **n'apparaît qu'une fois la mangeoire achetée**. Sans automate qui engraisse, la
+  notion n'a rien à faire à l'écran : vendre doit rester la chose la plus simple du jeu.
 - **Chaque réglage écrit ce qu'il produit**, et se réécrit dès qu'on bouge un menu. « En clair :
-  il vend les communes et rares jusqu'au palier 4, une fois qu'elles ont atteint la taille
-  énorme. Les épiques et mythiques restent dans l'enclos. » L'acheteur annonce son débit à
-  l'heure, l'évolution le coût total du chemin qu'elle va financer.
+  il vend les communes dès l'âge adulte, les rares dès l'âge titan. Les mythiques restent dans
+  l'enclos. » L'acheteur annonce son débit à l'heure, l'évolution le coût total du chemin
+  qu'elle va financer.
 
 Une phrase qu'on relit après avoir bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une
 seule fois.
@@ -425,30 +511,40 @@ Les menus qui listent des données du jeu — prix des œufs, rangs de taille, r
 **construits depuis ces données** plutôt qu'écrits à la main. C'est la seule façon qu'ils ne
 mentent pas le jour où un prix bouge, et ils avaient déjà menti une fois.
 
-**Le marchand attend trois conditions, cumulées.** Deux sont des **seuils bas** — il récolte
-ce qui a assez monté, pendant que l'évolution pousse vers le haut — et la troisième est un
-plafond, puisqu'on vend le tout-venant et qu'on garde le précieux :
+### Un âge de vente par rareté
 
-> Le vendeur vend **le palier 4 et au-dessus**, dès que la taille est **énorme ou plus**, et
-> pour les raretés **communes et rares**.
+**Chaque rareté a son propre âge de vente**, et une taille minimale commune à toutes :
 
-Un réglage incohérent est signalé : si l'évolution s'arrête au palier 2 pendant que le vendeur
-attend le palier 4, rien n'atteindra jamais le seuil et les enclos s'engorgeront. La note le
-dit avant que ça n'arrive.
+> Il vend les **communes dès l'âge adulte**, les **rares dès l'âge titan**, les **épiques dès
+> l'âge titan**, **jamais** les mythiques.
 
-**Le marchand attendait auparavant deux conditions : le palier et la taille.** Sans la seconde il vendait
-tout dès l'âge adulte, et la mangeoire n'avait jamais le temps d'engraisser quoi que ce soit :
-les deux automates se marchaient dessus. On règle donc « jusqu'au palier N » **et** « pas
-avant la taille R ». Au palier 1 : vendue tout de suite elle rapporte 40, à *grand* 52 après
-18 secondes, à *énorme* 68 après 59 secondes.
+C'est la consigne qu'on veut vraiment donner : on écoule le tout-venant tôt, pendant qu'on mène
+le précieux jusqu'au bout. Un seuil unique assorti d'un plafond de rareté forçait à choisir
+entre les deux — soit tout partait tôt, soit tout attendait la fin.
+
+**Le marchand n'attend qu'une condition par défaut** : la bête est mûre, et son âge est celui
+qu'on a réglé pour sa rareté. La taille minimale est un supplément, et son menu **n'apparaît
+qu'une fois la mangeoire achetée** — avant, la notion n'existe pas à l'écran. C'est ce qui
+garde la revente simple en early game : rien n'oblige jamais à comprendre l'embonpoint pour
+vendre, et le bouton *Vendre* marche à tous les niveaux, au prix du niveau.
+
+**L'évolution automatique s'arrête à l'âge où le vendeur doit prendre le relais.** Sans ce
+frein, la consigne était muette : régler « vendre les communes dès l'âge adulte » ne servait à
+rien, puisque l'évolution les poussait jusqu'au titan avant que le vendeur n'ait son mot à
+dire. C'est donc le vendeur qui commande le plafond, rareté par rareté — et une rareté qu'il ne
+vend jamais monte jusqu'au plafond général.
+
+Un réglage incohérent est signalé, et **les raretés en cause sont nommées** : si l'évolution
+s'arrête à l'adolescence pendant que le vendeur attend les rares à l'âge géant, la note dit
+lesquelles n'y arriveront jamais, avant que les enclos ne s'engorgent.
 
 **L'évolution passe avant la vente**, pour qu'une bête qu'on peut faire monter ne parte jamais
-au prix de son palier actuel. L'enchaînement complet se règle donc en trois cases — évoluer
-jusqu'au palier 3, engraisser jusqu'à *énorme*, vendre — et la ferme tourne seule : couver,
+au prix de l'âge d'en dessous. L'enchaînement complet se règle donc en trois cases — évoluer
+jusqu'à l'âge adulte, engraisser jusqu'à *énorme*, vendre — et la ferme tourne seule : couver,
 élever, faire monter, engraisser, vendre, racheter.
 
-La force du clic vaut aussi pour l'engraissement d'un adulte, et le compteur en clics en tient
-compte : « 4 clics » plutôt que « 30 clics » une fois le clic monté à 8 secondes.
+La force du clic vaut aussi pour l'engraissement, et le compteur en clics en tient compte :
+« 4 clics » plutôt que « 30 clics » une fois le clic monté à 8 secondes.
 
 Les sauvegardes d'avant les niveaux sont converties au chargement : `true` devient niveau 1.
 
@@ -468,7 +564,7 @@ regarder, et c'est alors le plus avancé.
 
 **Le marchand ne touche jamais à la bête en scène.** C'est le pendant de la règle du dessus :
 rien ne prend la scène à une bête vivante, et rien ne l'y enlève non plus. Sans ça, on menait
-une bête à l'âge adulte à la main et, au clic suivant, on martelait une autre bête — la sienne
+une bête à maturité à la main et, au clic suivant, on martelait une autre bête — la sienne
 avait été vendue à l'instant précis où elle devenait vendable. Tenir la case ne suffisait pas :
 la case était la bonne, c'est l'animal dedans qui avait changé.
 
@@ -498,10 +594,14 @@ passent devant eux dans la bande, pour rester à portée de clic même avec dix 
 ordre vit dans `subjects()`, pas dans le rendu : c'est ce qui garantit que « la case 6 »
 désigne la même vignette pour l'affichage et pour la sélection.
 
-**La bande garde sa position de défilement** quand elle se redessine. Elle est reconstruite à
-chaque changement d'étape ou de palier, et vider un conteneur remet sa barre horizontale à
-zéro : la bête qu'on suivait à droite sautait à gauche au moment précis où on la regardait
-grandir. La position est donc relevée avant, reposée après.
+**La bande garde sa position de défilement** quand elle se redessine. Vider un conteneur remet
+sa barre horizontale à zéro : la bête qu'on suivait à droite sautait à gauche au moment précis
+où on la regardait grandir. La position est donc relevée avant, reposée après.
+
+**Seul l'âge déclenche une reconstruction de vignette** — quatre fois par vie. Le niveau, lui,
+monte cent fois : le mettre dans la signature ferait redessiner la bande sans arrêt. Ce qui
+bouge à chaque niveau — le numéro, la taille du glyphe, la barre — est repeint par des setters
+qui ne touchent au DOM que si la valeur a réellement changé.
 
 **La page ne défile jamais** sur écran large : elle occupe exactement la fenêtre, et seules les
 deux colonnes défilent en interne. Ce n'est pas cosmétique — une barre de défilement rend le
@@ -526,60 +626,51 @@ s'arrêter n'importe quand.
 Ajouter un dessin, c'est poser le fichier dans `art/` et ajouter une ligne à la table `ART`
 en haut de `game.js`. Rien d'autre — pas de build, pas de manifeste à régénérer.
 
-**Trois dessins suffisent pour une lignée entière.** Un palier sans dessin prend celui du
-palier le plus proche en dessous, et un juvénile porte toujours le dessin du palier
-précédent. Avec `{ 1: 'tetard.png', 4: 'colosse.png' }`, les paliers 1 à 3 montrent le têtard
-et les paliers 4 et 5 le colosse. Un seul fichier fonctionne aussi.
+**Trois dessins suffisent pour une lignée entière.** Un âge sans dessin prend celui de l'âge le
+plus proche en dessous. Avec `{ 1: 'tetard.png', 4: 'colosse.png' }`, les trois premiers âges
+montrent le têtard et les deux derniers le colosse. Un seul fichier fonctionne aussi.
 
 Une image fait exactement `1em`, donc **tout ce qui pilotait la taille de l'emoji pilote la
-sienne** — échelle du palier, étape de vie, engraissement, teinte. Un dessin remplace un emoji
-sans qu'aucun autre calcul ne bouge, du nouveau-né à 47 px au légendaire démesuré à 211 px.
+sienne** — niveau, âge, engraissement, teinte. Un dessin remplace un emoji sans qu'aucun autre
+calcul ne bouge, du nouveau-né à 52 px au titan démesuré à 220 px.
 
 Le détail du format attendu est dans [`art/LISEZMOI.md`](art/LISEZMOI.md).
 
-### Étapes de vie
+### Ce que le niveau pilote à l'écran
 
-Une créature traverse cinq états visibles, et l'échelle est **continue** — elle grossit à
-chaque clic plutôt que de sauter d'un cran à l'autre.
+| Ce qu'on voit | Au niveau 1 | Au niveau 100 | Comment ça monte |
+|---|---|---|---|
+| l'échelle | 0,55 | 2,19 | continue, plus un bond fixe à chaque évolution |
+| la valeur | 15 % de son âge | 100 % du sien | par paliers, un saut par niveau |
+| la silhouette | forme 1 | forme 5 | change au moment où l'on paie le péage |
+| le badge | `niv. 1` | `niv. 100 ✦` | le ✦ marque la maturité |
 
-| État | Quand | Échelle | Valeur | Silhouette |
-|---|---|---|---|---|
-| œuf | en couvaison | 0,80 → 1,05 | — | 🥚, halo qui bat après 65 % |
-| enfant | 0 – 40 % de la croissance | 0,50 | 15 % | forme juvénile |
-| adolescent | 40 – 100 % | 0,50 → 1,00 | 40 % | forme juvénile |
-| adulte | croissance terminée | 1,00 | 100 % | forme définitive |
-| adulte grand… | engraissement | jusqu'à 1,50 | 130 % → 450 % | forme définitive |
+**La valeur est plate à l'intérieur d'un niveau et saute au passage** : c'est le clic qui fait
+changer de niveau qui paie, pas les vingt d'avant. La barre de la scène vise donc le prochain
+niveau, jamais la maturité — cent niveaux dans une vie, donc cent barres qui se remplissent.
+Où en est la bête dans son âge se lit juste au-dessus, « mûre au niv. 65 » : deux informations,
+deux endroits, aucune redite. La vignette de la bande, elle, montre la distance à la maturité —
+c'est-à-dire à la décision.
 
-**La valeur est plate à l'intérieur d'une étape et saute d'un coup au passage.** Au palier 1 :
-6 pièces pendant toute l'enfance, puis **16 sur le clic qui fait passer adolescent** (×2,7),
-puis **40 sur celui qui fait passer adulte** (×2,5). C'est ce clic-là qui paie, pas les
-quarante d'avant — et la barre de progression vise la prochaine étape, plus l'âge adulte.
+Vendre est possible à tout niveau, au prix du niveau, et **aucune condition de taille ne s'y
+ajoute jamais**. C'est la porte de sortie quand un enclos bloque, elle doit rester simple. Le
+marchand automatique, lui, n'achète que des bêtes mûres — brader une bête à moitié grandie ne
+doit jamais arriver tout seul.
 
-Vendre est possible à toute étape, au prix de l'étape. Ça ne devient jamais une stratégie :
-0,19 pièce par clic en vendant un enfant, 0,27 un adolescent, 0,67 en menant la bête à terme.
-C'est une porte de sortie quand un enclos bloque. Le marchand automatique, lui, n'achète que
-des adultes — brader un juvénile ne doit jamais arriver tout seul.
+**Trois échelles d'événement**, sinon cent niveaux par vie deviennent cent fanfares :
 
-Les rangs de taille comptent aussi comme des étapes : au palier 1, *grand* tombe à 32 clics
-après l'âge adulte, *énorme* à 115, *colossal* à 433.
-
-Le tout est multiplié par l'échelle du palier (×1 à ×1,5), donc un nouveau-né de palier 1
-fait 0,50 et un légendaire engraissé 2,25 : un rapport de 4,5 entre les deux extrêmes.
-
-**La forme juvénile d'une créature est la forme précédente de sa propre lignée.** Une wyverne
-grandit en lézard puis devient wyverne ; un léviathan grandit en serpent de mer puis devient
-dragon. C'est le moment fort du jeu, et ça ne coûte **aucun dessin supplémentaire** — le
-budget graphique reste à 25 illustrations, une par forme.
-
-Chaque forme est déclarée `[nom, glyphe adulte, glyphe juvénile]` en haut de `game.js`. La
-lignée du crapaud est la seule où les emoji n'offrent aucune variante : c'est là que de vrais
-dessins manquent le plus.
+- un **niveau** : le numéro s'envole, l'animal tressaille, une note ;
+- la **maturité** ou un **rang de taille** franchi : étincelles, accord, et le gain de valeur
+  affiché ;
+- une **évolution** : nouveau nom, nouvelle silhouette, et le niveau réaffiché sous le nom.
 
 ### Croissance sans fin
 
-Un clic fait gagner du temps avant comme après l'âge adulte : l'animal ne cesse jamais de
-grandir. Ce qui s'essouffle, c'est le rendement — la taille suit un logarithme, donc chaque
-rang coûte bien plus cher que le précédent.
+Un clic fait gagner du temps avant comme après la maturité : l'animal ne cesse jamais de
+grandir. Mûre, la bête ne monte plus de niveau tant que le péage n'est pas payé — ce qu'elle
+avale part alors dans l'embonpoint, et n'y sera pas perdu. Ce qui s'essouffle, c'est le
+rendement : la taille suit un logarithme, donc chaque rang coûte bien plus cher que le
+précédent.
 
 ### Le clic gagne du temps, il n'ajoute pas des secondes brutes
 
@@ -591,33 +682,36 @@ Sans cette règle, chaque automate acheté nerfait le clic au moment même où o
 aller plus vite : le « +14 s » affiché ne représentait plus que deux secondes de ce que
 l'éleveur faisait déjà tout seul, et cliquer devenait dérisoire. La même règle vaut pour la
 couveuse et pour la mangeoire — le clic reste un raccourci qui se sent, du premier œuf au
-dernier palier.
+centième niveau.
 
 **Le seuil d'un rang est aussi son multiplicateur de valeur**, et la valeur reste plate entre
-deux rangs : comme pour les juvéniles, c'est le clic qui franchit le rang qui paie.
+deux rangs : comme pour les niveaux, c'est le clic qui franchit le rang qui paie.
 
-| Rang | À partir de | Valeur | Clics au palier 1 | Vente (base 40) |
+Les rangs ne disent pas une taille absolue mais **à quel point la bête est grosse pour son
+âge**. C'est ce qui leur permet de survivre à l'évolution sans se contredire, et ce qui donne
+un sens à « titan titanesque » : un titan hors-norme parmi les titans.
+
+| Rang | À partir de | Valeur | Clics à l'âge enfant | Vente (base 40) |
 |---|---|---|---|---|
-| adulte | ×1,00 | ×1,00 | — | 40 |
-| adulte grand | ×1,30 | ×1,30 | 33 | 52 (+30 %) |
-| adulte énorme | ×1,70 | ×1,70 | 116 | 68 (+31 %) |
-| adulte colossal | ×2,30 | ×2,30 | 434 | 92 (+35 %) |
-| adulte titanesque | ×3,20 | ×3,20 | 2 412 | 128 (+39 %) |
-| adulte démesuré | ×4,50 | ×4,50 | ~28 000 | 180 (+41 %) |
+| mûre | ×1,00 | ×1,00 | — | 40 |
+| grand | ×1,30 | ×1,30 | 33 | 52 (+30 %) |
+| énorme | ×1,70 | ×1,70 | 116 | 68 (+31 %) |
+| colossal | ×2,30 | ×2,30 | 434 | 92 (+35 %) |
+| titanesque | ×3,20 | ×3,20 | 2 412 | 128 (+39 %) |
+| démesuré | ×4,50 | ×4,50 | ~28 000 | 180 (+41 %) |
 
-La barre de progression vise le rang suivant une fois l'animal adulte, et l'animal grossit
-vraiment à l'écran — jusqu'à `SIZE_VIS` (×1,5) de grossissement visuel, cumulé avec l'échelle
-du palier, soit ×2,25 au maximum.
+La barre de progression vise le rang suivant une fois la bête mûre, et l'animal grossit
+vraiment à l'écran — de 0,55 nouveau-né à 2,19 titan mûr, et 2,34 titan bien gras.
 
 ### Engraissement
 
-Une bête ne se nourrit **jamais contre des pièces** : elle grandit au clic et au temps. Un
-adulte continue donc de grossir indéfiniment, gratuitement, et sa valeur monte de rang en
+Une bête ne se nourrit **jamais contre des pièces** : elle grandit au clic et au temps. Une
+bête mûre continue donc de grossir indéfiniment, gratuitement, et sa valeur monte de rang en
 rang (`OVER_GAIN`, rendement logarithmique).
 
 Ce que coûte un animal énorme n'est pas de l'argent mais **du temps et une place d'enclos** :
 une bête qu'on engraisse est une bête qu'on ne vend pas, et l'enclos qu'elle occupe ne
-produit rien pendant ce temps. Au palier 1, avec une mangeoire de niveau 1 :
+produit rien pendant ce temps. À l'âge enfant, avec une mangeoire de niveau 1 :
 
 | Rang atteint | Temps d'engraissement | Valeur | Rendement de l'enclos |
 |---|---|---|---|
@@ -626,23 +720,30 @@ produit rien pendant ce temps. Au palier 1, avec une mangeoire de niveau 1 :
 | colossal | 217 s | 68 → 92 | 0,24 pièce/s |
 | titanesque | 1 206 s | 92 → 128 | 0,07 pièce/s |
 
-À comparer aux 0,67 pièce/s d'un enclos qui enchaîne les bêtes jusqu'à l'âge adulte et les
-vend. Il existe donc une fenêtre étroite où engraisser jusqu'à *grand* bat le recyclage, et
-tout ce qui va au-delà est du plaisir payé en temps. C'est une vraie décision, et elle se
-règle par le marchand automatique : allumé il vend avant que la mangeoire ait le temps
-d'agir, éteint il laisse grossir.
+À comparer aux 0,67 pièce/s d'un enclos qui enchaîne les bêtes jusqu'à maturité et les vend. Il
+existe donc une fenêtre étroite où engraisser jusqu'à *grand* bat le recyclage, et tout ce qui
+va au-delà est du plaisir payé en temps. C'est une vraie décision, et elle se règle par le
+marchand automatique : allumé il vend avant que la mangeoire ait le temps d'agir, éteint il
+laisse grossir.
 
-Un garde-fou reste nécessaire : **l'évolution remet la taille à ×1.** Sans ça, engraisser au
-palier 1 puis évoluer rapporterait des dizaines de fois la mise, la valeur montant ×12 par
-palier quand la croissance ne monte que ×4. Le bouton *Évoluer* passe en rouge quand la
-créature a de la valeur à perdre.
+**Aucun garde-fou n'est nécessaire à l'évolution.** L'ancienne version confisquait la taille en
+évoluant, de peur qu'engraisser au premier âge — où la nourriture est dérisoire — puis évoluer
+ne rapporte des dizaines de fois la mise. La peur était infondée : `sizeFactor` divise les
+secondes de mangeoire par la durée de l'âge **courant**, quatre à six fois plus longue à chaque
+cran. Les mêmes secondes rendent donc exactement la même chose, qu'on les dépense tôt ou tard.
+La confiscation ne protégeait rien — elle punissait seulement le joueur qui avait engraissé
+avant de changer d'avis.
 
 ## À vérifier en jouant
 
 1. La première évolution tombe-t-elle avant la dixième minute ?
 2. Le clic est-il agréable, ou juste fonctionnel ?
-3. Le choix vendre / faire évoluer est-il une vraie hésitation, ou la réponse est-elle
+3. Le choix vendre / payer le péage est-il une vraie hésitation, ou la réponse est-elle
    toujours évidente ?
 4. À quel moment s'ennuie-t-on ?
+5. **Le pari du découpage** : 65 des 100 niveaux se traversent dans les quatre premières
+   minutes de la vie d'une bête, et les 15 derniers demandent six heures. Est-ce que le titan
+   paraît long ? Si oui, le levier n'est pas le découpage des niveaux mais la durée de la
+   dernière tranche — `AGES[4].grow`, six heures aujourd'hui.
 
-Les créatures sont des emoji : ce sont des placeholders assumés, en attendant les 25 dessins.
+Les créatures sont des emoji : ce sont des placeholders assumés, en attendant les 95 dessins.

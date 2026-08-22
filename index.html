@@ -63,7 +63,7 @@
           <div class="tri" id="tri" role="group" aria-label="Ordre de l’enclos">
             <button type="button" class="tri-opt" data-tri="arrivee">arrivée</button>
             <button type="button" class="tri-opt" data-tri="rarete">rareté</button>
-            <button type="button" class="tri-opt" data-tri="palier">palier</button>
+            <button type="button" class="tri-opt" data-tri="age">âge</button>
           </div>
         </div>
       </div>
@@ -113,22 +113,17 @@
 
     <div class="config" id="cfg-evolution" hidden>
       <p class="config-step"><span class="step-n">2</span> L'évolution fait monter</p>
-      <p class="config-what">Jusqu'où pousser une bête adulte avant de la laisser tranquille.</p>
-      <select id="sel-evolution">
-        <option value="0">Ne rien faire évoluer</option>
-        <option value="2">Monter jusqu'au palier 2</option>
-        <option value="3">Monter jusqu'au palier 3</option>
-        <option value="4">Monter jusqu'au palier 4</option>
-        <option value="5">Monter jusqu'au palier 5, la forme finale</option>
-      </select>
+      <p class="config-what">Jusqu'à quel âge pousser une bête mûre avant de la laisser
+        tranquille. Elle garde tout ce qu'elle a acquis à chaque passage.</p>
+      <select id="sel-evolution"></select>
       <p class="config-note" id="note-evolution"></p>
     </div>
 
     <div class="config" id="cfg-marchand" hidden>
       <p class="config-step"><span class="step-n">3</span> Le marchand vend</p>
-      <p class="config-what">Chaque rareté a <b>son propre palier de vente</b> : on écoule les
+      <p class="config-what">Chaque rareté a <b>son propre âge de vente</b> : on écoule les
         communes tôt pendant qu'on garde les mythiques pour la fin. L'évolution automatique
-        s'arrête d'elle-même au palier où le vendeur doit prendre le relais.</p>
+        s'arrête d'elle-même à l'âge où le vendeur doit prendre le relais.</p>
 
       <div class="cond">
         <label for="vente-commune">Il vend les communes</label>
@@ -143,7 +138,7 @@
         <label for="vente-mythique">les mythiques</label>
         <select id="vente-mythique" class="sel-vente"></select>
 
-        <label for="sel-rank">et dans tous les cas, seulement si la taille est</label>
+        <label for="sel-rank" id="lbl-rank">et dans tous les cas, seulement si la taille est</label>
         <select id="sel-rank"></select>
       </div>
 

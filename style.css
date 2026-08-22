@@ -177,8 +177,8 @@ body {
   opacity: 0.5;
   transition: opacity 0.4s ease;
 }
-/* Le palier 5 ne prend pas une couleur à lui : il fait briller PLUS FORT la teinte de sa
-   propre rareté. La teinte dit la rareté, l'intensité dit le palier. */
+/* L'âge titan ne prend pas une couleur à lui : il fait briller PLUS FORT la teinte de sa
+   propre rareté. La teinte dit la rareté, l'intensité dit l'âge. */
 .stage.apex .subject-glow { opacity: 0.45; }
 .stage.ready .subject-glow { opacity: 0.95; }
 /* l'œuf s'échauffe dans le dernier tiers de la couvaison */
@@ -277,8 +277,6 @@ button.act.sell.bon:not(:disabled) { color: var(--good); border-color: var(--goo
 button.act.sell:hover:not(:disabled) { color: var(--good); border-color: var(--good); }
 button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--jade); }
 /* évoluer une créature engraissée lui fait perdre sa taille : on prévient */
-button.act.warn-evo:not(:disabled),
-button.act.warn-evo:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
 
 .stage-hint {
   font-size: 0.82rem; color: var(--faint); margin: 0.3rem 0 0;
@@ -588,7 +586,7 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 
 /* ── illustrations ───────────────────────────────────────────────────────
    Une image fait exactement 1em : tout ce qui pilotait la taille de l'emoji —
-   font-size, échelle du palier, grossissement — pilote la sienne à l'identique.
+   font-size, niveau, âge, engraissement — pilote la sienne à l'identique.
    Un dessin remplace donc un emoji sans qu'aucun autre calcul ne bouge. */
 .subject-glyph img, .thumb-glyph img, .cell img {
   width: 1em; height: 1em;

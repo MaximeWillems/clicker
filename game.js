@@ -8,22 +8,52 @@
    Données — tout ce qui s'équilibre est ici.
    ───────────────────────────────────────────── */
 
-const GROW       = [45, 180, 900, 3600, 21600];               // croissance par palier
-const VALUE      = [40, 500, 6000, 80000, 1500000];           // valeur à la vente
-const EVOLVE     = [200, 3000, 40000, 600000, null];          // coût pour passer au palier suivant
+/* ── Les cinq âges ────────────────────────────────────────────────────────────
+   Une bête a UNE vie et un seul compteur : le niveau, de 1 à 100, qui ne redescend
+   jamais. Les âges sont des tranches sur cette échelle et l'évolution est le péage
+   entre deux tranches : arrivée au dernier niveau de son âge, la bête est MÛRE, son
+   niveau se bloque là, et seul le paiement le débloque.
+
+   Rien ne repart donc jamais de zéro — ni le niveau, ni le nom, ni la taille à l'écran.
+   Avant, une bête adulte redevenait un enfant au palier suivant et rétrécissait de moitié
+   à l'écran, alors que les cinq formes d'une lignée racontaient déjà une seule croissance
+   continue : le juvénile d'une forme était le dessin de la précédente. C'était le
+   vocabulaire qui bouclait, pas les images.
+
+   Le temps par niveau triple à peu près à chaque âge — 3 s, 9 s, 30 s, 3 min, 24 min.
+   C'est ce qui fait que l'enfance défile pendant que le titan se mérite. */
+const AGES = [
+  { nom: 'enfant',     niv: 15,  grow: 45,    value: 40 },
+  { nom: 'adolescent', niv: 35,  grow: 180,   value: 500 },
+  { nom: 'adulte',     niv: 65,  grow: 900,   value: 6000 },
+  { nom: 'géant',      niv: 85,  grow: 3600,  value: 80000 },
+  { nom: 'titan',      niv: 100, grow: 21600, value: 1500000 },
+];
+const NIV_MAX = AGES[AGES.length - 1].niv;
+
+const GROW       = AGES.map(a => a.grow);                     // croissance d'une tranche entière
+const VALUE      = AGES.map(a => a.value);                    // ce que vaut une bête mûre de cet âge
+const EVOLVE     = [200, 3000, 40000, 600000, null];          // le péage vers l'âge suivant
 const EVO_RABAIS = 0.10;                                      // remise d'évolution par niveau d'intendant
-const TIER_SCALE = [1, 1.1, 1.22, 1.35, 1.5];                 // grossissement visuel par palier
+
+// Croissance cumulée au bout de chaque âge : c'est la borne où le niveau se bloque.
+const CUM = GROW.reduce((a, g) => a.concat([(a[a.length - 1] || 0) + g]), []);
+
+/* Le premier niveau d'un âge vaut 15 % d'une bête mûre, et la valeur monte géométriquement
+   d'un niveau au suivant — entre +7 % et +14 % selon la longueur de la tranche. Aucun
+   niveau n'est mort : la barre qui se remplit rapporte toujours quelque chose. */
+const NIV_MIN_MULT = 0.15;
 
 const INCUB_BASE = 150;
 const PEN_BASE   = 400;
 const SLOT_MULT  = 1.6;
 
 /* Deux axes indépendants, à ne pas confondre :
-   le PALIER est la progression d'une bête au fil de sa vie (têtard → crapaud → …),
+   l'ÂGE est la progression d'une bête au fil de sa vie (têtard → crapaud → …),
    la RARETÉ est la lignée dont elle est issue et ne change jamais.
 
    Les deux axes sont calés pour s'ENCHAÎNER plutôt que se concurrencer : le multiplicateur
-   d'une rareté fait sauter à peu près deux paliers, et le coût d'évolution suit le même
+   d'une rareté fait sauter à peu près deux âges, et le coût d'évolution suit le même
    multiplicateur. Monter une rare coûte donc vingt-cinq fois ce que coûte une commune —
    on ne s'y met qu'une fois la ferme commune arrivée à maturité. Chaque rareté est une ère,
    pas un bonus. */
@@ -65,43 +95,63 @@ const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
 
    Mais la couvaison ne pèse jamais lourd dans la vie d'une bête : 30 s de coquille contre
-   sept heures de croissance jusqu'au palier 5, soit un millième du cycle. Un incubateur au
+   sept heures de croissance jusqu'à l'âge titan, soit un millième du cycle. Un incubateur au
    niveau 1 nourrit vingt enclos, et les niveaux de couveuse au-delà s'achetaient pour ne
    jamais servir. La couveuse est donc plafonnée à 5 : passé ce point, c'est en incubateurs
-   qu'on élargit la couvaison — ils montent en 1,6 par palier au lieu de 1,9, et seuls les
+   qu'on élargit la couvaison — ils montent en 1,6 par cran au lieu de 1,9, et seuls les
    œufs mythiques en réclament vraiment. */
 const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
 
 /* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
-   L'éleveur pousse les jeunes jusqu'à l'âge adulte, la mangeoire prend le relais ensuite
-   et engraisse les adultes sans fin. Le prix d'un animal énorme n'est donc pas en pièces
-   mais en temps et en place d'enclos — une bête qu'on engraisse est une bête qu'on ne
-   vend pas, et l'enclos qu'elle occupe ne produit rien pendant ce temps.
+   L'éleveur la pousse jusqu'à sa maturité, la mangeoire prend le relais ensuite et
+   l'engraisse sans fin. Le prix d'un animal énorme n'est donc pas en pièces mais en temps
+   et en place d'enclos — une bête qu'on engraisse est une bête qu'on ne vend pas.
 
-   Encore faut-il que le compte y soit. À 3 s par niveau, mener une bête de « adulte » à
-   « énorme » demandait 55 000 s d'enclos pour +70 % de valeur, quand élever une bête neuve
-   de zéro au palier 5 en demande 26 000 pour +100 % : engraisser était toujours perdant, et
-   la mangeoire coûtait cinq fois l'éleveur pour un effet négatif. À 6 s par niveau et à la
-   moitié du prix, engraisser jusqu'à énorme rapporte enfin — de l'ordre de +20 % par enclos —
-   pendant que « colossal » et au-dessus restent le luxe qu'ils doivent être. */
+   L'EMBONPOINT EST LE SEUL AXE FACULTATIF DU JEU. Il ne débloque plus rien : la rente
+   s'ouvre à l'âge adulte, et le marchand ne réclame une taille minimale que si on possède
+   une mangeoire. Ce que fait vraiment la mangeoire, c'est remplir l'attente au péage — la
+   bête est mûre, les pièces de l'évolution ne sont pas encore là, elle grossit en attendant.
+
+   Et ce temps-là n'est jamais perdu : l'évolution ne remet plus l'embonpoint à zéro. Elle
+   n'en a pas besoin, car sizeFactor divise les secondes de mangeoire par la durée de l'âge
+   COURANT, quatre à six fois plus longue à chaque cran. Engraisser tôt puis évoluer rend
+   donc exactement ce que les mêmes secondes auraient rendu plus tard : l'épithète se
+   dégonfle d'elle-même — un adulte démesuré fait un géant colossal — sans qu'on ait à
+   confisquer quoi que ce soit. */
 const FATTEN_X  = 6;        // secondes d'engraissement par seconde et par niveau de mangeoire
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
-const SIZE_VIS  = 1.5;      // grossissement visuel maximal, pour ne pas crever la scène
+
+/* La taille à l'écran ne redescend JAMAIS. Elle ne se lit donc pas sur l'âge et l'embonpoint
+   séparément — l'un monte au moment où l'autre se dégonfle — mais sur le total de croissance
+   avalé, qui ne fait que monter. Chaque évolution ajoute par-dessus un petit bond fixe, pour
+   qu'on VOIE ce qu'on vient de payer. */
+const SCALE_MIN  = 0.55;    // taille d'un nouveau-né
+const SCALE_MAX  = 1.75;    // taille d'un titan mûr, avant le bonus d'âge
+const SCALE_GRAS = 1.10;    // ce que l'engraissement peut ajouter au-delà du titan mûr
+const AGE_SCALE  = [1, 1.06, 1.12, 1.18, 1.25];   // le bond visible à chaque évolution
 
 /* ── La rente ─────────────────────────────────────────────────────────────────
    Tout le reste du jeu pousse à vendre : l'enclos est la ressource rare, et une bête qu'on
    garde est un enclos qui ne tourne pas. La rente est la seule règle qui paie pour NE PAS
    vendre — sans elle, garder une mythique chromatique était un pur sacrifice sentimental.
 
-   Elle ne s'ouvre qu'à « énorme », là où l'engraissement a déjà coûté très cher, et elle
-   vaut la valeur de la bête étalée sur une heure. C'est peu : un enclos qui enchaîne les
-   cycles rapporte bien davantage. Elle ne remplace donc jamais l'élevage, elle récompense
-   la poignée de bêtes qu'on avait de toute façon décidé de ne pas vendre.
+   Elle s'ouvre à L'ÂGE ADULTE — niveau 36 — et vaut la valeur de la bête étalée sur une
+   heure. Elle était auparavant branchée sur l'embonpoint (« énorme »), c'est-à-dire sur la
+   mauvaise échelle : un seuil que personne ne devine, et qui obligeait à comprendre la
+   mangeoire avant de toucher le premier revenu passif. L'âge ouvre la rente, la taille
+   l'augmente — l'embonpoint est déjà dans la valeur de vente, donc il la pousse tout seul.
 
-   Ses quatre facteurs sont déjà ceux du prix de vente — palier, rareté, teinte et taille —
+   C'est peu : un enclos qui enchaîne les cycles rapporte deux à trois fois plus. Au moment
+   où elle s'ouvre, elle pèse environ 2 % du revenu du joueur, qui vient justement de payer
+   3 200 pièces d'évolutions pour ce premier adulte — elle arrive comme une confirmation,
+   pas comme un raccourci. Elle ne remplace jamais l'élevage : elle récompense la poignée de
+   bêtes qu'on avait de toute façon décidé de ne pas vendre.
+
+   Ses facteurs sont déjà ceux du prix de vente — niveau, âge, rareté, teinte et taille —
    si bien qu'une bête rapporte à proportion exacte de ce qu'elle vaut. Le chromatique est
    le seul à recevoir un bonus par-dessus : c'est LA bête qu'un joueur garde. */
-const RENTE_RANG    = 2;      // rang minimal : « énorme ». En deçà, rien du tout.
+const AGE_RENTE     = 3;      // âge minimal : adulte. En deçà, rien du tout.
+const NIV_RENTE     = AGES[AGE_RENTE - 2].niv + 1;   // le niveau 36, qu'on annonce d'avance
 const RENTE_H       = 3600;   // une bête rapporte sa propre valeur en une heure
 const RENTE_PRODIGE = 2;      // un chromatique double la sienne
 
@@ -129,7 +179,7 @@ const TINTS = [
    raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
 
    Il vaut exactement DEUX CRANS DE RARETÉ — 25², puisque chaque rareté vaut vingt-cinq fois
-   la précédente. À palier et taille égaux, une commune chromatique passe donc devant une
+   la précédente. À âge et taille égaux, une commune chromatique passe donc devant une
    rare ordinaire (×125 contre ×25) et reste derrière une épique ordinaire (×600). La règle
    se propage d'elle-même : une rare chromatique se glisse entre l'épique et la mythique,
    une épique chromatique dépasse la mythique.
@@ -154,13 +204,15 @@ const TEMPERS = [
 // Purement descriptif : aucun effet, juste de quoi reconnaître une bête entre mille.
 const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé'];
 
-/* Les rangs de taille qualifient l'adulte : « adulte », puis « adulte grand », « adulte
-   énorme »… Le seuil d'un rang est aussi son multiplicateur de valeur : franchir un rang
-   fait donc bondir le prix de vente, exactement comme passer d'enfant à adolescent.
-   Ces seuils valent ce que valait l'ancienne courbe continue au même point — l'engraissement
-   coûte toujours plus qu'il ne rapporte, il paie juste par à-coups au lieu de goutte à goutte. */
+/* Les rangs de taille qualifient une bête MÛRE qu'on n'a pas fait évoluer : « adulte »,
+   puis « adulte grand », « adulte énorme »… Le seuil d'un rang est aussi son multiplicateur
+   de valeur : franchir un rang fait donc bondir le prix de vente, comme un niveau.
+
+   Ils ne disent pas une taille absolue mais À QUEL POINT LA BÊTE EST GROSSE POUR SON ÂGE.
+   C'est ce qui leur permet de survivre à l'évolution sans se contredire, et ce qui donne un
+   sens à « titan titanesque » : un titan hors-norme parmi les titans. */
 const RANKS = [
-  // name sert à qualifier un adulte (masculin), fem à qualifier une taille (féminin)
+  // name sert à qualifier une bête mûre (masculin), fem à qualifier une taille (féminin)
   { at: 1.00, name: '',           fem: '' },
   { at: 1.30, name: 'grand',      fem: 'grande' },
   { at: 1.70, name: 'énorme',     fem: 'énorme' },
@@ -169,21 +221,8 @@ const RANKS = [
   { at: 4.50, name: 'démesuré',   fem: 'démesurée' },
 ];
 
-/* Étapes de vie, traversées à l'intérieur de chaque palier.
-   ENFANT_JUSQU / ADO_JUSQU découpent la barre de croissance ; l'échelle visuelle, elle,
-   est continue — l'animal grossit à chaque clic plutôt que de sauter d'un cran à l'autre. */
-const ENFANT_JUSQU = 0.40;
-const LIFE_MIN     = 0.5;   // taille d'un nouveau-né, en fraction de sa taille adulte
-
-/* Ce que vaut une bête selon son étape, en fraction de la valeur adulte. La valeur est
-   PLATE à l'intérieur d'une étape et saute d'un coup au passage : c'est le clic qui fait
-   basculer d'enfant à adolescent qui paie, pas les quarante d'avant. Vendre tôt reste
-   toujours moins rentable au clic que mener la bête à terme — c'est une porte de sortie
-   quand un enclos bloque, jamais une stratégie. */
-const STAGE_MULT = { enfant: 0.15, ado: 0.40 };   // 1 par défaut pour tout adulte
-
 /* Améliorations à niveaux. Le coût du prochain niveau est base × mult^niveau : l'effet
-   monte linéairement pendant que le prix double presque, donc chaque palier se mérite.
+   monte linéairement pendant que le prix double presque, donc chaque niveau se mérite.
    `max` borne celles qui ne doivent pas monter indéfiniment — à 1 pour les trois achats qui
    débloquent une capacité sans avoir de puissance, à 5 pour la couveuse.
 
@@ -201,108 +240,118 @@ const UPGRADES = [
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Au-delà du niveau 5, c’est en incubateurs qu’on couve plus vite.',
     value: n => n, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.65,
-    desc: 'Les jeunes grandissent tout seuls jusqu’à l’âge adulte.',
+    desc: 'Les bêtes grandissent toutes seules jusqu’à leur maturité, âge après âge.',
     value: n => n, unit: '× la vitesse de croissance' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
-    desc: 'Prend le relais de l’éleveur : engraisse les adultes sans fin, sans rien coûter.',
+    desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
     value: n => n * FATTEN_X, unit: ' s d’engraissement par seconde' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
     desc: 'Rachète un œuf et le met à couver dès qu’un incubateur se libère.' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
-    desc: 'Vend les adultes tout seul, selon trois conditions que tu règles : palier, taille et rareté.' },
+    desc: 'Vend les bêtes mûres tout seul, à l’âge que tu règles pour chaque rareté.' },
   { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
-    desc: 'Fait monter les adultes de palier en palier, jusqu’où tu décides. Elle agit avant le marchand.' },
+    desc: 'Fait passer les bêtes mûres d’un âge au suivant, jusqu’où tu décides. Elle agit avant le marchand.' },
   /* Passé l'ère commune, ce n'est plus la vitesse qui freine mais la mise de fonds : un cycle
      épique immobilise 401 M et un cycle mythique 10 Md, quand la boutique entière n'en coûte
      que 50. Rien n'agissait sur ce mur-là — l'intendant est la seule amélioration qui attaque
      le coût au lieu du temps, et la seule qui ait de quoi grandir avec l'économie. */
   { key: 'intendant', name: 'Intendant', base: 250000, mult: 1.65,
-    desc: 'Négocie chaque montée de palier : toutes les évolutions coûtent moins cher, à toutes les raretés.',
+    desc: 'Négocie chaque passage d’âge : toutes les évolutions coûtent moins cher, à toutes les raretés.',
     value: n => Math.round(100 - 100 / (1 + EVO_RABAIS * n)), unit: ' % de moins sur chaque évolution' },
 ];
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
 
-/* Chaque forme : [nom, glyphe adulte, glyphe juvénile, genre].
-   Le juvénile sert pendant l'enfance et l'adolescence — c'est ce qui fait qu'une wyverne
-   commence sa vie en lézard et qu'un léviathan commence en serpent de mer. Là où les emoji
-   n'offrent aucune variante (toute la lignée du crapaud), les deux sont identiques et seule
-   l'échelle raconte la croissance : ce sont ces cases-là qui réclament de vrais dessins.
+/* Chaque forme : [nom, glyphe, genre]. Une forme par âge, dans l'ordre : enfant,
+   adolescent, adulte, géant, titan. La silhouette change au moment où l'on paie
+   l'évolution — c'est le seul instant où elle change.
+
+   Chaque forme portait auparavant un SECOND glyphe, dit juvénile, qui était presque
+   toujours le glyphe de la forme précédente : le pansement sur une bête qui redevenait
+   enfant à chaque palier. Les images racontaient donc déjà une croissance continue que le
+   vocabulaire contredisait. Quatre-vingt-quinze glyphes sont partis avec le problème.
+
    Le genre n'est noté que pour les formes féminines ('f') : l'épithète du nom doit
    s'accorder, et « Carpe gloutonne » ne s'écrit pas comme « Varan glouton ». */
 const LINES = [
   // ── communes ────────────────────────────────────────────────────────────
   { key: 'crapaud', name: 'Crapaud', rarity: 'commune', forms: [
-    ['Têtard', '🐸', '🐸'], ['Crapaud', '🐸', '🐸'], ['Crapaud-buffle', '🐸', '🐸'],
-    ['Colosse fangeux', '🐸', '🐸'], ['Gama, crapaud-montagne', '🐸', '🐸'] ] },
+    ['Têtard', '🐸'], ['Crapaud', '🐸'], ['Crapaud-buffle', '🐸'],
+    ['Colosse fangeux', '🐸'], ['Gama, crapaud-montagne', '🐸'] ] },
   { key: 'poisson', name: 'Poisson', rarity: 'commune', forms: [
-    ['Alevin', '🐟', '🐟'], ['Carpe', '🐟', '🐟', 'f'], ['Carpe centenaire', '🐠', '🐟', 'f'],
-    ['Serpent de mer', '🐍', '🐠'], ['Léviathan', '🐉', '🐍'] ] },
+    ['Alevin', '🐟'], ['Carpe', '🐟', 'f'], ['Carpe centenaire', '🐠', 'f'],
+    ['Serpent de mer', '🐍'], ['Léviathan', '🐉'] ] },
   { key: 'lezard', name: 'Lézard', rarity: 'commune', forms: [
-    ['Lézardeau', '🦎', '🦎'], ['Lézard', '🦎', '🦎'], ['Varan', '🦎', '🦎'],
-    ['Wyverne', '🐲', '🦎', 'f'], ['Dragon de terre', '🐉', '🐲'] ] },
+    ['Lézardeau', '🦎'], ['Lézard', '🦎'], ['Varan', '🦎'],
+    ['Wyverne', '🐲', 'f'], ['Dragon de terre', '🐉'] ] },
   { key: 'oiseau', name: 'Oiseau', rarity: 'commune', forms: [
-    ['Oisillon', '🐤', '🐣'], ['Passereau', '🐦', '🐤'], ['Rapace', '🦅', '🐦'],
-    ['Roc', '🦅', '🦅'], ['Phénix', '🔥', '🦅'] ] },
+    ['Oisillon', '🐤'], ['Passereau', '🐦'], ['Rapace', '🦅'],
+    ['Roc', '🦅'], ['Phénix', '🔥'] ] },
   { key: 'crocodile', name: 'Crocodile', rarity: 'commune', forms: [
-    ['Crocodillon', '🐊', '🐊'], ['Crocodile', '🐊', '🐊'], ['Crocodile ancien', '🐊', '🐊'],
-    ['Draco-saurien', '🐲', '🐊'], ['Dragon-tonnerre', '🐉', '🐲'] ] },
+    ['Crocodillon', '🐊'], ['Crocodile', '🐊'], ['Crocodile ancien', '🐊'],
+    ['Draco-saurien', '🐲'], ['Dragon-tonnerre', '🐉'] ] },
 
   { key: 'insecte', name: 'Insecte', rarity: 'commune', forms: [
-    ['Larve', '🐛', '🐛', 'f'], ['Scarabée', '🪲', '🐛'], ['Lucane', '🪲', '🪲'],
-    ['Scarabée-titan', '🪲', '🪲'], ['Khépri, porteur du soleil', '🌞', '🪲'] ] },
+    ['Larve', '🐛', 'f'], ['Scarabée', '🪲'], ['Lucane', '🪲'],
+    ['Scarabée-titan', '🪲'], ['Khépri, porteur du soleil', '🌞'] ] },
   { key: 'rongeur', name: 'Rongeur', rarity: 'commune', forms: [
-    ['Souriceau', '🐁', '🐁'], ['Rat', '🐀', '🐁'], ['Ragondin', '🦫', '🐀'],
-    ['Rongeur colossal', '🦫', '🦫'], ['Ratatosk, messager des cimes', '🐿️', '🦫'] ] },
+    ['Souriceau', '🐁'], ['Rat', '🐀'], ['Ragondin', '🦫'],
+    ['Rongeur colossal', '🦫'], ['Ratatosk, messager des cimes', '🐿️'] ] },
   { key: 'chiroptere', name: 'Chauve-souris', rarity: 'commune', forms: [
-    ['Chiroptère', '🦇', '🦇'], ['Chauve-souris', '🦇', '🦇', 'f'], ['Roussette', '🦇', '🦇', 'f'],
-    ['Buveur de nuit', '🧛', '🦇'], ['Camazotz, l’éclipse', '🌑', '🧛'] ] },
+    ['Chiroptère', '🦇'], ['Chauve-souris', '🦇', 'f'], ['Roussette', '🦇', 'f'],
+    ['Buveur de nuit', '🧛'], ['Camazotz, l’éclipse', '🌑'] ] },
+  { key: 'escargot', name: 'Escargot', rarity: 'commune', forms: [
+    ['Naissain', '🐌'], ['Escargot', '🐌'], ['Achatine', '🐌', 'f'],
+    ['Porte-tour', '🐌'], ['Ammon, la spirale sans fin', '🌀'] ] },
+  { key: 'crabe', name: 'Crabe', rarity: 'commune', forms: [
+    ['Zoé', '🦐', 'f'], ['Crabe', '🦀'], ['Tourteau', '🦀'],
+    ['Crabe-récif', '🦀'], ['Karkinos, l’étoile des fonds', '⭐'] ] },
 
   // ── rares ───────────────────────────────────────────────────────────────
   { key: 'loup', name: 'Loup', rarity: 'rare', forms: [
-    ['Louveteau', '🐕', '🐕'], ['Loup', '🐺', '🐕'], ['Loup des steppes', '🐺', '🐺'],
-    ['Garou', '🧌', '🐺'], ['Fenrir, dévoreur', '🌘', '🧌'] ] },
+    ['Louveteau', '🐕'], ['Loup', '🐺'], ['Loup des steppes', '🐺'],
+    ['Garou', '🧌'], ['Fenrir, dévoreur', '🌘'] ] },
   { key: 'meduse', name: 'Méduse', rarity: 'rare', forms: [
-    ['Éphyrule', '🫧', '🫧', 'f'], ['Méduse', '🪼', '🫧', 'f'], ['Méduse abyssale', '🪼', '🪼', 'f'],
-    ['Cnidaire colossal', '🪼', '🪼'], ['Physalie-monde', '🌊', '🪼', 'f'] ] },
+    ['Éphyrule', '🫧', 'f'], ['Méduse', '🪼', 'f'], ['Méduse abyssale', '🪼', 'f'],
+    ['Cnidaire colossal', '🪼'], ['Physalie-monde', '🌊', 'f'] ] },
   { key: 'salamandre', name: 'Salamandre', rarity: 'rare', forms: [
-    ['Larve ardente', '🐛', '🐛', 'f'], ['Salamandre', '🦎', '🐛', 'f'], ['Salamandre de braise', '🦎', '🦎', 'f'],
-    ['Salamandre de cendre', '🔥', '🦎', 'f'], ['Ifrit', '👹', '🔥'] ] },
+    ['Larve ardente', '🐛', 'f'], ['Salamandre', '🦎', 'f'], ['Salamandre de braise', '🦎', 'f'],
+    ['Salamandre de cendre', '🔥', 'f'], ['Ifrit', '👹'] ] },
   { key: 'serpent', name: 'Serpent-plume', rarity: 'rare', forms: [
-    ['Vermisseau', '🐛', '🐛'], ['Couleuvre', '🐍', '🐛', 'f'], ['Serpent-plume', '🐍', '🐍'],
-    ['Amphithère', '🐲', '🐍'], ['Quetzalcóatl', '🐉', '🐲'] ] },
+    ['Vermisseau', '🐛'], ['Couleuvre', '🐍', 'f'], ['Serpent-plume', '🐍'],
+    ['Amphithère', '🐲'], ['Quetzalcóatl', '🐉'] ] },
 
   // ── épiques ─────────────────────────────────────────────────────────────
   { key: 'kraken', name: 'Kraken', rarity: 'epique', forms: [
-    ['Nauplius', '🦐', '🦐'], ['Poulpe', '🐙', '🦐'], ['Poulpe abyssal', '🐙', '🐙'],
-    ['Poulpe des fosses', '🦑', '🐙'], ['Kraken', '🦑', '🦑'] ] },
+    ['Nauplius', '🦐'], ['Poulpe', '🐙'], ['Poulpe abyssal', '🐙'],
+    ['Poulpe des fosses', '🦑'], ['Kraken', '🦑'] ] },
   { key: 'golem', name: 'Golem', rarity: 'epique', forms: [
-    ['Éclat', '🪨', '🪨'], ['Gravier animé', '🪨', '🪨'], ['Golem', '🗿', '🪨'],
-    ['Colosse de pierre', '🗿', '🗿'], ['Titan de granit', '🏔️', '🗿'] ] },
+    ['Éclat', '🪨'], ['Gravier animé', '🪨'], ['Golem', '🗿'],
+    ['Colosse de pierre', '🗿'], ['Titan de granit', '🏔️'] ] },
   { key: 'sphinx', name: 'Sphinx', rarity: 'epique', forms: [
-    ['Chaton sans poil', '🐈', '🐈'], ['Sphinx', '🐈‍⬛', '🐈'], ['Sphinx royal', '🦁', '🐈‍⬛'],
-    ['Gardien de tombeau', '🗿', '🦁'], ['Grand Sphinx', '🏜️', '🗿'] ] },
+    ['Chaton sans poil', '🐈'], ['Sphinx', '🐈‍⬛'], ['Sphinx royal', '🦁'],
+    ['Gardien de tombeau', '🗿'], ['Grand Sphinx', '🏜️'] ] },
   { key: 'cheval', name: 'Cheval', rarity: 'epique', forms: [
-    ['Poulain', '🐴', '🐴'], ['Cheval', '🐎', '🐴'], ['Destrier', '🐎', '🐎'],
-    ['Licorne', '🦄', '🐎', 'f'], ['Pégase', '🌠', '🦄'] ] },
+    ['Poulain', '🐴'], ['Cheval', '🐎'], ['Destrier', '🐎'],
+    ['Licorne', '🦄', 'f'], ['Pégase', '🌠'] ] },
 
   // ── mythiques ───────────────────────────────────────────────────────────
   { key: 'chimere', name: 'Chimère', rarity: 'mythique', forms: [
-    ['Avorton', '🐁', '🐁'], ['Chimèreau', '🐐', '🐁'], ['Chimère', '🦁', '🐐', 'f'],
-    ['Chimère royale', '🦁', '🦁', 'f'], ['Chimère primordiale', '👹', '🦁', 'f'] ] },
+    ['Avorton', '🐁'], ['Chimèreau', '🐐'], ['Chimère', '🦁', 'f'],
+    ['Chimère royale', '🦁', 'f'], ['Chimère primordiale', '👹', 'f'] ] },
   { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
-    ['Ossement', '🦴', '🦴'], ['Saurien', '🦕', '🦴'], ['Béhémoth', '🦖', '🦕'],
-    ['Béhémoth ancien', '🦖', '🦖'], ['Béhémoth primordial', '☄️', '🦖'] ] },
+    ['Ossement', '🦴'], ['Saurien', '🦕'], ['Béhémoth', '🦖'],
+    ['Béhémoth ancien', '🦖'], ['Béhémoth primordial', '☄️'] ] },
   { key: 'ouroboros', name: 'Ouroboros', rarity: 'mythique', forms: [
-    ['Anneau de mue', '🐛', '🐛'], ['Serpent gris', '🐍', '🐛'], ['Serpent-monde', '🐍', '🐍'],
-    ['Ouroboros', '🐉', '🐍'], ['Ouroboros éternel', '♾️', '🐉'] ] },
+    ['Anneau de mue', '🐛'], ['Serpent gris', '🐍'], ['Serpent-monde', '🐍'],
+    ['Ouroboros', '🐉'], ['Ouroboros éternel', '♾️'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
 
 /* ── Illustrations ────────────────────────────────────────────────────────────
-   Une lignée n'a PAS besoin de ses cinq dessins. On déclare les paliers dessinés,
-   et un palier sans dessin prend celui du palier le plus proche en dessous ; s'il n'y
+   Une lignée n'a PAS besoin de ses cinq dessins.    On déclare les âges dessinés,
+   et un âge sans dessin prend celui de l'âge le plus proche en dessous ; s'il n'y
    en a aucun, on retombe sur l'emoji. Trois dessins couvrent donc une lignée entière,
    et on peut n'en avoir qu'un pour commencer.
 
@@ -369,21 +418,28 @@ const ART = {
     4: 'chiroptere-4-buveur-de-nuit.png',
     5: 'chiroptere-5-camazotz.png',
   },
+  escargot: {
+    1: 'escargot-1-naissain.png',
+    2: 'escargot-2-escargot.png',
+    3: 'escargot-3-achatine.png',
+    4: 'escargot-4-porte-tour.png',
+    5: 'escargot-5-ammon.png',
+  },
 };
 
-/* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
-   le plus proche en dessous. La scène, les vignettes et la collection s'en servent toutes,
+/* La règle de repli, écrite une seule fois : un âge sans dessin prend celui de l'âge le
+   plus proche en dessous. La scène, les vignettes et la collection s'en servent toutes,
    sinon la collection montrerait autre chose que le jeu. */
-function artAt(lineKey, tier) {
+function artAt(lineKey, age) {
   const table = ART[lineKey];
   if (!table) return null;
-  for (let t = tier; t >= 1; t--) if (table[t]) return 'art/' + table[t];
+  for (let a = age; a >= 1; a--) if (table[a]) return 'art/' + table[a];
   return null;
 }
 
-// Un juvénile porte le dessin du palier précédent — c'est ce qui fait qu'une wyverne
-// grandit en lézard avant de devenir wyverne.
-const artFor = c => artAt(c.line, isAdult(c) ? c.tier : Math.max(1, c.tier - 1));
+// Un âge, une forme, un dessin. Le détour par « le dessin du palier précédent » n'existe
+// plus : c'était le pansement sur une bête qui redevenait enfant à chaque évolution.
+const artFor = c => artAt(c.line, c.age);
 
 /* Pose un dessin ou un emoji dans le même élément, et par le même chemin de taille :
    l'image fait 1em, donc tout ce qui pilotait la taille de l'emoji pilote la sienne. */
@@ -419,7 +475,7 @@ const bilanAuto = { vendus: 0, gagne: 0, evolues: 0, depense: 0 };
 
 function freshState() {
   return {
-    v: 2,
+    v: 3,
     coins: 0,
     eggs: { commun: 0, rare: 0, epique: 0, mythique: 0 },
     buyKind: 'commun',      // ce que rachète l'acheteur automatique
@@ -430,11 +486,11 @@ function freshState() {
     sel: 'i:0',
     up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0,
           intendant: 0 },
-    /* Un palier de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
-       d'écouler les communes au palier 3 pendant qu'on mène les mythiques jusqu'au 5 :
-       une consigne unique forçait à choisir entre les deux. */
+    /* Un âge de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
+       d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
+       titan : une consigne unique forçait à choisir entre les deux. */
     sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
-    sellRank: 0,        // taille minimale exigée avant la vente (0 = dès l'âge adulte)
+    sellRank: 0,        // taille minimale exigée avant la vente (0 = dès la maturité)
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
     evolveUpTo: 0,
     seen: {},
@@ -520,6 +576,21 @@ function load() {
     merged.incub = (merged.incub || []).slice(0, merged.incubators);
     while (merged.incub.length < merged.incubators) merged.incub.push(null);
     merged.pen = merged.pen || [];
+    /* v2 → v3 : le palier devient l'âge, et la croissance devient un total qui ne repart
+       jamais de zéro. L'avancement dans l'ancien palier devient l'avancement dans la
+       tranche correspondante — une bête à mi-croissance reste à mi-croissance, et une
+       adulte engraissée garde ses secondes de mangeoire. */
+    for (const c of merged.pen) {
+      if (c.age !== undefined) continue;
+      c.age = Math.min(AGES.length, Math.max(1, c.tier || 1));
+      const avant = GROW[c.age - 1] / (TEMPERS[c.temper] || TEMPERS[0]).grow;
+      const ratio = Math.min(1, (c.p || 0) / avant);
+      c.p = (c.age > 1 ? CUM[c.age - 2] : 0) + ratio * GROW[c.age - 1];
+      delete c.tier;
+    }
+    if (merged.tri === 'palier') merged.tri = 'age';
+    // la sauvegarde porte désormais le numéro de ce qu'elle contient, pas celui d'où elle vient
+    merged.v = base.v;
     nextId = merged.pen.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
     return merged;
   } catch (e) {
@@ -546,13 +617,34 @@ const tintOf    = c => TINTS[c.tint] || TINTS[0];
 const temperOf  = c => TEMPERS[c.temper] || TEMPERS[0];
 const motifOf   = c => MOTIFS[c.motif] || MOTIFS[0];
 
-// Le tempérament ne touche QUE la phase de croissance. La durée de référence des rangs de
-// taille reste la valeur brute du palier, sinon un tempérament vif cumulerait deux bonus.
-const tierTime  = c => GROW[c.tier - 1];
-const growTime  = c => GROW[c.tier - 1] / temperOf(c).grow;
+/* Une bête porte UN compteur de croissance, `p`, qui ne repart jamais de zéro : il court de
+   0 à 26 325 secondes, du premier niveau au centième. Son âge y découpe une tranche, et `p`
+   se bloque au bout de la sienne tant qu'on n'a pas payé le péage. */
+const ageGrow   = c => GROW[c.age - 1];                     // largeur de sa tranche
+const bandFrom  = c => (c.age > 1 ? CUM[c.age - 2] : 0);    // là où sa tranche commence
+const bandTo    = c => CUM[c.age - 1];                      // là où son niveau se bloque
+const bandRatio = c => Math.min(1, Math.max(0, (c.p - bandFrom(c)) / ageGrow(c)));
+const estMur    = c => c.p >= bandTo(c);
+
+// Combien de niveaux dans une tranche : 15, 20, 30, 20, 15 — cent en tout.
+const nivDansAge = age => AGES[age - 1].niv - (age > 1 ? AGES[age - 2].niv : 0);
+const nivBase    = age => (age > 1 ? AGES[age - 2].niv : 0);
+
+/* Le niveau, de 1 à 100. Il ne redescend jamais : il ne dépend que de `p`, qui ne fait que
+   monter, et de l'âge, qui ne fait que monter aussi. */
+function niveau(c) {
+  const k = nivDansAge(c.age);
+  return nivBase(c.age) + Math.min(k, 1 + Math.floor(bandRatio(c) * k));
+}
+// Son rang dans sa propre tranche : 0 fraîchement évoluée, k−1 mûre.
+const nivDansTranche = c => niveau(c) - nivBase(c.age) - 1;
+
+// Le tempérament ne touche QUE la vitesse de croissance. La durée de référence des rangs de
+// taille reste la valeur brute de l'âge, sinon un tempérament vif cumulerait deux bonus.
+const growRate = c => temperOf(c).grow;
 
 const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
-const baseValue = c => VALUE[c.tier - 1] * rarityOf(c).mult * variantMult(c);
+const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c);
 
 function pickWeighted(list) {
   let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
@@ -570,17 +662,17 @@ function rollVariants() {
   };
 }
 
-/* À partir de quel palier la bête rembourse l'œuf dont elle sort. Un œuf cher n'est pas un
-   lot à encaisser : à palier 1 une mythique payée 200 000 ne vaut que 1 600. Tous les œufs
-   payants se remboursent au palier 4, jamais avant — autant le dire plutôt que de laisser
-   le joueur le découvrir en perdant sa mise. */
+/* À partir de quel âge la bête rembourse l'œuf dont elle sort. Un œuf cher n'est pas un lot
+   à encaisser : enfant, une mythique payée 200 000 ne vaut que 1 600. Tous les œufs payants
+   se remboursent à l'âge géant, jamais avant — autant le dire plutôt que de laisser le
+   joueur le découvrir en perdant sa mise. */
 function seuilRentable(c) {
   const rar = rarityOf(c).mult;
   const mult = rar * variantMult(c);
   let cumul = 0;
-  for (let t = 1; t <= 5; t++) {
-    if (t > 1) cumul += (EVOLVE[t - 2] || 0) * rar;
-    if (VALUE[t - 1] * mult - cumul >= (c.cost || 0)) return t;
+  for (let a = 1; a <= AGES.length; a++) {
+    if (a > 1) cumul += (EVOLVE[a - 2] || 0) * rar;
+    if (VALUE[a - 1] * mult - cumul >= (c.cost || 0)) return a;
   }
   return null;
 }
@@ -595,20 +687,20 @@ const aPerte = c => (c.cost || 0) > sellValue(c);
    le tempérament dans la ligne des boosts, la teinte dans le multiplicateur de valeur. */
 // Un trait dit au genre de la bête qui le porte : « Carpe gloutonne », « glouton ×1,40 »
 // sous un varan. Les traits invariables portent la même forme dans les deux cases.
-const accord = (trait, c) => form(c.line, c.tier)[3] === 'f' ? trait.fem : trait.name;
+const accord = (trait, c) => form(c.line, c.age)[2] === 'f' ? trait.fem : trait.name;
 
 function epithetOf(c) {
   if (c.prodige) return 'chromatique';
   if (tintOf(c).name) return accord(tintOf(c), c);
   if (temperOf(c).key !== 'docile') return accord(temperOf(c), c);
   const motif = motifOf(c);
-  return motif === 'uni' ? '' : motif + (form(c.line, c.tier)[3] === 'f' ? 'e' : '');
+  return motif === 'uni' ? '' : motif + (form(c.line, c.age)[2] === 'f' ? 'e' : '');
 }
 
 /* Les noms à titre reçoivent leur épithète sur le nom propre, pas à la fin :
    « Khépri doré, porteur du soleil » et non « Khépri, porteur du soleil doré ». */
 function fullName(c) {
-  const nom = form(c.line, c.tier)[0], ep = epithetOf(c);
+  const nom = form(c.line, c.age)[0], ep = epithetOf(c);
   if (!ep) return nom;
   const virgule = nom.indexOf(', ');
   return virgule < 0 ? nom + ' ' + ep
@@ -619,14 +711,13 @@ const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 // la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
 const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
 // Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
-// palier 5 pour le prix d'une commune, et toute la progression se court-circuitait.
+// l'âge titan pour le prix d'une commune, et toute la progression se court-circuitait.
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
 const evoRemise = () => 1 / (1 + EVO_RABAIS * lvl('intendant'));
-const evoCost   = c => EVOLVE[c.tier - 1] === null ? null
-                     : Math.round(EVOLVE[c.tier - 1] * rarityOf(c).mult * evoRemise());
-const isAdult   = c => c.p >= growTime(c);
-const form      = (lineKey, tier) => LINE_BY_KEY[lineKey].forms[tier - 1];
+const evoCost   = c => EVOLVE[c.age - 1] === null ? null
+                     : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise());
+const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
 const penFull   = () => state.pen.length >= state.pens;
 
 const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incubators - 1));
@@ -640,40 +731,44 @@ const clickPower  = () => 1 + lvl('clic');
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
 const autoRate = s => s.kind === 'egg' ? lvl('couveuse')
-                    : isAdult(s.c) ? FATTEN_X * lvl('mangeoire') * temperOf(s.c).fat
+                    : estMur(s.c) ? FATTEN_X * lvl('mangeoire') * temperOf(s.c).fat
                     : lvl('eleveur');
 
 /* Un clic vaut toujours le même temps réel, quoi qu'on ait automatisé. Sans ça les
    automates nerfaient le clic au moment même où on payait pour aller plus vite :
    à éleveur ×7, un « +14 s » n'avançait la bête que de deux secondes de ce que la
    machine faisait déjà. Le clic apporte donc clickPower secondes d'automate — il reste
-   un raccourci qui se sent, du premier œuf au dernier palier. */
+   un raccourci qui se sent, du premier œuf au centième niveau. */
 const clickGain = s => clickPower() * Math.max(1, autoRate(s));
 
-// La taille se mesure en durées de croissance avalées en plus, et l'évolution la remet
-// à zéro : un têtard bien gras donne un crapaud de taille ordinaire. On engraisse donc
-// une créature qu'on garde ou qu'on vend telle quelle, jamais une qu'on va faire évoluer.
-const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / tierTime(c));
-// stageMult est défini plus bas : sellValue n'est appelée qu'une fois le fichier chargé.
-// Le multiplicateur d'étape porte déjà la taille — la valeur est donc plate entre deux
-// rangs, et c'est le clic qui franchit le rang qui paie.
-const sellValue  = c => Math.max(1, Math.round(baseValue(c) * stageMult(c)));
+/* La taille se mesure en durées de croissance avalées EN PLUS de ce que son âge demandait.
+   Le diviseur est la tranche courante, quatre à six fois plus longue à chaque cran : c'est
+   ce qui fait qu'on peut conserver l'embonpoint à travers l'évolution sans rien offrir. */
+const sizeFactor = c => 1 + OVER_GAIN * Math.log(1 + (c.over || 0) / ageGrow(c));
+// nivMult est défini plus bas : sellValue n'est appelée qu'une fois le fichier chargé.
+const sellValue  = c => Math.max(1, Math.round(baseValue(c) * nivMult(c)));
 
 /* Ce qu'une bête rapporte par seconde en restant simplement là. La valeur de vente porte
-   déjà palier, rareté, teinte et taille : la rente en découle directement, et une bête
-   rapporte donc à proportion exacte de ce qu'elle vaut. */
-const renteOf = c => isAdult(c) && rankOf(sizeFactor(c)).i >= RENTE_RANG
+   déjà le niveau, l'âge, la rareté, la teinte et la taille : la rente en découle
+   directement, et une bête rapporte à proportion exacte de ce qu'elle vaut. */
+const renteOf = c => c.age >= AGE_RENTE
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
                    : 0;
 const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 
-/* La consigne du marchand pour CETTE bête : le palier à partir duquel il la vend, 0 s'il n'y
-   touche jamais. Chaque rareté a la sienne — c'est ce qui permet d'écouler les communes au
-   palier 3 pendant qu'on mène les mythiques jusqu'au 5. */
+/* La consigne du marchand pour CETTE bête : l'âge à partir duquel il la vend, 0 s'il n'y
+   touche jamais. Chaque rareté a la sienne — c'est ce qui permet d'écouler les communes
+   dès l'âge adulte pendant qu'on mène les mythiques jusqu'au titan. */
 const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
 
+/* La taille minimale exigée par le marchand n'existe QUE si une mangeoire tourne. Sans
+   automate qui engraisse, elle bloquerait l'enclos sans que rien ne puisse jamais l'en
+   sortir — et surtout elle obligerait à comprendre l'embonpoint pour vendre, alors que la
+   vente doit rester la chose la plus simple du jeu. */
+const tailleExigee = () => (lvl('mangeoire') ? state.sellRank : 0);
+
 /* Jusqu'où l'évolution automatique a le droit de pousser cette bête. Le vendeur commande :
-   inutile de payer une évolution vers un palier auquel on a demandé de vendre avant. */
+   inutile de payer une évolution vers un âge auquel on a demandé de vendre avant. */
 const plafondEvolution = c => {
   const vise = venteAu(c);
   return vise ? Math.min(state.evolveUpTo, vise) : state.evolveUpTo;
@@ -685,35 +780,37 @@ function rankOf(sf) {
   return { i, name: RANKS[i].name, from: RANKS[i].at, next: RANKS[i + 1] || null };
 }
 
-/* L'étape de vie : ce que le joueur voit changer sous ses clics.
-   œuf → enfant → adolescent → adulte → adulte grand (puis énorme, colossal…). */
-function stageOf(c) {
-  const ratio = c.p / growTime(c);
-  if (ratio < ENFANT_JUSQU) return { key: 'enfant', name: 'enfant' };
-  if (ratio < 1) return { key: 'ado', name: 'adolescent' };
-  // le rang entre dans la clé pour que chaque palier de taille compte aussi comme une étape
-  const rank = rankOf(sizeFactor(c)).name;
-  return { key: rank ? 'adulte-' + rank : 'adulte', name: rank ? 'adulte ' + rank : 'adulte' };
+/* Comment l'annoncer : son âge, et le rang de taille quand on l'a engraissée au-delà de ce
+   que son âge demandait. « adulte », « adulte énorme », « titan titanesque ». */
+function etatOf(c) {
+  const rang = rankOf(sizeFactor(c)).name;
+  return rang ? AGES[c.age - 1].nom + ' ' + rang : AGES[c.age - 1].nom;
 }
 
-// Multiplicateur de valeur, plat à l'intérieur d'une étape : 0,15 enfant, 0,40 adolescent,
-// puis le seuil du rang atteint pour un adulte (1 tant qu'il est de taille normale).
-function stageMult(c) {
-  const k = stageOf(c).key;
-  return STAGE_MULT[k] !== undefined ? STAGE_MULT[k] : rankOf(sizeFactor(c)).from;
+/* Ce que vaut le niveau où elle en est, en fraction d'une bête mûre de son âge : 0,15 au
+   premier niveau de la tranche, 1 au dernier, et une montée géométrique entre les deux —
+   entre +7 % et +14 % par niveau. La valeur est PLATE à l'intérieur d'un niveau et saute au
+   passage : c'est le clic qui fait changer de niveau qui paie, pas les vingt d'avant.
+   L'embonpoint, lui, se multiplie par-dessus. */
+function nivMult(c) {
+  const k = nivDansAge(c.age);
+  const dans = Math.pow(NIV_MIN_MULT, (k - 1 - nivDansTranche(c)) / (k - 1));
+  return dans * rankOf(sizeFactor(c)).from;
 }
 
-// Juvénile tant qu'il n'est pas adulte, puis la forme définitive.
-function glyphOf(c) {
-  const f = form(c.line, c.tier);
-  return isAdult(c) ? f[1] : (f[2] || f[1]);
-}
+// Une forme par âge : la silhouette change au moment où l'on paie, pas trois niveaux plus
+// tard. C'est ce qui a rendu les quatre-vingt-quinze glyphes juvéniles inutiles.
+const glyphOf = c => form(c.line, c.age)[1];
 
-// Échelle visuelle : continue pendant la croissance, puis prolongée par l'engraissement.
+/* Échelle visuelle, monotone PAR CONSTRUCTION : elle ne lit que le total de croissance
+   avalé — qui ne fait que monter — et l'âge, qui ne fait que monter aussi. Une bête ne
+   rétrécit donc jamais, quoi qu'on lui fasse. */
+const PLEINE_VIE = CUM[CUM.length - 1];
 function visualScale(c) {
-  const ratio = Math.min(1, c.p / growTime(c));
-  const life = LIFE_MIN + (1 - LIFE_MIN) * ratio;
-  return TIER_SCALE[c.tier - 1] * life * Math.min(SIZE_VIS, sizeFactor(c));
+  const tot = c.p + (c.over || 0);
+  const r = Math.min(SCALE_GRAS,
+                     Math.log(1 + tot / GROW[0]) / Math.log(1 + PLEINE_VIE / GROW[0]));
+  return (SCALE_MIN + (SCALE_MAX - SCALE_MIN) * r) * AGE_SCALE[c.age - 1];
 }
 
 /* L'économie court maintenant de 40 à des dizaines de milliards : au-delà du million on
@@ -752,7 +849,7 @@ function remaining(left, speed) {
   return n + (n > 1 ? ' clics' : ' clic');
 }
 
-function markSeen(lineKey, tier) { state.seen[lineKey + ':' + tier] = true; }
+function markSeen(lineKey, age) { state.seen[lineKey + ':' + age] = true; }
 const seenCount = () => Object.keys(state.seen).length;
 
 /* ─────────────────────────────────────────────
@@ -766,7 +863,9 @@ const seenCount = () => Object.keys(state.seen).length;
 /* Trois façons de ranger l'enclos, et une seule règle : la clé de tri ne doit jamais bouger
    toute seule. Trier par avancement de la barre serait le classement le plus parlant, mais
    la bande se réordonnerait dix fois par seconde et la vignette visée fuirait sous le doigt.
-   Rareté et palier ne changent qu'à l'éclosion et à l'évolution : la bande tient en place.
+   Rareté et âge ne changent qu'à l'éclosion et à l'évolution : la bande tient en place.
+   Le NIVEAU, lui, ne peut pas servir de clé : il monte cent fois par vie, et la bande se
+   réordonnerait sous le doigt.
 
    Le chromatique passe devant tout le reste. Il ignore la lignée — on peut avoir un têtard
    chromatique — donc aucun tri par rareté ne le remonterait, alors que c'est précisément la
@@ -775,8 +874,8 @@ const TRIS = {
   arrivee: null,
   rarete: (a, b) => (b.c.prodige ? 1 : 0) - (a.c.prodige ? 1 : 0)
                  || RARITY[lineOf(b.c).rarity].rank - RARITY[lineOf(a.c).rarity].rank
-                 || b.c.tier - a.c.tier || a.c.id - b.c.id,
-  palier: (a, b) => b.c.tier - a.c.tier
+                 || b.c.age - a.c.age || a.c.id - b.c.id,
+  age: (a, b) => b.c.age - a.c.age
                  || RARITY[lineOf(b.c).rarity].rank - RARITY[lineOf(a.c).rarity].rank
                  || a.c.id - b.c.id,
 };
@@ -820,7 +919,7 @@ function tenirLaCase(place) {
 function fallback(list) {
   const vivants = list.filter(s => s.kind === 'creature');
   if (vivants.length) {
-    return vivants.sort((a, b) => (b.c.p / growTime(b.c)) - (a.c.p / growTime(a.c)))[0];
+    return vivants.sort((a, b) => b.c.p - a.c.p)[0];
   }
   const oeufs = list.filter(s => s.kind === 'egg' && s.slot);
   if (oeufs.length) return oeufs.sort((a, b) => b.slot.p - a.slot.p)[0];
@@ -909,15 +1008,25 @@ function pulse() {
   if (el) flash(el, 'grew');
 }
 
-// Le passage d'une étape à la suivante : nouvelle silhouette, nouvelle échelle, et un
-// bond de valeur qu'il faut voir passer.
-function celebrate(c, valueBefore, pt) {
+/* Trois échelles d'événement, sinon cent niveaux par vie deviennent cent fanfares : la
+   maturité et le rang de taille se fêtent, un simple niveau se contente d'un à-coup. */
+function celebrate(c, valueBefore, pt, quoi) {
   refresh();                                   // la nouvelle échelle avant l'animation
   const gain = sellValue(c) - valueBefore;
   burst(pt.x, pt.y, '✦', 12);
-  floatText(pt.x, pt.y - 70, stageOf(c).name, 'gain');
+  floatText(pt.x, pt.y - 70, quoi || etatOf(c), 'gain');
   if (gain > 0) floatText(pt.x, pt.y - 100, '+' + fmt(gain) + ' à la vente', 'gain');
   chord([523, 659, 784, 1046], 70);
+  pulse();
+}
+
+// Un niveau de plus : le numéro s'envole, l'animal tressaille, une note. Rien de plus.
+function monteeNiveau(c, valueBefore, pt) {
+  refresh();
+  const gain = sellValue(c) - valueBefore;
+  floatText(pt.x, pt.y - 70, 'niv. ' + niveau(c), 'gain');
+  if (gain > 0) floatText(pt.x, pt.y - 96, '+' + fmt(gain), 'gain');
+  blip(760, 0.07, 'triangle', 0.03);
   pulse();
 }
 
@@ -947,16 +1056,19 @@ function tapStage() {
   }
 
   const c = s.c;
-  const wasStage = stageOf(c).key;
-  const wasValue = sellValue(c);
-  // Un clic ajoute de la vie avant comme après l'âge adulte : la créature ne cesse
-  // jamais de grandir, seul le rendement diminue.
-  if (isAdult(c)) c.over = (c.over || 0) + power;
-  else c.p = Math.min(growTime(c), c.p + power);
+  const avantNiv = niveau(c), avantMur = estMur(c);
+  const avantRang = rankOf(sizeFactor(c)).i, avantValeur = sellValue(c);
+  /* Un clic ajoute de la vie avant comme après la maturité : la créature ne cesse jamais de
+     grandir. Mûre, elle ne monte plus de niveau tant que le péage n'est pas payé — ce
+     qu'elle avale part alors dans l'embonpoint, et n'y sera pas perdu. */
+  if (avantMur) c.over = (c.over || 0) + power;
+  else c.p = Math.min(bandTo(c), c.p + power * growRate(c));
   flash(el, 'shake');
   floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
-  if (stageOf(c).key !== wasStage) { celebrate(c, wasValue, pt); return; }
+  if (estMur(c) && !avantMur) { celebrate(c, avantValeur, pt, 'mûre — prête à évoluer'); return; }
+  if (rankOf(sizeFactor(c)).i !== avantRang) { celebrate(c, avantValeur, pt); return; }
+  if (niveau(c) !== avantNiv) { monteeNiveau(c, avantValeur, pt); return; }
   refresh();
 }
 
@@ -980,7 +1092,7 @@ function hatchAll() {
     if (penFull()) continue;
     // on retient le prix de l'œuf : c'est la seule façon de dire au joueur, plus tard,
     // qu'il est en train de vendre à perte
-    const c = Object.assign({ id: nextId++, line: slot.line, tier: 1, p: 0, over: 0,
+    const c = Object.assign({ id: nextId++, line: slot.line, age: 1, p: 0, over: 0,
                               cost: (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).price },
                            rollVariants());
     // un prodige est protégé d'office : on ne perd pas une bête sur cinq cents
@@ -1020,8 +1132,9 @@ function hatchAll() {
   return hatched;
 }
 
-// Vendre est possible à toute étape — au prix de l'étape. Le marchand automatique, lui,
-// n'achète que des adultes : brader un enfant ne doit jamais arriver tout seul.
+// Vendre est possible à tout niveau — au prix du niveau. Aucune condition de taille ne s'y
+// ajoute jamais : c'est la porte de sortie quand un enclos bloque, elle doit rester simple.
+// Le marchand automatique, lui, n'achète que des bêtes mûres.
 function sell(c) {
   const gain = sellValue(c);
   // la case se relève AVANT le retrait : après, la bête n'est plus dans la bande
@@ -1036,30 +1149,29 @@ function sell(c) {
   refresh();
 }
 
+/* Évoluer, c'est franchir le péage — et c'est TOUT ce que ça fait. On ne remet rien à
+   zéro : ni la croissance, ni le niveau, ni l'embonpoint. La bête change de nom, de
+   silhouette et de tranche, puis repart exactement d'où elle en était. */
 function evolve(c) {
-  if (!isAdult(c) || c.tier >= 5) return;
+  if (!estMur(c) || c.age >= AGES.length) return;
   const cost = evoCost(c);
   if (state.coins < cost) return;
   state.coins -= cost;
-  c.tier++;
-  c.p = 0;
-  // La taille repart de zéro : sans ça, engraisser à bas palier — où la nourriture est
-  // dérisoire — puis évoluer rapporterait des dizaines de fois la mise au palier suivant,
-  // la valeur montant ×12 par palier quand la croissance ne monte que ×4.
-  c.over = 0;
-  markSeen(c.line, c.tier);
+  c.age++;
+  markSeen(c.line, c.age);
   const pt = centerOf($('subject'));
-  burst(pt.x, pt.y, c.tier === 5 ? '✦' : '✧', 14);
+  burst(pt.x, pt.y, c.age === AGES.length ? '✦' : '✧', 14);
   floatText(pt.x, pt.y - 80, fullName(c), 'gain');
+  floatText(pt.x, pt.y - 112, AGES[c.age - 1].nom + ' · niv. ' + niveau(c), 'gain');
   chord([440, 554, 659, 880], 80);
   popNext = true;
   refresh();
 }
 
 /* Protéger une bête, c'est refuser qu'un automate décide de sa vie : ni vendue par le
-   marchand, ni fait évoluer — évoluer lui ferait perdre sa taille. C'est le prix d'une
-   place d'enclos immobilisée, et c'est ce qui permet de garder un prodige et de continuer
-   l'aventure avec lui. */
+   marchand, ni fait évoluer — on veut parfois garder une forme précise, et non la pousser
+   jusqu'au titan. C'est le prix d'une place d'enclos immobilisée, et c'est ce qui permet de
+   garder un prodige et de continuer l'aventure avec lui. */
 function toggleKeep(c) {
   c.keep = !c.keep;
   const pt = centerOf($('subject'));
@@ -1131,10 +1243,13 @@ function advance(dt) {
       if (slot.p < dure) slot.p = Math.min(dure, slot.p + dt * couve);
     }
   }
+  /* L'éleveur pousse jusqu'à la maturité et s'arrête là : le niveau se bloque au bout de la
+     tranche tant que le péage n'est pas payé. C'est ce blocage qui interdit à la mangeoire,
+     six fois plus rapide, de servir de raccourci vers l'âge suivant. */
   if (eleve) {
     for (const c of state.pen) {
-      const g = growTime(c);
-      if (c.p < g) c.p = Math.min(g, c.p + dt * eleve);
+      const fin = bandTo(c);
+      if (c.p < fin) c.p = Math.min(fin, c.p + dt * eleve * growRate(c));
     }
   }
   /* La rente ne s'achète pas, elle se mérite en gardant : elle tombe donc ici, avec ce que
@@ -1146,30 +1261,29 @@ function advance(dt) {
 
 function runAutomations(dt) {
   /* L'évolution automatique passe avant la vente : une bête qu'on peut faire monter ne doit
-     pas partir au prix de son palier actuel. Elle ne monte que d'un palier par passage —
-     l'évolution remet la croissance à zéro, donc la bête n'est plus adulte juste après.
+     pas partir au prix de son âge actuel. Elle ne monte que d'un âge par passage — la
+     tranche suivante est plus longue que ce que la bête a avalé, donc elle n'est jamais
+     mûre juste après.
 
-     Mais elle s'arrête au palier où le marchand doit prendre le relais. Sans ce frein,
-     régler « vendre les communes au palier 3 » ne servait à rien : l'évolution les poussait
-     jusqu'au 5 avant que le vendeur n'ait son mot à dire, et la consigne de vente était
+     Mais elle s'arrête à l'âge où le marchand doit prendre le relais. Sans ce frein, régler
+     « vendre les communes à l'âge adulte » ne servait à rien : l'évolution les poussait
+     jusqu'au titan avant que le vendeur n'ait son mot à dire, et la consigne de vente était
      muette. C'est le vendeur qui commande le plafond, rareté par rareté. */
   if (lvl('evolution') && state.evolveUpTo > 1) {
     for (const c of state.pen) {
-      if (c.keep || !isAdult(c) || c.tier >= plafondEvolution(c)) continue;
+      if (c.keep || !estMur(c) || c.age >= plafondEvolution(c)) continue;
       const cost = evoCost(c);
       if (state.coins < cost) continue;
       state.coins -= cost;
       bilanAuto.depense += cost;
-      c.tier++;
-      c.p = 0;
-      c.over = 0;
+      c.age++;
       bilanAuto.evolues++;
-      markSeen(c.line, c.tier);
+      markSeen(c.line, c.age);
     }
   }
-  /* Le marchand attend deux conditions : le palier de SA rareté, et la taille. Sans la
-     seconde il vendait tout dès l'âge adulte, et la mangeoire n'avait jamais le temps
-     d'engraisser quoi que ce soit — les deux automates se marchaient dessus. */
+  /* Le marchand attend l'âge réglé pour SA rareté, sur une bête mûre. La taille minimale
+     n'est qu'un supplément, et le réglage ne s'affiche même pas tant qu'aucune mangeoire
+     n'existe : sans automate qui engraisse, la notion n'a pas à encombrer l'écran. */
   if (state.up.marchand) {
     /* Le marchand ne touche jamais à la bête en scène. C'est la même règle que pour les
        éclosions : rien ne prend la scène à une bête vivante, et rien ne l'y enlève non plus.
@@ -1180,9 +1294,9 @@ function runAutomations(dt) {
 
        Elle n'est pas protégée pour autant : dès que le joueur regarde ailleurs, elle part au
        tour suivant. Une seule bête échappe au marchand à la fois, l'enclos ne s'engorge pas. */
-    const ready = state.pen.filter(c => !c.keep && (rattrapage || 'c:' + c.id !== state.sel) && isAdult(c) &&
-                                        venteAu(c) > 0 && c.tier >= venteAu(c) &&
-                                        rankOf(sizeFactor(c)).i >= state.sellRank);
+    const ready = state.pen.filter(c => !c.keep && (rattrapage || 'c:' + c.id !== state.sel) && estMur(c) &&
+                                        venteAu(c) > 0 && c.age >= venteAu(c) &&
+                                        rankOf(sizeFactor(c)).i >= tailleExigee());
     for (const c of ready) {
       const gain = sellValue(c);
       state.coins += gain;
@@ -1191,12 +1305,12 @@ function runAutomations(dt) {
       state.pen = state.pen.filter(x => x.id !== c.id);
     }
   }
-  // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les adultes,
+  // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
     const debit = dt * FATTEN_X * lvl('mangeoire');
     for (const c of state.pen) {
-      if (isAdult(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
+      if (estMur(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
   }
   // L'acheteur écoule d'abord la réserve — le joueur y a mis ses œufs chers exprès —
@@ -1300,6 +1414,7 @@ function setHtml(el, v) { if (el.__html !== v) { el.__html = v; el.innerHTML = v
 function setVar(el, name, v) { if (el.__var !== v) { el.__var = v; el.style.setProperty(name, v); } }
 function setWidth(el, v) { if (el.__w !== v) { el.__w = v; el.style.width = v; } }
 function setFilter(el, v) { if (el.__f !== v) { el.__f = v; el.style.filter = v; } }
+function setFont(el, v) { if (el.__fs !== v) { el.__fs = v; el.style.fontSize = v; } }
 
 // La scène porte une seule classe de rareté à la fois — elle teinte le halo et la jauge.
 const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique',
@@ -1332,16 +1447,26 @@ function remplirMenus() {
       ' — vaut ×' + dec(r.at)));
   });
 
-  // un menu par rareté : même liste de paliers, réglée séparément
+  // un menu par rareté : même liste d'âges, réglée séparément
   for (const cle of Object.keys(RARITY)) {
     const sel = $('vente-' + cle);
     sel.textContent = '';
     sel.appendChild(option(0, 'jamais — je les garde'));
-    for (let t = 1; t <= 5; t++) {
-      sel.appendChild(option(t, 'au palier ' + t + (t < 5 ? ' et au-dessus' : ', la forme finale') +
-        ' — ' + fmt(VALUE[t - 1] * RARITY[cle].mult)));
-    }
+    AGES.forEach((a, i) => {
+      sel.appendChild(option(i + 1, 'dès l’âge ' + a.nom +
+        (i < AGES.length - 1 ? ' et au-dessus' : ', la forme finale') +
+        ' — ' + fmt(a.value * RARITY[cle].mult)));
+    });
   }
+
+  const evo = $('sel-evolution');
+  evo.textContent = '';
+  evo.appendChild(option(0, 'Ne rien faire évoluer'));
+  AGES.forEach((a, i) => {
+    if (!i) return;
+    evo.appendChild(option(i + 1, 'Monter jusqu’à l’âge ' + a.nom +
+      (i === AGES.length - 1 ? ', la forme finale' : '')));
+  });
 }
 
 function buildChrome() {
@@ -1412,11 +1537,13 @@ function renderStrip() {
   // subjects() porte déjà l'ordre de la bande : c'est ce qui garantit que « la case 6 »
   // désigne la même chose ici et dans tenirLaCase.
   const list = subjects();
-  // l'étape de vie entre dans la signature : la vignette se redessine quand la bête
-  // change de silhouette, soit trois ou quatre fois par créature — c'est négligeable.
+  /* Seul l'ÂGE entre dans la signature : une vignette ne se reconstruit qu'à l'évolution,
+     quatre fois par vie. Le niveau, lui, monte cent fois — le mettre ici ferait redessiner
+     la bande sans arrêt. Ce qui bouge à chaque niveau (le numéro, la taille du glyphe, la
+     barre) est repeint par tickView, qui ne touche au DOM que si la valeur a changé. */
   const sig = list.map(s => s.kind === 'egg'
     ? 'i' + s.i + (s.slot ? ':' + s.slot.line : ':-')
-    : 'c' + s.c.id + ':' + s.c.tier + ':' + stageOf(s.c).key + (s.c.keep ? ':k' : '')).join(',');
+    : 'c' + s.c.id + ':' + s.c.age + (s.c.keep ? ':k' : '')).join(',');
   if (sig === stripSig) return;
   stripSig = sig;
 
@@ -1484,8 +1611,8 @@ function creerVignette(key) {
   return { el: b, glyph, bar: fill, tag };
 }
 
-// Le contenu, lui, se repeint à chaque changement d'étape ou de palier. Les classes sont
-// remises à plat d'abord : une vignette qui a vécu porte celles de son état précédent.
+// Le contenu, lui, se repeint à chaque évolution. Les classes sont remises à plat d'abord :
+// une vignette qui a vécu porte celles de son état précédent.
 // 'done' et 'aria-current' appartiennent à tickView, qui les repose juste après.
 function peindreVignette(t, s) {
   const b = t.el, garder = b.classList.contains('done');
@@ -1503,11 +1630,7 @@ function peindreVignette(t, s) {
     if (s.c.keep) b.classList.add('gardee');
     t.glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
     setCreature(t.glyph, artFor(s.c), glyphOf(s.c));
-    // la vignette reprend l'échelle de la scène, en réduction
-    t.glyph.style.fontSize = (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem';
-    t.tag.textContent = stageOf(s.c).key === 'enfant' ? 'enfant'
-                      : stageOf(s.c).key === 'ado' ? 'ado' : 'p.' + s.c.tier;
-    if (s.c.tier === 5) b.classList.add('apex');
+    if (s.c.age === AGES.length) b.classList.add('apex');
   }
 }
 
@@ -1528,17 +1651,18 @@ function renderCollection() {
       h.textContent = RARITY[rarity].name + ' · ×' + RARITY[rarity].mult;
       host.appendChild(h);
     }
-    for (let t = 1; t <= 5; t++) {
-      const got = !!state.seen[line.key + ':' + t];
+    AGES.forEach((age, i) => {
+      const a = i + 1, got = !!state.seen[line.key + ':' + a];
       const cell = document.createElement('div');
-      cell.className = 'cell rar-' + line.rarity + (got ? ' got' : ' locked') + (t === 5 ? ' t5' : '');
-      cell.title = (got ? line.forms[t - 1][0] : line.name + ' — palier ' + t) +
+      cell.className = 'cell rar-' + line.rarity + (got ? ' got' : ' locked') +
+                       (a === AGES.length ? ' t5' : '');
+      cell.title = (got ? line.forms[i][0] : line.name + ' — ' + age.nom) +
                    ' (' + RARITY[line.rarity].name + ')';
-      if (got) setCreature(cell, artAt(line.key, t), line.forms[t - 1][1]);
+      if (got) setCreature(cell, artAt(line.key, a), line.forms[i][1]);
       host.appendChild(cell);
-    }
+    });
   }
-  $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * 5);
+  $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * AGES.length);
 }
 
 function renderStage() {
@@ -1609,15 +1733,16 @@ function renderStage() {
   }
 
   const c = s.c;
-  const adult = isAdult(c);
+  const mur = estMur(c);
   const sf = sizeFactor(c);
   const rank = rankOf(sf);
-  const stg = stageOf(c);
+  const niv = niveau(c);
+  const dernier = nivBase(c.age) + nivDansAge(c.age);   // le niveau où elle sera mûre
 
   const rar = rarityOf(c);
   stage.classList.remove('cracking');
-  stage.classList.toggle('apex', c.tier === 5);
-  stage.classList.toggle('ready', adult);
+  stage.classList.toggle('apex', c.age === AGES.length);
+  stage.classList.toggle('ready', mur);
   setStageRarity(stage, 'rar-' + lineOf(c).rarity);
   // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
   setVar(subject, '--sz', visualScale(c).toFixed(3));
@@ -1626,49 +1751,56 @@ function renderStage() {
   setCreature($('stage-glyph'), artFor(c), glyphOf(c));
   setText($('stage-name'), fullName(c));
 
-  const mult = stageMult(c);
+  const mult = nivMult(c);
   setHtml($('stage-meta'),
     '<span class="rar rar-' + lineOf(c).rarity + '">' + rar.name + '</span>' +
-    ' · palier ' + c.tier + (c.tier === 5 ? ' · légendaire' : '') +
-    ' · <span class="rank">' + stg.name + '</span>' +
-    (mult > 1 ? ' · valeur ×' + dec(mult) : ''));
+    ' · <b>niv. ' + niv + '</b>' +
+    ' · <span class="rank">' + etatOf(c) + '</span>' +
+    (mur ? ' · mûre' : ' · mûre au niv. ' + dernier) +
+    (Math.abs(mult - 1) > 0.005 ? ' · valeur ×' + dec(mult) : ''));
 
-  if (!adult) {
-    // la barre vise la prochaine étape, pas l'âge adulte : c'est elle qui paie
-    const cible = stg.key === 'enfant' ? ENFANT_JUSQU : 1;
-    const depuis = stg.key === 'enfant' ? 0 : ENFANT_JUSQU;
-    const g = growTime(c);
-    setWidth($('stage-fill'),
-      Math.min(100, ((c.p / g - depuis) / (cible - depuis)) * 100).toFixed(1) + '%');
-    setText($('stage-timer'), remaining(cible * g - c.p, autoRate(s)) +
-      ' → ' + (stg.key === 'enfant' ? 'adolescent' : 'adulte'));
+  /* La rente s'annonce AVANT d'exister : sans ça, personne ne devine qu'une bête se met à
+     payer toute seule à l'âge adulte. Une fois ouverte, c'est le montant qu'on affiche. */
+  const r = renteOf(c);
+  const paie = r
+    ? 'Elle rapporte ' + fmtRente(r) + ' pièce' + (r >= 2 ? 's' : '') +
+      ' par seconde rien qu’en restant là. La garder paie.'
+    : 'À l’âge ' + AGES[AGE_RENTE - 1].nom + ' — niveau ' + NIV_RENTE +
+      ' — elle se mettra à rapporter toute seule, même absent.';
+
+  if (!mur) {
+    /* La barre vise le PROCHAIN NIVEAU, jamais la maturité : cent niveaux dans une vie, donc
+       cent barres qui se remplissent. Où en est la bête dans son âge se lit juste au-dessus,
+       « mûre au niv. 65 » — deux informations, deux endroits, aucune redite. */
+    const pas = ageGrow(c) / nivDansAge(c.age);
+    const dedans = (c.p - bandFrom(c)) - nivDansTranche(c) * pas;
+    setWidth($('stage-fill'), Math.min(100, (dedans / pas) * 100).toFixed(1) + '%');
+    setText($('stage-timer'), remaining((pas - dedans) / growRate(c), autoRate(s)) +
+      ' → niv. ' + (niv + 1) + (niv + 1 === dernier ? ' · mûre' : ''));
     $('stage-timer').classList.remove('done');
     setText($('stage-hint'), state.up.eleveur
-      ? '' : 'Clique dessus pour la faire grandir. Elle ne pousse pas toute seule sans éleveur.');
+      ? paie : 'Clique dessus pour la faire grandir. Elle ne pousse pas toute seule sans éleveur.');
   } else {
-    // adulte : la barre vise le rang de taille suivant, la croissance ne s'arrête jamais
+    // mûre : son niveau se bloque là, et ce qu'elle avale part dans l'embonpoint
     if (rank.next) {
       const span = rank.next.at - rank.from;
       setWidth($('stage-fill'), Math.min(100, ((sf - rank.from) / span) * 100).toFixed(1) + '%');
       // Ce qu'il reste avant le prochain rang. Même règle que partout ailleurs : en secondes
       // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
-      const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * tierTime(c);
-      setText($('stage-timer'), 'adulte · ' +
+      const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * ageGrow(c);
+      setText($('stage-timer'), 'mûre · ' +
         remaining(cible - (c.over || 0), autoRate(s)) + ' → ' + rank.next.name +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
-      setText($('stage-timer'), 'adulte · plus aucun rang au-dessus');
+      setText($('stage-timer'), 'mûre · plus aucun rang au-dessus');
     }
     $('stage-timer').classList.add('done');
-    // La rente doit s'annoncer avant d'exister : sans ça, personne ne devine qu'il faut
-    // pousser une bête jusqu'à « énorme » pour qu'elle se mette à payer.
-    const r = renteOf(c);
-    setText($('stage-hint'), r
-      ? 'Elle rapporte ' + fmtRente(r) + ' pièce' + (r >= 2 ? 's' : '') +
-        ' par seconde rien qu’en restant là. La garder paie.'
-      : 'Continue à cliquer : elle grandit sans fin, de plus en plus lentement. Arrivée ' +
-        RANKS[RENTE_RANG].fem + ', elle se mettra à rapporter toute seule.');
+    setText($('stage-hint'), c.age < AGES.length
+      ? 'Elle est mûre : son niveau ne montera plus tant que tu ne l’auras pas fait évoluer. ' +
+        (r ? 'En attendant, elle rapporte ' + fmtRente(r) + ' / s et s’engraisse.'
+           : 'En attendant, ce qu’elle avale part dans sa taille — et ce n’est pas perdu.')
+      : paie);
   }
 
   // Un œuf cher ne se rembourse qu'en menant la bête assez haut : on le dit, plutôt que
@@ -1680,18 +1812,29 @@ function renderStage() {
   if (aPerte(c)) {
     const seuil = seuilRentable(c);
     /* Une bête sous le prix de son œuf n'est alarmante que si rien ne va l'en sortir :
-       soit il lui suffit de finir de grandir à son palier actuel, soit l'évolution
+       soit il lui suffit de finir de grandir à son âge actuel, soit l'évolution
        automatique est réglée assez haut. Dans les deux cas, pas de rouge. */
-    const prisEnCharge = !seuil ? false
-      : c.tier >= seuil ? true
-      // le plafond qui compte est celui de SA rareté : une consigne de vente précoce
-      // arrête l'évolution avant, et la bête ne remboursera peut-être jamais son œuf
-      : (!c.keep && !!lvl('evolution') && plafondEvolution(c) >= seuil);
-    setText($('stage-hint'), prisEnCharge
-      ? 'Son œuf a coûté ' + fmt(c.cost) + '. Ton évolution la mènera au palier ' +
-        plafondEvolution(c) + ', où elle vaudra ' + fmt(valeurAu(c, plafondEvolution(c))) + '.'
+    // Deux façons de ne pas s'alarmer, et elles ne se racontent pas pareil : ou la bête est
+    // déjà à l'âge qu'il faut et n'a plus qu'à finir de grandir, ou c'est l'évolution
+    // automatique qui va l'y mener. La seconde n'a de sens que si elle est branchée — sans
+    // ça on annonçait « l'âge undefined », et la scène ne s'affichait plus du tout.
+    const dejaLa = !!seuil && c.age >= seuil;
+    // le plafond qui compte est celui de SA rareté : une consigne de vente précoce arrête
+    // l'évolution avant, et la bête ne remboursera peut-être jamais son œuf
+    const menee = !!seuil && !dejaLa && !c.keep && !!lvl('evolution') &&
+                  plafondEvolution(c) >= seuil;
+    const prisEnCharge = dejaLa || menee;
+    setText($('stage-hint'),
+      dejaLa
+        ? 'Son œuf a coûté ' + fmt(c.cost) + '. Elle le remboursera en finissant de grandir : ' +
+          'mûre, elle vaudra ' + fmt(valeurAu(c, c.age)) + '.'
+      : menee
+        ? 'Son œuf a coûté ' + fmt(c.cost) + '. Ton évolution la mènera à l’âge ' +
+          AGES[plafondEvolution(c) - 1].nom + ', où elle vaudra ' +
+          fmt(valeurAu(c, plafondEvolution(c))) + '.'
       : 'Son œuf a coûté ' + fmt(c.cost) + ', elle en vaut ' + fmt(sellValue(c)) + '. ' +
-        (seuil ? 'Elle le remboursera au palier ' + seuil + '.' : 'Elle ne le remboursera jamais.'));
+        (seuil ? 'Elle le remboursera à l’âge ' + AGES[seuil - 1].nom + '.'
+               : 'Elle ne le remboursera jamais.'));
     $('stage-hint').classList.toggle('alerte', !prisEnCharge);
     acts.sell.classList.toggle('perte', !prisEnCharge && !c.keep);
     acts.sell.classList.remove('bon');
@@ -1707,8 +1850,9 @@ function renderStage() {
   const perte = aPerte(c);
   acts.sell.title = c.keep ? 'Elle est gardée : relâche-la d’abord.'
     : perte ? 'Elle vaut moins que son œuf, qui a coûté ' + fmt(c.cost) + '.'
-    : adult ? 'Vente rentable, au prix fort.'
-    : 'Un ' + stg.name + ' ne vaut qu’une fraction de sa valeur adulte — mais ça libère la place.';
+    : mur ? 'Vente au prix fort : elle est mûre.'
+    : 'Au niveau ' + niv + ' elle ne vaut qu’une fraction de ce qu’elle vaudra mûre — mais ' +
+      'ça libère la place, et c’est possible à tout moment.';
   acts.sell.disabled = !!c.keep;
 
   acts.keep.hidden = false;
@@ -1720,20 +1864,17 @@ function renderStage() {
   acts.keep.disabled = false;
 
   acts.evo.hidden = false;
-  if (c.tier >= 5) {
+  if (c.age >= AGES.length) {
     setText(acts.evo, 'Forme finale');
     acts.evo.title = 'Plus rien au-dessus — il ne reste qu’à la faire grossir.';
     acts.evo.disabled = true;
-    acts.evo.classList.remove('warn-evo');
   } else {
-    // on n'alerte que s'il y a réellement de la valeur à perdre, pas au moindre gramme pris
-    const perte = mult > 1;
     setText(acts.evo, 'Évoluer ' + fmt(evoCost(c)));
-    acts.evo.title = perte
-      ? 'Attention : évoluer ramène la taille à ×1 et fait retomber la valeur. Vends-la d’abord si tu l’as engraissée pour ça.'
-      : 'Passe au palier suivant. La croissance repart de zéro.';
-    acts.evo.classList.toggle('warn-evo', perte);
-    acts.evo.disabled = !adult || state.coins < evoCost(c);
+    acts.evo.title = mur
+      ? 'Passe à l’âge ' + AGES[c.age].nom + '. Elle garde son niveau, sa taille et tout ce ' +
+        'qu’elle a avalé : rien ne repart de zéro.'
+      : 'Il faut d’abord qu’elle soit mûre, au niveau ' + dernier + '.';
+    acts.evo.disabled = !mur || state.coins < evoCost(c);
   }
 }
 
@@ -1749,10 +1890,11 @@ function ligneBoosts(sujet) {
     if (n) bouts.push('couveuse ×' + n);
   } else {
     const c = sujet.c, t = temperOf(c);
-    if (!isAdult(c)) {
-      const base = tierTime(c), n = lvl('eleveur');
-      bouts.push('Croissance ' + fmtTime(base) + ' → ' +
-                 (n ? fmtTime(growTime(c) / n) : 'rien sans toi'));
+    if (!estMur(c)) {
+      // la durée annoncée est celle d'UN NIVEAU : c'est l'attente que le joueur vit
+      const pas = ageGrow(c) / nivDansAge(c.age), n = lvl('eleveur');
+      bouts.push('Croissance ' + fmtTime(pas) + ' par niveau → ' +
+                 (n ? fmtTime(pas / (n * t.grow)) : 'rien sans toi'));
       if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));
       if (n) bouts.push('éleveur ×' + n);
     } else {
@@ -1761,17 +1903,18 @@ function ligneBoosts(sujet) {
                                        : 'rien sans toi'));
       if (n && t.fat !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.fat));
       if (n) bouts.push('mangeoire ×' + n);
-      const r = renteOf(c);
-      if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
     }
+    // la rente ne dépend plus de la maturité mais de l'âge : elle se lit dans les deux cas
+    const r = renteOf(c);
+    if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
   }
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
   return bouts.join('  ·  ');
 }
 
-// ce que la bête vaudra une fois adulte à tel palier, taille ordinaire
-function valeurAu(c, tier) {
-  return Math.round(VALUE[tier - 1] * rarityOf(c).mult * variantMult(c));
+// ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
+function valeurAu(c, age) {
+  return Math.round(VALUE[age - 1] * rarityOf(c).mult * variantMult(c));
 }
 
 function noteAcheteur() {
@@ -1786,8 +1929,8 @@ function noteAcheteur() {
 
 function noteEvolution() {
   if (!state.evolveUpTo) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
-  /* La note annonçait la facture du palier maximal pour tout le monde. C'était faux dès qu'une
-     rareté se vendait plus tôt : plafondEvolution l'arrête à SON palier de vente, et la note
+  /* La note annonçait la facture de l'âge maximal pour tout le monde. C'était faux dès qu'une
+     rareté se vendait plus tôt : plafondEvolution l'arrête à SON âge de vente, et la note
      démentait son propre chiffre deux phrases plus loin. Chaque rareté annonce donc la sienne,
      calculée là où elle s'arrête vraiment — c'est la seule façon que le chiffre ne mente pas. */
   const cible = cle => Math.min(state.evolveUpTo, state.sellAt[cle] || state.evolveUpTo);
@@ -1795,10 +1938,11 @@ function noteEvolution() {
                        * RARITY[cle].mult * evoRemise();
   const phrase = ([cle, r]) => cible(cle) <= 1
     ? 'les ' + r.plur + ' ne montent pas'
-    : 'les ' + r.plur + ' montent au palier ' + cible(cle) + ' pour ' + fmt(facture(cle));
+    : 'les ' + r.plur + ' montent jusqu’à l’âge ' + AGES[cible(cle) - 1].nom +
+      ' pour ' + fmt(facture(cle));
   return 'En clair : ' + liste(Object.entries(RARITY).map(phrase)) +
     '. Elle passe avant le marchand, donc une bête qui peut encore monter n’est jamais ' +
-    'vendue au prix du palier d’en dessous.';
+    'vendue au prix de l’âge d’en dessous.';
 }
 
 function noteMarchand() {
@@ -1806,17 +1950,16 @@ function noteMarchand() {
   const gardees = Object.entries(RARITY).filter(([cle]) => !state.sellAt[cle]).map(([, r]) => r.plur);
   if (!reglees.length) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
 
-  const taille = state.sellRank ? ', et devenues ' + RANKS[state.sellRank].fem + 's ou plus' : '';
-  /* Le menu annonce « au palier 3 et au-dessus » ; cette phrase-ci disait « arrivées au
-     palier 3 », ce qui se lit comme un palier exact. La condition, elle, est bien un seuil :
-     une bête déjà au-dessus part aussi. Les deux textes disent maintenant la même chose. */
-  const seuil = t => t < 5 ? 'à partir du palier ' + t : 'au palier 5, la forme finale';
+  const taille = tailleExigee() ? ', et devenues ' + RANKS[tailleExigee()].fem + 's ou plus' : '';
+  /* Le menu annonce « dès l'âge adulte et au-dessus » ; cette phrase-ci doit dire la même
+     chose. La condition est un seuil : une bête déjà au-dessus part aussi. */
+  const seuil = a => 'dès l’âge ' + AGES[a - 1].nom;
   let txt = 'En clair : il vend ' +
     liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]))) +
     taille + '. ';
   txt += gardees.length
     ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
-    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’au palier 4. ';
+    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’à l’âge géant. ';
 
   /* Le piège de la combinaison : une consigne au-dessus de ce que l'évolution sait atteindre,
      et cette rareté-là ne part jamais. On nomme les raretés concernées, sinon le joueur voit
@@ -1825,17 +1968,18 @@ function noteMarchand() {
   const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond).map(([, r]) => r.plur);
   if (bloquees.length) {
     txt += lvl('evolution') && state.evolveUpTo
-      ? '⚠ Ton évolution s’arrête au palier ' + state.evolveUpTo + ' : les ' + liste(bloquees) +
-        ' n’y arriveront jamais, et tes enclos vont s’engorger.'
-      : '⚠ Rien ne fait monter tes bêtes de palier : les ' + liste(bloquees) +
-        ' n’atteindront jamais leur palier de vente toutes seules, et tes enclos vont s’engorger.';
-  } else if (!state.sellRank && lvl('mangeoire')) {
+      ? '⚠ Ton évolution s’arrête à l’âge ' + AGES[state.evolveUpTo - 1].nom + ' : les ' +
+        liste(bloquees) + ' n’y arriveront jamais, et tes enclos vont s’engorger.'
+      : '⚠ Rien ne fait vieillir tes bêtes : les ' + liste(bloquees) +
+        ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger.';
+  } else if (!tailleExigee() && lvl('mangeoire')) {
     txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
   }
-  // Le marchand et la rente visent la même bête : celle qui vient d'atteindre « énorme »
-  // est à la fois la première à rapporter et la première à partir. On le dit.
-  if (state.sellRank >= RENTE_RANG) {
-    txt += ' Il vendra aussi celles qui commencent à rapporter : protège celles que tu veux garder.';
+  // Toute bête vendue à partir de l'âge adulte est une bête qui rapportait déjà : le
+  // marchand et la rente visent le même animal, et ☆ Garder est la parade.
+  if (reglees.some(([cle]) => state.sellAt[cle] >= AGE_RENTE)) {
+    txt += ' À partir de l’âge adulte, il vend aussi celles qui rapportaient : protège ' +
+           'celles que tu veux garder.';
   }
   // les clauses se terminent toutes par un point suivi d’une espace : la dernière la garderait
   return txt.trimEnd();
@@ -1858,12 +2002,14 @@ function tickView() {
       t.el.classList.toggle('done', !!ready);
       if (s.slot) setText(t.tag, ready ? 'prêt' : 'œuf');
     } else {
-      const adult = isAdult(s.c);
-      const k = stageOf(s.c).key;
-      setWidth(t.bar, Math.min(100, (s.c.p / growTime(s.c)) * 100).toFixed(1) + '%');
-      t.el.classList.toggle('done', adult);
-      setText(t.tag, k === 'enfant' ? 'enfant' : k === 'ado' ? 'ado'
-              : 'p.' + s.c.tier + (k.indexOf('adulte-') === 0 ? ' ✦' : ''));
+      /* La vignette montre le niveau et la distance à la maturité — c'est-à-dire à la
+         décision. Tout passe par les setters mémorisés : rien ne touche au DOM tant que
+         rien n'a bougé, ce qui permet de suivre cent niveaux sans reconstruire la bande. */
+      const mur = estMur(s.c);
+      setWidth(t.bar, (bandRatio(s.c) * 100).toFixed(1) + '%');
+      t.el.classList.toggle('done', mur);
+      setText(t.tag, 'niv. ' + niveau(s.c) + (mur ? ' ✦' : ''));
+      setFont(t.glyph, (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem');
     }
   }
 
@@ -1895,6 +2041,10 @@ function tickView() {
     r.el.disabled = maxed || state.coins < cost;
   }
 
+  /* Le réglage de taille n'apparaît qu'avec une mangeoire. Sans automate qui engraisse, la
+     notion n'a rien à faire à l'écran : la vente doit rester la chose la plus simple du jeu,
+     surtout au début, et une condition de taille qu'on ne peut pas remplir engorge l'enclos. */
+  $('lbl-rank').hidden = $('sel-rank').hidden = !lvl('mangeoire');
   $('cfg-marchand').hidden = !state.up.marchand;
   $('cfg-evolution').hidden = !state.up.evolution;
   $('cfg-acheteur').hidden = !state.up.acheteur;
