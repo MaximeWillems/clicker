@@ -4,6 +4,19 @@
 
 'use strict';
 
+/* ── Version ─────────────────────────────────────────────────────────────────────
+   Trois nombres, et le mot « alpha » devant tant que le jeu n'est pas sorti :
+
+     alpha MAJEUR.MINEUR.CORRECTIF
+
+   CORRECTIF  un sprite de plus, un bug corrigé, un chiffre d'équilibrage retouché
+   MINEUR     une nouveauté franche, mais qui tient dans le jeu tel qu'il est
+   MAJEUR     un morceau de jeu qui n'existait pas, et qui rebat les cartes du reste
+
+   Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
+   dans tout le projet : on la change dans le commit qui apporte la modification. */
+const VERSION = 'alpha 1.0.0';
+
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
    ───────────────────────────────────────────── */
@@ -2142,6 +2155,7 @@ function start() {
   buildChrome();
   bindTools();
 
+  $('version').textContent = VERSION;
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   for (const cle of Object.keys(RARITY)) $('vente-' + cle).value = String(state.sellAt[cle] || 0);

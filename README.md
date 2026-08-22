@@ -8,6 +8,29 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 > une question : est-ce que les dix premières minutes sont agréables ? Le vrai jeu aura un
 > serveur qui fait autorité, et ce fichier `game.js` sera jeté.
 
+## Version
+
+Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
+tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
+
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.0.0
+
+| Nombre | Ce qui le fait monter | Exemple |
+|---|---|---|
+| **correctif** | un sprite de plus, un bug corrigé, un chiffre d'équilibrage retouché | 1.0.0 → 1.0.1 |
+| **mineur** | une nouveauté franche, mais qui tient dans le jeu tel qu'il est | 1.0.1 → 1.1.0 |
+| **majeur** | un morceau de jeu qui n'existait pas, et qui rebat les cartes du reste | 1.1.0 → 2.0.0 |
+
+Un nombre qui monte remet à zéro ceux qui le suivent. On le change **dans le commit qui
+apporte la modification**, jamais après coup : c'est ce qui permet de savoir, devant une page
+laissée ouverte, si elle est à jour ou s'il faut la recharger.
+
+Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
+nombre : `alpha 2.0.0` est toujours une alpha.
+
+À ne pas confondre avec le `v` de la sauvegarde (`v: 3` aujourd'hui), qui numérote le *format*
+des données rangées dans le navigateur et ne bouge que lorsque ce format change.
+
 ## Lancer en local
 
 Ouvrir `index.html` directement dans le navigateur suffit. Pour servir proprement :

@@ -91,6 +91,12 @@ body {
 .brand { display: flex; align-items: baseline; gap: 0.55rem; }
 .brand-mark { font-size: 1.25rem; line-height: 1; }
 .brand-name { font-family: var(--f-name); font-size: 1.2rem; }
+.brand-version {
+  font-family: var(--f-num); font-size: 0.62rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--faint);
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 0.12rem 0.4rem; white-space: nowrap;
+}
 .purse { margin-left: auto; display: flex; align-items: baseline; gap: 0.45rem; }
 .purse-value {
   font-family: var(--f-num); font-size: 1.6rem; font-weight: 500;
