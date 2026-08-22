@@ -382,6 +382,13 @@ const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
 
+/* Vrai pendant qu'on rejoue une absence. Les automates tournent alors des milliers de fois
+   d'affilée : ni son, ni étincelles, ni redessin à chaque tour — on n'affiche que le résultat.
+   Le marchand s'en sert aussi pour lever sa règle « on ne vend pas la bête en scène » :
+   personne ne regardait l'écran, la protéger n'aurait fait que bloquer un enclos. */
+let rattrapage = false;
+const bilanAuto = { vendus: 0, gagne: 0, evolues: 0, depense: 0 };
+
 function freshState() {
   return {
     v: 2,
@@ -971,16 +978,17 @@ function hatchAll() {
     // Un coup de chance doit s'entendre : c'est le seul moment de loterie du jeu. Il ne se
     // voit en revanche que si la nouvelle venue est bien celle qu'on a sous les yeux —
     // annoncer « lignée rare ! » au-dessus d'une autre bête serait un contresens.
-    if (rare) chord([523, 659, 784, 1046, 1319], 90);
+    if (rattrapage) { /* rien à faire entendre ni voir : l'absence se résume à la fin */ }
+    else if (rare) chord([523, 659, 784, 1046, 1319], 90);
     else chord([523, 659, 784]);
-    if (libre) {
+    if (libre && !rattrapage) {
       const pt = centerOf($('subject'));
       burst(pt.x, pt.y, '✦', rare ? 10 + RARITY[best.rarity].rank * 8 : 12);
       if (rare) floatText(pt.x, pt.y - 90, 'lignée ' + RARITY[best.rarity].name + ' !', 'gain');
       popNext = true;
     }
   }
-  refresh();
+  if (!rattrapage) refresh();
   return hatched;
 }
 
@@ -1123,9 +1131,11 @@ function runAutomations(dt) {
       const cost = evoCost(c);
       if (state.coins < cost) continue;
       state.coins -= cost;
+      bilanAuto.depense += cost;
       c.tier++;
       c.p = 0;
       c.over = 0;
+      bilanAuto.evolues++;
       markSeen(c.line, c.tier);
     }
   }
@@ -1142,11 +1152,14 @@ function runAutomations(dt) {
 
        Elle n'est pas protégée pour autant : dès que le joueur regarde ailleurs, elle part au
        tour suivant. Une seule bête échappe au marchand à la fois, l'enclos ne s'engorge pas. */
-    const ready = state.pen.filter(c => !c.keep && 'c:' + c.id !== state.sel && isAdult(c) &&
+    const ready = state.pen.filter(c => !c.keep && (rattrapage || 'c:' + c.id !== state.sel) && isAdult(c) &&
                                         venteAu(c) > 0 && c.tier >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= state.sellRank);
     for (const c of ready) {
-      state.coins += sellValue(c);
+      const gain = sellValue(c);
+      state.coins += gain;
+      bilanAuto.vendus++;
+      bilanAuto.gagne += gain;
       state.pen = state.pen.filter(x => x.id !== c.id);
     }
   }
@@ -1166,7 +1179,11 @@ function runAutomations(dt) {
       if (state.incub[i]) continue;
       let kind = bestStocked();
       if (kind) state.eggs[kind]--;
-      else if (state.coins >= voulu.price) { state.coins -= voulu.price; kind = voulu.key; }
+      else if (state.coins >= voulu.price) {
+        state.coins -= voulu.price;
+        bilanAuto.depense += voulu.price;
+        kind = voulu.key;
+      }
       else break;      // on laisse l'incubateur vide plutôt que de brader la consigne
       state.incub[i] = { line: rollLine(kind), p: 0, kind };
     }
@@ -1192,17 +1209,45 @@ function catchUp() {
   // une bête assez grosse pour renter travaille même sans le moindre automate acheté
   if (!state.up.couveuse && !state.up.eleveur && !renteTotale()) return;
 
-  const adultsBefore = state.pen.filter(isAdult).length;
+  /* Le temps passé se rejoue par PAS, et non d'un bloc. Un seul advance() de huit heures ne
+     faisait avancer que la couvaison, la croissance et la rente : runAutomations n'était
+     jamais appelé, donc pendant une absence rien n'évoluait, rien ne se vendait, rien ne se
+     rachetait et la mangeoire ne servait à rien. On rentrait sur une ferme figée, pleine
+     d'adultes que personne n'avait vendus — et sur deux heures d'une ferme entièrement
+     automatisée, pas une pièce gagnée.
+
+     Le nombre de pas est borné : une absence d'un jour ne doit pas coûter une seconde de
+     calcul au démarrage. Les pas trop larges perdent du débit — Math.min plafonne la
+     croissance à sa cible et le surplus est perdu — donc on rend toujours un peu moins que
+     ce que la présence aurait donné. C'est le bon sens de l'erreur : jamais de cadeau. */
   const coinsBefore = state.coins;
-  advance(elapsed);
-  const hatched = hatchAll();
-  const grown = state.pen.filter(isAdult).length - adultsBefore;
-  const rente = state.coins - coinsBefore;
+  bilanAuto.vendus = 0; bilanAuto.gagne = 0; bilanAuto.evolues = 0; bilanAuto.depense = 0;
+  let hatched = 0;
+
+  rattrapage = true;
+  try {
+    const pas = Math.max(1, elapsed / 20000);
+    for (let passe = 0; passe < elapsed; passe += pas) {
+      const dt = Math.min(pas, elapsed - passe);
+      advance(dt);
+      runAutomations(dt);
+      hatched += hatchAll();
+    }
+  } finally {
+    // le drapeau coupe le son et le redessin : le laisser levé figerait l'affichage
+    rattrapage = false;
+  }
+
+  /* Ce que le temps a rapporté sans rien vendre. Il faut retirer les ventes ET remettre ce
+     que les automates ont dépensé en évolutions et en œufs, sinon la ligne « tes bêtes gardées
+     ont rapporté » annonce en fait la rente moins les frais de la ferme. */
+  const rente = state.coins - coinsBefore - bilanAuto.gagne + bilanAuto.depense;
 
   const bits = [];
   if (hatched) bits.push(hatched + (hatched > 1 ? ' œufs ont éclos' : ' œuf a éclos'));
-  if (grown > 0) bits.push(grown + (grown > 1 ? ' créatures sont devenues adultes' : ' créature est devenue adulte'));
-  // les pièces gagnées sans rien vendre : c'est la seule preuve que garder paie
+  if (bilanAuto.evolues) bits.push(bilanAuto.evolues + (bilanAuto.evolues > 1 ? ' évolutions' : ' évolution'));
+  if (bilanAuto.vendus) bits.push('ton marchand a vendu ' + bilanAuto.vendus +
+    (bilanAuto.vendus > 1 ? ' bêtes pour ' : ' bête pour ') + fmt(bilanAuto.gagne) + ' pièces');
   if (rente >= 1) bits.push('tes bêtes gardées ont rapporté ' + fmt(rente) + ' pièces');
   const note = $('offline-note');
   note.innerHTML = '<b>Pendant ton absence (' + fmtTime(elapsed) + ')</b> — ' +
