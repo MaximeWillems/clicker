@@ -1512,8 +1512,12 @@ function remplirMenus() {
     const sel = $('vente-' + cle);
     sel.textContent = '';
     sel.appendChild(option(0, 'jamais — je les garde'));
+    /* « dès l'âge adolescent » se lit comme « dès qu'elle est adolescente », alors que le
+       marchand attend qu'elle soit MÛRE de cet âge — sinon il la braderait à 15 % de son
+       prix. Le montant affiché est justement celui d'une bête mûre : le libellé doit dire
+       la même chose que le chiffre qu'il porte. */
     AGES.forEach((a, i) => {
-      sel.appendChild(option(i + 1, 'dès l’âge ' + a.nom +
+      sel.appendChild(option(i + 1, 'mûres à l’âge ' + a.nom +
         (i < AGES.length - 1 ? ' et au-dessus' : ', la forme finale') +
         ' — ' + fmt(a.value * RARITY[cle].mult)));
     });
@@ -2013,7 +2017,7 @@ function noteMarchand() {
   const taille = tailleExigee() ? ', et devenues ' + RANKS[tailleExigee()].fem + 's ou plus' : '';
   /* Le menu annonce « dès l'âge adulte et au-dessus » ; cette phrase-ci doit dire la même
      chose. La condition est un seuil : une bête déjà au-dessus part aussi. */
-  const seuil = a => 'dès l’âge ' + AGES[a - 1].nom;
+  const seuil = a => 'mûres à l’âge ' + AGES[a - 1].nom;
   let txt = 'En clair : il vend ' +
     liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]))) +
     taille + '. ';
@@ -2034,6 +2038,29 @@ function noteMarchand() {
         ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger.';
   } else if (!tailleExigee() && lvl('mangeoire')) {
     txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
+  }
+
+  /* Un marchand qui ne vend pas est indiscernable d'un marchand cassé. Les avertissements
+     ci-dessus sont THÉORIQUES — ils lisent les réglages. Celui-ci lit l'enclos tel qu'il est,
+     et nomme ce qui coince vraiment, bête par bête. C'est la question que le joueur se pose,
+     et le panneau doit y répondre sans qu'on ait à deviner. */
+  let jeunes = 0, petites = 0;
+  for (const c of state.pen) {
+    if (c.keep || !venteAu(c) || !estMur(c)) continue;      // gardée, non réglée, ou encore en croissance
+    if (c.age < venteAu(c)) jeunes++;
+    else if (rankOf(sizeFactor(c)).i < tailleExigee()) petites++;
+  }
+  if (petites) {
+    const taille = RANKS[tailleExigee()].fem;
+    txt += petites > 1
+      ? ' ⚠ ' + petites + ' bêtes sont mûres et assez âgées mais n’atteignent pas la taille ' +
+        taille + ' : c’est cette condition-là qui les retient.'
+      : ' ⚠ Une bête est mûre et assez âgée mais n’atteint pas la taille ' + taille +
+        ' : c’est cette condition-là qui la retient.';
+  } else if (jeunes && !bloquees.length) {
+    txt += jeunes > 1
+      ? ' ' + jeunes + ' bêtes sont mûres et attendent d’avoir l’âge : c’est l’évolution qui doit les faire monter.'
+      : ' Une bête est mûre et attend d’avoir l’âge : c’est l’évolution qui doit la faire monter.';
   }
   // Toute bête vendue à partir de l'âge adulte est une bête qui rapportait déjà : le
   // marchand et la rente visent le même animal, et ☆ Garder est la parade.
@@ -2114,7 +2141,12 @@ function tickView() {
   // bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une fois.
   if (state.up.acheteur) setText($('note-acheteur'), noteAcheteur());
   if (state.up.evolution) setText($('note-evolution'), noteEvolution());
-  if (state.up.marchand) setText($('note-marchand'), noteMarchand());
+  if (state.up.marchand) {
+    const txt = noteMarchand();
+    setText($('note-marchand'), txt);
+    // un ⚠ en gris pâle de 0,72 rem ne prévient personne : la note entière passe au rouge
+    $('note-marchand').classList.toggle('alerte', txt.indexOf('⚠') !== -1);
+  }
 }
 
 function refresh() {

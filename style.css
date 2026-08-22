@@ -577,6 +577,9 @@ button.act.keep:hover:not(:disabled) { color: var(--accent); border-color: var(-
 /* vendre à perte : ça doit se voir avant de cliquer, pas après */
 button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .stage-hint.alerte { color: var(--red); }
+/* Une note de réglage qui porte un ⚠ annonce un enclos qui va s'engorger : elle doit se voir
+   sans qu'on la lise. */
+.config-note.alerte { color: var(--red); border-left-color: var(--red); }
 
 /* ── réglages : des conditions lisibles, pas des phrases à trous ─────────── */
 .panel-intro {
