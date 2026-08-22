@@ -79,21 +79,40 @@ def colonnes_pleines(im):
     px = im.load()
     return [any(px[x, y][3] > 8 for y in range(im.height)) for x in range(im.width)]
 
-def blocs(pleines, ecart_min=6):
-    out, debut = [], None
-    vide = 0
+def blocs(pleines, attendu=None, ecart_min=6):
+    """Sépare les créatures par les colonnes vides.
+
+    Un seuil fixe ne marche pas : sur la planche des oiseaux, le roc et le phénix n'étaient
+    séparés que par cinq colonnes vides et fusionnaient en une seule bête. Baisser le seuil
+    au hasard casse l'inverse — une créature avec un élément détaché se scinde en deux.
+
+    Quand on sait combien de bêtes on attend, on coupe donc aux N-1 PLUS GRANDS ÉCARTS,
+    quel que soit leur taille. C'est vrai quelle que soit l'irrégularité de l'espacement."""
+    debut = None
+    plein = []                       # (debut, fin) de chaque zone occupée
     for x, p in enumerate(pleines):
-        if p:
-            if debut is None:
-                debut = x
-            vide = 0
-        elif debut is not None:
-            vide += 1
-            if vide >= ecart_min:
-                out.append((debut, x - vide + 1))
-                debut = None
+        if p and debut is None:
+            debut = x
+        elif not p and debut is not None:
+            plein.append((debut, x)); debut = None
     if debut is not None:
-        out.append((debut, len(pleines)))
+        plein.append((debut, len(pleines)))
+    if not plein:
+        return []
+
+    # les trous entre zones occupées, du plus large au plus étroit
+    trous = [(plein[i + 1][0] - plein[i][1], i) for i in range(len(plein) - 1)]
+
+    if attendu and 1 < attendu <= len(plein):
+        coupures = sorted(i for _, i in sorted(trous, reverse=True)[:attendu - 1])
+    else:
+        coupures = sorted(i for taille, i in trous if taille >= ecart_min)
+
+    out, depart = [], 0
+    for i in coupures:
+        out.append((plein[depart][0], plein[i][1]))
+        depart = i + 1
+    out.append((plein[depart][0], plein[-1][1]))
     return out
 
 def carre(im):
@@ -115,8 +134,10 @@ def main():
     noms = sys.argv[3].split(',') if len(sys.argv) > 3 else None
 
     im = transparent(Image.open(source))
-    parts = blocs(colonnes_pleines(im))
+    parts = blocs(colonnes_pleines(im), attendu=len(noms) if noms else None)
     print(f'{len(parts)} créatures détectées')
+    if noms and len(parts) != len(noms):
+        print(f'  ATTENTION : {len(noms)} noms fournis. Vérifie la planche.')
 
     for i, (x0, x1) in enumerate(parts, 1):
         bete = carre(im.crop((x0, 0, x1, im.height)))
