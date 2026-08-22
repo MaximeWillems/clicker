@@ -224,13 +224,35 @@ Résultat net, œuf et péages déduits, à chaque âge mûr :
 | épique (15 M) | −15,0 M | −14,8 M | −13,3 M | **+7,08 M** | +499,1 M |
 | mythique (375 M) | −374,4 M | −370,5 M | −333,0 M | **+177,0 M** | +12,5 Md |
 
+### Le rouge se cantonne au début de la vie
+
+Une bête chère passe le plus clair de son existence sous le prix de son œuf : une rare ne le
+repasse qu'en pleine tranche géante. Un bouton rouge qui reste rouge pendant les trois quarts
+d'une vie cesse d'être un avertissement pour devenir un décor — et on finit par vendre à perte
+en l'ignorant.
+
+L'alerte se cantonne donc au **début** de la vie, et chaque rareté a droit à un âge de plus
+que la précédente : c'est là que la méprise est possible, et seulement là.
+
+| Rareté | enfant | adolescent | adulte | géant | titan |
+|---|---|---|---|---|---|
+| commune | vert | vert | vert | vert | vert |
+| rare | **rouge** | neutre | neutre | vert | vert |
+| épique | **rouge** | **rouge** | neutre | vert | vert |
+| mythique | **rouge** | **rouge** | **rouge** | vert | vert |
+
+Le vert tombe pile à l'âge géant, à toutes les raretés — c'est la règle de remboursement
+énoncée plus haut, rendue visible sans un mot.
+
 C'est la mécanique voulue : ce qu'on achète avec un œuf cher, c'est le droit d'investir, pas
 un gain immédiat. Elle demande de rester attentif, et c'est très bien — mais elle ne doit
 jamais être **silencieuse**. Deux garde-fous :
 
-- Chaque bête retient **le prix de l'œuf dont elle sort**. Tant qu'elle vaut moins que lui, la
-  scène le dit, et le bouton *Vendre* passe en rouge — mais **seulement si rien n'est prévu
-  pour l'y mener**. Deux façons de ne pas s'alarmer, et elles ne se racontent pas pareil : ou
+- Chaque bête retient **le prix de l'œuf dont elle sort**, et le bouton *Vendre* a trois états
+  au lieu de deux : **rouge** tant que la méprise est possible, **neutre** quand la bête vaut
+  encore moins que son œuf mais qu'on est censé le savoir, **vert** quand la vente rembourse
+  vraiment. Le rouge ne dure donc plus toute la vie — voir « Le rouge se cantonne au début »
+  plus bas — et il ne s'allume que **si rien n'est prévu pour l'y mener**. Deux façons de ne pas s'alarmer, et elles ne se racontent pas pareil : ou
   la bête est déjà à l'âge qu'il faut et n'a plus qu'à finir de grandir, ou c'est l'évolution
   automatique qui va l'y mener — « son œuf a coûté 375,0 M, ton évolution la mènera à l'âge
   géant, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait le pire des
@@ -274,27 +296,38 @@ sa rareté — on peut avoir un têtard chromatique. Halo doré battant, et elle
 d'office** : perdre une bête sur cinq cents parce qu'un automate l'a vendue avant qu'on l'ait
 vue serait impardonnable.
 
-**Un chromatique vaut exactement deux crans de rareté** : ×125, soit 25², puisque chaque
-rareté vaut vingt-cinq fois la précédente. À âge et taille égaux, une commune chromatique
-passe donc devant une rare ordinaire et reste derrière une épique ordinaire — et la règle se
-propage d'elle-même à toute l'échelle.
+**Un chromatique vaut exactement un cran de rareté** : ×25. Une commune chromatique vaut une
+rare ordinaire, une rare chromatique vaut une épique, et ainsi de suite jusqu'en haut. La
+règle tient en une phrase et se propage d'elle-même à toute l'échelle.
 
 | Mûre à l'âge enfant | Valeur |
 |---|---|
 | commune | 40 |
-| rare | 1 000 |
-| **commune chromatique** | **5 000** |
-| épique | 24 000 |
-| **rare chromatique** | **125 000** |
-| mythique | 600 000 |
-| **épique chromatique** | **3 M** |
-| **mythique chromatique** | **75 M** |
+| **commune chromatique** = rare | **1 000** |
+| **rare chromatique** = épique | **25 000** |
+| **épique chromatique** = mythique | **600 000** |
+| **mythique chromatique** | **15 M** |
 
-À ×5, un chromatique commun valait cinq fois une commune ordinaire et restait cinq fois sous
-la moindre rare : la plus belle bête du jeu ne pesait rien face à un tirage banal, et le seul
-coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. Le coût d'évolution,
-lui, ne suit **que** la rareté — faire monter un chromatique coûte le prix de sa lignée, ce
-qui en fait l'affaire du jeu.
+À ×5 il ne pesait rien : la plus belle bête du jeu restait cinq fois sous le moindre tirage
+rare, et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. Mais à
+×125 il cassait la partie — et pour une raison qui n'est pas le chiffre lui-même.
+
+**Le coût d'évolution ne suit que la lignée.** Mener n'importe quelle bête au titan rend 2,3
+fois ses péages, à toutes les raretés. Un chromatique, lui, paie les péages de sa lignée pour
+la valeur d'une autre : il rend donc 2,3 × son multiplicateur.
+
+| Menée au titan | Ce qu'elle rend par pièce de péage |
+|---|---|
+| commune | ×2,3 |
+| rare | ×2,3 |
+| commune chromatique à ×125 | **×291** |
+| commune chromatique à ×25 | ×58 |
+
+À ×125, une commune chromatique rapportait 291 fois sa mise quand tout le reste du jeu en
+rapporte 2,3 : ce n'était plus un coup de chance, c'était la meilleure ligne de jeu, et de
+loin. À ×25 l'affaire reste excellente — c'est bien ce qu'on attend d'un tirage sur cinq
+cents — sans écraser le reste. Si elle pèse encore trop à l'essai, le levier suivant n'est
+plus ce chiffre mais les péages.
 
 **Le tempérament** ne se lit qu'en texte, mais il agit : `grow` accélère la montée en niveau,
 `fat` accélère l'engraissement. Docile (neutre), nerveux (croissance ×1,25 / engraissement
@@ -388,7 +421,7 @@ qu'on ait besoin d'une règle de plus.
 
 Ses facteurs sont exactement ceux du prix de vente — **niveau, âge, rareté, teinte, taille** —
 si bien qu'une bête rapporte à proportion de ce qu'elle vaut. Le **chromatique** est le seul à
-recevoir un bonus par-dessus : sa rente est **doublée**, en plus du ×125 que sa valeur porte
+recevoir un bonus par-dessus : sa rente est **doublée**, en plus du ×25 que sa valeur porte
 déjà. C'est la bête qu'un joueur garde, c'est elle qu'on récompense.
 
 | Bête commune | Valeur | Rente |

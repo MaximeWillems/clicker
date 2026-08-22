@@ -191,17 +191,23 @@ const TINTS = [
 /* Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
    raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
 
-   Il vaut exactement DEUX CRANS DE RARETÉ — 25², puisque chaque rareté vaut vingt-cinq fois
-   la précédente. À âge et taille égaux, une commune chromatique passe donc devant une
-   rare ordinaire (×125 contre ×25) et reste derrière une épique ordinaire (×600). La règle
-   se propage d'elle-même : une rare chromatique se glisse entre l'épique et la mythique,
-   une épique chromatique dépasse la mythique.
+   Il vaut exactement UN CRAN DE RARETÉ : une commune chromatique vaut une rare ordinaire,
+   une rare chromatique vaut une épique, et ainsi de suite jusqu'en haut. La règle se lit en
+   une phrase et se propage d'elle-même.
 
-   À ×5, un chromatique commun valait cinq fois une commune ordinaire et restait cinq fois
-   sous la moindre rare : la plus belle bête du jeu ne pesait rien face à un tirage banal,
-   et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. */
+   À ×5 il ne pesait rien : la plus belle bête du jeu restait cinq fois sous le moindre
+   tirage rare, et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la
+   bourse. Mais à ×125 il cassait la partie, et pour une raison qui n'est pas le chiffre
+   lui-même : LE COÛT D'ÉVOLUTION NE SUIT QUE LA LIGNÉE. Mener n'importe quelle bête au titan
+   rend 2,3 fois ses péages ; un chromatique rend 2,3 × son multiplicateur, puisqu'il paie
+   les péages de sa lignée pour la valeur d'une autre. À ×125, une commune chromatique
+   rapportait donc 291 fois sa mise quand tout le reste du jeu en rapporte 2,3.
+
+   À ×25 l'affaire reste excellente — c'est bien ce qu'on veut d'un coup de chance sur cinq
+   cents — sans être la meilleure ligne de jeu à elle seule. Si ça pèse encore trop à
+   l'essai, le levier suivant n'est plus ce chiffre mais les péages. */
 const PRODIGE_ODDS  = 1 / 500;
-const PRODIGE_MULT  = 125;
+const PRODIGE_MULT  = 25;
 const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
 
 // grow : divise la durée de croissance. fat : multiplie la vitesse d'engraissement.
@@ -740,7 +746,19 @@ function seuilRentable(c) {
   return null;
 }
 
-const aPerte = c => (c.cost || 0) > sellValue(c);
+// Sous le prix de son œuf : un fait, pas une alarme.
+const sousLePrix = c => (c.cost || 0) > sellValue(c);
+
+/* Jusqu'à quel âge on ALERTE sur ce fait, rareté par rareté. Une bête chère passe le plus
+   clair de sa vie sous le prix de son œuf — une rare ne le repasse qu'en pleine tranche
+   géante. Un bouton rouge qui reste rouge pendant les trois quarts d'une vie cesse d'être
+   un avertissement pour devenir un décor, et on finit par vendre à perte en l'ignorant.
+
+   L'alerte se cantonne donc au début de la vie, et chaque rareté a droit à un âge de plus
+   que la précédente : c'est là que la méprise est possible, et seulement là. Ailleurs, la
+   bête reste affichée sous son prix — sans rouge, sans vert, sans commentaire. */
+const ALERTE_JUSQU = { commune: 0, rare: 1, epique: 2, mythique: 3 };
+const aPerte = c => sousLePrix(c) && c.age <= ALERTE_JUSQU[lineOf(c).rarity];
 
 /* Une bête porte UNE épithète, jamais quatre. « chromatique · écarlate · rayé · placide »
    sous chaque nom, c'était une fiche technique à déchiffrer ; « Varan cendré » se retient et
@@ -1919,15 +1937,22 @@ function renderStage() {
   } else {
     $('stage-hint').classList.remove('alerte');
     acts.sell.classList.remove('perte');
-    acts.sell.classList.toggle('bon', !c.keep);   // vente rentable : c'est vert
+    /* Trois états, pas deux. Le rouge est réservé aux âges où la méprise est possible ; le
+       vert exige que la vente rembourse vraiment l'œuf. Entre les deux — sous le prix mais
+       passé l'âge d'alerte — le bouton reste neutre. Le peindre en vert mentirait. */
+    acts.sell.classList.toggle('bon', !c.keep && !sousLePrix(c));
   }
 
   acts.place.hidden = true;
   acts.sell.hidden = false;
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
-  const perte = aPerte(c);
+  /* L'infobulle suit les mêmes trois états que la couleur : alerte, fait, bonne affaire.
+     Annoncer « vente au prix fort » sur une bête encore sous le prix de son œuf serait le
+     seul mensonge du panneau. */
   acts.sell.title = c.keep ? 'Elle est gardée : relâche-la d’abord.'
-    : perte ? 'Elle vaut moins que son œuf, qui a coûté ' + fmt(c.cost) + '.'
+    : aPerte(c) ? 'Elle vaut moins que son œuf, qui a coûté ' + fmt(c.cost) + '.'
+    : sousLePrix(c) ? 'Elle est mûre, mais encore sous le prix de son œuf — ' +
+      fmt(c.cost) + ' contre ' + fmt(sellValue(c)) + '. À toi de voir.'
     : mur ? 'Vente au prix fort : elle est mûre.'
     : 'Au niveau ' + niv + ' elle ne vaut qu’une fraction de ce qu’elle vaudra mûre — mais ' +
       'ça libère la place, et c’est possible à tout moment.';
