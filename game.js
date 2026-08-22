@@ -362,6 +362,13 @@ const ART = {
     4: 'rongeur-4-rongeur-colossal.png',
     5: 'rongeur-5-ratatosk.png',
   },
+  chiroptere: {
+    1: 'chiroptere-1-chiroptere.png',
+    2: 'chiroptere-2-chauve-souris.png',
+    3: 'chiroptere-3-roussette.png',
+    4: 'chiroptere-4-buveur-de-nuit.png',
+    5: 'chiroptere-5-camazotz.png',
+  },
 };
 
 /* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
