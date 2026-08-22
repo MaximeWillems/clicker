@@ -1713,19 +1713,19 @@ function noteAcheteur() {
 
 function noteEvolution() {
   if (!state.evolveUpTo) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
-  const cumul = EVOLVE.slice(0, state.evolveUpTo - 1).reduce((a, b) => a + (b || 0), 0) * evoRemise();
-  const tot = fmt(cumul) + ' pièces pour une commune et ' + fmt(cumul * RARITY.rare.mult) +
-              ' pour une rare';
-  const coupees = Object.entries(RARITY)
-    .filter(([cle]) => state.sellAt[cle] > 0 && state.sellAt[cle] < state.evolveUpTo)
-    .map(([cle, r]) => r.plur + ' au ' + state.sellAt[cle]);
-  return ('Chaque bête sera menée au palier ' + state.evolveUpTo + ', ce qui coûtera ' +
-    tot + ' — la facture suit la rareté. Elle passe avant le marchand, donc une bête qui peut encore ' +
-    'monter n’est jamais vendue au prix du palier d’en dessous. ' +
-    (coupees.length
-      ? 'Sauf là où tu as demandé de vendre plus tôt : elle s’arrête pour les ' +
-        liste(coupees) + ' et laisse le vendeur prendre le relais.'
-      : '')).trimEnd();
+  /* La note annonçait la facture du palier maximal pour tout le monde. C'était faux dès qu'une
+     rareté se vendait plus tôt : plafondEvolution l'arrête à SON palier de vente, et la note
+     démentait son propre chiffre deux phrases plus loin. Chaque rareté annonce donc la sienne,
+     calculée là où elle s'arrête vraiment — c'est la seule façon que le chiffre ne mente pas. */
+  const cible = cle => Math.min(state.evolveUpTo, state.sellAt[cle] || state.evolveUpTo);
+  const facture = cle => EVOLVE.slice(0, cible(cle) - 1).reduce((a, b) => a + (b || 0), 0)
+                       * RARITY[cle].mult * evoRemise();
+  const phrase = ([cle, r]) => cible(cle) <= 1
+    ? 'les ' + r.plur + ' ne montent pas'
+    : 'les ' + r.plur + ' montent au palier ' + cible(cle) + ' pour ' + fmt(facture(cle));
+  return 'En clair : ' + liste(Object.entries(RARITY).map(phrase)) +
+    '. Elle passe avant le marchand, donc une bête qui peut encore monter n’est jamais ' +
+    'vendue au prix du palier d’en dessous.';
 }
 
 function noteMarchand() {
@@ -1734,8 +1734,12 @@ function noteMarchand() {
   if (!reglees.length) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
 
   const taille = state.sellRank ? ', et devenues ' + RANKS[state.sellRank].fem + 's ou plus' : '';
+  /* Le menu annonce « au palier 3 et au-dessus » ; cette phrase-ci disait « arrivées au
+     palier 3 », ce qui se lit comme un palier exact. La condition, elle, est bien un seuil :
+     une bête déjà au-dessus part aussi. Les deux textes disent maintenant la même chose. */
+  const seuil = t => t < 5 ? 'à partir du palier ' + t : 'au palier 5, la forme finale';
   let txt = 'En clair : il vend ' +
-    liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' arrivées au palier ' + state.sellAt[cle])) +
+    liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]))) +
     taille + '. ';
   txt += gardees.length
     ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
@@ -1760,7 +1764,8 @@ function noteMarchand() {
   if (state.sellRank >= RENTE_RANG) {
     txt += ' Il vendra aussi celles qui commencent à rapporter : protège celles que tu veux garder.';
   }
-  return txt;
+  // les clauses se terminent toutes par un point suivi d’une espace : la dernière la garderait
+  return txt.trimEnd();
 }
 
 function tickView() {
