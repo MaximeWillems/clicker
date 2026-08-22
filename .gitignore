@@ -10,3 +10,6 @@ Desktop.ini
 
 # Claude Code (local, non partagé)
 .claude/settings.local.json
+
+# Python (outils)
+__pycache__/

@@ -341,6 +341,13 @@ const ART = {
     4: 'oiseau-4-roc.png',
     5: 'oiseau-5-phenix.png',
   },
+  crocodile: {
+    1: 'crocodile-1-crocodillon.png',
+    2: 'crocodile-2-crocodile.png',
+    3: 'crocodile-3-crocodile-ancien.png',
+    4: 'crocodile-4-draco-saurien.png',
+    5: 'crocodile-5-dragon-tonnerre.png',
+  },
 };
 
 /* La règle de repli, écrite une seule fois : un palier sans dessin prend celui du palier
