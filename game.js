@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 1.3.0';
+const VERSION = 'alpha 1.4.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -512,7 +512,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 5;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 6;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -552,7 +552,10 @@ function freshState() {
        d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
        titan : une consigne unique forçait à choisir entre les deux. */
     sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
-    sellRank: 0,        // taille minimale exigée avant la vente (0 = dès la maturité)
+    /* Une taille minimale PAR RARETÉ. Engraisser une commune, c'est immobiliser un enclos
+       pour quelques pièces ; engraisser une mythique, c'est en gagner des milliards. Un
+       réglage unique obligeait à trancher pour tout le monde. 0 = dès la maturité. */
+    sellRank: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
     /* Un âge d'évolution PAR RARETÉ. Un péage ne coûte pas la même chose selon la lignée —
        mener une géante au titan coûte 600 000 en commune et 9 milliards en mythique — donc
@@ -663,6 +666,13 @@ function load() {
     }
     merged.evolveUpTo = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 },
                                       merged.evolveUpTo || {});
+    // v5 → v6 : la taille minimale suit le même chemin, un nombre unique devient quatre
+    if (typeof merged.sellRank === 'number') {
+      const avant = merged.sellRank;
+      merged.sellRank = { commune: avant, rare: avant, epique: avant, mythique: avant };
+    }
+    merged.sellRank = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 },
+                                    merged.sellRank || {});
     /* v3 → v4 : les améliorations se montent en tiers de palier. Un niveau d'avant en vaut
        donc trois, sans quoi une partie en cours verrait sa ferme divisée par trois. */
     if ((s.v || 0) < 4) {
@@ -863,7 +873,8 @@ const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
    automate qui engraisse, elle bloquerait l'enclos sans que rien ne puisse jamais l'en
    sortir — et surtout elle obligerait à comprendre l'embonpoint pour vendre, alors que la
    vente doit rester la chose la plus simple du jeu. */
-const tailleExigee = () => (lvl('mangeoire') ? state.sellRank : 0);
+const tailleExigee = c => tailleDe(lineOf(c).rarity);
+const tailleDe = cle => (lvl('mangeoire') ? (state.sellRank[cle] || 0) : 0);
 
 // La consigne d'évolution pour CETTE bête, 0 si sa rareté ne doit pas monter.
 const evolueJusqu = c => (state.evolveUpTo && state.evolveUpTo[lineOf(c).rarity]) || 0;
@@ -1406,7 +1417,7 @@ function runAutomations(dt) {
     const repit = Date.now() - dernierGeste < SCENE_REPIT;
     const ready = state.pen.filter(c => !c.keep && (rattrapage || !repit || 'c:' + c.id !== state.sel) &&
                                         estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
-                                        rankOf(sizeFactor(c)).i >= tailleExigee());
+                                        rankOf(sizeFactor(c)).i >= tailleExigee(c));
     for (const c of ready) {
       const gain = sellValue(c);
       state.coins += gain;
@@ -1548,14 +1559,16 @@ function remplirMenus() {
       fmt(e.price) + ', couve en ' + fmtTime(e.hatch)));
   }
 
-  const rang = $('sel-rank');
-  rang.textContent = '';
-  rang.appendChild(option(0, 'n’importe laquelle'));
-  RANKS.forEach((r, i) => {
-    if (!i) return;
-    rang.appendChild(option(i, r.fem + (i < RANKS.length - 1 ? ' ou plus' : '') +
-      ' — vaut ×' + dec(r.at)));
-  });
+  for (const cle of Object.keys(RARITY)) {
+    const rang = $('taille-' + cle);
+    rang.textContent = '';
+    rang.appendChild(option(0, 'n’importe laquelle'));
+    RANKS.forEach((r, i) => {
+      if (!i) return;
+      rang.appendChild(option(i, r.fem + (i < RANKS.length - 1 ? ' ou plus' : '') +
+        ' — vaut ×' + dec(r.at)));
+    });
+  }
 
   // un menu par rareté : même liste d'âges, réglée séparément
   for (const cle of Object.keys(RARITY)) {
@@ -2076,13 +2089,13 @@ function noteMarchand() {
   const gardees = Object.entries(RARITY).filter(([cle]) => !state.sellAt[cle]).map(([, r]) => r.plur);
   if (!reglees.length) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
 
-  const taille = tailleExigee() ? ', et devenues ' + RANKS[tailleExigee()].fem + 's ou plus' : '';
+  // la taille s'accroche à la rareté qu'elle concerne, plus à la fin de la phrase entière
+  const taille = cle => (tailleDe(cle) ? ' et ' + RANKS[tailleDe(cle)].fem + 's ou plus' : '');
   /* Le menu annonce « dès l'âge adulte et au-dessus » ; cette phrase-ci doit dire la même
      chose. La condition est un seuil : une bête déjà au-dessus part aussi. */
   const seuil = a => 'mûres à l’âge ' + AGES[a - 1].nom;
   let txt = 'En clair : il vend ' +
-    liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]))) +
-    taille + '. ';
+    liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]) + taille(cle))) + '. ';
   txt += gardees.length
     ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
     : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’à l’âge géant. ';
@@ -2105,7 +2118,7 @@ function noteMarchand() {
         ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger. ' +
         'Fais-les évoluer à la main avec le bouton Évoluer, redescends-les à l’âge ' +
         AGES[0].nom + ', ou achète l’évolution automatique.';
-  } else if (!tailleExigee() && lvl('mangeoire')) {
+  } else if (lvl('mangeoire') && !Object.keys(RARITY).some(cle => tailleDe(cle))) {
     txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
   }
 
@@ -2114,18 +2127,23 @@ function noteMarchand() {
      et nomme ce qui coince vraiment, bête par bête. C'est la question que le joueur se pose,
      et le panneau doit y répondre sans qu'on ait à deviner. */
   let jeunes = 0, petites = 0;
+  const parRarete = {};
   for (const c of state.pen) {
     if (c.keep || !venteAu(c) || !estMur(c)) continue;      // gardée, non réglée, ou encore en croissance
     if (c.age < venteAu(c)) jeunes++;
-    else if (rankOf(sizeFactor(c)).i < tailleExigee()) petites++;
+    else if (rankOf(sizeFactor(c)).i < tailleExigee(c)) {
+      petites++;
+      parRarete[lineOf(c).rarity] = true;
+    }
   }
   if (petites) {
-    const taille = RANKS[tailleExigee()].fem;
+    // les seuils diffèrent d'une rareté à l'autre : on nomme les raretés, pas un rang unique
+    const noms = Object.keys(parRarete).map(cle => RARITY[cle].plur);
     txt += petites > 1
-      ? ' ⚠ ' + petites + ' bêtes sont mûres et assez âgées mais n’atteignent pas la taille ' +
-        taille + ' : c’est cette condition-là qui les retient.'
-      : ' ⚠ Une bête est mûre et assez âgée mais n’atteint pas la taille ' + taille +
-        ' : c’est cette condition-là qui la retient.';
+      ? ' ⚠ ' + petites + ' bêtes sont mûres et assez âgées mais attendent encore leur taille : ' +
+        'ce sont les ' + liste(noms) + ' qui sont retenues.'
+      : ' ⚠ Une bête est mûre et assez âgée mais attend encore sa taille : c’est une ' +
+        RARITY[Object.keys(parRarete)[0]].name + '.';
   } else if (jeunes && !bloquees.length) {
     txt += jeunes > 1
       ? ' ' + jeunes + ' bêtes sont mûres et attendent d’avoir l’âge : c’est l’évolution qui doit les faire monter.'
@@ -2200,7 +2218,7 @@ function tickView() {
   /* Le réglage de taille n'apparaît qu'avec une mangeoire. Sans automate qui engraisse, la
      notion n'a rien à faire à l'écran : la vente doit rester la chose la plus simple du jeu,
      surtout au début, et une condition de taille qu'on ne peut pas remplir engorge l'enclos. */
-  $('lbl-rank').hidden = $('sel-rank').hidden = !lvl('mangeoire');
+  $('cond-taille').hidden = !lvl('mangeoire');
   $('cfg-marchand').hidden = !state.up.marchand;
   $('cfg-evolution').hidden = !state.up.evolution;
   $('cfg-acheteur').hidden = !state.up.acheteur;
@@ -2267,7 +2285,8 @@ function bindTools() {
   // Un menu qui garde le focus détournerait la barre espace : on le relâche après usage.
   for (const id of ['vente-commune', 'vente-rare', 'vente-epique', 'vente-mythique',
                     'evolution-commune', 'evolution-rare', 'evolution-epique',
-                    'evolution-mythique', 'sel-rank', 'sel-acheteur']) {
+                    'evolution-mythique', 'taille-commune', 'taille-rare', 'taille-epique',
+                    'taille-mythique', 'sel-acheteur']) {
     $(id).addEventListener('change', e => e.target.blur());
   }
 
@@ -2277,9 +2296,11 @@ function bindTools() {
     });
   }
 
-  $('sel-rank').addEventListener('change', e => {
-    state.sellRank = parseInt(e.target.value, 10) || 0;
-  });
+  for (const cle of Object.keys(RARITY)) {
+    $('taille-' + cle).addEventListener('change', e => {
+      state.sellRank[cle] = parseInt(e.target.value, 10) || 0;
+    });
+  }
 
   for (const cle of Object.keys(RARITY)) {
     $('evolution-' + cle).addEventListener('change', e => {
@@ -2310,7 +2331,9 @@ function start() {
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   for (const cle of Object.keys(RARITY)) $('vente-' + cle).value = String(state.sellAt[cle] || 0);
-  $('sel-rank').value = String(state.sellRank || 0);
+  for (const cle of Object.keys(RARITY)) {
+    $('taille-' + cle).value = String(state.sellRank[cle] || 0);
+  }
   for (const cle of Object.keys(RARITY)) {
     $('evolution-' + cle).value = String(state.evolveUpTo[cle] || 0);
   }

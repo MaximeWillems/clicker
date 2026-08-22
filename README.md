@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.3.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.4.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 5` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 6` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **1.3.0** | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
+| **1.4.0** | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
+| 1.3.0 | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
 | 1.2.0 | le seuil de rentabilité cantonné au début de la vie, le chromatique redescendu à un cran de rareté |
 | 1.1.2 | la bête en scène n'est plus protégée pour toujours, seulement dix secondes |
 | 1.1.1 | le marchand dit pourquoi il ne vend pas |
@@ -581,22 +582,32 @@ Les menus qui listent des données du jeu — prix des œufs, rangs de taille, r
 **construits depuis ces données** plutôt qu'écrits à la main. C'est la seule façon qu'ils ne
 mentent pas le jour où un prix bouge, et ils avaient déjà menti une fois.
 
-### Un âge de vente par rareté
+### Tout se règle rareté par rareté
 
-**Chaque rareté a son propre âge de vente**, et une taille minimale commune à toutes :
+Les trois consignes de la ferme ont chacune quatre valeurs, une par rareté :
 
-> Il vend les **communes dès l'âge adulte**, les **rares dès l'âge titan**, les **épiques dès
-> l'âge titan**, **jamais** les mythiques.
+> Il fait monter les **communes jusqu'au titan** et arrête les **mythiques à l'âge adulte**.
+> Il vend les **communes mûres dès l'âge adulte**, les **rares mûres à l'âge titan et grandes
+> ou plus**, et ne touche **jamais** aux mythiques.
 
-C'est la consigne qu'on veut vraiment donner : on écoule le tout-venant tôt, pendant qu'on mène
-le précieux jusqu'au bout. Un seuil unique assorti d'un plafond de rareté forçait à choisir
-entre les deux — soit tout partait tôt, soit tout attendait la fin.
+C'est la consigne qu'on veut vraiment donner. Une valeur unique pour tout le monde forçait à
+choisir un compromis, et le compromis n'est bon pour personne : on écoule le tout-venant tôt
+pendant qu'on mène le précieux jusqu'au bout, parce que ce ne sont pas les mêmes sommes.
+
+| Ce qui se règle | Pourquoi par rareté |
+|---|---|
+| **jusqu'où la faire monter** | de géante à titan : 600 000 en commune, 9,00 Md en mythique |
+| **à partir de quel âge la vendre** | on écoule tôt ce qui ne vaut rien, on garde le reste |
+| **à quelle taille la vendre** | engraisser une commune immobilise un enclos pour quelques pièces ; une mythique, pour des milliards |
 
 **Le marchand n'attend qu'une condition par défaut** : la bête est mûre, et son âge est celui
-qu'on a réglé pour sa rareté. La taille minimale est un supplément, et son menu **n'apparaît
-qu'une fois la mangeoire achetée** — avant, la notion n'existe pas à l'écran. C'est ce qui
-garde la revente simple en early game : rien n'oblige jamais à comprendre l'embonpoint pour
-vendre, et le bouton *Vendre* marche à tous les niveaux, au prix du niveau.
+qu'on a réglé pour sa rareté. Les quatre menus de taille sont un supplément, et le bloc
+**n'apparaît qu'une fois la mangeoire achetée** — avant, la notion n'existe pas à l'écran.
+C'est ce qui garde la revente simple en early game : rien n'oblige jamais à comprendre
+l'embonpoint pour vendre, et le bouton *Vendre* marche à tous les niveaux, au prix du niveau.
+
+Les menus se dévoilent au rythme des automates : quatre avec le marchand, huit avec
+l'évolution, douze avec la mangeoire. Aucun n'apparaît avant d'avoir quelque chose à commander.
 
 ### Un plafond d'évolution par rareté, lui aussi
 
