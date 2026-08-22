@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.0.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.3.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,8 +28,22 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 3` aujourd'hui), qui numérote le *format*
-des données rangées dans le navigateur et ne bouge que lorsque ce format change.
+À ne pas confondre avec le `v` de la sauvegarde (`v: 5` aujourd'hui), qui numérote le *format*
+des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
+avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
+de 4 à 5.
+
+### Ce qui est sorti
+
+| Version | Ce qu'elle apporte |
+|---|---|
+| **1.3.0** | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
+| 1.2.0 | le seuil de rentabilité cantonné au début de la vie, le chromatique redescendu à un cran de rareté |
+| 1.1.2 | la bête en scène n'est plus protégée pour toujours, seulement dix secondes |
+| 1.1.1 | le marchand dit pourquoi il ne vend pas |
+| 1.1.0 | les améliorations se montent en tiers de palier |
+| 1.0.1 | la jauge ne se laisse plus écraser par la scène |
+| **1.0.0** | une seule vie de cent niveaux et cinq âges — le numéro commence ici |
 
 ## Lancer en local
 
