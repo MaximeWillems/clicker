@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.12.0';
+const VERSION = 'alpha 2.13.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1391,7 +1391,7 @@ const evolueQuelqueChose = () => Object.keys(RARITY).some(cle => (state.evolveUp
 function rankOf(sf) {
   let i = 0;
   while (i + 1 < RANKS.length && sf >= RANKS[i + 1].at) i++;
-  return { i, name: RANKS[i].name, from: RANKS[i].at, next: RANKS[i + 1] || null };
+  return { i, name: RANKS[i].name, fem: RANKS[i].fem, from: RANKS[i].at, next: RANKS[i + 1] || null };
 }
 
 /* Comment l'annoncer : son âge, et le rang de taille quand on l'a engraissée au-delà de ce
@@ -2080,6 +2080,39 @@ function setFont(el, v) { if (el.__fs !== v) { el.__fs = v; el.style.fontSize = 
 // La scène porte une seule classe de rareté à la fois — elle teinte le halo et la jauge.
 const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique',
                      'egg-commun', 'egg-rare', 'egg-epique', 'egg-mythique'];
+/* Remplit les trois colonnes d'axes, et marque celle que la grande barre est en train de
+   remplir — c'est le lien qui manquait le plus : la barre vise le niveau tant que la bête
+   grandit, puis la taille une fois qu'elle est mûre, sans que rien ne le dise. */
+function peindreAxes(c, mur, rank, niv, dernier, mult) {
+  $('stage-axes').hidden = false;
+
+  setText($('axe-age-val'), AGES[c.age - 1].nom);
+  // cinq pastilles : on voit d'un coup qu'il y a cinq âges, et lequel est atteint
+  setHtml($('axe-age-plus'), AGES.map((a, i) =>
+    '<i class="axe-pip' + (i < c.age ? ' on' : '') + '"></i>').join(''));
+
+  /* « 15 / 15 » DIT la maturité : le niveau a touché le plafond de son âge et n'ira pas plus
+     loin sans un péage. C'était un mot de plus dans la ligne à points, alors que l'égalité
+     des deux nombres le montre déjà. */
+  setText($('axe-niv-val'), niv + ' / ' + dernier);
+  setText($('axe-niv-plus'), mur ? 'mûre' : '×' + dec(mult / rank.from));
+  $('axe-niv').classList.toggle('mur', mur);
+
+  setText($('axe-taille-val'), rank.fem || 'normale');
+  setText($('axe-taille-plus'), '×' + dec(rank.from));
+
+  $('axe-niv').classList.toggle('actif', !mur);
+  $('axe-taille').classList.toggle('actif', mur);
+  setText($('timer-axe'), mur ? 'taille' : 'niveau');
+  $('timer-axe').hidden = false;
+}
+
+// Un œuf n'a ni âge ni taille : les colonnes et l'étiquette de barre s'effacent.
+function cacherAxes() {
+  $('stage-axes').hidden = true;
+  $('timer-axe').hidden = true;
+}
+
 function setStageRarity(stage, cls) {
   if (stage.__rar === cls) return;
   stage.__rar = cls;
@@ -2307,6 +2340,11 @@ function peindreVignette(t, s) {
     if (s.c.keep) b.classList.add('gardee');
     t.glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
     setCreature(t.glyph, artFor(s.c), glyphOf(s.c));
+    /* L'ÂGE d'une vignette ne se lit que dans la forme du dessin, ce qui suppose de connaître
+       la lignée. Le survol le nomme. Il est posé ici et non dans tickView : l'âge ne change
+       que quatre fois dans une vie, alors que la boucle passe dix fois par seconde. */
+    b.title = fullName(s.c) + ' — ' + AGES[s.c.age - 1].nom +
+              ' · ' + rarityOf(s.c).name.toLowerCase();
     if (s.c.age === AGES.length) b.classList.add('apex');
   }
 }
@@ -2781,6 +2819,7 @@ function renderStage() {
     setWidth($('stage-fill'), '0%');
     setText($('stage-hint'), 'Achète un œuf pour recommencer.');
     setText($('stage-boost'), '');
+    cacherAxes();
     ['place', 'sell', 'evo', 'keep'].forEach(hide);
     return;
   }
@@ -2790,6 +2829,7 @@ function renderStage() {
 
   if (s.kind === 'egg') {
     const slot = s.slot;
+    cacherAxes();
     stage.classList.remove('apex');
     // l'œuf gonfle doucement à mesure qu'il couve
     const ratio = slot ? Math.min(1, slot.p / hatchTime(slot)) : 0;
@@ -2852,13 +2892,13 @@ function renderStage() {
   setCreature($('stage-glyph'), artFor(c), glyphOf(c));
   setText($('stage-name'), fullName(c));
 
+  /* Sous le nom, la RARETÉ seule. Elle ne bouge jamais de toute la vie de la bête, alors que
+     les trois autres montent — les mêler dans la même ligne à points était le nœud du
+     problème. Le reste part dans les colonnes juste en dessous. */
   const mult = nivMult(c);
   setHtml($('stage-meta'),
-    '<span class="rar rar-' + lineOf(c).rarity + '">' + rar.name + '</span>' +
-    ' · <b>niv. ' + niv + '</b>' +
-    ' · <span class="rank">' + etatOf(c) + '</span>' +
-    (mur ? ' · mûre' : ' · mûre au niv. ' + dernier) +
-    (Math.abs(mult - 1) > 0.005 ? ' · valeur ×' + dec(mult) : ''));
+    '<span class="rar rar-' + lineOf(c).rarity + '">' + rar.name + '</span>');
+  peindreAxes(c, mur, rank, niv, dernier, mult);
 
   /* La rente s'annonce AVANT d'exister : sans ça, personne ne devine qu'une bête se met à
      payer toute seule à l'âge adulte. Une fois ouverte, c'est le montant qu'on affiche. */
@@ -2889,12 +2929,12 @@ function renderStage() {
       // Ce qu'il reste avant le prochain rang. Même règle que partout ailleurs : en secondes
       // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
       const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * ageGrow(c);
-      setText($('stage-timer'), 'mûre · ' +
-        remaining(cible - (c.over || 0), autoReel(s)) + ' → ' + rank.next.name +
+      setText($('stage-timer'),
+        remaining(cible - (c.over || 0), autoReel(s)) + ' → ' + rank.next.fem +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
-      setText($('stage-timer'), 'mûre · plus aucun rang au-dessus');
+      setText($('stage-timer'), 'plus aucun rang au-dessus');
     }
     $('stage-timer').classList.add('done');
     setText($('stage-hint'), c.age < AGES.length
@@ -3155,7 +3195,11 @@ function tickView() {
       const mur = estMur(s.c);
       setWidth(t.bar, (bandRatio(s.c) * 100).toFixed(1) + '%');
       t.el.classList.toggle('done', mur);
-      setText(t.tag, 'niv. ' + niveau(s.c) + (mur ? ' ✦' : ''));
+      /* « 7/15 » plutôt que « niv. 7 » : le même idiome que la colonne NIVEAU de la scène,
+         et le plafond de l'âge — donc la distance à la maturité — tient dans le même espace
+         que le mot « niv. » qu'il remplace. */
+      setText(t.tag, niveau(s.c) + '/' + (nivBase(s.c.age) + nivDansAge(s.c.age)) +
+                     (mur ? ' ✦' : ''));
       setFont(t.glyph, (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem');
     }
   }

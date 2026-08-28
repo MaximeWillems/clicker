@@ -364,6 +364,68 @@ body.debut .stage { padding-top: 3.5rem; padding-bottom: 3rem; }
 .stage.apex .subject-meta { color: var(--rar, var(--soft)); }
 .subject-meta .rank { color: var(--accent); }
 
+/* ── LES TROIS AXES D'UNE BÊTE ────────────────────────────────────────────────
+   Âge, niveau et taille montaient dans une seule ligne à points, où « enfant énorme »
+   soudait deux axes en un mot et où « mûre » se répétait dans le chrono juste en dessous.
+   Une colonne chacun, un intitulé chacun : la forme de l'affichage enseigne qu'il y a trois
+   choses, et lesquelles. */
+.axes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: min(100%, 30rem);
+  background: var(--sunken);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.axe {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.3rem 0.55rem;
+  border-left: 1px solid var(--rule);
+  border-top: 2px solid transparent;
+}
+.axe:first-child { border-left: 0; }
+.axe-nom {
+  font-family: var(--f-ui); font-size: 0.6rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--faint);
+}
+.axe-val {
+  font-family: var(--f-num); font-size: 0.95rem;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+  line-height: 1.15; text-align: center;
+}
+.axe-plus {
+  font-family: var(--f-num); font-size: 0.72rem;
+  color: var(--soft); font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: 3px; min-height: 1.05em;
+}
+
+/* La colonne que la GRANDE BARRE est en train de remplir. Elle vise le niveau tant que la
+   bête grandit, puis la taille une fois mûre : sans ce lien, la barre changeait de sens
+   sans prévenir. */
+.axe.actif { border-top-color: var(--accent); background: var(--surface); }
+.axe.actif .axe-nom { color: var(--accent); }
+/* Mûre : les deux nombres se rejoignent, et le mot le confirme. */
+.axe.mur .axe-plus { color: var(--accent); }
+
+/* Les cinq âges en pastilles : on voit d'un coup qu'il y en a cinq, et où on en est. */
+.axe-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--rule-hi); }
+.axe-pip.on { background: var(--rar, var(--accent)); }
+
+.timer-ligne {
+  display: flex; align-items: baseline; justify-content: center;
+  flex-wrap: wrap; gap: 0.45rem; margin: 0;
+}
+.timer-axe {
+  font-family: var(--f-ui); font-size: 0.58rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--jade-dim); border-radius: 3px;
+  padding: 0.08rem 0.3rem;
+}
+
 .stage-bar {
   flex: none;
   width: min(100%, 30rem);

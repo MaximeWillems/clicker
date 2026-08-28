@@ -63,10 +63,36 @@
     </button>
 
     <h1 class="subject-name" id="stage-name">Œuf</h1>
-      <p class="subject-meta" id="stage-meta">en couvaison</p>
+    <p class="subject-meta" id="stage-meta">en couvaison</p>
+
+    <!-- LES TROIS AXES D'UNE BÊTE. Son âge, son niveau et sa taille montent séparément et ne
+         s'obtiennent pas de la même façon : une colonne chacun, un intitulé chacun. Avant,
+         les trois tenaient dans une seule ligne à points où « enfant énorme » soudait l'âge
+         et la taille en un seul mot. -->
+    <div class="axes" id="stage-axes" hidden>
+      <div class="axe" id="axe-age">
+        <span class="axe-nom">âge</span>
+        <span class="axe-val" id="axe-age-val"></span>
+        <span class="axe-plus" id="axe-age-plus"></span>
+      </div>
+      <div class="axe" id="axe-niv">
+        <span class="axe-nom">niveau</span>
+        <span class="axe-val" id="axe-niv-val"></span>
+        <span class="axe-plus" id="axe-niv-plus"></span>
+      </div>
+      <div class="axe" id="axe-taille">
+        <span class="axe-nom">taille</span>
+        <span class="axe-val" id="axe-taille-val"></span>
+        <span class="axe-plus" id="axe-taille-plus"></span>
+      </div>
+    </div>
 
     <div class="stage-bar" role="presentation"><i id="stage-fill"></i></div>
-    <p class="stage-timer" id="stage-timer"></p>
+    <!-- La barre ne remplit pas toujours le même axe : l'étiquette dit lequel. -->
+    <p class="timer-ligne">
+      <span class="timer-axe" id="timer-axe" hidden></span>
+      <span class="stage-timer" id="stage-timer"></span>
+    </p>
     <p class="stage-boost" id="stage-boost"></p>
 
     <div class="stage-acts" id="stage-acts"></div>

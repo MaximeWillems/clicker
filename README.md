@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.12.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.13.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.12.0** | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
+| **2.13.0** | l'âge, le niveau et la taille prennent chacun leur colonne |
+| 2.12.0 | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
 | 2.11.0 | une professeure accueille le joueur et l'accompagne, en dialogues |
 | 2.10.0 | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
 | 2.9.0 | les paliers de jetons passent au pas de mille — trois jetons au premier million |
@@ -1324,14 +1325,54 @@ Le détail du format attendu est dans [`art/LISEZMOI.md`](art/LISEZMOI.md).
 | l'échelle | 0,55 | 2,19 | continue, plus un bond fixe à chaque évolution |
 | la valeur | 15 % de son âge | 100 % du sien | par paliers, un saut par niveau |
 | la silhouette | forme 1 | forme 5 | change au moment où l'on paie le péage |
-| le badge | `niv. 1` | `niv. 100 ✦` | le ✦ marque la maturité |
+| le badge | `1/15` | `100/100 ✦` | le ✦ marque la maturité |
 
 **La valeur est plate à l'intérieur d'un niveau et saute au passage** : c'est le clic qui fait
 changer de niveau qui paie, pas les vingt d'avant. La barre de la scène vise donc le prochain
 niveau, jamais la maturité — cent niveaux dans une vie, donc cent barres qui se remplissent.
-Où en est la bête dans son âge se lit juste au-dessus, « mûre au niv. 65 » : deux informations,
-deux endroits, aucune redite. La vignette de la bande, elle, montre la distance à la maturité —
-c'est-à-dire à la décision.
+La vignette de la bande, elle, montre la distance à la maturité — c'est-à-dire à la décision.
+
+### Trois axes, trois colonnes
+
+Une bête monte sur **trois échelles qui ne s'obtiennent pas de la même façon** : son âge se
+paie, son niveau se clique, sa taille s'engraisse. Les trois tenaient dans une seule ligne à
+points sous son nom :
+
+    commune · niv. 15 · enfant énorme · mûre · valeur ×1,70
+
+Cinq fragments séparés par le même signe, sans hiérarchie, et le mélange était réel — pas
+seulement visuel :
+
+- **`enfant énorme` soudait deux axes en un mot.** L'âge et la taille ne se distinguaient plus,
+  alors que l'un se paie et l'autre se nourrit.
+- **`mûre` se disait deux fois** : là, puis à nouveau dans le chrono juste en dessous.
+- **`valeur ×1,70` fondait deux facteurs en un.** Le niveau et la taille multiplient chacun de
+  leur côté ; un seul nombre ne disait pas lequel avait bougé.
+- **La barre changeait de sens sans prévenir.** Elle vise le prochain niveau tant que la bête
+  grandit, puis le prochain rang de taille une fois mûre. Rien ne l'indiquait.
+
+Chaque axe a maintenant sa colonne, son intitulé et son facteur :
+
+    ┌─ ÂGE ───────┬─ NIVEAU ────┬─ TAILLE ────┐
+    │ adolescent  │ 35 / 35     │ énorme      │
+    │ ●●○○○       │ mûre        │ ×1,70       │
+    └─────────────┴─────────────┴─────────────┘
+
+**La maturité n'est plus un quatrième axe.** C'est le niveau qui touche le plafond de son
+âge — l'égalité des deux nombres le montre, et le mot ne fait que le confirmer. C'était le
+vrai nœud : « mûre » se présentait comme une chose de plus à comprendre alors que c'est un
+état du niveau.
+
+**Les cinq âges sont des pastilles.** On voit d'un coup qu'il y en a cinq et lequel est
+atteint, ce qu'aucun mot seul ne disait. Elles prennent la couleur de la rareté.
+
+**La colonne que la barre remplit est marquée** — liseré vert en haut, intitulé vert, et une
+étiquette sous la barre qui la nomme. C'est le lien qui manquait le plus.
+
+Sous le nom ne reste que la **rareté**, la seule chose qui ne bouge jamais de toute la vie de
+la bête. Les vignettes de la bande suivent le même vocabulaire : `35/35 ✦` plutôt que
+`niv. 35 ✦` — le plafond de l'âge tient dans la place que prenait le mot « niv. » — et le
+survol nomme l'âge, que seule la forme du dessin trahissait.
 
 Vendre est possible à tout niveau, au prix du niveau, et **aucune condition de taille ne s'y
 ajoute jamais**. C'est la porte de sortie quand un enclos bloque, elle doit rester simple. Le
