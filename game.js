@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.1.1';
+const VERSION = 'alpha 2.2.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -244,9 +244,7 @@ const TINTS = [
    coup de chance, et on finissait par en vendre. À 1/8192 il redevient ce qu'il doit être —
    quelque chose qu'on raconte, et qu'on garde.
 
-   Deux conséquences à connaître. Le jalon d'ascension « avoir un chromatique en enclos »
-   devient un objectif de longue haleine plutôt qu'une étape ; il reste franchissable, mais il
-   ne se planifie plus. Et la carte d'album CONSTELLÉE prend toute sa valeur : plafonnée à ×2
+   Une conséquence à connaître : la carte d'album CONSTELLÉE prend toute sa valeur : plafonnée à ×2
    sur tout l'album, elle ramène la chance à 1/4096 — un doublement qui se sent enfin, là où
    il n'était qu'un confort. */
 const PRODIGE_ODDS  = 1 / 8192;
@@ -289,7 +287,8 @@ const RANKS = [
    Le jeu s'arrêtait sur une fin sèche : légendes mythiques, ferme pleine, plus rien.
    L'ascension lui donne un deuxième tour, et l'album est la seule chose qu'on emporte.
 
-   LE CYCLE TIENT EN CINQ TEMPS. On joue. On franchit un jalon. On ascensionne : les bêtes
+   LE CYCLE TIENT EN CINQ TEMPS. On joue. On gagne un jeton en franchissant un palier de
+   fortune. On ascensionne, ce qui dépense le jeton : les bêtes
    de l'enclos deviennent des CAPSULES — la bête figée telle qu'elle était. On équipe
    quelques cartes. Tout le reste repart de zéro.
 
@@ -348,61 +347,32 @@ const MOTIF_BONUS = {
   'constellé': { key: 'prodige', quoi: 'chance de prodige',     pas: 0.07, cap: 1.00, signe: 1 },
 };
 
-/* Un jalon est un exploit à USAGE UNIQUE : le franchir OUVRE la possibilité d'ascensionner,
-   l'ascension en consomme un. Le nombre total d'ascensions est donc borné par cette liste —
-   et comme les emplacements et les paliers le sont aussi, la puissance maximale de l'album
-   est un nombre qu'on peut calculer avant d'avoir joué.
+/* LES JETONS D'ASCENSION. Un jeton s'obtient en franchissant un palier de fortune, et
+   l'ascension en dépense un. Les paliers montent d'un MILLION à chaque cran — un million de
+   pièces, puis mille milliards, puis un trillion — de sorte que le suivant ne se rattrape
+   jamais par accident : il demande de refaire toute l'économie une fois de plus.
+
+   UN PALIER FRANCHI EST FRANCHI POUR TOUJOURS. Il crédite son jeton une fois, puis il est
+   mort : l'ascension remet la bourse à zéro, mais elle ne rend pas les paliers déjà passés.
+   Le nombre total d'ascensions d'une partie est donc borné par cette échelle, et par elle
+   seule — et comme les emplacements le sont aussi, la puissance maximale de l'album reste un
+   nombre qu'on peut calculer avant d'avoir joué.
 
    RIEN N'OBLIGE JAMAIS À ASCENSIONNER. C'est un sacrifice qu'on choisit : on perd sa ferme
-   entière contre quelques cartes. Un jalon franchi ne réclame rien, ne clignote pas et
+   entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et
    n'expire pas — il attend.
 
-   LE PREMIER TOMBE EN MILIEU DE PARTIE, pas avant. La liste s'ancre sur les ères plutôt que
-   sur des seuils inventés : le premier jalon demande une RARE menée à l'âge adulte, ce qui
-   suppose d'avoir ouvert la deuxième ère — autour de deux heures de jeu — puis d'avoir fait
-   grandir la bête. La version d'avant ouvrait sur « mener une bête à l'âge ancien », soit
-   dix-huit minutes sans rien avoir automatisé : l'ascension arrivait avant que le joueur ait
-   une ferme à sacrifier, et sacrifier trois têtards n'est pas un choix.
+   LE PREMIER TOMBE EN MILIEU DE PARTIE, pas avant. Un million de pièces suppose d'avoir mené
+   des bêtes au bout et d'en avoir vendu ; on n'y arrive pas en cliquant des têtards. La
+   version d'avant ouvrait l'ascension sur « mener une bête à l'âge ancien », soit dix-huit
+   minutes sans rien avoir automatisé : elle arrivait avant qu'on ait une ferme à sacrifier.
 
-   La condition se lit SUR L'ÉTAT COURANT, jamais sur un souvenir. C'est ce qui interdit
-   d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc
-   plus aucun jalon ne tient. Il faut rejouer pour rouvrir le suivant.
-
-   Les trois natures — fortune, exploit, collection — sont volontairement mélangées. Des
-   seuils de fortune seuls n'encourageraient qu'à amasser, alors que l'album récompense de
-   BIEN jouer ; des exploits seuls rendraient le rythme illisible.
-
-   Les libellés se lisent dans AGES : un âge renommé ne doit pas laisser un jalon parler de
-   l'ancien nom. Les clés, elles, sont écrites dans la sauvegarde — `load` jette celles qu'il
-   ne reconnaît plus, pour qu'une liste retouchée ne laisse pas de fantôme. */
-const rangDe = c => RARITY[lineOf(c).rarity].rank;
-
-const JALONS = [
-  { key: 'rare-adulte', quoi: 'Mener une rare à l’âge ' + AGES[2].nom,
-    test: () => state.pen.some(c => c.age >= 3 && rangDe(c) >= 1) },
-  { key: 'or-10m',      quoi: 'Amasser 10 M de pièces',
-    test: () => state.coins >= 1e7 },
-  { key: 'rare-bout',   quoi: 'Mener une rare à l’âge ' + AGES[4].nom, slot: true,
-    test: () => state.pen.some(c => c.age >= 5 && rangDe(c) >= 1) },
-  { key: 'epique',      quoi: 'Avoir une épique en enclos',
-    test: () => state.pen.some(c => rangDe(c) >= 2) },
-  { key: 'or-1md',      quoi: 'Amasser 1 Md de pièces',
-    test: () => state.coins >= 1e9 },
-  { key: 'epique-bout', quoi: 'Mener une épique à l’âge ' + AGES[4].nom, slot: true,
-    test: () => state.pen.some(c => c.age >= 5 && rangDe(c) >= 2) },
-  { key: 'chroma',      quoi: 'Avoir un chromatique en enclos',
-    test: () => state.pen.some(c => c.prodige) },
-  { key: 'mythique',    quoi: 'Avoir une mythique en enclos',
-    test: () => state.pen.some(c => rangDe(c) >= 3) },
-  { key: 'or-100md',    quoi: 'Amasser 100 Md de pièces',
-    test: () => state.coins >= 1e11 },
-  { key: 'mythe-bout',  quoi: 'Mener une mythique à l’âge ' + AGES[4].nom, slot: true,
-    test: () => state.pen.some(c => c.age >= 5 && rangDe(c) >= 3) },
-  { key: 'toutes',      quoi: 'Rencontrer toutes les lignées',
-    test: () => LINES.every(l => AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)])) },
-  { key: 'sommet',      quoi: 'Une ' + AGES[4].nom + ' mythique chromatique',
-    test: () => state.pen.some(c => c.age >= 5 && c.prodige && rangDe(c) >= 3) },
-];
+   Cinq paliers sont déclarés. Les derniers sont sans doute hors d'atteinte — une légende
+   mythique chromatique vaut environ 5,6·10^11, donc le troisième palier demanderait d'en
+   vendre un million. C'est voulu : l'échelle ne s'arrête pas avant l'économie, c'est
+   l'économie qui s'arrête avant l'échelle. */
+const JETON_PAS = 1e6;
+const JETON_PALIERS = [1, 2, 3, 4, 5].map(n => Math.pow(JETON_PAS, n));
 
 /* ── La granularité des améliorations ─────────────────────────────────────────
    Un niveau qui double presque de prix et ne rend qu'un cran d'effet, c'est deux décroissances
@@ -692,7 +662,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 7;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 8;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -746,12 +716,12 @@ function freshState() {
     evolveUpTo: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     seen: {},
     /* Ce qui traverse l'ascension. `album` garde TOUTES les capsules, `slots` ne porte que
-       les identifiants des cartes équipées — seules celles-là agissent. `asc.done` liste les
-       jalons déjà dépensés : c'est lui qui borne le nombre d'ascensions et le nombre
-       d'emplacements. Ces quatre-là et `seen` sont recopiés tels quels au moment du saut. */
+       les identifiants des cartes équipées — seules celles-là agissent. `asc` compte les
+       ascensions faites, les paliers de fortune déjà crédités et les jetons non dépensés.
+       Ces trois-là et `seen` sont recopiés tels quels au moment du saut. */
     album: [],
     slots: [],
-    asc: { n: 0, done: [] },
+    asc: { n: 0, paliers: 0, jetons: 0 },
     speed: 1,
     sound: true,
     t: Date.now(),
@@ -871,12 +841,15 @@ function load() {
        partie en cours ne perd rien et devient ascensionnable dès son premier jalon franchi.
        On nettoie seulement les emplacements qui pointeraient vers une carte absente. */
     merged.album = Array.isArray(merged.album) ? merged.album : [];
-    merged.asc = Object.assign({ n: 0, done: [] }, merged.asc || {});
-    if (!Array.isArray(merged.asc.done)) merged.asc.done = [];
-    /* La liste des jalons a été retouchée en 2.0.2 : on jette les clés qu'elle ne connaît
-       plus, sinon une sauvegarde traîne des fantômes qui ne comptent ni comme franchis ni
-       comme à franchir. Le nombre d'ascensions faites, lui, ne bouge pas. */
-    merged.asc.done = merged.asc.done.filter(k => JALONS.some(j => j.key === k));
+    /* v7 → v8 : les jalons variés deviennent une échelle de fortune. `done` listait des clés
+       de jalons qui n'existent plus ; on le jette et on repart de paliers vides. Le nombre
+       d'ascensions déjà faites, lui, ne bouge pas — c'est lui qui porte les emplacements.
+       Une partie en cours regagnera son premier jeton dès qu'elle repassera le million. */
+    merged.asc = Object.assign({ n: 0, paliers: 0, jetons: 0 }, merged.asc || {});
+    delete merged.asc.done;
+    merged.asc.n = merged.asc.n || 0;
+    merged.asc.paliers = merged.asc.paliers || 0;
+    merged.asc.jetons = merged.asc.jetons || 0;
     merged.slots = (Array.isArray(merged.slots) ? merged.slots : [])
       .filter(id => merged.album.some(k => k.id === id));
     /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
@@ -1229,6 +1202,11 @@ function fmt(n) {
   n = Math.floor(n);
   const signe = n < 0 ? '-' : '', a = Math.abs(n);
   const court = (v, u) => signe + v.toFixed(v < 10 ? 2 : 1).replace('.', ',') + ' ' + u;
+  /* Les paliers de jetons montent jusqu'à 10^30 : sans ces trois crans, le panneau
+     d'ascension annoncerait « 1 000 000 000 000 000 000,0 Bn » pour le prochain. */
+  if (a >= 1e30) return court(a / 1e30, 'Qi');
+  if (a >= 1e24) return court(a / 1e24, 'Qa');
+  if (a >= 1e18) return court(a / 1e18, 'Tn');
   if (a >= 1e12) return court(a / 1e12, 'Bn');
   if (a >= 1e9)  return court(a / 1e9, 'Md');
   if (a >= 1e6)  return court(a / 1e6, 'M');
@@ -1676,6 +1654,8 @@ function advance(dt) {
      absence — une bête qu'on garde travaille, présent ou pas. */
   const rente = renteTotale();
   if (rente) state.coins += rente * dt;
+  // un palier de fortune franchi pendant une absence est franchi quand même
+  crediterJetons();
 }
 
 function runAutomations(dt) {
@@ -2107,13 +2087,25 @@ function renderCollection() {
    L'album et l'ascension
    ───────────────────────────────────────────── */
 
-const jalonDe   = key => JALONS.find(j => j.key === key) || null;
-const jalonFait = key => (state.asc.done || []).indexOf(key) !== -1;
-const jalonsOuverts = () => JALONS.filter(j => !jalonFait(j.key) && j.test());
+// Le prochain palier à franchir, null quand l'échelle est épuisée.
+const prochainPalier = () => (state.asc.paliers < JETON_PALIERS.length
+                              ? JETON_PALIERS[state.asc.paliers] : null);
 
-const slotsMax = done =>
-  Math.min(SLOTS_MAX, SLOTS_BASE + (done || state.asc.done || [])
-    .filter(k => (jalonDe(k) || {}).slot).length);
+/* Crédite les paliers que la bourse vient de dépasser. Appelée dans la boucle ET pendant le
+   rattrapage d'une absence : un palier franchi pendant qu'on n'était pas là est franchi quand
+   même. La boucle `while` traite le cas d'une vente qui saute deux paliers d'un coup. */
+function crediterJetons() {
+  let seuil;
+  while ((seuil = prochainPalier()) !== null && state.coins >= seuil) {
+    state.asc.paliers++;
+    state.asc.jetons++;
+  }
+}
+
+/* Les emplacements suivent le nombre d'ascensions : trois à la première, un de plus à chaque
+   saut, six au bout. C'était accroché à trois jalons nommés ; l'échelle de fortune n'a plus de
+   jalon nommé, et le compte d'ascensions dit la même chose en plus simple. */
+const slotsMax = n => Math.min(SLOTS_MAX, SLOTS_BASE + (n === undefined ? state.asc.n : n));
 
 /* La bête telle qu'elle était, figée. `capsuleBrute` ne consomme pas d'identifiant : l'écran
    d'ascension en fabrique une par bête pour montrer ce que le saut donnera, et ces
@@ -2195,14 +2187,13 @@ function renderAlbum() {
 let ascChoix = [];
 
 function apercuAscension() {
-  const jalon = jalonsOuverts()[0] || null;
-  const done = jalon ? (state.asc.done || []).concat([jalon.key]) : (state.asc.done || []);
+  const jetons = state.asc.jetons || 0;
   const neuves = state.pen.map((c, i) => Object.assign(capsuleBrute(c), { id: -(i + 1) }));
-  return { jalon, done, neuves, max: slotsMax(done) };
+  return { jetons, neuves, max: slotsMax((state.asc.n || 0) + 1) };
 }
 
 function ouvrirAscension() {
-  if (!jalonsOuverts().length) return;
+  if (!(state.asc.jetons > 0)) return;
   ascChoix = state.slots.slice();
   $('ascension').hidden = false;
   renderAscension();
@@ -2212,10 +2203,14 @@ function fermerAscension() { $('ascension').hidden = true; }
 
 function renderAscension() {
   const ap = apercuAscension();
-  if (!ap.jalon) { fermerAscension(); return; }
+  if (!ap.jetons) { fermerAscension(); return; }
 
-  setText($('asc-jalon'), 'Jalon franchi : ' + ap.jalon.quoi + '. Ce saut le dépenserait — ' +
-    'mais rien ne t’oblige à sauter, ni maintenant ni jamais.');
+  const suivant = prochainPalier();
+  setText($('asc-jalon'),
+    ap.jetons + ' jeton' + (ap.jetons > 1 ? 's' : '') + ' d’ascension. Ce saut en dépenserait ' +
+    'un — mais rien ne t’oblige à sauter, ni maintenant ni jamais.' +
+    (suivant ? ' Le prochain se gagne à ' + fmt(suivant) + ' pièces.'
+             : ' C’était le dernier palier de l’échelle.'));
 
   const gain = $('asc-gain');
   gain.textContent = '';
@@ -2223,14 +2218,14 @@ function renderAscension() {
     const p = document.createElement('p');
     p.className = 'asc-vide';
     p.textContent = 'Ton enclos est vide : ce saut ne produirait aucune carte, et tu perdrais ' +
-      'tout pour rien. Élève quelques bêtes et reviens — le jalon t’attend.';
+      'tout pour rien. Élève quelques bêtes et reviens — le jeton t’attend.';
     gain.appendChild(p);
   } else {
     for (const k of ap.neuves) gain.appendChild(carteEl(k));
   }
 
   /* Une ascension sans carte est une perte sèche, pas un choix : on la refuse plutôt que de
-     laisser le joueur se saborder d'un clic. Le jalon, lui, reste ouvert. */
+     laisser le joueur se saborder d'un clic. Le jeton, lui, reste en poche. */
   $('asc-go').disabled = !ap.neuves.length;
   setText($('asc-go'), ap.neuves.length
     ? 'Ascensionner · ' + ap.neuves.length + ' carte' + (ap.neuves.length > 1 ? 's' : '')
@@ -2276,7 +2271,7 @@ function renderAscension() {
 
 function ascensionner() {
   const ap = apercuAscension();
-  if (!ap.jalon) return;
+  if (!ap.jetons) return;
 
   // les aperçus deviennent de vraies capsules, et les choix suivent leur nouvel identifiant
   const vrai = {};
@@ -2293,7 +2288,10 @@ function ascensionner() {
   /* Tout repart de zéro SAUF ce qui est recopié ici. Les réglages traversent aussi : les
      refaire rareté par rareté à chaque cycle serait une corvée pure, sans aucun enjeu. */
   state = Object.assign(freshState(), {
-    album, slots, asc: { n: (state.asc.n || 0) + 1, done: ap.done },
+    album, slots,
+    /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
+       C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
+    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: state.asc.jetons - 1 },
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound, speed: state.speed,
     buyKind: state.buyKind, sellAt: state.sellAt, sellRank: state.sellRank,
     evolveUpTo: state.evolveUpTo,
@@ -2704,16 +2702,17 @@ function tickView() {
     }
   }
 
-  /* Le bouton n'apparaît que lorsqu'un jalon est franchi, et il ne presse RIEN : il a le
+  /* Le bouton n'apparaît qu'avec un jeton en poche, et il ne presse RIEN : il a le
      même gris que les outils, il ne clignote pas, il n'expire pas. Ascensionner est un
      sacrifice qu'on choisit — on perd sa ferme entière — et un bouton qui réclame ferait
      croire à une étape obligatoire. Son infobulle dit ce qui l'a ouvert, et qu'on peut
      l'ignorer. */
-  const ouvert = jalonsOuverts()[0];
-  $('btn-asc').hidden = !ouvert;
-  if (ouvert) {
-    setText($('btn-asc'), 'Ascension');
-    $('btn-asc').title = ouvert.quoi + ' — tu peux ascensionner quand tu veux, ou jamais.';
+  const jetons = state.asc.jetons || 0;
+  $('btn-asc').hidden = !jetons;
+  if (jetons) {
+    setText($('btn-asc'), 'Ascension' + (jetons > 1 ? ' · ' + jetons : ''));
+    $('btn-asc').title = jetons + ' jeton' + (jetons > 1 ? 's' : '') +
+      ' d’ascension — tu peux sauter quand tu veux, ou jamais.';
   }
 
   const stock = totalEggs();

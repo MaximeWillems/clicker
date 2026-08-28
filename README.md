@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.1.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 7` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 8` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.1.1** | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
+| **2.2.0** | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
+| 2.1.1 | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
 | 2.1.0 | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
 | 2.0.6 | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
 | 2.0.5 | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
@@ -690,49 +691,46 @@ Le build se choisit sur l'écran d'ascension et **reste verrouillé pour toute l
 se permutait librement, on mettrait la couvaison au début et la valeur à la fin : on aurait de
 fait toutes les cartes, et la limite ne limiterait rien.
 
-#### Les jalons
+#### Les jetons d'ascension
 
-Un jalon est un exploit à **usage unique** : le franchir autorise une ascension, l'ascension en
-consomme un. Le nombre total d'ascensions est donc borné par la liste — et comme les
-emplacements le sont aussi, la puissance maximale de l'album est un nombre qu'on peut calculer
-avant d'avoir joué.
+**Un jeton s'obtient en franchissant un palier de fortune, et l'ascension en dépense un.** Les
+paliers montent d'un million à chaque cran :
 
-| # | Le jalon | Nature | Emplacement |
-|---|---|---|---|
-| 1 | Mener une **rare** à l'âge adulte | exploit | — |
-| 2 | Amasser 10 M de pièces | fortune | — |
-| 3 | Mener une rare à l'âge légende | exploit | +1 |
-| 4 | Avoir une **épique** en enclos | exploit | — |
-| 5 | Amasser 1 Md | fortune | — |
-| 6 | Mener une épique à l'âge légende | exploit | +1 |
-| 7 | Avoir un chromatique en enclos | exploit | — |
-| 8 | Avoir une **mythique** en enclos | exploit | — |
-| 9 | Amasser 100 Md | fortune | — |
-| 10 | Mener une mythique à l'âge légende | exploit | +1 |
-| 11 | Rencontrer toutes les lignées | collection | — |
-| 12 | Une légende mythique chromatique | exploit | — |
+| # | Palier | Ce qu'il faut avoir en poche |
+|---|---|---|
+| 1 | 10⁶ | 1 M de pièces |
+| 2 | 10¹² | 1,00 Bn |
+| 3 | 10¹⁸ | 1,00 Tn |
+| 4 | 10²⁴ | 1,00 Qa |
+| 5 | 10³⁰ | 1,00 Qi |
 
-**Le premier jalon tombe en milieu de partie, jamais avant.** La liste s'ancre sur les ères
-plutôt que sur des seuils inventés : il faut avoir ouvert la deuxième ère — autour de deux
-heures de jeu — puis mené une rare à l'âge adulte. La première version ouvrait sur « mener une
-bête à l'âge ancien », soit dix-huit minutes sans rien avoir automatisé : l'ascension arrivait
-avant qu'on ait une ferme à sacrifier, et sacrifier trois têtards n'est pas un choix.
+**Un palier franchi est franchi pour toujours.** Il crédite son jeton une fois, puis il est
+mort : l'ascension remet la bourse à zéro, mais elle ne rend pas les paliers déjà passés. Le
+nombre total d'ascensions d'une partie est donc borné par cette échelle, et par elle seule —
+et comme les emplacements le sont aussi, la puissance maximale de l'album reste un nombre
+qu'on peut calculer avant d'avoir joué.
+
+Le pas de ×1 000 000 fait que **le palier suivant ne se rattrape jamais par accident** : il
+demande de refaire toute l'économie une fois de plus. Une légende mythique chromatique vaut
+environ 5,6·10¹¹, donc le deuxième jeton demande d'en vendre deux, et le troisième un million.
+L'échelle ne s'arrête pas avant l'économie ; c'est l'économie qui s'arrête avant l'échelle.
+
+**Le premier jeton tombe en milieu de partie.** Un million de pièces suppose d'avoir mené des
+bêtes au bout et d'en avoir vendu — on n'y arrive pas en cliquant des têtards.
+
+**Les emplacements suivent le nombre d'ascensions** : trois à la première, un de plus à chaque
+saut, six au bout.
 
 **Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
-entière contre quelques cartes. Un jalon franchi ne réclame rien, ne clignote pas et n'expire
+entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et n'expire
 pas — il attend. Le bouton porte le gris des outils plutôt qu'une couleur d'appel, pour ne pas
 faire croire à une étape obligatoire.
 
 Et **une ascension sans carte est refusée** : sauter avec un enclos vide serait une perte sèche,
-pas un choix. Le panneau le dit et le bouton reste éteint, le jalon restant ouvert pour plus tard.
+pas un choix. Le panneau le dit et le bouton reste éteint, le jeton restant en poche.
 
-**La condition se lit sur l'état courant, jamais sur un souvenir.** C'est ce qui interdit
-d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc plus
-aucun jalon ne tient et il faut rejouer pour rouvrir le suivant. Le saut dépense toujours le
-premier jalon ouvert de la liste — le moins cher —, ce qui garde les autres pour plus tard.
-
-Les trois natures sont mélangées volontairement : des seuils de fortune seuls n'encourageraient
-qu'à amasser, alors que l'album récompense de *bien* jouer.
+**On ne peut pas enchaîner deux sauts** sans avoir rejoué : l'ascension vide la bourse, et le
+palier suivant est un million de fois plus haut.
 
 #### Le piège du marchand
 
