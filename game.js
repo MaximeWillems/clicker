@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.7.2';
+const VERSION = 'alpha 2.7.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2972,11 +2972,26 @@ function bindTools() {
 
      Pendant l'écran d'ascension, l'espace ne fait rien : marteler une bête à travers une
      boîte modale qui demande son sort n'a aucun sens. */
+  /* MAINTENIR LA BARRE NE VAUT QU'UN CLIC. Le système répète l'événement des dizaines de fois
+     par seconde tant que la touche est enfoncée : sans ce verrou, poser un livre sur le
+     clavier jouait la partie à notre place, et le clic cessait d'être un geste.
+
+     Le verrou se lève au relâchement, et aussi quand la FENÊTRE perd le focus : une touche
+     relâchée pendant qu'on est ailleurs n'envoie pas de keyup à cette page, et le verrou
+     resterait fermé pour toujours — la barre ne répondrait plus du tout. */
+  let espaceTenue = false;
+  window.addEventListener('keyup', e => {
+    if (e.code === 'Space' || e.key === ' ') espaceTenue = false;
+  });
+  window.addEventListener('blur', () => { espaceTenue = false; });
+
   window.addEventListener('keydown', e => {
     if (e.code !== 'Space' && e.key !== ' ') return;
     const t = e.target;
     if (t && /^(SELECT|INPUT|TEXTAREA)$/.test(t.tagName)) return;
-    e.preventDefault();
+    e.preventDefault();          // le défilement est bloqué même sur une répétition
+    if (espaceTenue || e.repeat) return;
+    espaceTenue = true;
     if (!$('ascension').hidden) return;
     tapStage();
   });

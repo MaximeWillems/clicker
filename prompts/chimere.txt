@@ -3,7 +3,16 @@ evenly spaced.
 
 TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
 
-IDOL STYLE — this is the most important instruction:
+FLAT CARTOON, NEVER AN ILLUSTRATION — read this before anything else:
+this is the SAME drawing technique as every other sheet in this game. Only the
+REGISTER changes — solemn instead of cute. The technique does not change at all.
+- flat blocks of color with one hard outline. Every color is ONE solid tone
+- NO shading, NO soft light, NO airbrush, NO glossy highlight, NO reflection
+- NO drawn scales, NO surface texture, NO engraved detail, NO fine linework
+- hard pixel edges, no anti-aliasing, no blur
+- never a painting, never concept art, never a realistic or photographic object
+
+IDOL REGISTER — what the creature IS:
 - ALREADY ACCOMPLISHED at stage 1: not a baby, not a hatchling. A small complete god
 - adult proportions, calm and settled. The head is a normal head
 - NO blush marks. NO wide smile. NO kawaii. This is NOT a mascot
@@ -11,12 +20,12 @@ IDOL STYLE — this is the most important instruction:
   never huge round eyes, at most one small highlight
 - mouth closed and neutral, or simply doing what the creature does
 - expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
-- clean readable forms, and SHARPNESS IS ALLOWED where it means something:
-  a defined jaw, angular plates, a crown, a fin — never gore, never bared fangs
+- shapes may be ANGULAR where it means something — a defined jaw, a crown, a fin —
+  but they stay flat and FEW. Angular never means detailed. Never gore, never fangs
 - the pose is ALIVE, never heraldic: the weight sits on one side, the body turns,
   the head is set off the centre line. Never a flat symmetrical emblem, never a logo
-- ornament is INSIGNIA, not decoration: rings, plates, glyphs, banded marks,
-  concentric shapes — never polka dots, never freckles, never confetti
+- ornament is INSIGNIA, not decoration: rings, bands, glyphs, banded marks — drawn
+  as a FEW LARGE FLAT SHAPES, never fine engraving, never polka dots, never confetti
 - palette: deep and rich, with ONE metallic accent used sparingly — gold, jade or bone.
   Never a bright candy palette
 
@@ -40,6 +49,9 @@ with a clean outline at every crossing. Transparent background. No shadow, no gr
 no background, no text, no frame.
 Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
 never a blur, never a gradient, and it still counts toward the 6 colors.
+
+Last instruction, and it overrides every word above: 6 flat colors, hard outline,
+no shading, no texture. Between grandeur and flatness, choose FLATNESS.
 
 The 5 stages, in order:
 1. tiny two-headed runt, round fuzzy body, four huge eyes

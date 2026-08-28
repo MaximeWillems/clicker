@@ -74,7 +74,16 @@ ${TECHNIQUE.replace('No gradients.', 'No gradients, no glow.')}`;
    comme appartenant au même jeu qu'un crapaud, sans lui ressembler. */
 const ENTETE_REVELATION = `${CADRE}
 
-IDOL STYLE — this is the most important instruction:
+FLAT CARTOON, NEVER AN ILLUSTRATION — read this before anything else:
+this is the SAME drawing technique as every other sheet in this game. Only the
+REGISTER changes — solemn instead of cute. The technique does not change at all.
+- flat blocks of color with one hard outline. Every color is ONE solid tone
+- NO shading, NO soft light, NO airbrush, NO glossy highlight, NO reflection
+- NO drawn scales, NO surface texture, NO engraved detail, NO fine linework
+- hard pixel edges, no anti-aliasing, no blur
+- never a painting, never concept art, never a realistic or photographic object
+
+IDOL REGISTER — what the creature IS:
 - ALREADY ACCOMPLISHED at stage 1: not a baby, not a hatchling. A small complete god
 - adult proportions, calm and settled. The head is a normal head
 - NO blush marks. NO wide smile. NO kawaii. This is NOT a mascot
@@ -82,12 +91,12 @@ IDOL STYLE — this is the most important instruction:
   never huge round eyes, at most one small highlight
 - mouth closed and neutral, or simply doing what the creature does
 - expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
-- clean readable forms, and SHARPNESS IS ALLOWED where it means something:
-  a defined jaw, angular plates, a crown, a fin — never gore, never bared fangs
+- shapes may be ANGULAR where it means something — a defined jaw, a crown, a fin —
+  but they stay flat and FEW. Angular never means detailed. Never gore, never fangs
 - the pose is ALIVE, never heraldic: the weight sits on one side, the body turns,
   the head is set off the centre line. Never a flat symmetrical emblem, never a logo
-- ornament is INSIGNIA, not decoration: rings, plates, glyphs, banded marks,
-  concentric shapes — never polka dots, never freckles, never confetti
+- ornament is INSIGNIA, not decoration: rings, bands, glyphs, banded marks — drawn
+  as a FEW LARGE FLAT SHAPES, never fine engraving, never polka dots, never confetti
 - palette: deep and rich, with ONE metallic accent used sparingly — gold, jade or bone.
   Never a bright candy palette
 
@@ -107,7 +116,10 @@ ${TECHNIQUE.replace('Front-facing, centered, full body.',
 Depth comes from parts of the body passing IN FRONT of and BEHIND other parts,
 with a clean outline at every crossing.`)}
 Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
-never a blur, never a gradient, and it still counts toward the 6 colors.`;
+never a blur, never a gradient, and it still counts toward the 6 colors.
+
+Last instruction, and it overrides every word above: 6 flat colors, hard outline,
+no shading, no texture. Between grandeur and flatness, choose FLATNESS.`;
 
 /* Cinq descriptions par lignée. On décrit la MASSE et la POSTURE, pas les accessoires.
    Le dernier stade garde toujours un petit visage endormi : c'est ce qui rend une bête
@@ -277,13 +289,21 @@ const STADES = {
      pose, et des anneaux emboîtés lisent comme une rondelle — on obtenait cinq fois le même
      dessin à cinq tailles. La boucle reste FERMÉE, c'est le fil, mais elle est faite par un
      corps qui s'enroule et se croise, jamais par un cercle imprimé. Ce qui change d'un âge à
-     l'autre, c'est la POSE de la boucle. */
+     l'autre, c'est la POSE de la boucle.
+
+     La deuxième planche a raté sur le registre : la pose était bonne, mais le générateur a
+     rendu une illustration peinte — écailles dessinées, reflets, une Terre photographique.
+     Les mots de l'idole (« dieu », « ancien », « insigne », « or ») tirent tous vers la
+     fantasy détaillée, et rien dans la charte ne tirait vers le plat. La charte mascotte s'en
+     sortait parce que « cute » est lui-même corrélé au dessin plat. Il a fallu écrire l'ancre
+     à la main, en tête de prompt : même technique que toutes les autres planches, seul le
+     registre change. */
   ouroboros: [
-    'a serpent ALREADY biting its own tail, forming one closed loop — but a LIVING one: a tilted oval seen at an angle, never a flat circle. The head is raised at the upper left and turned down onto the tail, the neck passing IN FRONT of the body at the crossing. Slender body, narrow half-lidded eyes, one banded mark along the back',
-    'the same bite and the same closed loop, now TWISTED: the body makes one clear S-bend before it closes, so the loop is pinched on one side and swings wide on the other. Thicker body with flat angular scale plates, the same narrow eyes, a pale line along the inside edge',
-    'the same bite, the body now long enough to loop TWICE — the second coil crossing the first diagonally like a figure of eight, one loop clearly in front and one behind. Never two nested circles. The same plates, the same impassive face at the bite',
+    'a serpent ALREADY biting its own tail, forming one closed loop — but a LIVING one: a tilted oval seen at an angle, never a flat circle. The head is raised at the upper left and turned down onto the tail, the neck passing IN FRONT of the body at the crossing. Slender body, narrow half-lidded eyes, one banded mark along the back. A plain SNAKE head — smooth and rounded, no horns, no crest, never a dragon head',
+    'the same bite and the same closed loop, now TWISTED: the body makes one clear S-bend before it closes, so the loop is pinched on one side and swings wide on the other. Thicker body carrying a few LARGE FLAT bands, never a scale texture, the same snake head and narrow eyes, a pale line along the inside edge',
+    'the same bite, the body now long enough to loop TWICE — the second coil crossing the first diagonally like a figure of eight, one loop clearly in front and one behind. Never two nested circles. The same flat bands, the same impassive snake face at the bite',
     'the same bite, the body coiling three times in a wide spiral seen at an angle, like a spring laid on its side, the head lifted high above the coils and the tail drawn down and across. In the space the coils enclose, one flat pale disc of light — the coil has begun to hold something',
-    'ouroboros, enormous, the same bite, the coils now sweeping around the frame like an orbit — one coil passing clearly IN FRONT of what it holds, the others behind. At the centre a small world with flat continents and two moons. Gold ring glyphs set into the back like insignia. The head high and turned down onto the tail, the face small and impassive — the awe is the composition, never the expression'],
+    'ouroboros, enormous, the same bite, the coils now sweeping around the frame like an orbit — one coil passing clearly IN FRONT of what it holds, the others behind. At the centre a small world drawn as ONE flat circle with two or three simple blob continents in the same flat colors — never a realistic globe, never a photograph of Earth — and two plain round dots for moons. A few large flat gold rings set into the back like insignia. The head high and turned down onto the tail, the snake face small and impassive — the awe is the composition, never the expression'],
 
   /* Le fil de l'araignée : huit pattes courtes et rondes, un abdomen bulbeux marqué d'un
      sablier pâle, et une masse qui passe des pattes au ventre de stade en stade. */

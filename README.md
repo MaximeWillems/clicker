@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.2
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.3
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.7.2** | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
+| **2.7.3** | maintenir la barre espace ne vaut qu'un seul clic |
+| 2.7.2 | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
 | 2.7.1 | les mythiques passent en charte « idole » — même style, plus mignon du tout |
 | 2.7.0 | la réserve revient, et les cartes se déplacent au glisser-déposer |
 | 2.6.0 | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
@@ -978,6 +979,13 @@ ce qui cassait le martèlement : un bouton gardé sous le focus après un clic �
 chaque espace suivant, tantôt pour se réactiver, tantôt pour faire défiler la colonne qui le
 contient. Un bouton cliqué **à la souris** relâche donc son focus ; activé **au clavier**, il le
 garde, sans quoi on ne pourrait plus naviguer au Tab.
+
+**Maintenir la barre ne vaut qu'un clic.** Le système répète l'événement des dizaines de fois
+par seconde tant que la touche est enfoncée : sans verrou, poser un livre sur le clavier jouait
+la partie à notre place, et le clic cessait d'être un geste. Le verrou se lève au relâchement,
+et aussi quand la **fenêtre** perd le focus — une touche relâchée pendant qu'on est ailleurs
+n'envoie pas de `keyup` à la page, et la barre resterait muette pour toujours. Le défilement,
+lui, reste bloqué même sur les répétitions.
 
 Pendant l'écran d'ascension, l'espace ne fait rien : marteler une bête à travers une boîte
 modale qui demande son sort n'a aucun sens.
