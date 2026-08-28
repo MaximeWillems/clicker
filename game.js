@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.3.2';
+const VERSION = 'alpha 2.3.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2202,8 +2202,8 @@ function renderAlbum() {
     return;
   }
   $('album-intro').textContent = state.asc.n +
-    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Seules les cartes équipées agissent, ' +
-    'et le choix se refait au prochain saut.';
+    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Seules les cartes équipées agissent ; ' +
+    'les autres attendent en réserve et le choix se refait au prochain saut. Rien ne se perd.';
 
   const equipees = state.slots.map(carteDe).filter(Boolean);
   const reste = state.album.filter(k => state.slots.indexOf(k.id) === -1);
@@ -2220,7 +2220,7 @@ function renderAlbum() {
     }
   };
   bloc('Équipées — ' + equipees.length + ' / ' + slotsMax(), equipees, true);
-  bloc('En réserve', reste, false);
+  bloc('En réserve — gardées d’une ascension à l’autre', reste, false);
 }
 
 /* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent un
@@ -2286,7 +2286,7 @@ function renderAscension() {
   const eggs = totalEggs(), autos = UPGRADES.filter(u => lvl(u.key)).length;
   setText($('asc-perte'),
     fmt(state.coins) + ' pièces · ' +
-    (eggs ? eggs + ' œuf' + (eggs > 1 ? 's' : '') + ' en réserve · ' : '') +
+    (eggs ? eggs + ' œuf' + (eggs > 1 ? 's' : '') + ' non éclos · ' : '') +
     state.incubators + ' incubateur' + (state.incubators > 1 ? 's' : '') + ' · ' +
     state.pens + ' enclos · ' +
     autos + ' amélioration' + (autos > 1 ? 's' : '') + ' sur ' + UPGRADES.length +

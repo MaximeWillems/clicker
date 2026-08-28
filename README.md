@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.2
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.3
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.3.2** | un brief de séance, pour générer plusieurs planches d'affilée sans dérive de style |
+| **2.3.3** | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
+| 2.3.2 | un brief de séance, pour générer plusieurs planches d'affilée sans dérive de style |
 | 2.3.1 | les prompts d'illustration des six nouvelles rares |
 | 2.3.0 | six lignées rares de plus — l'ère rare passe de 4 à 10 lignées |
 | 2.2.3 | un jeton dépensé = un emplacement de carte — il en offrait trois avant le premier saut |
@@ -700,6 +701,15 @@ Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chan
 **L'album garde toutes les capsules, seules celles qu'on équipe agissent.** Sans limite,
 vingt-sept cartes se composent et la puissance de l'album n'a plus de plafond — c'est de ça
 que meurent les jeux idle.
+
+Il vit **sous les enclos**, dans la colonne large, et non dans la colonne latérale : c'est le
+prolongement de la ferme — ce que les bêtes deviennent — et non un réglage qu'on consulte une
+fois. Les cartes s'y posent en grille, si bien qu'on voit son build d'un coup d'œil.
+
+**« Réserve » ne désigne qu'une seule chose : les cartes qu'on n'a pas équipées**, gardées d'une
+ascension à l'autre. Le mot servait aussi à compter les œufs non éclos dans l'écran
+d'ascension, ce qui faisait cohabiter deux réserves dans le même panneau — l'une qu'on perd,
+l'autre qui traverse. Les œufs y sont désormais dits *non éclos*.
 
 **Un jeton dépensé ouvre un emplacement, et c'est tout.** La première ascension en donne un,
 la deuxième un second, et ainsi de suite : la puissance de l'album ne dépasse jamais le nombre

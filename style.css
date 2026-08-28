@@ -648,13 +648,22 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 }
 .asc-call:hover { border-color: var(--jade); color: var(--jade); }
 
-.album { display: flex; flex-direction: column; gap: 3px; }
+/* L'album est sous les enclos, dans la colonne large : les cartes se posent en grille plutôt
+   qu'en liste, et on voit son build d'un coup d'œil au lieu de le faire défiler. */
+.panel-album { margin-top: 1.25rem; }
+.album {
+  display: grid; gap: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
 .album-head {
+  grid-column: 1 / -1;
   font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--faint);
   margin: 0.7rem 0 0.15rem;
 }
 .album-head:first-child { margin-top: 0; }
+/* les équipées passent devant : c'est le seul bloc qui agit sur la partie en cours */
+.album .carte.active { background: var(--raised); box-shadow: inset 0 0 0 1px var(--jade-dim); }
 
 .carte {
   display: flex; align-items: center; gap: 0.6rem;
