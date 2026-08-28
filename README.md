@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.3
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.4
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.7.3** | maintenir la barre espace ne vaut qu'un seul clic |
+| **2.7.4** | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
+| 2.7.3 | maintenir la barre espace ne vaut qu'un seul clic |
 | 2.7.2 | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
 | 2.7.1 | les mythiques passent en charte « idole » — même style, plus mignon du tout |
 | 2.7.0 | la réserve revient, et les cartes se déplacent au glisser-déposer |
@@ -842,8 +843,18 @@ l'identifiant de leur **bête**, non leur position dans l'enclos : elles étaien
 première, la deuxième », si bien qu'une vente automatique décalait tout et qu'on gardait une
 carte qu'on n'avait pas choisie.
 
-L'écran d'ascension annonce donc combien de cartes le saut produira, et **prévient quand le
-marchand est encore actif**. Préparer une ascension, c'est passer ses consignes sur « jamais » —
+**L'écran d'ascension n'a qu'une liste.** Il en avait deux : les capsules à naître
+apparaissaient une fois sous « ce que tu vas gagner », puis une seconde fois dans le choix,
+sans que rien ne dise que c'étaient les mêmes. Tout tient maintenant dans une seule liste — les
+capsules à naître en tête, marquées *neuve*, puis les cartes qu'on possède déjà — où l'on prend
+jusqu'à cinq cartes. Le reste attend en réserve.
+
+Le récap des pertes annonçait aussi « les bêtes non transformées », ce qui était **faux**
+depuis que toutes les bêtes de l'enclos deviennent des capsules : il n'en reste aucune. Un
+récap qui invente une perte qui n'existe pas discrédite tout le reste, y compris ce qu'il dit
+de juste.
+
+L'écran **prévient quand le marchand est encore actif**. Préparer une ascension, c'est passer ses consignes sur « jamais » —
 ce qui donne enfin un usage stratégique à un réglage qui n'était qu'un confort.
 
 Effet de bord heureux : garder une bête vivante rapporte maintenant deux fois, en rente pendant

@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.7.3';
+const VERSION = 'alpha 2.7.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2320,24 +2320,10 @@ function renderAscension() {
     (suivant ? ' Le prochain se gagne à ' + fmt(suivant) + ' pièces.'
              : ' C’était le dernier palier de l’échelle.'));
 
-  const gain = $('asc-gain');
-  gain.textContent = '';
-  if (!ap.neuves.length) {
-    const p = document.createElement('p');
-    p.className = 'asc-vide';
-    p.textContent = 'Ton enclos est vide : ce saut ne produirait aucune carte, et tu perdrais ' +
-      'tout pour rien. Élève quelques bêtes et reviens — le jeton t’attend.';
-    gain.appendChild(p);
-  } else {
-    for (const k of ap.neuves) gain.appendChild(carteEl(k));
-  }
-
-  /* Une ascension sans carte est une perte sèche, pas un choix : on la refuse plutôt que de
-     laisser le joueur se saborder d'un clic. Le jeton, lui, reste en poche. */
+  /* Une ascension sans carte à naître est une perte sèche, pas un choix : on la refuse
+     plutôt que de laisser le joueur se saborder d'un clic. Le jeton, lui, reste en poche. */
   $('asc-go').disabled = !ap.neuves.length;
-  setText($('asc-go'), ap.neuves.length
-    ? 'Ascensionner · ' + ap.neuves.length + ' carte' + (ap.neuves.length > 1 ? 's' : '')
-    : 'Rien à emporter');
+  setText($('asc-go'), ap.neuves.length ? 'Ascensionner' : 'Enclos vide');
 
   /* Le marchand vide l'enclos en continu, absences comprises — et les cartes viennent de ce
      qui reste dedans. Sans cet avertissement, un joueur ascensionne après des heures de jeu
@@ -2349,18 +2335,23 @@ function renderAscension() {
     '⚠ Ton marchand vend encore. Tant qu’il tourne il vide l’enclos, et les cartes viennent ' +
     'de ce qu’il y reste au moment du saut. Passe ses consignes sur « jamais » avant.');
 
+  /* La perte tient en une ligne. Elle annonçait « les bêtes non transformées », ce qui était
+     faux depuis que TOUTES les bêtes de l'enclos deviennent des capsules : il n'en reste
+     aucune. Un récap qui invente une perte qui n'existe pas discrédite le reste. */
   const eggs = totalEggs(), autos = UPGRADES.filter(u => lvl(u.key)).length;
-  setText($('asc-perte'),
-    fmt(state.coins) + ' pièces · ' +
-    (eggs ? eggs + ' œuf' + (eggs > 1 ? 's' : '') + ' non éclos · ' : '') +
-    state.incubators + ' incubateur' + (state.incubators > 1 ? 's' : '') + ' · ' +
-    state.pens + ' enclos · ' +
+  setText($('asc-perte'), 'Tu perds ' + fmt(state.coins) + ' pièces, ' +
+    (eggs ? eggs + ' œuf' + (eggs > 1 ? 's' : '') + ' non éclos, ' : '') +
+    state.incubators + ' incubateur' + (state.incubators > 1 ? 's' : '') + ', ' +
+    state.pens + ' enclos et ' +
     autos + ' amélioration' + (autos > 1 ? 's' : '') + ' sur ' + UPGRADES.length +
-    ' · les bêtes non transformées. Ta collection et ton album, eux, restent.');
+    '. Ta collection et tes cartes restent.');
 
   /* Une bête vendue ou une carte disparue ne doit pas rester cochée en fantôme : le compte
      d'emplacements mentirait, et la confirmation promettrait ce qu'elle ne peut pas tenir. */
-  const dispo = state.album.concat(ap.neuves);
+  /* LES CAPSULES À NAÎTRE D'ABORD : ce sont elles qu'on vient de gagner, et c'est sur elles
+     que porte la décision. Celles de l'album suivent, pour qu'on puisse garder un ancien
+     build si les nouvelles ne valent pas mieux. */
+  const dispo = ap.neuves.concat(state.album);
   ascChoix = ascChoix.filter(id => dispo.some(k => k.id === id));
 
   const choix = $('asc-choix');
@@ -2368,6 +2359,7 @@ function renderAscension() {
   for (const k of dispo) {
     const el = carteEl(k);
     el.classList.add('choisir');
+    if (k.id < 0) el.classList.add('neuve');       // identifiant négatif = capsule à naître
     if (ascChoix.indexOf(k.id) !== -1) el.classList.add('active');
     el.addEventListener('click', () => {
       const i = ascChoix.indexOf(k.id);
@@ -2378,9 +2370,11 @@ function renderAscension() {
     });
     choix.appendChild(el);
   }
-  setText($('asc-slots'), ascChoix.length + ' / ' + ap.max + ' emplacement' +
-    (ap.max > 1 ? 's' : '') + ' — les autres cartes partent en réserve, d’où tu pourras les ' +
-    'sortir à tout moment. Rien ne se perd.');
+  setText($('asc-slots'), 'Choisis jusqu’à ' + ap.max + ' carte' + (ap.max > 1 ? 's' : '') +
+    ' — ' + ascChoix.length + ' retenue' + (ascChoix.length > 1 ? 's' : '') + '. ' +
+    (ap.neuves.length ? ap.neuves.length + ' capsule' + (ap.neuves.length > 1 ? 's naissent' : ' naît') +
+      ' de ton enclos, en tête de liste. ' : '') +
+    'Les autres attendent en réserve — rien ne se perd.');
 }
 
 function ascensionner() {
