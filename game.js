@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.9.0';
+const VERSION = 'alpha 2.10.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2534,8 +2534,12 @@ function renderAscension() {
 
   /* Une ascension sans carte à naître est une perte sèche, pas un choix : on la refuse
      plutôt que de laisser le joueur se saborder d'un clic. Le jeton, lui, reste en poche. */
-  $('asc-go').disabled = !ap.neuves.length;
-  setText($('asc-go'), ap.neuves.length ? 'Ascensionner' : 'Enclos vide');
+  /* Sauter sans avoir rien retenu, c'est tout perdre pour rien : on le refuse, comme on refuse
+     de sauter sur un enclos vide. */
+  $('asc-go').disabled = !ap.neuves.length || !ascChoix.length;
+  setText($('asc-go'), !ap.neuves.length ? 'Enclos vide'
+                     : !ascChoix.length ? 'Choisis une bête'
+                     : 'Ascensionner');
 
   /* Le marchand vide l'enclos en continu, absences comprises — et les cartes viennent de ce
      qui reste dedans. Sans cet avertissement, un joueur ascensionne après des heures de jeu
@@ -2583,28 +2587,39 @@ function renderAscension() {
     });
     choix.appendChild(el);
   }
+  const perdues = ap.neuves.length - Math.min(ascChoix.length, ap.max);
   const garde = Math.max(0, ap.max - ascChoix.length);
-  setText($('asc-slots'),
-    ap.neuves.length + ' bête' + (ap.neuves.length > 1 ? 's' : '') + ' de ton enclos ' +
-    (ap.neuves.length > 1 ? 'deviennent' : 'devient') + ' des cartes. Équipe-en jusqu’à ' +
-    ap.max + ' tout de suite — ' + ascChoix.length + ' choisie' + (ascChoix.length > 1 ? 's' : '') +
-    (garde && state.slots.length
-      ? ', et ' + Math.min(garde, state.slots.length) + ' de tes cartes actuelles gardent leur place.'
-      : '.') +
-    ' Le reste attend en réserve, d’où tu peux le sortir à tout moment.');
+  const bouts = ['Choisis jusqu’à ' + ap.max + ' bête' + (ap.max > 1 ? 's' : '') +
+                 ' à garder en cartes — ' + ascChoix.length +
+                 ' retenue' + (ascChoix.length > 1 ? 's' : '') + '.'];
+  if (perdues) bouts.push('⚠ ' + (perdues > 1 ? 'Les ' + perdues + ' autres sont perdues'
+                                              : 'L’autre est perdue') + ' avec la ferme.');
+  const gardees = Math.min(garde, state.slots.length);
+  if (gardees) bouts.push(gardees + ' de tes cartes actuelles garde' + (gardees > 1 ? 'nt' : '') +
+                          ' sa place.'.replace('sa', gardees > 1 ? 'leur' : 'sa'));
+  setText($('asc-slots'), bouts.join(' '));
 }
 
 function ascensionner() {
   const ap = apercuAscension();
   if (!peutAscensionner()) return;
 
-  // les aperçus deviennent de vraies capsules, et les choix suivent leur nouvel identifiant
+  /* SEULES LES BÊTES RETENUES DEVIENNENT DES CAPSULES. Les autres partent avec la ferme :
+     elles ne rejoignent pas la réserve, elles n'existent tout simplement pas.
+
+     La réserve garde les CARTES qu'on possède déjà et qu'on n'équipe pas — c'est son rôle, et
+     le glisser-déposer de l'album en dépend. Elle n'a jamais eu à recueillir tout un enclos :
+     une ferme de vingt bêtes y versait vingt cartes d'un coup, et le choix qu'on venait de
+     faire ne coûtait rien. */
   const vrai = {};
-  const neuves = ap.neuves.map(k => {
-    const c = Object.assign({}, k, { id: nextCard++ });
-    vrai[k.id] = c.id;
-    return c;
-  });
+  const neuves = ap.neuves
+    .filter(k => ascChoix.indexOf(k.id) !== -1)
+    .map(k => {
+      const c = Object.assign({}, k, { id: nextCard++ });
+      vrai[k.id] = c.id;
+      return c;
+    })
+    .slice(0, SLOTS);
   /* RIEN NE SE PERD. Les capsules qu'on n'équipe pas rejoignent la réserve, d'où on pourra
      les sortir quand on voudra. L'écran d'ascension ne choisit donc que le build de départ du
      prochain cycle — un confort, pas un couperet. */
@@ -3214,8 +3229,12 @@ function bindTools() {
   $('asc-go').addEventListener('click', () => {
     const n = state.pen.length;
     if (!n) return;                       // pas d'ascension à vide, même par un clic égaré
-    if (!confirm('Ascensionner ?\n\n' + n + ' bête' + (n > 1 ? 's' : '') +
-        ' deviendront des cartes ; celles que tu n’équipes pas attendront en réserve.' +
+    const ap = apercuAscension();
+    const prises = Math.min(ascChoix.length, ap.max);
+    const perdues = n - prises;
+    if (!confirm('Ascensionner ?\n\n' + prises + ' bête' + (prises > 1 ? 's deviennent' : ' devient') +
+        ' une carte.' +
+        (perdues ? '\nLes ' + perdues + ' autre' + (perdues > 1 ? 's sont perdues' : ' est perdue') + '.' : '') +
         '\nTout le reste repart de zéro. C’est irréversible.')) return;
     ascensionner();
   });

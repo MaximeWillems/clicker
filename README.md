@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.9.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.10.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.9.0** | les paliers de jetons passent au pas de mille — trois jetons au premier million |
+| **2.10.0** | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
+| 2.9.0 | les paliers de jetons passent au pas de mille — trois jetons au premier million |
 | 2.8.2 | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
 | 2.8.1 | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
 | 2.8.0 | le mode histoire — le jeu se déplie une marche à la fois |
@@ -944,9 +945,17 @@ l'album, en glissant les cartes d'un bloc à l'autre — mais **laquelle de tes 
 agir tout de suite ?**
 
 Elles sont proposées **dans l'ordre de la bande**, tri compris : une liste qui contredirait
-l'enclos obligerait à chercher deux fois la même bête. Ne rien choisir ne vide pas le build —
-les cartes déjà équipées comblent les emplacements laissés libres, et tout se réarrange ensuite
-dans l'album.
+l'enclos obligerait à chercher deux fois la même bête.
+
+**Les bêtes qu'on ne retient pas sont perdues avec la ferme.** Elles ne deviennent pas des
+cartes, elles ne rejoignent pas la réserve : elles n'existent tout simplement plus. La réserve
+garde les *cartes* qu'on possède déjà et qu'on n'équipe pas — c'est son rôle, et le
+glisser-déposer en dépend — mais elle n'a jamais eu à recueillir tout un enclos : une ferme de
+vingt bêtes y versait vingt cartes d'un coup, et le choix qu'on venait de faire ne coûtait rien.
+
+Le panneau compte les pertes en direct, la confirmation les redit, et **sauter sans avoir rien
+retenu est refusé** — ce serait tout perdre pour rien. Les cartes déjà équipées, elles, comblent
+les emplacements laissés libres : on ne perd pas son build en gardant peu de bêtes.
 
 **La ferme s'arrête pendant l'écran.** On y décide du sort de bêtes précises ; les laisser
 vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le panneau menteur au
