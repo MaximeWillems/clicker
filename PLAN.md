@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.2.0 · sauvegarde v8 · 10 lignées illustrées sur 21
+    aujourd'hui : alpha 2.2.3 · sauvegarde v8 · 10 lignées illustrées sur 21
 
 ---
 
@@ -29,6 +29,7 @@ réussie.
 | **2.1** ✓ | Les achats par lots — ×1, ×10, ×100, max | 7 | est-ce que la fin de partie cesse d'être une paperasse ? |
 | **2.1.1** ✓ | La couveuse sans plafond | 7 | — |
 | **2.2** ✓ | Les jetons d'ascension — un palier de fortune tous les ×1 000 000 | 8 | est-ce que l'ascension se mérite ? |
+| **2.2.1 → 2.2.3** ✓ | La case tenue à la vente auto, la montée d'un cran à 1/1 000, un jeton = un emplacement | 8 | — |
 | **2.3** | La fusion — les paliers, et le repère sur les capsules | 8 | est-ce que les doublons valent d'être gardés ? |
 | **2.4** | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 8 | est-ce que l'ordre des achats suit la vie de la bête ? |
 | **3.0** | La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 9 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
@@ -77,6 +78,64 @@ indice ; en insérer une au milieu repeindrait tout le bestiaire déjà éclos.
 La réserve d'œufs doit prendre son plafond **avant** la pension, pas après. C'est le seul
 frein du hors-ligne, et une partie qui tourne déjà sans lui rentrera sur cinquante œufs le
 jour où on l'ajoutera.
+
+---
+
+## Le vivier — idées non tranchées
+
+Rien de tout ça n'est décidé : c'est un stock de candidats, pas une file d'attente. Le
+raisonnement complet est dans la note [Ce qui manque à
+Éclosion](https://claude.ai/code/artifact/5b0057d3-2083-44dc-933c-b9da51b648cd) ; ce qui suit
+est ce qu'il faut avoir en tête pour choisir.
+
+| L'idée | Ce que ça règle | Coût |
+|---|---|---|
+| **Export / import de la sauvegarde** | la seule catastrophe irrattrapable du jeu | une heure |
+| **Compteurs de partie** | le jeu ne garde aucune trace de ce qu'on a fait | une soirée |
+| **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
+| **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
+| **Frénésie de clic** | le clic ne fait plus rien qu'on ne puisse acheter | deux soirées |
+| **Événements courts** | être présent ne rapporte plus rien | deux soirées |
+| **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
+
+### Le diagnostic en trois phrases
+
+**Le jeu ne se souvient de rien.** Un seul compteur cumulé existe, `bilanAuto`, remis à zéro
+à chaque absence. Aucun total, aucun record, aucun temps de jeu — alors qu'un idle est fait de
+ces nombres-là.
+
+**Il n'a plus un seul objectif nommé.** Les douze jalons ont disparu en 2.2.0 quand les jetons
+ont pris leur place. Ils sont écrits, gradués, et inutilisés.
+
+**Être présent ne paie plus.** Le chromatique à 1/8 192 et la montée à 1/1 000 sont deux
+décisions justes qui se sont additionnées la même semaine. Les deux surprises de l'éclosion
+sont parties ensemble, et rien n'a pris leur place.
+
+### Trois règles à ne pas perdre en chemin
+
+**Un trophée ne donne jamais de puissance.** Une prime en pièces à la rigueur, jamais un
+multiplicateur : un trophée qui pèse sur l'équilibrage redevient un jalon déguisé, et c'est
+exactement ce qu'on vient de démêler en passant aux jetons.
+
+**Un événement ne donne jamais ce qui se chasse.** Ni chromatique offert, ni montée de rareté,
+ni carte d'album — seulement des pièces, du temps ou de la rente. Sans cette règle, on refait
+ce qu'on vient de défaire en portant le prodige à 1/8 192. Et il ne doit rien coûter à qui
+n'est pas là : un événement manqué qui pénalise transforme un idle en corvée d'assiduité.
+
+**Les compteurs sont cumulés sur la vie du fichier, pas sur la partie.** Sinon l'ascension les
+efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l'oublie.
+
+### Ce qu'on a décidé de ne pas faire
+
+- **Une cinquième rareté avant la pension.** La merveilleuse tient sa valeur du fait qu'elle
+  ne s'achète pas ; la mettre en boutique la viderait de son sens.
+- **De nouvelles lignées.** Il y en a vingt-et-une, dont onze sans dessin. Le contenu qui
+  manque n'est pas le nombre de lignées, c'est le nombre de dessins.
+- **Un deuxième axe de prestige.** L'ascension n'a pas encore été jouée une seule fois de bout
+  en bout. Empiler un second cycle sur un premier non éprouvé est la façon classique dont un
+  idle devient illisible.
+- **Remonter les taux pour compenser.** Si l'éclosion paraît plate, la réponse est la couche
+  d'événements, pas un retour en arrière qui redonnerait aux surprises leur banalité.
 
 ---
 
@@ -131,7 +190,7 @@ l'image, jamais la croissance.
 
 ## Où on en est
 
-Le jalon 0 est livré en **alpha 2.2.0**, et il déborde largement de son cadre : 21 lignées au
+Le jalon 0 est livré en **alpha 2.2.3**, et il déborde largement de son cadre : 21 lignées au
 lieu de 5, une vie de cent niveaux en cinq âges, les variantes, quatre raretés, huit
 améliorations, la rente, la collection, l'album et l'ascension. Une partie des jalons 2 et 3
 est donc jouable — mais **entièrement dans le navigateur**.
@@ -147,13 +206,18 @@ Trois écarts avec le plan d'origine, tous volontaires :
 
 ### Les dettes
 
-**La mesure du rythme est périmée.** « Ère rare à 3 h 34 » date d'avant la baisse des prix de
-la 1.5. Elle ne se déduit pas d'une division par deux — le revenu n'est pas constant sur trois
-heures et demie — et elle demande une nouvelle simulation. C'est elle qui dira si la première
-ascension tombe bien vers deux heures de jeu, comme prévu.
+**La mesure du rythme est périmée deux fois.** « Ère rare à 3 h 34 » date d'avant la baisse
+des prix de la 1.5, et la montée d'un cran passée à 1/1 000 en 2.2.2 l'a déplacée encore : le
+changement d'ère ne se fait plus par coup de chance mais uniquement par la bourse. Elle ne se
+déduit d'aucune division — le revenu n'est pas constant sur trois heures et demie — et demande
+une nouvelle simulation. C'est elle qui dira si le premier jeton tombe bien vers deux heures.
 
-**Le rendu visuel de l'album et de l'écran d'ascension n'a jamais été regardé.** Le CSS est
-neuf et n'a été vérifié que par la lecture.
+**Le rendu visuel n'a jamais été regardé.** L'album, l'écran d'ascension et le sélecteur de
+lots sont du CSS neuf, vérifié seulement par la lecture et par le banc d'essai.
+
+**Deux lignes du tableau de puissance du README sont hors d'atteinte.** Elles décrivent ce que
+six cartes équipées rendraient, alors que six emplacements demanderaient six ascensions et que
+l'échelle des jetons n'en offre pas tant. À retrancher si le pas des jetons ne bouge pas.
 
 **Les cinq questions du README** (« À vérifier en jouant ») restent ouvertes. Quatre se
 répondront en jouant. La cinquième — la durée de la dernière tranche — coûtera plus cher après
@@ -167,3 +231,4 @@ tableaux, les formules et les arbitrages que ce document résume :
 
 - **Album et ascension** — https://claude.ai/code/artifact/037135da-4a26-4745-b37d-fd0e8990d396
 - **Pension, album, ascension** — https://claude.ai/code/artifact/d2577c90-6db3-41e6-b82d-611a0df96e3c
+- **Ce qui manque à Éclosion** — https://claude.ai/code/artifact/5b0057d3-2083-44dc-933c-b9da51b648cd
