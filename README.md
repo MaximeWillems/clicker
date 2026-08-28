@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.8.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.8.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.8.1** | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
+| **2.8.2** | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
+| 2.8.1 | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
 | 2.8.0 | le mode histoire — le jeu se déplie une marche à la fois |
 | 2.7.4 | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
 | 2.7.3 | maintenir la barre espace ne vaut qu'un seul clic |
@@ -929,11 +930,20 @@ l'identifiant de leur **bête**, non leur position dans l'enclos : elles étaien
 première, la deuxième », si bien qu'une vente automatique décalait tout et qu'on gardait une
 carte qu'on n'avait pas choisie.
 
-**L'écran d'ascension n'a qu'une liste.** Il en avait deux : les capsules à naître
-apparaissaient une fois sous « ce que tu vas gagner », puis une seconde fois dans le choix,
-sans que rien ne dise que c'étaient les mêmes. Tout tient maintenant dans une seule liste — les
-capsules à naître en tête, marquées *neuve*, puis les cartes qu'on possède déjà — où l'on prend
-jusqu'à cinq cartes. Le reste attend en réserve.
+**L'écran d'ascension ne montre que les bêtes de l'enclos.** Il en a montré deux listes, puis
+une seule où les cartes de l'album se mêlaient aux capsules à naître. Ni l'un ni l'autre :
+la question qu'il pose n'est pas *quel build veux-tu ?* — celui-là se règle à tout moment dans
+l'album, en glissant les cartes d'un bloc à l'autre — mais **laquelle de tes bêtes veux-tu voir
+agir tout de suite ?**
+
+Elles sont proposées **dans l'ordre de la bande**, tri compris : une liste qui contredirait
+l'enclos obligerait à chercher deux fois la même bête. Ne rien choisir ne vide pas le build —
+les cartes déjà équipées comblent les emplacements laissés libres, et tout se réarrange ensuite
+dans l'album.
+
+**La ferme s'arrête pendant l'écran.** On y décide du sort de bêtes précises ; les laisser
+vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le panneau menteur au
+moment même où il demande une décision irréversible.
 
 Le récap des pertes annonçait aussi « les bêtes non transformées », ce qui était **faux**
 depuis que toutes les bêtes de l'enclos deviennent des capsules : il n'en reste aucune. Un

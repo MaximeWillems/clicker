@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.8.1';
+const VERSION = 'alpha 2.8.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2470,15 +2470,21 @@ function deplacerCarte(id, versBuild) {
    qu'on n'avait pas choisie, et depuis que les autres sont détruites, on perdait la bonne. */
 let ascChoix = [];
 
+/* Ce que le saut produira. L'ordre est CELUI DE LA BANDE, pas celui du tableau interne :
+   `subjects()` porte déjà le tri choisi par le joueur — arrivée, rareté ou âge — et une liste
+   qui contredirait la bande obligerait à chercher deux fois la même bête. */
 function apercuAscension() {
   const jetons = state.asc.jetons || 0;
-  const neuves = state.pen.map(c => Object.assign(capsuleBrute(c), { id: -c.id }));
+  const neuves = subjects().filter(s => s.kind === 'creature')
+    .map(s => Object.assign(capsuleBrute(s.c), { id: -s.c.id }));
   return { jetons, neuves, max: SLOTS };
 }
 
 function ouvrirAscension() {
   if (!(state.asc.jetons > 0)) return;
-  ascChoix = state.slots.slice();
+  /* On repart d'une ardoise vide : l'écran ne propose QUE les bêtes de l'enclos, et une
+     sélection héritée des cartes déjà équipées n'y aurait aucun repère à l'écran. */
+  ascChoix = [];
   $('ascension').hidden = false;
   renderAscension();
 }
@@ -2524,10 +2530,12 @@ function renderAscension() {
 
   /* Une bête vendue ou une carte disparue ne doit pas rester cochée en fantôme : le compte
      d'emplacements mentirait, et la confirmation promettrait ce qu'elle ne peut pas tenir. */
-  /* LES CAPSULES À NAÎTRE D'ABORD : ce sont elles qu'on vient de gagner, et c'est sur elles
-     que porte la décision. Celles de l'album suivent, pour qu'on puisse garder un ancien
-     build si les nouvelles ne valent pas mieux. */
-  const dispo = ap.neuves.concat(state.album);
+  /* SEULES LES BÊTES DE L'ENCLOS, jamais les cartes de l'album. L'écran mélangeait les deux,
+     et la question qu'il pose n'est pas « quel build veux-tu ? » — celui-là se règle à tout
+     moment dans l'album, en glissant les cartes d'un bloc à l'autre — mais « laquelle de tes
+     bêtes veux-tu voir agir tout de suite ? ». Les cartes déjà équipées ne bougent pas d'un
+     écran auquel elles n'appartiennent plus. */
+  const dispo = ap.neuves;
   ascChoix = ascChoix.filter(id => dispo.some(k => k.id === id));
 
   const choix = $('asc-choix');
@@ -2535,7 +2543,6 @@ function renderAscension() {
   for (const k of dispo) {
     const el = carteEl(k);
     el.classList.add('choisir');
-    if (k.id < 0) el.classList.add('neuve');       // identifiant négatif = capsule à naître
     if (ascChoix.indexOf(k.id) !== -1) el.classList.add('active');
     el.addEventListener('click', () => {
       const i = ascChoix.indexOf(k.id);
@@ -2546,11 +2553,15 @@ function renderAscension() {
     });
     choix.appendChild(el);
   }
-  setText($('asc-slots'), 'Choisis jusqu’à ' + ap.max + ' carte' + (ap.max > 1 ? 's' : '') +
-    ' — ' + ascChoix.length + ' retenue' + (ascChoix.length > 1 ? 's' : '') + '. ' +
-    (ap.neuves.length ? ap.neuves.length + ' capsule' + (ap.neuves.length > 1 ? 's naissent' : ' naît') +
-      ' de ton enclos, en tête de liste. ' : '') +
-    'Les autres attendent en réserve — rien ne se perd.');
+  const garde = Math.max(0, ap.max - ascChoix.length);
+  setText($('asc-slots'),
+    ap.neuves.length + ' bête' + (ap.neuves.length > 1 ? 's' : '') + ' de ton enclos ' +
+    (ap.neuves.length > 1 ? 'deviennent' : 'devient') + ' des cartes. Équipe-en jusqu’à ' +
+    ap.max + ' tout de suite — ' + ascChoix.length + ' choisie' + (ascChoix.length > 1 ? 's' : '') +
+    (garde && state.slots.length
+      ? ', et ' + Math.min(garde, state.slots.length) + ' de tes cartes actuelles gardent leur place.'
+      : '.') +
+    ' Le reste attend en réserve, d’où tu peux le sortir à tout moment.');
 }
 
 function ascensionner() {
@@ -2568,7 +2579,11 @@ function ascensionner() {
      les sortir quand on voudra. L'écran d'ascension ne choisit donc que le build de départ du
      prochain cycle — un confort, pas un couperet. */
   const album = state.album.concat(neuves);
-  const slots = ascChoix.map(id => (id < 0 ? vrai[id] : id))
+  /* Les bêtes retenues d'abord, puis les cartes déjà équipées pour combler ce qui reste : ne
+     rien choisir ne doit pas vider son build. Le joueur réarrangera dans l'album s'il veut. */
+  const slots = ascChoix.map(id => vrai[id])
+                        .concat(state.slots)
+                        .filter((id, i, t) => id !== undefined && t.indexOf(id) === i)
                         .filter(id => album.some(k => k.id === id))
                         .slice(0, SLOTS);
 
