@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.8.2
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.9.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 10` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 11` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.8.2** | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
+| **2.9.0** | les paliers de jetons passent au pas de mille — trois jetons au premier million |
+| 2.8.2 | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
 | 2.8.1 | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
 | 2.8.0 | le mode histoire — le jeu se déplie une marche à la fois |
 | 2.7.4 | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
@@ -872,13 +873,14 @@ fait toutes les cartes, et la limite ne limiterait rien.
 **Un jeton s'obtient en franchissant un palier de fortune, et l'ascension en dépense un.** Les
 paliers montent d'un million à chaque cran :
 
-| # | Palier | Ce qu'il faut avoir en poche |
-|---|---|---|
-| 1 | 10⁶ | 1 M de pièces |
-| 2 | 10¹² | 1,00 Bn |
-| 3 | 10¹⁸ | 1,00 Tn |
-| 4 | 10²⁴ | 1,00 Qa |
-| 5 | 10³⁰ | 1,00 Qi |
+| # | Palier | # | Palier |
+|---|---|---|---|
+| 1 | 1 pièce | 7 | 10¹⁸ |
+| 2 | 1 000 | 8 | 10²¹ |
+| **3** | **1 000 000** — *le premier saut* | 9 | 10²⁴ |
+| 4 | 10⁹ | 10 | 10²⁷ |
+| 5 | 10¹² | 11 | 10³⁰ |
+| 6 | 10¹⁵ | | |
 
 **Un palier franchi est franchi pour toujours.** Il crédite son jeton une fois, puis il est
 mort : l'ascension remet la bourse à zéro, mais elle ne rend pas les paliers déjà passés. Le
@@ -886,13 +888,18 @@ nombre total d'ascensions d'une partie est donc borné par cette échelle, et pa
 et comme les emplacements le sont aussi, la puissance maximale de l'album reste un nombre
 qu'on peut calculer avant d'avoir joué.
 
-Le pas de ×1 000 000 fait que **le palier suivant ne se rattrape jamais par accident** : il
-demande de refaire toute l'économie une fois de plus. Une légende mythique chromatique vaut
-environ 5,6·10¹¹, donc le deuxième jeton demande d'en vendre deux, et le troisième un million.
-L'échelle ne s'arrête pas avant l'économie ; c'est l'économie qui s'arrête avant l'échelle.
+**Le premier saut ne s'ouvre qu'au million**, troisième palier de l'échelle. Les deux premiers
+— une pièce, mille pièces — créditent bien leur jeton mais ne débloquent rien : ils sont là pour
+qu'on arrive au million avec **trois jetons en poche**, donc trois cycles d'avance, plutôt
+qu'avec un seul.
 
-**Le premier jeton tombe en milieu de partie.** Un million de pièces suppose d'avoir mené des
-bêtes au bout et d'en avoir vendu — on n'y arrive pas en cliquant des têtards.
+Sans ce plancher, le pas de mille ouvrirait l'ascension à la première pièce vendue : on
+sacrifierait une ferme de trois têtards pour une carte qui ne vaut rien. Le plancher ne vaut que
+pour le premier saut ; ensuite chaque jeton en poche donne droit au sien.
+
+Le pas était de ×1 000 000 : l'économie s'arrêtait alors avant l'échelle, et une partie ne
+contenait que deux ou trois ascensions. À ×1 000, elle en contient une dizaine — assez pour que
+l'album se construise vraiment.
 
 **Les emplacements ne dépendent plus des jetons** : ils sont cinq dès la première ascension.
 

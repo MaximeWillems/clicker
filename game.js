@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.8.2';
+const VERSION = 'alpha 2.9.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -435,8 +435,20 @@ const NOTES = [
     dit: 'Un enclos de plus, c’est une bête de plus à la fois. C’est la place, et non l’argent, qui limitera bientôt ta ferme.' },
 ];
 
-const JETON_PAS = 1e6;
-const JETON_PALIERS = [1, 2, 3, 4, 5].map(n => Math.pow(JETON_PAS, n));
+const JETON_PAS = 1000;
+const JETON_PALIERS = Array.from({ length: 11 }, (v, n) => Math.pow(JETON_PAS, n));
+
+/* LE PREMIER SAUT NE S'OUVRE QU'AU MILLION, troisième palier de l'échelle. Les deux premiers
+   — une pièce, mille pièces — créditent bien leur jeton mais ne débloquent rien : ils sont là
+   pour qu'on arrive au million avec TROIS jetons en poche, donc trois cycles d'avance, plutôt
+   qu'avec un seul.
+
+   Sans ce plancher, le pas de mille ouvrirait l'ascension à la première pièce vendue : on
+   sacrifierait une ferme de trois têtards pour une carte qui ne vaut rien, ce qu'on a passé
+   plusieurs versions à empêcher. Le plancher ne vaut que pour le PREMIER saut ; ensuite chaque
+   jeton en poche donne droit au sien. */
+const JETON_PREMIER = 1e6;
+const RANG_PREMIER = JETON_PALIERS.indexOf(JETON_PREMIER) + 1;
 
 /* ── La granularité des améliorations ─────────────────────────────────────────
    Un niveau qui double presque de prix et ne rend qu'un cran d'effet, c'est deux décroissances
@@ -764,7 +776,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 10;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 11;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -975,6 +987,19 @@ function load() {
        On se fie au NUMÉRO DE LA SAUVEGARDE, jamais à la présence de `vu` : `freshState` en pose
        un vide, et un objet vide est vrai en JavaScript — le test « si vu manque » n'était donc
        jamais vrai, et la migration ne tournait pas du tout. */
+    /* v10 → v11 : l'échelle des jetons passe d'un pas de un million à un pas de mille, et
+       `asc.paliers` — un simple compte — ne veut donc plus dire la même chose. Un ancien palier
+       franchi valait 10^6n ; il en couvre désormais 2n + 1 dans la nouvelle échelle. On prend
+       le plus grand des deux comptes, l'ancien converti et celui que la bourse actuelle
+       justifie, pour ne jamais retirer à un joueur un palier qu'il avait. */
+    if ((s.v || 0) < 11 && merged.asc) {
+      const ancien = merged.asc.paliers || 0;
+      const converti = ancien ? 2 * ancien + 1 : 0;
+      let selonBourse = 0;
+      while (selonBourse < JETON_PALIERS.length &&
+             merged.coins >= JETON_PALIERS[selonBourse]) selonBourse++;
+      merged.asc.paliers = Math.min(JETON_PALIERS.length, Math.max(converti, selonBourse));
+    }
     merged.tuto = merged.tuto !== false;
     merged.vu = merged.vu || {};
     if ((s.v || 0) < 10) {
@@ -2334,6 +2359,11 @@ function essaiNote(n) {
   try { return !!n.test(); } catch (e) { return false; }
 }
 
+/* La seule porte de l'ascension. Un jeton en poche, et — pour le tout premier saut — le
+   million déjà franchi. Tout ce qui montre ou ouvre l'écran passe par ici. */
+const peutAscensionner = () => (state.asc.jetons || 0) > 0 &&
+  ((state.asc.n || 0) > 0 || (state.asc.paliers || 0) >= RANG_PREMIER);
+
 // Le prochain palier à franchir, null quand l'échelle est épuisée.
 const prochainPalier = () => (state.asc.paliers < JETON_PALIERS.length
                               ? JETON_PALIERS[state.asc.paliers] : null);
@@ -2481,7 +2511,7 @@ function apercuAscension() {
 }
 
 function ouvrirAscension() {
-  if (!(state.asc.jetons > 0)) return;
+  if (!peutAscensionner()) return;
   /* On repart d'une ardoise vide : l'écran ne propose QUE les bêtes de l'enclos, et une
      sélection héritée des cartes déjà équipées n'y aurait aucun repère à l'écran. */
   ascChoix = [];
@@ -2493,7 +2523,7 @@ function fermerAscension() { $('ascension').hidden = true; }
 
 function renderAscension() {
   const ap = apercuAscension();
-  if (!ap.jetons) { fermerAscension(); return; }
+  if (!peutAscensionner()) { fermerAscension(); return; }
 
   const suivant = prochainPalier();
   setText($('asc-jalon'),
@@ -2566,7 +2596,7 @@ function renderAscension() {
 
 function ascensionner() {
   const ap = apercuAscension();
-  if (!ap.jetons) return;
+  if (!peutAscensionner()) return;
 
   // les aperçus deviennent de vraies capsules, et les choix suivent leur nouvel identifiant
   const vrai = {};
@@ -3041,7 +3071,7 @@ function tickView() {
      sacrifice qu'on choisit — on perd sa ferme entière — et un bouton qui réclame ferait
      croire à une étape obligatoire. Son infobulle dit ce qui l'a ouvert, et qu'on peut
      l'ignorer. */
-  const jetons = state.asc.jetons || 0;
+  const jetons = peutAscensionner() ? (state.asc.jetons || 0) : 0;
   $('btn-asc').hidden = !jetons;
   if (jetons) {
     setText($('btn-asc'), 'Ascension' + (jetons > 1 ? ' · ' + jetons : ''));
