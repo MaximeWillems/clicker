@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.2.0';
+const VERSION = 'alpha 2.2.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1698,6 +1698,16 @@ function runAutomations(dt) {
     const ready = state.pen.filter(c => !c.keep &&
                                         estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= tailleExigee(c));
+    /* Le marchand ne déplace pas le regard, exactement comme une vente à la main : si on
+       était sur la case 2, on reste sur la case 2 et c'est la voisine qui glisse dedans.
+       La case se relève AVANT le retrait — après, la bête n'est plus dans la bande et son
+       rang est perdu. Sans ça, `current` retombait sur `fallback`, qui saute à la bête la
+       plus avancée : on traversait l'enclos à chaque vente automatique.
+
+       Pendant un rattrapage, on n'y touche pas : la sélection se résout une fois à la fin,
+       et tenirLaCase reconstruit la bande à chaque appel — vingt mille fois pour rien. */
+    const place = rattrapage || !ready.some(c => 'c:' + c.id === state.sel)
+                ? -1 : caseCourante();
     for (const c of ready) {
       const gain = sellValue(c);
       state.coins += gain;
@@ -1705,6 +1715,7 @@ function runAutomations(dt) {
       bilanAuto.gagne += gain;
       state.pen = state.pen.filter(x => x.id !== c.id);
     }
+    if (place >= 0) tenirLaCase(place);
   }
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.

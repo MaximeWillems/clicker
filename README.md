@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.2.0** | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
+| **2.2.1** | le marchand automatique garde la case, comme une vente à la main |
+| 2.2.0 | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
 | 2.1.1 | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
 | 2.1.0 | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
 | 2.0.6 | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
@@ -894,10 +895,16 @@ défaut : page ouverte, bête jamais vendue.
 se voit sur la vignette, et c'est le joueur qui la pose. Ce qu'on perd, c'est qu'une bête peut
 partir à l'instant où on la regarde ; ce qu'on gagne, c'est une consigne qui ne ment pas.
 
-**Vendre soi-même ne déplace pas le regard non plus : on garde sa case.** Si on était sur la
-case 6, on reste sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une
-liste dont on retire une ligne. Sauter « à la bête la plus avancée » faisait traverser la bande
-à chaque vente et rendait impossible d'écouler un enclos case par case.
+**Vendre ne déplace pas le regard : on garde sa case.** Si on était sur la case 6, on reste
+sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une liste dont on
+retire une ligne. Sauter « à la bête la plus avancée » faisait traverser la bande à chaque
+vente et rendait impossible d'écouler un enclos case par case.
+
+**Le marchand automatique obéit à la même règle.** Elle ne valait d'abord que pour les ventes
+à la main, et l'automate, lui, laissait la sélection retomber sur le repli — donc sur la bête
+la plus avancée, à l'autre bout de la bande. On regardait la case 2, une vente tombait, et on
+se retrouvait ailleurs sans avoir rien fait. La case se relève désormais avant le retrait,
+dans les deux cas.
 
 Seule entorse, celle de la règle du dessus : on ne quitte jamais le vivant pour un œuf. Si la
 case libérée retombe sur une coquille alors qu'il reste des bêtes, on s'arrête au bord du bloc
