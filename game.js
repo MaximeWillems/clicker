@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.3.5';
+const VERSION = 'alpha 2.4.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -298,9 +298,10 @@ const RANKS = [
    devant chaque animal — la question devient « lesquelles je garde en vie pour le saut ? »,
    posée une fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 
-   L'ALBUM GARDE TOUT, SEULES LES CARTES ÉQUIPÉES AGISSENT. C'est la règle qui rend le reste
-   calculable : sans limite d'emplacements, vingt-sept cartes se composent et la puissance
-   de l'album n'a plus de plafond.
+   L'ALBUM NE GARDE QUE CE QU'ON ÉQUIPE. Les capsules laissées de côté au moment du saut sont
+   détruites : l'album n'est pas une collection qui s'empile, c'est un BUILD refait à chaque
+   ascension. C'est la règle qui rend le reste calculable — sans limite d'emplacements,
+   vingt-sept cartes se composent et la puissance de l'album n'a plus de plafond.
 
    UN JETON DÉPENSÉ = UN EMPLACEMENT. La première ascension en ouvre un, la deuxième un
    second, et ainsi de suite : la puissance de l'album ne dépasse jamais le nombre de sauts
@@ -2202,25 +2203,18 @@ function renderAlbum() {
     return;
   }
   $('album-intro').textContent = state.asc.n +
-    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Seules les cartes équipées agissent ; ' +
-    'les autres attendent en réserve et le choix se refait au prochain saut. Rien ne se perd.';
+    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Toutes ces cartes agissent : ' +
+    'l’album ne garde que ce qu’on a retenu au dernier saut.';
 
-  const equipees = state.slots.map(carteDe).filter(Boolean);
-  const reste = state.album.filter(k => state.slots.indexOf(k.id) === -1);
-  const bloc = (titre, cartes, actif) => {
-    if (!cartes.length) return;
-    const h = document.createElement('p');
-    h.className = 'album-head';
-    h.textContent = titre;
-    host.appendChild(h);
-    for (const k of cartes) {
-      const el = carteEl(k);
-      if (actif) el.classList.add('active');
-      host.appendChild(el);
-    }
-  };
-  bloc('Équipées — ' + equipees.length + ' / ' + slotsMax(), equipees, true);
-  bloc('En réserve — gardées d’une ascension à l’autre', reste, false);
+  const h = document.createElement('p');
+  h.className = 'album-head';
+  h.textContent = 'Équipées — ' + state.album.length + ' / ' + slotsMax();
+  host.appendChild(h);
+  for (const k of state.album) {
+    const el = carteEl(k);
+    el.classList.add('active');
+    host.appendChild(el);
+  }
 }
 
 /* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent un
@@ -2307,8 +2301,12 @@ function renderAscension() {
     });
     choix.appendChild(el);
   }
+  const jetees = state.album.length + ap.neuves.length - Math.min(ascChoix.length, ap.max);
   setText($('asc-slots'), ascChoix.length + ' / ' + ap.max + ' emplacement' +
-    (ap.max > 1 ? 's' : '') + ' — le choix se fige jusqu’au prochain saut.');
+    (ap.max > 1 ? 's' : '') + ' — le choix se fige jusqu’au prochain saut. ' +
+    (jetees ? '⚠ Les ' + jetees + ' carte' + (jetees > 1 ? 's' : '') + ' non retenue' +
+              (jetees > 1 ? 's sont détruites' : ' est détruite') + ', celles de l’album comprises.'
+            : 'Rien n’est laissé de côté.'));
 }
 
 function ascensionner() {
@@ -2322,10 +2320,19 @@ function ascensionner() {
     vrai[k.id] = c.id;
     return c;
   });
-  const album = state.album.concat(neuves);
+  /* ON NE GARDE QUE CE QU'ON RETIENT. Les capsules laissées de côté — anciennes comme
+     neuves — sont détruites avec le reste de la ferme. L'album n'est donc pas une collection
+     qui s'empile mais UN BUILD, refait à chaque saut à partir de ce qu'on a sous la main.
+
+     C'est ce qui donne son poids à l'écran d'ascension : tant que tout était conservé, choisir
+     ne coûtait rien et se remettait au saut suivant. Maintenant, une capsule qu'on ne prend
+     pas ne reviendra jamais — c'est la seule décision irréversible du jeu avec le saut
+     lui-même, et elle se prend en même temps que lui. */
+  const tout = state.album.concat(neuves);
   const slots = ascChoix.map(id => (id < 0 ? vrai[id] : id))
-                        .filter(id => album.some(k => k.id === id))
+                        .filter(id => tout.some(k => k.id === id))
                         .slice(0, ap.max);
+  const album = tout.filter(k => slots.indexOf(k.id) !== -1);
 
   /* TOUT REPART DE ZÉRO SAUF QUATRE CHOSES : l'album, les emplacements, le compte
      d'ascensions et la collection. Le reste de la liste n'est que du confort d'affichage —
@@ -2878,8 +2885,14 @@ function bindTools() {
   $('asc-go').addEventListener('click', () => {
     const n = state.pen.length;
     if (!n) return;                       // pas d'ascension à vide, même par un clic égaré
+    const ap = apercuAscension();
+    const jetees = state.album.length + ap.neuves.length -
+                   Math.min(ascChoix.length, ap.max);
     if (!confirm('Ascensionner ?\n\n' + n + ' bête' + (n > 1 ? 's' : '') +
-        ' deviendront des cartes.\nTout le reste repart de zéro. C’est irréversible.')) return;
+        ' deviendront des cartes, et tu en gardes ' + Math.min(ascChoix.length, ap.max) + '.' +
+        (jetees ? '\nLes ' + jetees + ' autre' + (jetees > 1 ? 's sont détruites' : ' est détruite') +
+                  ' — album compris.' : '') +
+        '\nTout le reste repart de zéro. C’est irréversible.')) return;
     ascensionner();
   });
   window.addEventListener('keydown', e => {

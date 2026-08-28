@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.5
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.4.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.3.5** | les consignes de la ferme ne traversent plus l'ascension |
+| **2.4.0** | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
+| 2.3.5 | les consignes de la ferme ne traversent plus l'ascension |
 | 2.3.4 | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
 | 2.3.3 | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
 | 2.3.2 | un brief de séance, pour générer plusieurs planches d'affilée sans dérive de style |
@@ -637,7 +638,7 @@ fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 | Ce qui traverse | Ce qui repart de zéro |
 |---|---|
 | L'album — toutes les capsules | Les pièces |
-| Les emplacements, et les cartes équipées | Les œufs non éclos |
+| Les emplacements, et les cartes retenues | Les œufs non éclos, et **les cartes non retenues** |
 | La collection des formes vues | Incubateurs et enclos |
 | Les paliers de fortune déjà franchis | Les huit améliorations |
 | Le confort d'affichage : tri, taille des lots, son | **Les consignes du marchand, de l'évolution et de l'acheteur** |
@@ -713,9 +714,19 @@ Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chan
 
 #### Les emplacements : un build, pas une collection
 
-**L'album garde toutes les capsules, seules celles qu'on équipe agissent.** Sans limite,
-vingt-sept cartes se composent et la puissance de l'album n'a plus de plafond — c'est de ça
-que meurent les jeux idle.
+**L'album ne garde que les cartes qu'on retient.** Les capsules laissées de côté au moment du
+saut — anciennes comme neuves — sont détruites avec le reste de la ferme. L'album n'est pas une
+collection qui s'empile, c'est un **build**, refait à chaque ascension à partir de ce qu'on a
+sous la main.
+
+C'est ce qui donne son poids à l'écran d'ascension. Tant que tout était conservé, choisir ne
+coûtait rien et se remettait au saut suivant ; maintenant une capsule qu'on ne prend pas ne
+reviendra jamais. C'est, avec le saut lui-même, la seule décision irréversible du jeu — et les
+deux se prennent au même moment. Le panneau annonce combien de cartes seront détruites, et la
+confirmation le redit.
+
+La limite d'emplacements garde son autre rôle : sans elle, vingt-sept cartes se composeraient
+et la puissance de l'album n'aurait plus de plafond — c'est de ça que meurent les jeux idle.
 
 Il vit **sous les enclos**, dans la colonne large, et non dans la colonne latérale : c'est le
 prolongement de la ferme — ce que les bêtes deviennent — et non un réglage qu'on consulte une
