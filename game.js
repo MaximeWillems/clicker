@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.4';
+const VERSION = 'alpha 2.0.5';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -676,20 +676,17 @@ let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, 
    personne ne regardait l'écran, la protéger n'aurait fait que bloquer un enclos. */
 let rattrapage = false;
 
-/* LE MARCHAND NE VEND JAMAIS LA BÊTE QU'ON REGARDE. La règle tient en une phrase, et c'est
-   tout : la créature en scène est épargnée tant que l'onglet est visible.
+/* LE MARCHAND N'A PAS D'EXCEPTION. Il vend tout ce que la consigne désigne, y compris la bête
+   en scène : une automatisation qu'on règle doit faire exactement ce qu'on a réglé.
 
-   Elle s'est écrite deux fois avant de tenir. D'abord une immunité à vie, qui laissait la
-   bête qu'on venait de faire évoluer à la main en scène, vendable et invendue pour toujours —
-   le symptôme visible était « le marchand ne vend pas ». Puis un sursis de dix secondes
-   depuis le dernier CLIC, qui a échoué pour la raison inverse : regarder une bête n'est pas
-   la cliquer. On hésitait devant un péage, on lisait le panneau, et elle partait sous nos
-   yeux. Pire, une bête arrivée en scène toute seule n'avait jamais été cliquée, donc jamais
-   protégée une seule seconde.
+   Deux exceptions ont été essayées, et les deux ramenaient le même défaut. Une immunité à vie
+   pour la bête en scène laissait celle qu'on venait d'évoluer à la main invendue pour toujours,
+   avec pour seul symptôme « le marchand ne vend pas ». Un sursis de dix secondes depuis le
+   dernier clic protégeait mal — regarder une bête n'est pas la cliquer — puis une protection
+   tant que l'onglet reste visible rendait la première : page ouverte, bête jamais vendue.
 
-   La présence se lit donc sur l'onglet, pas sur les gestes. Quitter la page suffit à lever la
-   protection, et le rattrapage d'une absence l'ignore complètement : personne ne regardait.
-   Une seule bête échappe au marchand à la fois. ☆ Garder reste la seule protection permanente. */
+   ☆ Garder est la seule protection, et c'est le bon endroit : explicite, visible sur la
+   vignette, posée par le joueur. */
 const bilanAuto = { vendus: 0, gagne: 0, evolues: 0, depense: 0 };
 
 function freshState() {
@@ -1100,12 +1097,6 @@ const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 /* La consigne du marchand pour CETTE bête : l'âge à partir duquel il la vend, 0 s'il n'y
    touche jamais. Chaque rareté a la sienne — c'est ce qui permet d'écouler les communes
    dès l'âge adulte pendant qu'on mène les mythiques jusqu'à la légende. */
-/* La bête en scène sous les yeux du joueur. `document.hidden` est la seule mesure honnête de
-   sa présence : un clic ne dit pas qu'on regarde, et l'absence de clic ne dit pas qu'on est
-   parti. Le rattrapage d'une absence passe outre — il rejoue des heures pendant lesquelles
-   personne ne regardait, et protéger une bête y bloquerait un enclos pour rien. */
-const enScene = c => !rattrapage && !document.hidden && 'c:' + c.id === state.sel;
-
 const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
 
 /* La taille minimale exigée par le marchand n'existe QUE si une mangeoire tourne. Sans
@@ -1650,16 +1641,18 @@ function runAutomations(dt) {
      n'est qu'un supplément, et le réglage ne s'affiche même pas tant qu'aucune mangeoire
      n'existe : sans automate qui engraisse, la notion n'a pas à encombrer l'écran. */
   if (state.up.marchand) {
-    /* Le marchand laisse la bête en scène le temps d'un répit. Sans ce délai, le joueur
-       menait une bête à maturité à la main et se retrouvait, au clic suivant, en train de
-       marteler une autre bête — la sienne avait été vendue à l'instant précis où elle
-       devenait vendable. Tenir la case ne suffisait pas : la case était la bonne, c'est
-       l'animal dedans qui avait changé.
+    /* LA CONSIGNE NE FAIT AUCUNE EXCEPTION, pas même pour la bête en scène. Une automatisation
+       qu'on configure doit faire exactement ce qu'on a réglé : si elle épargne la case qu'on
+       regarde, le compte ne tombe jamais juste et le joueur ne peut plus prévoir sa ferme.
 
-       La protection ne se compte plus en secondes depuis le dernier clic : elle vaut tant
-       que l'onglet est visible. Regarder une bête, c'est s'en occuper — hésiter devant un
-       péage aussi. Voir le commentaire de `enScene` plus haut. */
-    const ready = state.pen.filter(c => !c.keep && !enScene(c) &&
+       Deux exceptions ont été essayées et retirées. Une immunité à vie pour la bête en scène,
+       qui laissait celle qu'on venait d'évoluer à la main invendue pour toujours — symptôme
+       visible : « le marchand ne vend pas ». Puis une protection tant que l'onglet est
+       visible, qui ramenait le même défaut dès qu'on laissait la page ouverte.
+
+       ☆ Garder est la seule protection, et c'est le bon endroit : elle est explicite, elle se
+       voit sur la vignette, et c'est le joueur qui la pose. */
+    const ready = state.pen.filter(c => !c.keep &&
                                         estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= tailleExigee(c));
     for (const c of ready) {

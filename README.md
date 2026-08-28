@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.4
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.5
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.0.4** | le crabe entre en jeu — ses cinq dessins attendaient depuis août d'être branchés |
+| **2.0.5** | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
+| 2.0.4 | le crabe entre en jeu — ses cinq dessins attendaient depuis août d'être branchés |
 | 2.0.3 | le marchand ne vend plus la bête qu'on regarde — la présence se lit sur l'onglet, plus sur les clics |
 | 2.0.2 | l'écran d'ascension ne s'affiche plus par-dessus le jeu, et le premier jalon passe au milieu de partie |
 | 2.0.1 | les deux derniers âges renommés — *géant* devient *ancien*, *titan* devient *légende* |
@@ -46,7 +47,7 @@ de 4 à 5.
 | 1.4.0 | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
 | 1.3.0 | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
 | 1.2.0 | le seuil de rentabilité cantonné au début de la vie, le chromatique redescendu à un cran de rareté |
-| 1.1.2 | la bête en scène n'est plus protégée pour toujours, seulement dix secondes |
+| 1.1.2 | la bête en scène n’est plus protégée pour toujours, seulement dix secondes (retiré en 2.0.5) |
 | 1.1.1 | le marchand dit pourquoi il ne vend pas |
 | 1.1.0 | les améliorations se montent en tiers de palier |
 | 1.0.1 | la jauge ne se laisse plus écraser par la scène |
@@ -836,24 +837,21 @@ l'acheteur automatique ou en voir un autre éclore ne détourne jamais le regard
 cours d'élevage. Un œuf ne passe au premier plan que s'il n'y a plus rien de vivant à
 regarder, et c'est alors le plus avancé.
 
-**Le marchand ne vend jamais la bête qu'on regarde.** C'est le pendant de la règle du dessus :
-rien ne prend la scène à une bête vivante, et rien ne l'y enlève tant qu'on est là. Sans cette
-protection, on menait une bête à maturité à la main et, au clic suivant, on martelait une autre
-bête — la sienne avait été vendue à l'instant précis où elle devenait vendable. Tenir la case ne
-suffisait pas : la case était la bonne, c'est l'animal dedans qui avait changé.
+**Le marchand n'a aucune exception, pas même la bête en scène.** Si la consigne dit de vendre
+les communes mûres dès l'âge adulte, il vend toutes les communes mûres — y compris celle qu'on
+est en train de regarder. Une automatisation qu'on règle doit faire exactement ce qu'on a réglé,
+sans quoi le compte ne tombe jamais juste et la ferme cesse d'être prévisible.
 
-**La présence se lit sur l'onglet, pas sur les gestes.** La règle s'est écrite deux fois avant
-de tenir. D'abord une immunité à vie, qui laissait la bête tout juste évoluée à la main en
-scène, vendable et invendue pour toujours — le symptôme visible était « le marchand ne vend
-pas ». Puis un sursis de dix secondes depuis le dernier *clic*, qui a échoué pour la raison
-inverse : **regarder une bête n'est pas la cliquer**. On hésitait devant un péage, on lisait le
-panneau, et elle partait sous nos yeux. Pire, une bête arrivée en scène toute seule n'avait
-jamais été cliquée, donc n'était jamais protégée une seule seconde.
+**Deux exceptions ont été essayées, et retirées.** Une immunité à vie pour la bête en scène
+laissait celle qu'on venait d'évoluer à la main invendue pour toujours — le symptôme visible
+était « le marchand ne vend pas ». Un sursis de dix secondes depuis le dernier *clic* protégeait
+mal, puisque regarder une bête n'est pas la cliquer, et une bête arrivée en scène toute seule
+n'était jamais protégée. Une protection tant que l'onglet reste visible a ramené le premier
+défaut : page ouverte, bête jamais vendue.
 
-Quitter la page suffit à lever la protection, et le rattrapage d'une absence l'ignore
-complètement — personne ne regardait. Une seule bête échappe au marchand à la fois, et
-☆ *Garder* reste la seule protection permanente : mesuré sur une ferme de dix-huit bêtes, il en
-vend 17 au lieu de 18, l'enclos ne s'engorge pas.
+**☆ *Garder* est donc la seule protection**, et c'est le bon endroit : elle est explicite, elle
+se voit sur la vignette, et c'est le joueur qui la pose. Ce qu'on perd, c'est qu'une bête peut
+partir à l'instant où on la regarde ; ce qu'on gagne, c'est une consigne qui ne ment pas.
 
 **Vendre soi-même ne déplace pas le regard non plus : on garde sa case.** Si on était sur la
 case 6, on reste sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une
