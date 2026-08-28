@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.3
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.2.3** | un jeton dépensé = un emplacement de carte — il en offrait trois avant le premier saut |
+| **2.3.0** | six lignées rares de plus — l'ère rare passe de 4 à 10 lignées |
+| 2.2.3 | un jeton dépensé = un emplacement de carte — il en offrait trois avant le premier saut |
 | 2.2.2 | la montée d'un cran passe à **1 sur 1 000**, la même à toutes les raretés |
 | 2.2.1 | le marchand automatique garde la case, comme une vente à la main |
 | 2.2.0 | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
@@ -80,7 +81,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 21 lignées et leurs 105 formes, du têtard à l'Ouroboros éternel
+- 27 lignées et leurs 135 formes, du têtard à l'Ouroboros éternel
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
   vie qui ne repart jamais de zéro
 - **Variantes** : teinte, motif, tempérament, et un prodige sur 8 192
@@ -91,11 +92,11 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rien ne se nourrit contre des pièces** : une bête grandit au clic et au temps, jamais à
   l'argent. Une bête mûre continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
-- Sept améliorations : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand, évolution
+- Huit améliorations : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand, évolution, intendant
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
-- Collection des 105 formes découvertes
+- Collection des 135 formes découvertes
 - **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
   du bonus, et tout le reste repart de zéro
 
@@ -180,6 +181,17 @@ auraient rendu plus tard. L'épithète se dégonfle d'elle-même — un *adulte 
 *ancien colossal* — sans qu'on ait à confisquer quoi que ce soit.
 
 ### Raretés
+
+**La pyramide compte 27 lignées : 10 communes, 10 rares, 4 épiques, 3 mythiques.** L'ère rare
+est passée de quatre à dix en alpha 2.3.0 — les communes avaient été étoffées au fil du temps
+pendant que les autres ères restaient à leur compte d'origine, si bien qu'on voyait la même
+bête un œuf sur quatre à l'ère rare contre une sur dix à l'ère commune, alors que la rare dure
+plus longtemps.
+
+Les six nouvelles — araignée, cerf, ours, papillon, tortue, chat — ont été choisies sur la
+**silhouette** et non sur le thème : huit pattes, une ramure, une masse, des ailes larges, une
+carapace basse, un félin. Deux lignées qu'on distingue mal en vignette de 32 pixels sont deux
+lignées pour le prix d'une.
 
 Deux axes indépendants, à ne pas confondre : l'**âge** est la progression d'une bête au fil de
 sa vie, la **rareté** est la lignée dont elle est issue et ne change jamais. L'âge, c'est le
@@ -684,7 +696,7 @@ Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chan
 #### Les emplacements : un build, pas une collection
 
 **L'album garde toutes les capsules, seules celles qu'on équipe agissent.** Sans limite,
-vingt-et-une cartes se composent et la puissance de l'album n'a plus de plafond — c'est de ça
+vingt-sept cartes se composent et la puissance de l'album n'a plus de plafond — c'est de ça
 que meurent les jeux idle.
 
 **Un jeton dépensé ouvre un emplacement, et c'est tout.** La première ascension en donne un,
@@ -1099,4 +1111,4 @@ avant de changer d'avis.
    dernière tranche — `AGES[4].grow`, six heures aujourd'hui.
 
 Les créatures sans dessin sont des emoji : des placeholders assumés, en attendant que les
-105 illustrations soient toutes là.
+135 illustrations soient toutes là.

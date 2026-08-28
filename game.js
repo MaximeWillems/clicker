@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.2.3';
+const VERSION = 'alpha 2.3.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -299,7 +299,7 @@ const RANKS = [
    posée une fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 
    L'ALBUM GARDE TOUT, SEULES LES CARTES ÉQUIPÉES AGISSENT. C'est la règle qui rend le reste
-   calculable : sans limite d'emplacements, vingt-et-une cartes se composent et la puissance
+   calculable : sans limite d'emplacements, vingt-sept cartes se composent et la puissance
    de l'album n'a plus de plafond.
 
    UN JETON DÉPENSÉ = UN EMPLACEMENT. La première ascension en ouvre un, la deuxième un
@@ -519,6 +519,32 @@ const LINES = [
   { key: 'serpent', name: 'Serpent-plume', rarity: 'rare', forms: [
     ['Vermisseau', '🐛'], ['Couleuvre', '🐍', 'f'], ['Serpent-plume', '🐍'],
     ['Amphithère', '🐲'], ['Quetzalcóatl', '🐉'] ] },
+  /* Les six suivantes portent l'ère rare de quatre à dix lignées. Les communes étaient
+     passées de huit à dix au fil du temps pendant que les autres ères restaient à leur
+     compte d'origine : on voyait la même bête un œuf sur quatre à l'ère rare, contre une
+     sur dix à l'ère commune, alors que la rare dure plus longtemps.
+
+     Le critère de choix est la SILHOUETTE, pas le thème : huit pattes, une ramure, une
+     masse, des ailes larges, une carapace basse, un félin. Deux lignées qu'on distingue
+     mal en vignette de 32 pixels sont deux lignées pour le prix d'une. */
+  { key: 'araignee', name: 'Araignée', rarity: 'rare', forms: [
+    ['Nymphe', '🕸️', 'f'], ['Araignée', '🕷️', 'f'], ['Veuve noire', '🕷️', 'f'],
+    ['Tisseuse d’ombre', '🕷️', 'f'], ['Arachné, fileuse du sort', '🕸️', 'f'] ] },
+  { key: 'cerf', name: 'Cerf', rarity: 'rare', forms: [
+    ['Faon', '🦌'], ['Cerf', '🦌'], ['Grand cerf', '🦌'],
+    ['Cerf des brumes', '🦌'], ['Cernunnos, roi des bois', '🌿'] ] },
+  { key: 'ours', name: 'Ours', rarity: 'rare', forms: [
+    ['Ourson', '🐻'], ['Ours', '🐻'], ['Ours des cavernes', '🐻'],
+    ['Gardien sylvestre', '🐻'], ['Artio, l’ourse des bois', '🌲', 'f'] ] },
+  { key: 'papillon', name: 'Papillon', rarity: 'rare', forms: [
+    ['Chenille', '🐛', 'f'], ['Papillon', '🦋'], ['Papillon de lune', '🦋'],
+    ['Aile-de-brume', '🦋', 'f'], ['Psyché, souffle ailé', '✨', 'f'] ] },
+  { key: 'tortue', name: 'Tortue', rarity: 'rare', forms: [
+    ['Tortillon', '🐢'], ['Tortue', '🐢', 'f'], ['Tortue centenaire', '🐢', 'f'],
+    ['Tortue-île', '🐢', 'f'], ['Kurma, socle du monde', '🏝️'] ] },
+  { key: 'chat', name: 'Chat', rarity: 'rare', forms: [
+    ['Chaton', '🐈'], ['Chat', '🐈'], ['Lynx', '🐈'],
+    ['Panthère des brumes', '🐆', 'f'], ['Bastet, gardienne', '🐈‍⬛', 'f'] ] },
 
   // ── épiques ─────────────────────────────────────────────────────────────
   { key: 'kraken', name: 'Kraken', rarity: 'epique', forms: [

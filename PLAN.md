@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.2.3 · sauvegarde v8 · 10 lignées illustrées sur 21
+    aujourd'hui : alpha 2.3.0 · sauvegarde v8 · 10 lignées illustrées sur 27
 
 ---
 
@@ -19,6 +19,10 @@ Le numéro suit la règle écrite en haut de `game.js` : majeur pour un morceau 
 n'existait pas, mineur pour une nouveauté qui tient dans le jeu tel qu'il est, correctif pour
 le reste. Chaque version répond à une question, et c'est la question qui décide si elle est
 réussie.
+
+**Ce qui reste à venir ne porte plus de numéro**, seulement un ordre : trois fois de suite une
+idée non prévue s'est glissée devant, et il a fallu renuméroter la moitié de la table. Le
+numéro se décide au moment du commit, là où la règle sait quoi en faire.
 
 | Ver. | Ce qui tombe | Sauv. | La question qu'elle pose au joueur |
 |---|---|---|---|
@@ -30,13 +34,14 @@ réussie.
 | **2.1.1** ✓ | La couveuse sans plafond | 7 | — |
 | **2.2** ✓ | Les jetons d'ascension — un palier de fortune tous les ×1 000 000 | 8 | est-ce que l'ascension se mérite ? |
 | **2.2.1 → 2.2.3** ✓ | La case tenue à la vente auto, la montée d'un cran à 1/1 000, un jeton = un emplacement | 8 | — |
-| **2.3** | La fusion — les paliers, et le repère sur les capsules | 8 | est-ce que les doublons valent d'être gardés ? |
-| **2.4** | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 8 | est-ce que l'ordre des achats suit la vie de la bête ? |
-| **3.0** | La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 9 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
-| **3.1** | La compatibilité — étiquettes, stérilité, durée par distance | 9 | est-ce que la règle se devine sans wiki ? |
-| **3.2** | L'hérédité — les quatre issues, les fusions, les teintes exclusives | 9 | est-ce qu'on a envie de sélectionner ? |
-| **3.3** | La rareté de l'enfant — le tirage entre parents, la montée par âge | 9 | est-ce que la montée reste un cadeau et non une voie ? |
-| **3.4** | Les merveilleuses — la rareté, les recettes, trois lignées dessinées | 9 | est-ce qu'une merveilleuse se raconte ? |
+| **2.3** ✓ | Six lignées rares de plus — l'ère rare passe de 4 à 10 | 8 | est-ce que l'ère rare cesse de se répéter ? |
+| **à venir** | La fusion — les paliers, et le repère sur les capsules | 8 | est-ce que les doublons valent d'être gardés ? |
+| **à venir** | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 8 | est-ce que l'ordre des achats suit la vie de la bête ? |
+| **à venir** | La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 9 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
+| **à venir** | La compatibilité — étiquettes, stérilité, durée par distance | 9 | est-ce que la règle se devine sans wiki ? |
+| **à venir** | L'hérédité — les quatre issues, les fusions, les teintes exclusives | 9 | est-ce qu'on a envie de sélectionner ? |
+| **à venir** | La rareté de l'enfant — le tirage entre parents, la montée par âge | 9 | est-ce que la montée reste un cadeau et non une voie ? |
+| **à venir** | Les merveilleuses — la rareté, les recettes, trois lignées dessinées | 9 | est-ce qu'une merveilleuse se raconte ? |
 
 L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
 passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
@@ -46,20 +51,21 @@ pension.
 
 ### Ce qui se livre en petit paquet
 
-**2.3, la fusion** est presque gratuite : le champ `palier` existe déjà sur chaque capsule et
+**La fusion** est presque gratuite : le champ `palier` existe déjà sur chaque capsule et
 la table `PALIERS` est écrite. Une question y reste ouverte — est-ce que le palier 4
 transforme un cadran en *règle* (+1 enclos, +1 clic automatique) plutôt qu'en plus gros
 pourcentage ? Une règle se raconte, un pourcentage s'oublie.
 
-**3.0, le socle de la pension, est l'atome** : emplacements, parents, durée, œuf et rente
+**Le socle de la pension est l'atome** : emplacements, parents, durée, œuf et rente
 suspendue tombent ensemble ou ne tombent pas. Retirer n'importe lequel des cinq laisse un jeu
 incohérent — une pension sans rente suspendue est gratuite, une pension sans plafond de
 réserve déborde à la première absence.
 
 ### Le chantier parallèle : les dessins
 
-**11 lignées sur 21 n'ont pas de dessin** — loup, méduse, salamandre, serpent, kraken, golem,
-sphinx, cheval, chimère, béhémoth, ouroboros. Ce n'est pas une version, c'est une voie de fond
+**17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
+serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
+sphinx, cheval) et les trois mythiques (chimère, béhémoth, ouroboros). Ce n'est pas une version, c'est une voie de fond
 qui avance entre les autres. Rien n'en dépend, tout en bénéficie.
 
 C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
@@ -129,8 +135,10 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
 
 - **Une cinquième rareté avant la pension.** La merveilleuse tient sa valeur du fait qu'elle
   ne s'achète pas ; la mettre en boutique la viderait de son sens.
-- **De nouvelles lignées.** Il y en a vingt-et-une, dont onze sans dessin. Le contenu qui
-  manque n'est pas le nombre de lignées, c'est le nombre de dessins.
+- **De nouvelles lignées au-delà des vingt-sept.** L'ère rare a été portée à dix en 2.3.0
+  parce qu'elle se répétait ; les épiques et les mythiques, elles, se traversent trop vite
+  pour que le compte se voie. Au-delà, le contenu qui manque n'est pas le nombre de lignées,
+  c'est le nombre de dessins — dix-sept sur vingt-sept n'en ont pas.
 - **Un deuxième axe de prestige.** L'ascension n'a pas encore été jouée une seule fois de bout
   en bout. Empiler un second cycle sur un premier non éprouvé est la façon classique dont un
   idle devient illisible.
@@ -190,7 +198,7 @@ l'image, jamais la croissance.
 
 ## Où on en est
 
-Le jalon 0 est livré en **alpha 2.2.3**, et il déborde largement de son cadre : 21 lignées au
+Le jalon 0 est livré en **alpha 2.3.0**, et il déborde largement de son cadre : 27 lignées au
 lieu de 5, une vie de cent niveaux en cinq âges, les variantes, quatre raretés, huit
 améliorations, la rente, la collection, l'album et l'ascension. Une partie des jalons 2 et 3
 est donc jouable — mais **entièrement dans le navigateur**.
