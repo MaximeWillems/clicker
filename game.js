@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.2';
+const VERSION = 'alpha 2.0.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -669,16 +669,20 @@ let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, 
    personne ne regardait l'écran, la protéger n'aurait fait que bloquer un enclos. */
 let rattrapage = false;
 
-/* Le répit de la bête en scène. Elle n'est pas protégée, elle est en sursis : le marchand la
-   laisse tant qu'on s'occupe d'elle, et la prend dès qu'on l'a quittée depuis assez longtemps.
+/* LE MARCHAND NE VEND JAMAIS LA BÊTE QU'ON REGARDE. La règle tient en une phrase, et c'est
+   tout : la créature en scène est épargnée tant que l'onglet est visible.
 
-   C'était une immunité à vie jusqu'ici, et ça ne se voyait pas tant qu'une bête grandissait
-   sans fin — on finissait toujours par passer à autre chose. Depuis les âges, une bête mûre
-   reste mûre indéfiniment : celle qu'on venait de faire évoluer à la main restait donc en
-   scène, vendable, et invendue pour toujours. Le seul symptôme visible était « le marchand
-   ne vend pas ». ☆ Garder reste la seule vraie protection. */
-const SCENE_REPIT = 10000;      // millisecondes depuis le dernier geste sur elle
-let dernierGeste = 0;
+   Elle s'est écrite deux fois avant de tenir. D'abord une immunité à vie, qui laissait la
+   bête qu'on venait de faire évoluer à la main en scène, vendable et invendue pour toujours —
+   le symptôme visible était « le marchand ne vend pas ». Puis un sursis de dix secondes
+   depuis le dernier CLIC, qui a échoué pour la raison inverse : regarder une bête n'est pas
+   la cliquer. On hésitait devant un péage, on lisait le panneau, et elle partait sous nos
+   yeux. Pire, une bête arrivée en scène toute seule n'avait jamais été cliquée, donc jamais
+   protégée une seule seconde.
+
+   La présence se lit donc sur l'onglet, pas sur les gestes. Quitter la page suffit à lever la
+   protection, et le rattrapage d'une absence l'ignore complètement : personne ne regardait.
+   Une seule bête échappe au marchand à la fois. ☆ Garder reste la seule protection permanente. */
 const bilanAuto = { vendus: 0, gagne: 0, evolues: 0, depense: 0 };
 
 function freshState() {
@@ -1089,6 +1093,12 @@ const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 /* La consigne du marchand pour CETTE bête : l'âge à partir duquel il la vend, 0 s'il n'y
    touche jamais. Chaque rareté a la sienne — c'est ce qui permet d'écouler les communes
    dès l'âge adulte pendant qu'on mène les mythiques jusqu'à la légende. */
+/* La bête en scène sous les yeux du joueur. `document.hidden` est la seule mesure honnête de
+   sa présence : un clic ne dit pas qu'on regarde, et l'absence de clic ne dit pas qu'on est
+   parti. Le rattrapage d'une absence passe outre — il rejoue des heures pendant lesquelles
+   personne ne regardait, et protéger une bête y bloquerait un enclos pour rien. */
+const enScene = c => !rattrapage && !document.hidden && 'c:' + c.id === state.sel;
+
 const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
 
 /* La taille minimale exigée par le marchand n'existe QUE si une mangeoire tourne. Sans
@@ -1276,7 +1286,6 @@ function current() {
 
 function select(key) {
   state.sel = key;
-  if (key && key.charAt(0) === 'c') dernierGeste = Date.now();
   refresh();
 }
 
@@ -1400,7 +1409,6 @@ function tapStage() {
   }
 
   const c = s.c;
-  dernierGeste = Date.now();          // tant qu'on la clique, le marchand n'y touche pas
   const avantNiv = niveau(c), avantMur = estMur(c);
   const avantRang = rankOf(sizeFactor(c)).i, avantValeur = sellValue(c);
   /* Un clic ajoute de la vie avant comme après la maturité : la créature ne cesse jamais de
@@ -1641,11 +1649,10 @@ function runAutomations(dt) {
        devenait vendable. Tenir la case ne suffisait pas : la case était la bonne, c'est
        l'animal dedans qui avait changé.
 
-       Mais le répit se compte en secondes depuis le dernier geste, PAS en « est-elle
-       sélectionnée ». Une bête qu'on laisse en scène et qu'on ne touche plus finit par
-       partir, comme n'importe quelle autre. Une seule bête échappe au marchand à la fois. */
-    const repit = Date.now() - dernierGeste < SCENE_REPIT;
-    const ready = state.pen.filter(c => !c.keep && (rattrapage || !repit || 'c:' + c.id !== state.sel) &&
+       La protection ne se compte plus en secondes depuis le dernier clic : elle vaut tant
+       que l'onglet est visible. Regarder une bête, c'est s'en occuper — hésiter devant un
+       péage aussi. Voir le commentaire de `enScene` plus haut. */
+    const ready = state.pen.filter(c => !c.keep && !enScene(c) &&
                                         estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= tailleExigee(c));
     for (const c of ready) {

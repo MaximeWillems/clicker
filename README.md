@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.2
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.3
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.0.2** | l'écran d'ascension ne s'affiche plus par-dessus le jeu, et le premier jalon passe au milieu de partie |
+| **2.0.3** | le marchand ne vend plus la bête qu'on regarde — la présence se lit sur l'onglet, plus sur les clics |
+| 2.0.2 | l'écran d'ascension ne s'affiche plus par-dessus le jeu, et le premier jalon passe au milieu de partie |
 | 2.0.1 | les deux derniers âges renommés — *géant* devient *ancien*, *titan* devient *légende* |
 | 2.0.0 | **l'album et l'ascension** — les bêtes gardées deviennent des cartes, tout le reste repart |
 | 1.5.0 | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
@@ -834,22 +835,24 @@ l'acheteur automatique ou en voir un autre éclore ne détourne jamais le regard
 cours d'élevage. Un œuf ne passe au premier plan que s'il n'y a plus rien de vivant à
 regarder, et c'est alors le plus avancé.
 
-**Le marchand laisse un répit de dix secondes à la bête en scène.** C'est le pendant de la
-règle du dessus : rien ne prend la scène à une bête vivante, et rien ne l'y enlève tant qu'on
-s'en occupe. Sans ce délai, on menait une bête à maturité à la main et, au clic suivant, on
-martelait une autre bête — la sienne avait été vendue à l'instant précis où elle devenait
-vendable. Tenir la case ne suffisait pas : la case était la bonne, c'est l'animal dedans qui
-avait changé.
+**Le marchand ne vend jamais la bête qu'on regarde.** C'est le pendant de la règle du dessus :
+rien ne prend la scène à une bête vivante, et rien ne l'y enlève tant qu'on est là. Sans cette
+protection, on menait une bête à maturité à la main et, au clic suivant, on martelait une autre
+bête — la sienne avait été vendue à l'instant précis où elle devenait vendable. Tenir la case ne
+suffisait pas : la case était la bonne, c'est l'animal dedans qui avait changé.
 
-**Le répit se compte depuis le dernier geste, pas depuis la sélection.** C'était une immunité
-à vie jusqu'ici, et ça ne se voyait pas tant qu'une bête grandissait sans fin — on finissait
-toujours par passer à autre chose. Depuis les âges, une bête mûre reste mûre indéfiniment :
-celle qu'on venait de faire évoluer à la main restait donc en scène, vendable, et invendue
-pour toujours. Le seul symptôme visible était « le marchand ne vend pas ».
+**La présence se lit sur l'onglet, pas sur les gestes.** La règle s'est écrite deux fois avant
+de tenir. D'abord une immunité à vie, qui laissait la bête tout juste évoluée à la main en
+scène, vendable et invendue pour toujours — le symptôme visible était « le marchand ne vend
+pas ». Puis un sursis de dix secondes depuis le dernier *clic*, qui a échoué pour la raison
+inverse : **regarder une bête n'est pas la cliquer**. On hésitait devant un péage, on lisait le
+panneau, et elle partait sous nos yeux. Pire, une bête arrivée en scène toute seule n'avait
+jamais été cliquée, donc n'était jamais protégée une seule seconde.
 
-Une bête laissée en scène et qu'on ne touche plus part donc comme n'importe quelle autre, et
-☆ *Garder* reste la seule vraie protection. Une seule bête échappe au marchand à la fois :
-mesuré sur une ferme de dix-huit bêtes, il en vend 17 au lieu de 18, l'enclos ne s'engorge pas.
+Quitter la page suffit à lever la protection, et le rattrapage d'une absence l'ignore
+complètement — personne ne regardait. Une seule bête échappe au marchand à la fois, et
+☆ *Garder* reste la seule protection permanente : mesuré sur une ferme de dix-huit bêtes, il en
+vend 17 au lieu de 18, l'enclos ne s'engorge pas.
 
 **Vendre soi-même ne déplace pas le regard non plus : on garde sa case.** Si on était sur la
 case 6, on reste sur la case 6 — c'est la voisine qui glisse dedans, exactement comme dans une
