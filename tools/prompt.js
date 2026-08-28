@@ -297,13 +297,20 @@ const STADES = {
      fantasy détaillée, et rien dans la charte ne tirait vers le plat. La charte mascotte s'en
      sortait parce que « cute » est lui-même corrélé au dessin plat. Il a fallu écrire l'ancre
      à la main, en tête de prompt : même technique que toutes les autres planches, seul le
-     registre change. */
+     registre change.
+
+     Enfin, cette lignée CASSE le registre serein de la charte, et c'est voulu : un dieu qui
+     se dévore n'est pas serein. La morsure s'aggrave d'âge en âge — propre aux deux premiers,
+     malsaine ensuite. Le dégoût passe par la FORME et rien d'autre : une mâchoire décrochée,
+     et une bosse qui court le long du corps là où la queue avalée se trouve. Ni sang, ni
+     plaie, ni bave — c'est plat, ça tient en six couleurs, et c'est lisible en vignette. La
+     dérogation est écrite dans NOTES, donc elle ne déteint pas sur les autres mythiques. */
   ouroboros: [
     'a serpent ALREADY biting its own tail, forming one closed loop — but a LIVING one: a tilted oval seen at an angle, never a flat circle. The head is raised at the upper left and turned down onto the tail, the neck passing IN FRONT of the body at the crossing. Slender body, narrow half-lidded eyes, one banded mark along the back. A plain SNAKE head — smooth and rounded, no horns, no crest, never a dragon head',
     'the same bite and the same closed loop, now TWISTED: the body makes one clear S-bend before it closes, so the loop is pinched on one side and swings wide on the other. Thicker body carrying a few LARGE FLAT bands, never a scale texture, the same snake head and narrow eyes, a pale line along the inside edge',
-    'the same bite, the body now long enough to loop TWICE — the second coil crossing the first diagonally like a figure of eight, one loop clearly in front and one behind. Never two nested circles. The same flat bands, the same impassive snake face at the bite',
-    'the same bite, the body coiling three times in a wide spiral seen at an angle, like a spring laid on its side, the head lifted high above the coils and the tail drawn down and across. In the space the coils enclose, one flat pale disc of light — the coil has begun to hold something',
-    'ouroboros, enormous, the same bite, the coils now sweeping around the frame like an orbit — one coil passing clearly IN FRONT of what it holds, the others behind. At the centre a small world drawn as ONE flat circle with two or three simple blob continents in the same flat colors — never a realistic globe, never a photograph of Earth — and two plain round dots for moons. A few large flat gold rings set into the back like insignia. The head high and turned down onto the tail, the snake face small and impassive — the awe is the composition, never the expression'],
+    'the same bite, the body now long enough to loop TWICE — the second coil crossing the first diagonally like a figure of eight, one loop clearly in front and one behind. Never two nested circles. The same flat bands. HERE THE BITE TURNS WRONG: the jaw is stretched open wider than the neck and the tail is forced past it, with a first bulge swelling just behind the head. The eyes narrow and strain',
+    'the same bite, the body coiling three times in a wide spiral seen at an angle, like a spring laid on its side, the head lifted high above the coils and the tail drawn down and across. The jaw is now UNHINGED wide, the tail swallowed deep, and a long clear bulge runs down the neck and into the first coil — the body visibly full of its own body. The eyes narrow and angry. In the space the coils enclose, one flat pale disc of light — the coil has begun to hold something',
+    'ouroboros, enormous, the same bite, the coils now sweeping around the frame like an orbit — one coil passing clearly IN FRONT of what it holds, the others behind. At the centre a small world drawn as ONE flat circle with two or three simple blob continents in the same flat colors — never a realistic globe, never a photograph of Earth — and two plain round dots for moons. A few large flat gold rings set into the back like insignia. The head high and GORGING on itself: the jaw stretched to its absolute limit around a huge length of its own body, and the bulge travelling visibly through several coils. The eyes narrow and furious. The awe is the composition and the wrongness of the bite — never a roar, never a weapon'],
 
   /* Le fil de l'araignée : huit pattes courtes et rondes, un abdomen bulbeux marqué d'un
      sablier pâle, et une masse qui passe des pattes au ventre de stade en stade. */
@@ -360,6 +367,28 @@ const STADES = {
     'bastet, enormous cat lying down, the same tufted rounded ears, the same three-striped tail curled around the body, soft golden rings on the shoulders, tiny sleepy face on folded paws'],
 };
 
+/* ── Les exceptions, écrites ───────────────────────────────────────────────
+   Une lignée peut avoir besoin de casser une règle de sa charte. Tant que la charte est
+   la même pour tout le monde, la seule façon honnête de le faire est de l'écrire : la note
+   se glisse entre l'en-tête et les cinq stades, elle ne vaut que pour cette lignée, et les
+   autres n'en héritent pas. Sans ce créneau, casser une règle obligeait à la casser POUR
+   TOUS — et une charte qu'on assouplit pour un cas ne tient plus personne. */
+const NOTES = {
+  ouroboros: `THIS LINE BREAKS THE SERENE REGISTER, ON PURPOSE — this paragraph overrides
+"never in menace", "no snarl" and "mouth closed and neutral" above, for this creature only:
+- the ouroboros is EATING itself, and it gets worse at every stage
+- stages 1 and 2 are still neat: the jaw simply closed on the tail, effortless
+- from stage 3 on it turns WRONG: the jaw stretches open far wider than the neck, the tail
+  is forced down the throat, and a clear BULGE swells along the body where the swallowed
+  tail sits — the body visibly full of itself
+- the eyes go from calm, to strained, to narrow and FURIOUS. Never sleepy, never serene
+- by stage 5 it is gorging: the jaw stretched to its limit, the bulge running through
+  several coils
+Keep it FLAT and bloodless: no blood, no wound, no gore, no drool. The open mouth is ONE
+flat dark shape — no rendered teeth, no tongue detail. The horror is the SHAPE — a
+distended jaw and a swelling body — never gore, and never at the cost of the 6 flat colors.`,
+};
+
 const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
   .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -386,7 +415,9 @@ function ecrire(ligne) {
   // une mythique naît accomplie : elle ne suit pas la charte des bêtes qui grandissent
   const entete = ligne.rarity === 'mythique' || ligne.rarity === 'merveilleux'
                ? ENTETE_REVELATION : ENTETE;
-  const l = [entete, '', 'The 5 stages, in order:'];
+  const l = [entete];
+  if (NOTES[ligne.key]) l.push('', NOTES[ligne.key]);
+  l.push('', 'The 5 stages, in order:');
   ligne.forms.forEach((f, i) => l.push((i + 1) + '. ' + stades[i]));
   l.push('', '', '--- une fois la planche enregistrée dans art/source-' + ligne.key + '.png ---', '');
   l.push('python tools/decouper.py art/source-' + ligne.key + '.png ' + ligne.key + ' ' + suffixes.join(','));
