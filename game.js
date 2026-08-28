@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.3.3';
+const VERSION = 'alpha 2.3.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2334,11 +2334,29 @@ function ascensionner() {
     /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: state.asc.jetons - 1 },
-    seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound, speed: state.speed,
+    seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
     buyKind: state.buyKind, sellAt: state.sellAt, sellRank: state.sellRank,
     evolveUpTo: state.evolveUpTo,
   });
   nextId = 1;
+
+  /* DEUX REMISES À ZÉRO QUI NE SONT PAS DANS L'ÉTAT, et sans lesquelles le saut ne se voit pas.
+
+     `lastFrame` d'abord. La boîte de confirmation gèle le minuteur pendant qu'on la lit : au
+     clic suivant, la boucle rattrape le temps écoulé — plafonné à cinq secondes, mais
+     MULTIPLIÉ PAR LA VITESSE. À ×100, une confirmation lue en vingt secondes injectait cinq
+     cents secondes de jeu dans la partie qui vient de naître : couvaison, croissance, rente,
+     ventes et rachats d'un coup. La ferme neuve semblait n'avoir jamais été remise à zéro.
+
+     `speed` ensuite. Elle traversait le saut, alors que le bouton ⟲ la rend à ×1 : on
+     ascensionnait en accéléré — c'est comme ça qu'on atteint un jeton pour essayer — et la
+     partie suivante démarrait à ×100, illisible. Une ascension doit se regarder à vitesse
+     réelle ; le bouton est à un clic si on veut réaccélérer. */
+  lastFrame = Date.now();
+  state.speed = 1;
+  $('btn-speed').textContent = '×1';
+  bilanAuto.vendus = bilanAuto.gagne = bilanAuto.evolues = bilanAuto.depense = 0;
+
   oublierAlbum();
   albumSig = collSig = '';
   fermerAscension();

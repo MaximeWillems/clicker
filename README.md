@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.3
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.4
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.3.3** | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
+| **2.3.4** | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
+| 2.3.3 | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
 | 2.3.2 | un brief de séance, pour générer plusieurs planches d'affilée sans dérive de style |
 | 2.3.1 | les prompts d'illustration des six nouvelles rares |
 | 2.3.0 | six lignées rares de plus — l'ère rare passe de 4 à 10 lignées |
@@ -777,6 +778,15 @@ pas un choix. Le panneau le dit et le bouton reste éteint, le jeton restant en 
 
 **On ne peut pas enchaîner deux sauts** sans avoir rejoué : l'ascension vide la bourse, et le
 palier suivant est un million de fois plus haut.
+
+**Deux remises à zéro ne sont pas dans l'état sauvegardé**, et sans elles le saut ne se voit
+pas. La **vitesse** revient à ×1 : elle traversait le saut, alors que le bouton ⟲ la rend à ×1,
+et comme on accélère justement pour atteindre un jeton, la partie suivante démarrait à ×100 —
+illisible, et impossible à distinguer d'une remise à zéro ratée. Et l'**horloge de la boucle**
+est recalée : la boîte de confirmation gèle le minuteur pendant qu'on la lit, si bien qu'au clic
+suivant la boucle rattrapait le temps écoulé, plafonné à cinq secondes mais multiplié par la
+vitesse — jusqu'à cinq cents secondes de jeu injectées d'un coup dans une ferme qui vient de
+naître.
 
 #### Le piège du marchand
 
