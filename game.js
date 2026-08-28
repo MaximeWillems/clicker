@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.7.1';
+const VERSION = 'alpha 2.7.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2962,15 +2962,32 @@ function bindTools() {
     if (e.key === 'Escape' && !$('ascension').hidden) fermerAscension();
   });
 
-  /* La barre espace martèle la scène. Sans ce garde-fou elle ferait défiler la page, ce qui
-     rend le martèlement au clavier impraticable. On laisse le navigateur faire son travail
-     quand le focus est sur un vrai contrôle — un bouton focalisé s'active déjà à l'espace. */
+  /* LA BARRE ESPACE APPARTIENT À LA SCÈNE, et à rien d'autre. Elle ne fait jamais défiler.
+
+     L'exception ne vaut plus que pour les champs et les menus, où l'espace a un sens propre :
+     il ouvre une liste déroulante, il tape une lettre. Les BOUTONS en étaient exclus eux
+     aussi, et c'est ce qui cassait le martèlement — un bouton gardé sous le focus après un
+     clic à la souris détournait chaque espace suivant, tantôt pour se réactiver, tantôt pour
+     faire défiler la colonne qui le contient. Voir le relâchement du focus juste en dessous.
+
+     Pendant l'écran d'ascension, l'espace ne fait rien : marteler une bête à travers une
+     boîte modale qui demande son sort n'a aucun sens. */
   window.addEventListener('keydown', e => {
     if (e.code !== 'Space' && e.key !== ' ') return;
     const t = e.target;
-    if (t && /^(SELECT|INPUT|TEXTAREA|BUTTON|A)$/.test(t.tagName)) return;
+    if (t && /^(SELECT|INPUT|TEXTAREA)$/.test(t.tagName)) return;
     e.preventDefault();
+    if (!$('ascension').hidden) return;
     tapStage();
+  });
+
+  /* Un bouton cliqué à la SOURIS ne garde pas le focus : sinon il capte les espaces suivants,
+     et le joueur martèle un bouton au lieu de sa bête. `e.detail > 0` distingue le vrai clic
+     du clic synthétique d'une activation au clavier — celle-là doit garder son focus, sans
+     quoi on ne peut plus naviguer au Tab. */
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('button');
+    if (b && e.detail > 0) b.blur();
   });
 
   $('btn-speed').addEventListener('click', () => {

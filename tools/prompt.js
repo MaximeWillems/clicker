@@ -84,21 +84,28 @@ IDOL STYLE — this is the most important instruction:
 - expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
 - clean readable forms, and SHARPNESS IS ALLOWED where it means something:
   a defined jaw, angular plates, a crown, a fin — never gore, never bared fangs
-- SYMMETRY: it should read like an emblem stamped on a coin
+- the pose is ALIVE, never heraldic: the weight sits on one side, the body turns,
+  the head is set off the centre line. Never a flat symmetrical emblem, never a logo
 - ornament is INSIGNIA, not decoration: rings, plates, glyphs, banded marks,
   concentric shapes — never polka dots, never freckles, never confetti
 - palette: deep and rich, with ONE metallic accent used sparingly — gold, jade or bone.
   Never a bright candy palette
 
 REVELATION — the five stages are ONE being waking up, not one growing up:
-- the SILHOUETTE barely changes from stage 1 to stage 5. It is already right at stage 1
-- what changes is what the being GAINS: an attribute, a mark, a glow, sheer size
+- what is already right at stage 1 is its IDENTITY: same species, same face, same
+  attributes. NOT its pose
+- the POSE CHANGES AT EVERY STAGE, and visibly: the body turns, coils, rises, leans.
+  If stage 3 could be stage 1 scaled up, the sheet has failed — redraw it
+- what the being GAINS is an attribute, a mark, a flat glow, sheer size
 - same palette, same outline color, same eye shape throughout
 - later stages only ADD. Nothing is ever dropped from one stage to the next
 - stage 5 must be overwhelming in SCALE and COMPOSITION, never in menace:
   no snarl, no weapon, no threat. The awe comes from what surrounds it
 
-${TECHNIQUE}
+${TECHNIQUE.replace('Front-facing, centered, full body.',
+`Centered, full body, seen at a slight three-quarter angle — never flat-on.
+Depth comes from parts of the body passing IN FRONT of and BEHIND other parts,
+with a clean outline at every crossing.`)}
 Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
 never a blur, never a gradient, and it still counts toward the 6 colors.`;
 
@@ -264,13 +271,19 @@ const STADES = {
 
      Ce qui grandit n'est pas la bête, c'est CE QUE L'ANNEAU CONTIENT. Le centre est vide au
      premier âge, il s'éclaire au quatrième, il porte un monde au cinquième. Le grandiose vient
-     de là, et non d'une créature devenue menaçante. */
+     de là, et non d'une créature devenue menaçante.
+
+     La première planche a raté sur un mot : « concentrique ». Un cercle parfait n'a pas de
+     pose, et des anneaux emboîtés lisent comme une rondelle — on obtenait cinq fois le même
+     dessin à cinq tailles. La boucle reste FERMÉE, c'est le fil, mais elle est faite par un
+     corps qui s'enroule et se croise, jamais par un cercle imprimé. Ce qui change d'un âge à
+     l'autre, c'est la POSE de la boucle. */
   ouroboros: [
-    'a serpent ALREADY biting its own tail, forming one perfect closed ring, slender body, narrow half-lidded eyes, one banded mark along the back — never a worm, never an open curve. The jaw is closed on the tail without effort, as if it had always been',
-    'the same closed ring and the same bite, the body now thicker with flat angular scale plates, the same narrow eyes, a pale line running the whole inside edge of the ring',
-    'the same bite, the ring now DOUBLED — a second coil nested inside the first, both perfectly concentric, the same scale plates, the same impassive face at the point where jaw meets tail',
-    'the same bite, three concentric coils now, the same plates, and the empty middle filled for the first time with one flat pale disc of light — the ring has begun to hold something',
-    'ouroboros, enormous, the same bite and the same concentric coils now filling the entire frame, gold ring glyphs set into the back like insignia, and held at the centre a small world with flat continents and two moons in orbit. The face stays small and impassive where the jaw meets the tail — the awe is the composition, never the expression'],
+    'a serpent ALREADY biting its own tail, forming one closed loop — but a LIVING one: a tilted oval seen at an angle, never a flat circle. The head is raised at the upper left and turned down onto the tail, the neck passing IN FRONT of the body at the crossing. Slender body, narrow half-lidded eyes, one banded mark along the back',
+    'the same bite and the same closed loop, now TWISTED: the body makes one clear S-bend before it closes, so the loop is pinched on one side and swings wide on the other. Thicker body with flat angular scale plates, the same narrow eyes, a pale line along the inside edge',
+    'the same bite, the body now long enough to loop TWICE — the second coil crossing the first diagonally like a figure of eight, one loop clearly in front and one behind. Never two nested circles. The same plates, the same impassive face at the bite',
+    'the same bite, the body coiling three times in a wide spiral seen at an angle, like a spring laid on its side, the head lifted high above the coils and the tail drawn down and across. In the space the coils enclose, one flat pale disc of light — the coil has begun to hold something',
+    'ouroboros, enormous, the same bite, the coils now sweeping around the frame like an orbit — one coil passing clearly IN FRONT of what it holds, the others behind. At the centre a small world with flat continents and two moons. Gold ring glyphs set into the back like insignia. The head high and turned down onto the tail, the face small and impassive — the awe is the composition, never the expression'],
 
   /* Le fil de l'araignée : huit pattes courtes et rondes, un abdomen bulbeux marqué d'un
      sablier pâle, et une masse qui passe des pattes au ventre de stade en stade. */

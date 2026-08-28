@@ -42,6 +42,18 @@
    doit cacher, quelle que soit la classe posée à côté. */
 [hidden] { display: none !important; }
 
+/* RIEN N'EST SÉLECTIONNABLE. Un clicker se martèle : deux clics rapides au même endroit
+   surlignaient le texte en bleu, et un glisser sur une carte de l'album attrapait sa
+   légende au lieu de la carte. Il n'y a rien à copier dans ce jeu.
+
+   Le contour de focus, lui, reste — c'est la seule façon de jouer au clavier, et il ne
+   s'affiche qu'au clavier grâce à :focus-visible. */
+html {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

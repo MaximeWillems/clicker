@@ -13,15 +13,19 @@ IDOL STYLE — this is the most important instruction:
 - expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
 - clean readable forms, and SHARPNESS IS ALLOWED where it means something:
   a defined jaw, angular plates, a crown, a fin — never gore, never bared fangs
-- SYMMETRY: it should read like an emblem stamped on a coin
+- the pose is ALIVE, never heraldic: the weight sits on one side, the body turns,
+  the head is set off the centre line. Never a flat symmetrical emblem, never a logo
 - ornament is INSIGNIA, not decoration: rings, plates, glyphs, banded marks,
   concentric shapes — never polka dots, never freckles, never confetti
 - palette: deep and rich, with ONE metallic accent used sparingly — gold, jade or bone.
   Never a bright candy palette
 
 REVELATION — the five stages are ONE being waking up, not one growing up:
-- the SILHOUETTE barely changes from stage 1 to stage 5. It is already right at stage 1
-- what changes is what the being GAINS: an attribute, a mark, a glow, sheer size
+- what is already right at stage 1 is its IDENTITY: same species, same face, same
+  attributes. NOT its pose
+- the POSE CHANGES AT EVERY STAGE, and visibly: the body turns, coils, rises, leans.
+  If stage 3 could be stage 1 scaled up, the sheet has failed — redraw it
+- what the being GAINS is an attribute, a mark, a flat glow, sheer size
 - same palette, same outline color, same eye shape throughout
 - later stages only ADD. Nothing is ever dropped from one stage to the next
 - stage 5 must be overwhelming in SCALE and COMPOSITION, never in menace:
@@ -30,7 +34,9 @@ REVELATION — the five stages are ONE being waking up, not one growing up:
 STRICT: maximum 6 flat colors per creature including the outline.
 No texture, no dithering, no noise, no gradients. Simple geometric shapes.
 
-Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+Centered, full body, seen at a slight three-quarter angle — never flat-on.
+Depth comes from parts of the body passing IN FRONT of and BEHIND other parts,
+with a clean outline at every crossing. Transparent background. No shadow, no ground line,
 no background, no text, no frame.
 Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
 never a blur, never a gradient, and it still counts toward the 6 colors.

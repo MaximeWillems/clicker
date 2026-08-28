@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.7.1** | les mythiques passent en charte « idole » — même style, plus mignon du tout |
+| **2.7.2** | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
+| 2.7.1 | les mythiques passent en charte « idole » — même style, plus mignon du tout |
 | 2.7.0 | la réserve revient, et les cartes se déplacent au glisser-déposer |
 | 2.6.0 | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
 | 2.5.0 | cinq emplacements fixes, et plus aucune réserve — chez personne |
@@ -969,6 +970,22 @@ La progression hors ligne suit la même règle : sans couveuse ni éleveur, une 
 produit rien, et le bandeau de retour ne s'affiche pas.
 
 ### Interface
+
+**La barre espace appartient à la scène, et à rien d'autre.** Elle ne fait jamais défiler.
+L'exception ne vaut que pour les champs et les menus, où l'espace a un sens propre — il ouvre
+une liste déroulante, il tape une lettre. Les **boutons** en étaient exclus eux aussi, et c'est
+ce qui cassait le martèlement : un bouton gardé sous le focus après un clic à la souris captait
+chaque espace suivant, tantôt pour se réactiver, tantôt pour faire défiler la colonne qui le
+contient. Un bouton cliqué **à la souris** relâche donc son focus ; activé **au clavier**, il le
+garde, sans quoi on ne pourrait plus naviguer au Tab.
+
+Pendant l'écran d'ascension, l'espace ne fait rien : marteler une bête à travers une boîte
+modale qui demande son sort n'a aucun sens.
+
+**Rien n'est sélectionnable.** Un clicker se martèle : deux clics rapides au même endroit
+surlignaient le texte en bleu, et un glisser sur une carte de l'album attrapait sa légende au
+lieu de la carte. Il n'y a rien à copier dans ce jeu. Le contour de focus, lui, reste — c'est
+la seule façon de jouer au clavier, et il ne s'affiche qu'au clavier.
 
 L'écran n'a **qu'un seul sujet à la fois**, en grand au centre : l'œuf qu'on fait éclore ou
 l'animal qu'on fait grandir. C'est lui qu'on clique. La bande en dessous liste les autres
