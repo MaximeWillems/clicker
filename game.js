@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.2.1';
+const VERSION = 'alpha 2.2.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -97,7 +97,12 @@ function liste(mots) {
 /* Un œuf par rareté, et chacun ne peut donner QUE sa rareté ou celle juste au-dessus.
    C'est ce qui rend la progression séquentielle : on n'atteint une mythique qu'en achetant
    des œufs épiques, qu'on ne s'offre qu'avec l'argent des rares. Pas de raccourci.
-   La chance de monter d'un cran, elle, grandit avec le prix : 3,5 % · 12 % · 25 %.
+
+   LA MONTÉE D'UN CRAN EST À 1 SUR 1 000, la même à toutes les raretés. Elle valait 3,5 %,
+   12 % et 25 % : à ce compte-là, quatre œufs épiques suffisaient à sortir une mythique, et
+   la montée n'était plus un coup de chance mais la façon normale de changer d'ère. Elle
+   redevient un cadeau. Le vrai chemin vers l'ère suivante est donc la BOURSE — on s'offre
+   un œuf plus rare quand on peut se le payer — et non la loterie.
 
    LE PRIX SUIT UNE RÈGLE, il n'est pas choisi : un œuf coûte une fraction du bénéfice net
    d'une bête de l'ère précédente menée à la légende — sa valeur, moins tous ses péages. Le
@@ -115,17 +120,13 @@ function liste(mots) {
    ancien, jamais avant. */
 const EGG_KINDS = [
   { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
-    up: '3,5 %', hatch: 30,
-    odds: { commune: 0.965, rare: 0.035 } },
+    hatch: 30, odds: { commune: 0.999, rare: 0.001 } },
   { key: 'rare', name: 'Œuf rare', price: 300000, glyph: '🥚', rarity: 'rare',
-    up: '12 %', hatch: 180,
-    odds: { rare: 0.88, epique: 0.12 } },
+    hatch: 180, odds: { rare: 0.999, epique: 0.001 } },
   { key: 'epique', name: 'Œuf épique', price: 7500000, glyph: '🥚', rarity: 'epique',
-    up: '25 %', hatch: 720,
-    odds: { epique: 0.75, mythique: 0.25 } },
+    hatch: 720, odds: { epique: 0.999, mythique: 0.001 } },
   { key: 'mythique', name: 'Œuf mythique', price: 180000000, glyph: '🥚', rarity: 'mythique',
-    up: null, hatch: 2700,
-    odds: { mythique: 1 } },
+    hatch: 2700, odds: { mythique: 1 } },
 ];
 
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
@@ -764,7 +765,7 @@ function de(mot) { return /^[aeiouéèêà]/i.test(mot) ? 'd’' + mot : 'de ' +
 function pourcent(p) {
   const v = p * 100;
   if (v >= 1) return v.toFixed(v % 1 ? 1 : 0).replace('.', ',') + ' %';
-  if (v >= 0.1) return v.toFixed(1).replace('.', ',') + ' %';
+  // sous le pour cent, « 1 sur 1 000 » se lit ; « 0,1 % » se survole
   return '1 sur ' + fmt(Math.round(1 / p));
 }
 

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.2.1** | le marchand automatique garde la case, comme une vente à la main |
+| **2.2.2** | la montée d'un cran passe à **1 sur 1 000**, la même à toutes les raretés |
+| 2.2.1 | le marchand automatique garde la case, comme une vente à la main |
 | 2.2.0 | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
 | 2.1.1 | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
 | 2.1.0 | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
@@ -216,15 +217,15 @@ n'est pas constant pendant les trois heures et demie. À refaire tourner.
 
 ### Les quatre œufs
 
-Un œuf par rareté. Chacun donne surtout la sienne, avec une **chance de tomber au-dessus qui
-grandit avec le prix** — 3,5 % pour un commun, 12 % pour un rare, 25 % pour un épique.
-L'œuf mythique n'a rien au-dessus de lui : il garantit.
+Un œuf par rareté. Chacun donne surtout la sienne, avec une **chance de tomber au-dessus de
+1 sur 1 000**, la même à toutes les raretés. L'œuf mythique n'a rien au-dessus de lui : il
+garantit.
 
 | Œuf | Prix | Couvaison | commune | rare | épique | mythique | chance de monter |
 |---|---|---|---|---|---|---|---|
-| Œuf commun | 12 | 30 s | 96,5 % | 3,5 % | — | — | 3,5 % |
-| Œuf rare | 300 000 | 3 min | — | 88 % | 12 % | — | 12 % |
-| Œuf épique | 7,50 M | 12 min | — | — | 75 % | 25 % | 25 % |
+| Œuf commun | 12 | 30 s | 99,9 % | 0,1 % | — | — | 1 sur 1 000 |
+| Œuf rare | 300 000 | 3 min | — | 99,9 % | 0,1 % | — | 1 sur 1 000 |
+| Œuf épique | 7,50 M | 12 min | — | — | 99,9 % | 0,1 % | 1 sur 1 000 |
 | Œuf mythique | 180 M | 45 min | — | — | — | 100 % | — |
 
 **La couvaison s'allonge avec la rareté.** Une bête précieuse doit se faire attendre, sinon la
@@ -244,8 +245,17 @@ Débit mesuré, par incubateur et par heure, avec une couveuse de niveau 3 : 327
 
 **Un œuf ne peut donner que sa rareté ou celle juste au-dessus.** Pas de raccourci : on
 n'atteint une mythique qu'avec des œufs épiques, qu'on ne s'offre qu'avec l'argent des rares.
-La chance de monter d'un cran grandit avec le prix — 3,5 %, 12 %, 25 % — et l'œuf mythique,
-n'ayant rien au-dessus de lui, garantit.
+L'œuf mythique, n'ayant rien au-dessus de lui, garantit.
+
+**La montée est passée de 3,5 / 12 / 25 % à 1 sur 1 000.** À l'ancien taux, quatre œufs
+épiques suffisaient à sortir une mythique : la montée n'était plus un coup de chance mais la
+façon normale de changer d'ère, et l'échelle des prix ne servait à rien. Elle redevient un
+cadeau — et **le vrai chemin vers l'ère suivante est la bourse**, pas la loterie : on s'offre
+un œuf plus rare quand on peut se le payer.
+
+Ce que ça coûte, et c'est assumé : on ne voit presque plus de montée. Avec 327 œufs communs
+par heure et par incubateur, elle tombe une fois toutes les trois heures au lieu d'une fois
+toutes les deux minutes.
 
 Les prix suivent la règle des ères : **chaque œuf coûte 0,35 bête de l'ère précédente menée à
 l'âge légende**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
