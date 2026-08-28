@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.1.0';
+const VERSION = 'alpha 2.1.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -133,12 +133,18 @@ const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
 /* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
 
-   Mais la couvaison ne pèse jamais lourd dans la vie d'une bête : 30 s de coquille contre
-   sept heures de croissance jusqu'à l'âge légende, soit un millième du cycle. Un incubateur au
-   niveau 1 nourrit vingt enclos, et les niveaux de couveuse au-delà s'achetaient pour ne
-   jamais servir. La couveuse est donc plafonnée à 5 : passé ce point, c'est en incubateurs
-   qu'on élargit la couvaison — ils montent en 1,6 par cran au lieu de 1,9, et seuls les
-   œufs mythiques en réclament vraiment. */
+   Sur une bête commune la couvaison ne pèse rien : 30 s de coquille contre sept heures de
+   croissance jusqu'à l'âge légende, soit un millième du cycle. C'est ce qui avait fait
+   plafonner la couveuse à 5 — au-delà, on achetait des niveaux pour ne jamais les voir.
+
+   LE PLAFOND EST LEVÉ, parce que l'argument ne vaut que pour l'œuf commun. Un œuf mythique
+   couve quarante-cinq minutes, et une ferme de fin de partie n'attend plus que ça : c'est la
+   seule file du jeu qui reste manuelle quand tout le reste est automatisé. Un plafond qui
+   n'était juste qu'à la première ère n'avait rien à faire dans la table.
+
+   Les incubateurs restent le bon levier tant qu'on couve du commun — ils montent en 1,6 par
+   cran au lieu de 1,9, donc ils distancent la couveuse en prix. La couveuse redevient
+   intéressante quand ce qu'on couve est cher, pas quand on en couve beaucoup. */
 const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
 
 /* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
@@ -421,7 +427,7 @@ const grainBase = (base, mult) => base * (grainMult(mult) - 1) / (mult - 1);
    La boucle sous la table les convertit en tiers. Le coût du prochain niveau est base × mult^niveau : l'effet
    monte linéairement pendant que le prix double presque, donc chaque niveau se mérite.
    `max` borne celles qui ne doivent pas monter indéfiniment — à 1 pour les trois achats qui
-   débloquent une capacité sans avoir de puissance, à 5 pour la couveuse.
+   débloquent une capacité sans avoir de puissance. Aucune autre n'est bornée.
 
    Le multiplicateur dit surtout à quelle vitesse une amélioration meurt. Les enclos montent
    en 1,6 ; tout ce qui est en 1,9 se fait distancer par eux — au niveau 10 l'éleveur coûtait
@@ -433,8 +439,8 @@ const UPGRADES = [
   { key: 'clic', name: 'Force du clic', base: 60, mult: 1.6,
     desc: 'Chaque clic fait gagner une seconde de plus — une seconde de ce que tes automates produisent, pas une seconde de vie brute.',
     value: n => 1 + n / GRAIN, unit: ' s gagnées par clic' },
-  { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9, max: 5,
-    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Au-delà du niveau 5, c’est en incubateurs qu’on couve plus vite.',
+  { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9,
+    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Sur du commun l’incubateur est le meilleur achat ; sur du mythique, qui couve quarante-cinq minutes, c’est elle.',
     value: n => n / GRAIN, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.65,
     desc: 'Les bêtes grandissent toutes seules jusqu’à leur maturité, âge après âge.',

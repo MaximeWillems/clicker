@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.1.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.1.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.1.0** | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
+| **2.1.1** | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
+| 2.1.0 | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
 | 2.0.6 | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
 | 2.0.5 | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
 | 2.0.4 | le crabe entre en jeu — ses cinq dessins attendaient depuis août d'être branchés |
@@ -226,8 +227,15 @@ L'œuf mythique n'a rien au-dessus de lui : il garantit.
 
 **La couvaison s'allonge avec la rareté.** Une bête précieuse doit se faire attendre, sinon la
 rareté n'a pas de poids : un mythique qui éclosait en quinze secondes comme un têtard ne
-valait rien à regarder. Ça donne aussi enfin une raison de monter la couveuse au-delà du
-niveau 2 — elle divise la durée par son niveau.
+valait rien à regarder. Ça donne aussi enfin une raison de monter la couveuse — elle divise la
+durée par son niveau.
+
+**La couveuse n'a plus de plafond.** Elle s'arrêtait à 5, parce que sur du commun la couvaison
+ne pèse qu'un millième du cycle et qu'un incubateur suffit à nourrir vingt enclos. L'argument
+ne valait que pour la première ère : un œuf mythique couve quarante-cinq minutes, et c'est la
+seule file du jeu qui reste manuelle quand tout le reste est automatisé. Les incubateurs
+restent le meilleur achat tant qu'on couve du commun — ils montent en 1,6 par cran au lieu de
+1,9 — mais la couveuse redevient le bon levier quand ce qu'on couve est cher.
 
 Débit mesuré, par incubateur et par heure, avec une couveuse de niveau 3 : 327 communs,
 59 rares, 14 épiques, 3 mythiques.
@@ -577,9 +585,10 @@ tout ce que la bourse permet** et pas un niveau de plus — mesuré : avec un mi
 la force du clic monte de 58 niveaux et laisse 116 372 pièces, quand le suivant en coûterait
 149 887.
 
-Le plafond de la couveuse est respecté comme partout ailleurs : un ×100 sur une couveuse
-neuve achète les quinze niveaux qui restent, pas cent. Et le bouton annonce ce qu'il fera —
-`Force du clic · niv. 12 → 22`, avec l'effet de départ et celui d'arrivée.
+Les plafonds sont respectés comme partout ailleurs : les trois achats uniques — acheteur,
+marchand, évolution — ne débordent pas de leur niveau 1, quel que soit le lot demandé. Et le
+bouton annonce ce qu'il fera — `Force du clic · niv. 12 → 22`, avec l'effet de départ et celui
+d'arrivée.
 
 ### L'album et l'ascension
 
