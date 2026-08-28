@@ -36,14 +36,14 @@ The 5 stages, in order:
 
 --- une fois la planche enregistrée dans art/source-crocodile.png ---
 
-python tools/decouper.py art/source-crocodile.png crocodile crocodillon,crocodile,crocodile-ancien,draco-saurien,dragon-tonnerre
+python tools/decouper.py art/source-crocodile.png crocodile crocodillon,crocodile,sarcosuche,draco-saurien,dragon-tonnerre
 
 --- puis dans la table ART, en haut de game.js ---
 
   crocodile: {
     1: 'crocodile-1-crocodillon.png',   // Crocodillon
     2: 'crocodile-2-crocodile.png',   // Crocodile
-    3: 'crocodile-3-crocodile-ancien.png',   // Crocodile ancien
+    3: 'crocodile-3-sarcosuche.png',   // Sarcosuche
     4: 'crocodile-4-draco-saurien.png',   // Draco-saurien
     5: 'crocodile-5-dragon-tonnerre.png',   // Dragon-tonnerre
   },

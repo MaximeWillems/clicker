@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.13.0';
+const VERSION = 'alpha 2.14.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -566,7 +566,7 @@ const UPGRADES = [
     desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
     value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
   { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
-    desc: 'Rachète un œuf et le met à couver dès qu’un incubateur se libère.' },
+    desc: 'Rachète un œuf dès qu’un incubateur se libère et que ta réserve est vide. Poser ceux que tu as déjà se fait tout seul, sans lui.' },
   { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
     desc: 'Vend les bêtes mûres tout seul, à l’âge que tu règles pour chaque rareté.' },
   { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
@@ -628,7 +628,7 @@ const LINES = [
     ['Oisillon', '🐤'], ['Passereau', '🐦'], ['Rapace', '🦅'],
     ['Roc', '🦅'], ['Phénix', '🔥'] ] },
   { key: 'crocodile', name: 'Crocodile', rarity: 'commune', forms: [
-    ['Crocodillon', '🐊'], ['Crocodile', '🐊'], ['Crocodile ancien', '🐊'],
+    ['Crocodillon', '🐊'], ['Crocodile', '🐊'], ['Sarcosuche', '🐊'],
     ['Draco-saurien', '🐲'], ['Dragon-tonnerre', '🐉'] ] },
 
   { key: 'insecte', name: 'Insecte', rarity: 'commune', forms: [
@@ -771,7 +771,7 @@ const ART = {
   crocodile: {
     1: 'crocodile-1-crocodillon.png',
     2: 'crocodile-2-crocodile.png',
-    3: 'crocodile-3-crocodile-ancien.png',
+    3: 'crocodile-3-sarcosuche.png',
     4: 'crocodile-4-draco-saurien.png',
     5: 'crocodile-5-dragon-tonnerre.png',
   },
@@ -1962,22 +1962,32 @@ function runAutomations(dt) {
       if (estMur(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
   }
-  // L'acheteur écoule d'abord la réserve — le joueur y a mis ses œufs chers exprès —
-  // puis rachète du commun pour que la boucle ne s'arrête jamais.
+  /* LA RÉSERVE SE VIDE TOUTE SEULE, ET C'EST GRATUIT. Un œuf en réserve est déjà payé :
+     le laisser dormir pendant qu'un incubateur tourne à vide n'est pas une décision, c'est
+     un clic à répétition. L'achat par lots l'avait rendu franc — dix œufs pris d'un coup se
+     replaçaient un par un, et « max » rendait le confort qu'il promettait plus pénible que
+     l'achat à l'unité.
+
+     La plus rare d'abord : un œuf cher acheté exprès ne doit pas attendre derrière du commun. */
+  for (let i = 0; i < state.incub.length && totalEggs(); i++) {
+    if (state.incub[i]) continue;
+    const kind = bestStocked();
+    state.eggs[kind]--;
+    state.incub[i] = { line: rollLine(kind), p: 0, kind };
+  }
+
+  /* L'acheteur prend le relais quand la réserve est sèche. C'est la seule moitié qui se paie,
+     et c'est la bonne : DÉPENSER à ta place est une décision, poser un œuf déjà acheté n'en
+     est pas une. */
   if (state.up.acheteur) {
     const voulu = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
     for (let i = 0; i < state.incub.length; i++) {
       if (state.incub[i]) continue;
-      let kind = bestStocked();
-      if (kind) state.eggs[kind]--;
-      else if (state.coins >= prixOeuf(voulu)) {
-        const prix = prixOeuf(voulu);
-        state.coins -= prix;
-        bilanAuto.depense += prix;
-        kind = voulu.key;
-      }
-      else break;      // on laisse l'incubateur vide plutôt que de brader la consigne
-      state.incub[i] = { line: rollLine(kind), p: 0, kind };
+      const prix = prixOeuf(voulu);
+      if (state.coins < prix) break;   // incubateur vide plutôt que consigne bradée
+      state.coins -= prix;
+      bilanAuto.depense += prix;
+      state.incub[i] = { line: rollLine(voulu.key), p: 0, kind: voulu.key };
     }
   }
 }

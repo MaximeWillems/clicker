@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.13.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.14.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.13.0** | l'âge, le niveau et la taille prennent chacun leur colonne |
+| **2.14.0** | la réserve d'œufs se vide toute seule, gratuitement |
+| 2.13.0 | l'âge, le niveau et la taille prennent chacun leur colonne |
 | 2.12.0 | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
 | 2.11.0 | une professeure accueille le joueur et l'accompagne, en dialogues |
 | 2.10.0 | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
@@ -492,10 +493,22 @@ recalculer une absence sans rejouer le hasard. Le joueur, lui, ne la découvre q
 et une lignée non commune déclenche un accord qui la distingue. Elle prend aussi la scène —
 mais **seulement si la scène était libre** : voir la règle de l'interface plus bas.
 
-**L'acheteur automatique se règle** sur la sorte d'œuf à racheter. Il écoule d'abord la
-réserve, en commençant par les plus rares — un œuf cher acheté exprès ne doit pas dormir en
-stock — puis rachète la sorte demandée. S'il n'a pas de quoi la payer il laisse l'incubateur
-vide : rabattre sur du commun trahirait la consigne.
+#### La réserve se vide toute seule
+
+**Poser un œuf qu'on a déjà acheté ne s'achète pas.** Un incubateur libre prend l'œuf le plus
+rare de la réserve, sans amélioration et sans rien coûter.
+
+C'était le prix caché de l'achat par lots : dix œufs pris d'un coup rentraient en réserve et se
+replaçaient un par un, à chaque éclosion, pendant toute leur durée de vie. Le bouton *max*
+promettait du confort et rendait la boucle plus pénible que l'achat à l'unité. Et ce n'était
+pas une décision qu'on demandait au joueur — l'œuf est payé, l'incubateur tourne à vide, il
+n'existe aucune raison de dire non.
+
+**L'acheteur automatique garde la moitié qui se paie : dépenser.** Il se règle sur la sorte
+d'œuf à racheter, et n'intervient que **lorsque la réserve est sèche**. S'il n'a pas de quoi
+payer la sorte demandée il laisse l'incubateur vide : rabattre sur du commun trahirait la
+consigne. C'est le bon partage — dépenser à ta place est une décision, poser un œuf déjà acheté
+n'en est pas une.
 
 ### Variantes
 
@@ -741,7 +754,7 @@ double presque, donc chaque niveau se mérite et les rendements décroissent d'e
 | Force du clic | 60 | ×1,6 | *n*+1 secondes gagnées par clic, à la vitesse des automates |
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
 | Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
-| Acheteur automatique | 2 000 | — | achat unique |
+| Acheteur automatique | 2 000 | — | achat unique · il rachète, il ne place pas |
 | Mangeoire automatique | 2 500 | ×1,9 | *n*×3 s d'engraissement par seconde |
 | Marchand automatique | 15 000 | — | achat unique |
 | Évolution automatique | 50 000 | — | achat unique |
