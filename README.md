@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.6.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.6.0** | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
+| **2.7.0** | la réserve revient, et les cartes se déplacent au glisser-déposer |
+| 2.6.0 | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
 | 2.5.0 | cinq emplacements fixes, et plus aucune réserve — chez personne |
 | 2.4.1 | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
 | 2.4.0 | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
@@ -641,7 +642,7 @@ fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 | Ce qui traverse | Ce qui repart de zéro |
 |---|---|
 | L'album — toutes les capsules | Les pièces |
-| Les emplacements, et les cartes retenues | Les œufs non éclos, et **les cartes non retenues** |
+| Les emplacements, et **toutes** les cartes | Les œufs non éclos |
 | La collection des formes vues | Incubateurs et enclos |
 | Les paliers de fortune déjà franchis | Les huit améliorations |
 | Le confort d'affichage : tri, taille des lots, son | **Les consignes du marchand, de l'évolution et de l'acheteur** |
@@ -717,19 +718,21 @@ Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chan
 
 #### Les emplacements : un build, pas une collection
 
-**L'album ne garde que les cartes qu'on retient.** Les capsules laissées de côté au moment du
-saut — anciennes comme neuves — sont détruites avec le reste de la ferme. L'album n'est pas une
-collection qui s'empile, c'est un **build**, refait à chaque ascension à partir de ce qu'on a
-sous la main.
+**L'album garde tout, cinq cartes agissent.** Les capsules qu'on n'équipe pas attendent en
+**réserve** d'une ascension à l'autre, et l'on échange à volonté entre les deux blocs.
 
-C'est ce qui donne son poids à l'écran d'ascension. Tant que tout était conservé, choisir ne
-coûtait rien et se remettait au saut suivant ; maintenant une capsule qu'on ne prend pas ne
-reviendra jamais. C'est, avec le saut lui-même, la seule décision irréversible du jeu — et les
-deux se prennent au même moment. Le panneau annonce combien de cartes seront détruites, et la
-confirmation le redit.
+**Le déplacement se fait au glisser-déposer** — on prend une carte, on la lâche dans l'autre
+bloc — et **un clic fait exactement la même chose**. Ce n'est pas un doublon de confort : le
+glisser-déposer n'existe pas au doigt sur un téléphone, ni au clavier. Un geste qui n'a qu'une
+seule façon de s'exécuter est un geste que la moitié des joueurs ne peut pas faire. Les deux
+zones gardent une hauteur même vides, sans quoi on ne pourrait rien déposer dans un bloc qu'on
+vient de vider.
 
-La limite d'emplacements garde son autre rôle : sans elle, vingt-sept cartes se composeraient
-et la puissance de l'album n'aurait plus de plafond — c'est de ça que meurent les jeux idle.
+Sans limite, vingt-sept cartes se composeraient et la puissance de l'album n'aurait plus de
+plafond — c'est de ça que meurent les jeux idle. La limite de **cinq simultanées** garde ce
+rôle, mais elle ne fige plus la partie : le build se change à tout moment, on peut mettre la
+couvaison au début et la valeur à la fin. Elle borne la puissance instantanée, pas la
+stratégie.
 
 Il vit **sous les enclos**, dans la colonne large, et non dans la colonne latérale : c'est le
 prolongement de la ferme — ce que les bêtes deviennent — et non un réglage qu'on consulte une

@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.6.0';
+const VERSION = 'alpha 2.7.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -298,10 +298,15 @@ const RANKS = [
    devant chaque animal — la question devient « lesquelles je garde en vie pour le saut ? »,
    posée une fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 
-   L'ALBUM EST LE BUILD, RIEN D'AUTRE. Cinq cartes actives, aucune réserve derrière : les
-   capsules laissées de côté au moment du saut sont détruites avec la ferme. C'est aussi ce
-   qui rend le reste calculable — sans limite d'emplacements, vingt-sept cartes se composent
-   et la puissance de l'album n'a plus de plafond.
+   L'ALBUM GARDE TOUT, CINQ CARTES AGISSENT. Les capsules qu'on n'équipe pas attendent en
+   réserve d'une ascension à l'autre, et l'on échange à volonté entre les deux — au doigt, en
+   glissant une carte d'un bloc à l'autre. C'est la limite de CINQ SIMULTANÉES qui borne la
+   puissance, plus le nombre de cartes possédées : sans elle, vingt-sept cartes se composent
+   et l'album n'a plus de plafond.
+
+   Le build n'est donc plus figé pour la partie. On peut mettre la couvaison au début et la
+   valeur à la fin, ce qui revient à disposer de toutes ses cartes en cinq exemplaires à la
+   fois — la limite borne la puissance instantanée, pas la stratégie.
 
    CINQ EMPLACEMENTS, TOUJOURS. L'album est exactement ces cinq cartes : il n'y a pas de
    réserve derrière, rien n'attend son tour. Ce qu'on ne retient pas au moment du saut est
@@ -901,11 +906,7 @@ function load() {
     merged.slots = (Array.isArray(merged.slots) ? merged.slots : [])
       .filter(id => merged.album.some(k => k.id === id))
       .slice(0, SLOTS);
-    /* La réserve n'existe plus : l'album EST le jeu de cartes actives. Une sauvegarde d'avant
-       la 2.5.0 en traîne — toutes les capsules jamais faites, équipées ou non. On ne garde que
-       les équipées, sans quoi le panneau afficherait des cartes qui n'agissent sur rien et
-       qu'aucun écran ne permet plus d'équiper. */
-    merged.album = merged.album.filter(k => merged.slots.indexOf(k.id) !== -1);
+
     /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
        le relire dans `base` : Object.assign mute sa cible, donc `base` et `merged` sont le
        même objet et `base.v` porte déjà l'ancien numéro. */
@@ -2196,6 +2197,7 @@ function effetCarte(k) {
 function carteEl(k) {
   const el = document.createElement('div');
   el.className = 'carte rar-' + LINE_BY_KEY[k.line].rarity;
+  el.dataset.id = k.id;
   el.innerHTML = '<span class="carte-bete"></span><span class="carte-txt">' +
                  '<b class="carte-nom"></b><i class="carte-eff"></i></span>';
   const bete = el.querySelector('.carte-bete');
@@ -2227,18 +2229,59 @@ function renderAlbum() {
     return;
   }
   $('album-intro').textContent = state.asc.n +
-    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Toutes ces cartes agissent : ' +
-    'l’album ne garde que ce qu’on a retenu au dernier saut.';
+    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Seules les cartes équipées agissent ; ' +
+    'glisse-les d’un bloc à l’autre pour changer de build. Un clic fait la même chose.';
 
-  const h = document.createElement('p');
-  h.className = 'album-head';
-  h.textContent = 'Équipées — ' + state.album.length + ' / ' + SLOTS;
-  host.appendChild(h);
-  for (const k of state.album) {
-    const el = carteEl(k);
-    el.classList.add('active');
-    host.appendChild(el);
+  const equipees = state.slots.map(carteDe).filter(Boolean);
+  const reste = state.album.filter(k => state.slots.indexOf(k.id) === -1);
+
+  /* Deux ZONES distinctes, et non une liste continue : il faut pouvoir déposer une carte dans
+     un bloc vide, ce qu'un simple enchaînement de vignettes ne permet pas. */
+  const zone = (titre, cartes, cle, actif) => {
+    const h = document.createElement('p');
+    h.className = 'album-head';
+    h.textContent = titre;
+    host.appendChild(h);
+    const z = document.createElement('div');
+    z.className = 'album-zone';
+    z.dataset.zone = cle;
+    for (const k of cartes) {
+      const el = carteEl(k);
+      el.draggable = true;
+      if (actif) el.classList.add('active');
+      z.appendChild(el);
+    }
+    if (!cartes.length) {
+      const vide = document.createElement('p');
+      vide.className = 'album-vide';
+      vide.textContent = actif ? 'Aucune carte équipée — dépose-en une ici.' : 'Rien en réserve.';
+      z.appendChild(vide);
+    }
+    host.appendChild(z);
+  };
+  zone('Équipées — ' + equipees.length + ' / ' + SLOTS, equipees, 'slots', true);
+  zone('En réserve — gardées d’une ascension à l’autre', reste, 'reserve', false);
+}
+
+/* Déplacer une carte entre le build et la réserve. Rend false quand le geste ne peut pas
+   aboutir — cinq emplacements pleins, ou carte déjà du bon côté — pour que l'appelant puisse
+   le signaler au lieu de laisser croire que ça a marché. */
+function deplacerCarte(id, versBuild) {
+  if (!carteDe(id)) return false;
+  const i = state.slots.indexOf(id);
+  if (versBuild) {
+    if (i !== -1) return false;
+    if (state.slots.length >= SLOTS) return false;
+    state.slots.push(id);
+  } else {
+    if (i === -1) return false;
+    state.slots.splice(i, 1);
   }
+  oublierAlbum();
+  albumSig = '';
+  refresh();
+  save();
+  return true;
 }
 
 /* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent
@@ -2335,12 +2378,9 @@ function renderAscension() {
     });
     choix.appendChild(el);
   }
-  const jetees = state.album.length + ap.neuves.length - Math.min(ascChoix.length, ap.max);
   setText($('asc-slots'), ascChoix.length + ' / ' + ap.max + ' emplacement' +
-    (ap.max > 1 ? 's' : '') + ' — le choix se fige jusqu’au prochain saut. ' +
-    (jetees ? '⚠ Les ' + jetees + ' carte' + (jetees > 1 ? 's' : '') + ' non retenue' +
-              (jetees > 1 ? 's sont détruites' : ' est détruite') + ', celles de l’album comprises.'
-            : 'Rien n’est laissé de côté.'));
+    (ap.max > 1 ? 's' : '') + ' — les autres cartes partent en réserve, d’où tu pourras les ' +
+    'sortir à tout moment. Rien ne se perd.');
 }
 
 function ascensionner() {
@@ -2354,19 +2394,13 @@ function ascensionner() {
     vrai[k.id] = c.id;
     return c;
   });
-  /* ON NE GARDE QUE CE QU'ON RETIENT. Les capsules laissées de côté — anciennes comme
-     neuves — sont détruites avec le reste de la ferme. L'album n'est donc pas une collection
-     qui s'empile mais UN BUILD, refait à chaque saut à partir de ce qu'on a sous la main.
-
-     C'est ce qui donne son poids à l'écran d'ascension : tant que tout était conservé, choisir
-     ne coûtait rien et se remettait au saut suivant. Maintenant, une capsule qu'on ne prend
-     pas ne reviendra jamais — c'est la seule décision irréversible du jeu avec le saut
-     lui-même, et elle se prend en même temps que lui. */
-  const tout = state.album.concat(neuves);
+  /* RIEN NE SE PERD. Les capsules qu'on n'équipe pas rejoignent la réserve, d'où on pourra
+     les sortir quand on voudra. L'écran d'ascension ne choisit donc que le build de départ du
+     prochain cycle — un confort, pas un couperet. */
+  const album = state.album.concat(neuves);
   const slots = ascChoix.map(id => (id < 0 ? vrai[id] : id))
-                        .filter(id => tout.some(k => k.id === id))
-                        .slice(0, ap.max);
-  const album = tout.filter(k => slots.indexOf(k.id) !== -1);
+                        .filter(id => album.some(k => k.id === id))
+                        .slice(0, SLOTS);
 
   /* TOUT REPART DE ZÉRO SAUF QUATRE CHOSES : l'album, les emplacements, le compte
      d'ascensions et la collection. Le reste de la liste n'est que du confort d'affichage —
@@ -2919,13 +2953,8 @@ function bindTools() {
   $('asc-go').addEventListener('click', () => {
     const n = state.pen.length;
     if (!n) return;                       // pas d'ascension à vide, même par un clic égaré
-    const ap = apercuAscension();
-    const jetees = state.album.length + ap.neuves.length -
-                   Math.min(ascChoix.length, ap.max);
     if (!confirm('Ascensionner ?\n\n' + n + ' bête' + (n > 1 ? 's' : '') +
-        ' deviendront des cartes, et tu en gardes ' + Math.min(ascChoix.length, ap.max) + '.' +
-        (jetees ? '\nLes ' + jetees + ' autre' + (jetees > 1 ? 's sont détruites' : ' est détruite') +
-                  ' — album compris.' : '') +
+        ' deviendront des cartes ; celles que tu n’équipes pas attendront en réserve.' +
         '\nTout le reste repart de zéro. C’est irréversible.')) return;
     ascensionner();
   });
@@ -3001,6 +3030,59 @@ function bindTools() {
     syncTri();
     refresh();
     blip(440, 0.04, 'sine', 0.03);
+  });
+
+  /* ── L'album : glisser une carte d'un bloc à l'autre ────────────────────────
+     Les écouteurs vivent sur le panneau, pas sur les cartes : renderAlbum reconstruit tout à
+     chaque changement, et rattacher trois écouteurs par carte à chaque redessin les
+     multiplierait sans jamais les retirer.
+
+     Le CLIC fait la même chose que le glisser. Ce n'est pas un doublon de confort : le
+     glisser-déposer n'existe pas au doigt sur un téléphone, et pas davantage au clavier. Un
+     geste qui n'a qu'une seule façon de s'exécuter est un geste que la moitié des joueurs
+     ne peut pas faire. */
+  const albumHote = $('album');
+
+  albumHote.addEventListener('dragstart', e => {
+    const c = e.target.closest && e.target.closest('.carte');
+    if (!c) return;
+    e.dataTransfer.setData('text/plain', c.dataset.id);
+    e.dataTransfer.effectAllowed = 'move';
+    c.classList.add('porte');
+  });
+  albumHote.addEventListener('dragend', e => {
+    const c = e.target.closest && e.target.closest('.carte');
+    if (c) c.classList.remove('porte');
+    for (const z of albumHote.querySelectorAll('.album-zone')) z.classList.remove('survol');
+  });
+  albumHote.addEventListener('dragover', e => {
+    const z = e.target.closest && e.target.closest('.album-zone');
+    if (!z) return;
+    e.preventDefault();                       // sans ça, le navigateur refuse le dépôt
+    e.dataTransfer.dropEffect = 'move';
+    z.classList.add('survol');
+  });
+  albumHote.addEventListener('dragleave', e => {
+    const z = e.target.closest && e.target.closest('.album-zone');
+    if (z && !z.contains(e.relatedTarget)) z.classList.remove('survol');
+  });
+  albumHote.addEventListener('drop', e => {
+    const z = e.target.closest && e.target.closest('.album-zone');
+    if (!z) return;
+    e.preventDefault();
+    z.classList.remove('survol');
+    const id = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    if (deplacerCarte(id, z.dataset.zone === 'slots')) chord([523, 659], 55);
+    else blip(300, 0.05, 'sine', 0.03);       // cinq emplacements pleins, ou déjà du bon côté
+  });
+
+  // le clic bascule la carte vers l'autre bloc — même effet, sans le geste
+  albumHote.addEventListener('click', e => {
+    const c = e.target.closest && e.target.closest('.carte');
+    if (!c) return;
+    const id = parseInt(c.dataset.id, 10);
+    if (deplacerCarte(id, state.slots.indexOf(id) === -1)) chord([523, 659], 55);
+    else blip(300, 0.05, 'sine', 0.03);
   });
 
   $('achat').addEventListener('click', e => {
