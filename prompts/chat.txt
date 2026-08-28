@@ -1,0 +1,49 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no talons
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny kitten, huge round head, two big rounded triangular ears, huge round eyes, short tail with three pale stripes
+2. small round cat sitting, the same big rounded ears, the same three-striped tail now longer and fluffier, soft round body
+3. lynx, the same rounded ears now with small soft tufts at the tips, the same three-striped tail short and thick, broader chest, calm eyes
+4. mist panther, the same tufted rounded ears, the same three stripes on a long heavy tail, a much bigger low round body, soft cloudy markings, drowsy eyes
+5. bastet, enormous cat lying down, the same tufted rounded ears, the same three-striped tail curled around the body, soft golden rings on the shoulders, tiny sleepy face on folded paws
+
+
+--- une fois la planche enregistrée dans art/source-chat.png ---
+
+python tools/decouper.py art/source-chat.png chat chaton,chat,lynx,panthere-des-brumes,bastet
+
+--- puis dans la table ART, en haut de game.js ---
+
+  chat: {
+    1: 'chat-1-chaton.png',   // Chaton
+    2: 'chat-2-chat.png',   // Chat
+    3: 'chat-3-lynx.png',   // Lynx
+    4: 'chat-4-panthere-des-brumes.png',   // Panthère des brumes
+    5: 'chat-5-bastet.png',   // Bastet, gardienne
+  },

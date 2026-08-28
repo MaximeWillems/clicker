@@ -1,0 +1,49 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no talons
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny bear cub, huge round head, tiny round ears, four stubby paws, one pale crescent patch on the chest
+2. small round bear sitting, the same tiny round ears, the same pale crescent patch, thick soft fur, friendly eyes
+3. cave bear, the same ears and the same crescent patch, much broader shoulders, heavy round body, calm eyes
+4. forest guardian bear, the same ears and crescent patch, an enormous round body with short legs, soft moss tufts on the shoulders, drowsy eyes
+5. artio, colossal bear lying down and filling the frame, the same round ears, the same crescent patch now glowing soft gold, tiny sleepy face resting on huge front paws
+
+
+--- une fois la planche enregistrée dans art/source-ours.png ---
+
+python tools/decouper.py art/source-ours.png ours ourson,ours,ours-des-cavernes,gardien-sylvestre,artio
+
+--- puis dans la table ART, en haut de game.js ---
+
+  ours: {
+    1: 'ours-1-ourson.png',   // Ourson
+    2: 'ours-2-ours.png',   // Ours
+    3: 'ours-3-ours-des-cavernes.png',   // Ours des cavernes
+    4: 'ours-4-gardien-sylvestre.png',   // Gardien sylvestre
+    5: 'ours-5-artio.png',   // Artio, l’ourse des bois
+  },

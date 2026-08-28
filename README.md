@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.3.0** | six lignées rares de plus — l'ère rare passe de 4 à 10 lignées |
+| **2.3.1** | les prompts d'illustration des six nouvelles rares |
+| 2.3.0 | six lignées rares de plus — l'ère rare passe de 4 à 10 lignées |
 | 2.2.3 | un jeton dépensé = un emplacement de carte — il en offrait trois avant le premier saut |
 | 2.2.2 | la montée d'un cran passe à **1 sur 1 000**, la même à toutes les raretés |
 | 2.2.1 | le marchand automatique garde la case, comme une vente à la main |

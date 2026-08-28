@@ -30,7 +30,7 @@ le jeu affiche l'emoji : rien ne casse jamais, et on peut s'arrêter à tout mom
 ## Le prompt d'une lignée
 
 ```bash
-node tools/prompt.js --liste     # les 21 lignées
+node tools/prompt.js --liste     # les 27 lignées
 node tools/prompt.js poisson     # le prompt d'une lignée
 node tools/prompt.js --tout      # les vingt et une d'un coup
 ```

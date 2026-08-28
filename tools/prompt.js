@@ -203,6 +203,60 @@ const STADES = {
     'plump brown tourteau crab, the same asymmetric rounded pincers now thick and heavy, same stalked eyes, wider domed carapace, calm face',
     'reef crab, the same thick asymmetric pincers held close to the body, same stalked eyes, the domed carapace now TALL and humped, crusted with small round coral bumps, drowsy eyes',
     'karkinos, enormous crab much WIDER than tall, the same asymmetric pincers now massive and raised high on each side, same stalked eyes, a low broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle'],
+
+  /* Le fil de l'araignée : huit pattes courtes et rondes, un abdomen bulbeux marqué d'un
+     sablier pâle, et une masse qui passe des pattes au ventre de stade en stade. */
+  araignee: [
+    'tiny round spiderling, almost all abdomen, eight very short stubby legs, two huge round eyes with four tiny dot eyes above, one pale hourglass mark on the back',
+    'small round spider, the same eight legs now longer and still rounded, the same bulbous abdomen with the same pale hourglass mark, same eye arrangement, soft fuzzy body',
+    'plump black widow, the same eight rounded legs thicker, the same hourglass mark now bright and larger on a glossy round abdomen, same eyes, calm face',
+    'shadow weaver spider, the same eight legs held close under a much BIGGER abdomen, the same hourglass mark, a soft cloudy silk tuft on the back, drowsy eyes',
+    'arachne, enormous spider, the same eight rounded legs now short against a huge dome-shaped abdomen filling the frame, the same hourglass mark grown into soft golden threads, tiny sleepy face low at the front'],
+
+  /* Le fil du cerf : une ramure qui pousse par branches — jamais pointue — et des taches
+     pâles sur le dos, présentes dès le faon et gardées jusqu'au bout. */
+  cerf: [
+    'tiny fawn, huge head and huge round eyes, four thin wobbly legs, soft pale spots on the back, two tiny rounded bumps where antlers will grow',
+    'small round deer, the same pale spots, the same two bumps now short rounded antler stubs, thicker legs, gentle eyes',
+    'great stag, the same pale spots, the same antlers now a small rounded branching crown, broader chest, calm eyes',
+    'mist stag, the same spots, the same antlers grown into a wide rounded crown with soft moss on it, heavier body, short legs, drowsy eyes',
+    'cernunnos, enormous deer lying down, the same pale spots, the same rounded antlers now a huge soft canopy with tiny leaves, tiny sleepy face beneath'],
+
+  /* Le fil de l'ours : la masse. Une bête qui ne gagne aucun ornement, seulement du volume,
+     avec la même tache pâle en croissant sur la poitrine. */
+  ours: [
+    'tiny bear cub, huge round head, tiny round ears, four stubby paws, one pale crescent patch on the chest',
+    'small round bear sitting, the same tiny round ears, the same pale crescent patch, thick soft fur, friendly eyes',
+    'cave bear, the same ears and the same crescent patch, much broader shoulders, heavy round body, calm eyes',
+    'forest guardian bear, the same ears and crescent patch, an enormous round body with short legs, soft moss tufts on the shoulders, drowsy eyes',
+    'artio, colossal bear lying down and filling the frame, the same round ears, the same crescent patch now glowing soft gold, tiny sleepy face resting on huge front paws'],
+
+  /* Le fil du papillon : deux paires d'ailes rondes portant le MÊME ocelle, qui grandit avec
+     elles. Le corps reste minuscule — c'est l'aile qui fait la masse. */
+  papillon: [
+    'tiny plump caterpillar, segmented round body, huge round eyes, two tiny antennae with round tips, one small pale eyespot on the side',
+    'small butterfly, small round body, two pairs of small rounded wings bearing the same pale eyespot, the same round-tipped antennae',
+    'moon moth, the same round-tipped antennae now feathery, the same eyespot bigger on broader rounded wings, soft fuzzy body',
+    'mist wing moth, the same antennae, the same eyespot now large and pale on very WIDE rounded wings with soft cloudy edges, small body, drowsy eyes',
+    'psyche, enormous moth, the same feathery antennae, the same eyespot grown into a huge soft glowing ring on immense rounded wings filling the frame, tiny sleepy face at the center'],
+
+  /* Le fil de la tortue : une carapace à écailles hexagonales qui s'élargit sans jamais
+     monter — la tortue reste BASSE, c'est ce qui la distingue de l'escargot. */
+  tortue: [
+    'tiny hatchling turtle, huge head and huge round eyes, one small soft shell with a simple hexagon pattern, four tiny flipper feet',
+    'small round turtle, the same hexagon-patterned shell now firm and low, the same four flipper feet, gentle eyes',
+    'ancient turtle, the same hexagon pattern on a much WIDER low shell, thick stubby legs, calm wrinkled face',
+    'island turtle, the same hexagon pattern, the shell now very wide and flat with soft round moss patches and a tiny tree, short legs, drowsy eyes',
+    'kurma, enormous turtle, the same hexagon pattern on a vast LOW shell filling the width of the frame, soft green patches on top, tiny sleepy face at the front'],
+
+  /* Le fil du chat : de grandes oreilles triangulaires arrondies et des rayures sur la queue,
+     comptées et gardées. La bête s'allonge et s'alourdit sans jamais se hérisser. */
+  chat: [
+    'tiny kitten, huge round head, two big rounded triangular ears, huge round eyes, short tail with three pale stripes',
+    'small round cat sitting, the same big rounded ears, the same three-striped tail now longer and fluffier, soft round body',
+    'lynx, the same rounded ears now with small soft tufts at the tips, the same three-striped tail short and thick, broader chest, calm eyes',
+    'mist panther, the same tufted rounded ears, the same three stripes on a long heavy tail, a much bigger low round body, soft cloudy markings, drowsy eyes',
+    'bastet, enormous cat lying down, the same tufted rounded ears, the same three-striped tail curled around the body, soft golden rings on the shoulders, tiny sleepy face on folded paws'],
 };
 
 const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')

@@ -1,0 +1,49 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no talons
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. tiny round spiderling, almost all abdomen, eight very short stubby legs, two huge round eyes with four tiny dot eyes above, one pale hourglass mark on the back
+2. small round spider, the same eight legs now longer and still rounded, the same bulbous abdomen with the same pale hourglass mark, same eye arrangement, soft fuzzy body
+3. plump black widow, the same eight rounded legs thicker, the same hourglass mark now bright and larger on a glossy round abdomen, same eyes, calm face
+4. shadow weaver spider, the same eight legs held close under a much BIGGER abdomen, the same hourglass mark, a soft cloudy silk tuft on the back, drowsy eyes
+5. arachne, enormous spider, the same eight rounded legs now short against a huge dome-shaped abdomen filling the frame, the same hourglass mark grown into soft golden threads, tiny sleepy face low at the front
+
+
+--- une fois la planche enregistrée dans art/source-araignee.png ---
+
+python tools/decouper.py art/source-araignee.png araignee nymphe,araignee,veuve-noire,tisseuse-d-ombre,arachne
+
+--- puis dans la table ART, en haut de game.js ---
+
+  araignee: {
+    1: 'araignee-1-nymphe.png',   // Nymphe
+    2: 'araignee-2-araignee.png',   // Araignée
+    3: 'araignee-3-veuve-noire.png',   // Veuve noire
+    4: 'araignee-4-tisseuse-d-ombre.png',   // Tisseuse d’ombre
+    5: 'araignee-5-arachne.png',   // Arachné, fileuse du sort
+  },

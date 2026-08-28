@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.3.0';
+const VERSION = 'alpha 2.3.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
