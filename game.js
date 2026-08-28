@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.1';
+const VERSION = 'alpha 2.0.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -330,10 +330,21 @@ const MOTIF_BONUS = {
   'constellé': { key: 'prodige', quoi: 'chance de prodige',     pas: 0.07, cap: 1.00, signe: 1 },
 };
 
-/* Un jalon est un exploit à USAGE UNIQUE : le franchir autorise une ascension, l'ascension
-   en consomme un. Le nombre total d'ascensions est donc borné par cette liste — et comme les
-   emplacements et les paliers le sont aussi, la puissance maximale de l'album est un nombre
-   qu'on peut calculer avant d'avoir joué.
+/* Un jalon est un exploit à USAGE UNIQUE : le franchir OUVRE la possibilité d'ascensionner,
+   l'ascension en consomme un. Le nombre total d'ascensions est donc borné par cette liste —
+   et comme les emplacements et les paliers le sont aussi, la puissance maximale de l'album
+   est un nombre qu'on peut calculer avant d'avoir joué.
+
+   RIEN N'OBLIGE JAMAIS À ASCENSIONNER. C'est un sacrifice qu'on choisit : on perd sa ferme
+   entière contre quelques cartes. Un jalon franchi ne réclame rien, ne clignote pas et
+   n'expire pas — il attend.
+
+   LE PREMIER TOMBE EN MILIEU DE PARTIE, pas avant. La liste s'ancre sur les ères plutôt que
+   sur des seuils inventés : le premier jalon demande une RARE menée à l'âge adulte, ce qui
+   suppose d'avoir ouvert la deuxième ère — autour de deux heures de jeu — puis d'avoir fait
+   grandir la bête. La version d'avant ouvrait sur « mener une bête à l'âge ancien », soit
+   dix-huit minutes sans rien avoir automatisé : l'ascension arrivait avant que le joueur ait
+   une ferme à sacrifier, et sacrifier trois têtards n'est pas un choix.
 
    La condition se lit SUR L'ÉTAT COURANT, jamais sur un souvenir. C'est ce qui interdit
    d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc
@@ -343,33 +354,36 @@ const MOTIF_BONUS = {
    seuils de fortune seuls n'encourageraient qu'à amasser, alors que l'album récompense de
    BIEN jouer ; des exploits seuls rendraient le rythme illisible.
 
-   Les CLÉS ne changent jamais : elles sont écrites dans la sauvegarde. Les libellés, eux, se
-   lisent dans AGES — un âge renommé ne doit pas laisser un jalon parler de l'ancien nom. */
+   Les libellés se lisent dans AGES : un âge renommé ne doit pas laisser un jalon parler de
+   l'ancien nom. Les clés, elles, sont écrites dans la sauvegarde — `load` jette celles qu'il
+   ne reconnaît plus, pour qu'une liste retouchée ne laisse pas de fantôme. */
+const rangDe = c => RARITY[lineOf(c).rarity].rank;
+
 const JALONS = [
-  { key: 'geant',  quoi: 'Mener une bête à l’âge ' + AGES[3].nom,
-    test: () => state.pen.some(c => c.age >= 4) },
-  { key: 'or1',    quoi: 'Amasser 1 M de pièces',
-    test: () => state.coins >= 1e6 },
-  { key: 'titan',  quoi: 'Mener une bête à l’âge ' + AGES[4].nom, slot: true,
-    test: () => state.pen.some(c => c.age >= 5) },
-  { key: 'or2',    quoi: 'Amasser 100 M de pièces',
-    test: () => state.coins >= 1e8 },
-  { key: 'chroma', quoi: 'Avoir un chromatique en enclos',
+  { key: 'rare-adulte', quoi: 'Mener une rare à l’âge ' + AGES[2].nom,
+    test: () => state.pen.some(c => c.age >= 3 && rangDe(c) >= 1) },
+  { key: 'or-10m',      quoi: 'Amasser 10 M de pièces',
+    test: () => state.coins >= 1e7 },
+  { key: 'rare-bout',   quoi: 'Mener une rare à l’âge ' + AGES[4].nom, slot: true,
+    test: () => state.pen.some(c => c.age >= 5 && rangDe(c) >= 1) },
+  { key: 'epique',      quoi: 'Avoir une épique en enclos',
+    test: () => state.pen.some(c => rangDe(c) >= 2) },
+  { key: 'or-1md',      quoi: 'Amasser 1 Md de pièces',
+    test: () => state.coins >= 1e9 },
+  { key: 'epique-bout', quoi: 'Mener une épique à l’âge ' + AGES[4].nom, slot: true,
+    test: () => state.pen.some(c => c.age >= 5 && rangDe(c) >= 2) },
+  { key: 'chroma',      quoi: 'Avoir un chromatique en enclos',
     test: () => state.pen.some(c => c.prodige) },
-  { key: 'or3',    quoi: 'Amasser 10 Md de pièces', slot: true,
-    test: () => state.coins >= 1e10 },
-  { key: 'lignee', quoi: 'Voir les cinq formes d’une même lignée',
-    test: () => LINES.some(l => AGES.every((a, i) => state.seen[l.key + ':' + (i + 1)])) },
-  { key: 'or4',    quoi: 'Amasser 1 Bn de pièces',
-    test: () => state.coins >= 1e12 },
-  { key: 'mythe',  quoi: 'Mener une mythique à l’âge ' + AGES[4].nom, slot: true,
-    test: () => state.pen.some(c => c.age >= 5 && lineOf(c).rarity === 'mythique') },
-  { key: 'or5',    quoi: 'Amasser 100 Bn de pièces',
-    test: () => state.coins >= 1e14 },
-  { key: 'toutes', quoi: 'Rencontrer toutes les lignées',
+  { key: 'mythique',    quoi: 'Avoir une mythique en enclos',
+    test: () => state.pen.some(c => rangDe(c) >= 3) },
+  { key: 'or-100md',    quoi: 'Amasser 100 Md de pièces',
+    test: () => state.coins >= 1e11 },
+  { key: 'mythe-bout',  quoi: 'Mener une mythique à l’âge ' + AGES[4].nom, slot: true,
+    test: () => state.pen.some(c => c.age >= 5 && rangDe(c) >= 3) },
+  { key: 'toutes',      quoi: 'Rencontrer toutes les lignées',
     test: () => LINES.every(l => AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)])) },
-  { key: 'sommet', quoi: 'Une ' + AGES[4].nom + ' mythique chromatique',
-    test: () => state.pen.some(c => c.age >= 5 && c.prodige && lineOf(c).rarity === 'mythique') },
+  { key: 'sommet',      quoi: 'Une ' + AGES[4].nom + ' mythique chromatique',
+    test: () => state.pen.some(c => c.age >= 5 && c.prodige && rangDe(c) >= 3) },
 ];
 
 /* ── La granularité des améliorations ─────────────────────────────────────────
@@ -823,6 +837,10 @@ function load() {
     merged.album = Array.isArray(merged.album) ? merged.album : [];
     merged.asc = Object.assign({ n: 0, done: [] }, merged.asc || {});
     if (!Array.isArray(merged.asc.done)) merged.asc.done = [];
+    /* La liste des jalons a été retouchée en 2.0.2 : on jette les clés qu'elle ne connaît
+       plus, sinon une sauvegarde traîne des fantômes qui ne comptent ni comme franchis ni
+       comme à franchir. Le nombre d'ascensions faites, lui, ne bouge pas. */
+    merged.asc.done = merged.asc.done.filter(k => JALONS.some(j => j.key === k));
     merged.slots = (Array.isArray(merged.slots) ? merged.slots : [])
       .filter(id => merged.album.some(k => k.id === id));
     /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
@@ -2120,18 +2138,27 @@ function renderAscension() {
   const ap = apercuAscension();
   if (!ap.jalon) { fermerAscension(); return; }
 
-  setText($('asc-jalon'), 'Jalon franchi : ' + ap.jalon.quoi + '. Ce saut le dépense.');
+  setText($('asc-jalon'), 'Jalon franchi : ' + ap.jalon.quoi + '. Ce saut le dépenserait — ' +
+    'mais rien ne t’oblige à sauter, ni maintenant ni jamais.');
 
   const gain = $('asc-gain');
   gain.textContent = '';
   if (!ap.neuves.length) {
     const p = document.createElement('p');
     p.className = 'asc-vide';
-    p.textContent = 'Ton enclos est vide : ce saut ne produira aucune carte.';
+    p.textContent = 'Ton enclos est vide : ce saut ne produirait aucune carte, et tu perdrais ' +
+      'tout pour rien. Élève quelques bêtes et reviens — le jalon t’attend.';
     gain.appendChild(p);
   } else {
     for (const k of ap.neuves) gain.appendChild(carteEl(k));
   }
+
+  /* Une ascension sans carte est une perte sèche, pas un choix : on la refuse plutôt que de
+     laisser le joueur se saborder d'un clic. Le jalon, lui, reste ouvert. */
+  $('asc-go').disabled = !ap.neuves.length;
+  setText($('asc-go'), ap.neuves.length
+    ? 'Ascensionner · ' + ap.neuves.length + ' carte' + (ap.neuves.length > 1 ? 's' : '')
+    : 'Rien à emporter');
 
   /* Le marchand vide l'enclos en continu, absences comprises — et les cartes viennent de ce
      qui reste dedans. Sans cet avertissement, un joueur ascensionne après des heures de jeu
@@ -2601,14 +2628,16 @@ function tickView() {
     }
   }
 
-  /* Le bouton n'apparaît que lorsqu'un jalon est franchi, et il ne presse pas : ascensionner
-     trop tôt gâche des cartes. Il dit lequel, pour qu'on sache ce qu'on est en train de
-     dépenser. */
+  /* Le bouton n'apparaît que lorsqu'un jalon est franchi, et il ne presse RIEN : il a le
+     même gris que les outils, il ne clignote pas, il n'expire pas. Ascensionner est un
+     sacrifice qu'on choisit — on perd sa ferme entière — et un bouton qui réclame ferait
+     croire à une étape obligatoire. Son infobulle dit ce qui l'a ouvert, et qu'on peut
+     l'ignorer. */
   const ouvert = jalonsOuverts()[0];
   $('btn-asc').hidden = !ouvert;
   if (ouvert) {
     setText($('btn-asc'), 'Ascension');
-    $('btn-asc').title = ouvert.quoi;
+    $('btn-asc').title = ouvert.quoi + ' — tu peux ascensionner quand tu veux, ou jamais.';
   }
 
   const stock = totalEggs();
@@ -2694,9 +2723,9 @@ function bindTools() {
   });
   $('asc-go').addEventListener('click', () => {
     const n = state.pen.length;
-    if (!confirm('Ascensionner ?\n\n' + (n ? n + ' bête' + (n > 1 ? 's' : '') +
-        ' deviendront des cartes.' : 'Ton enclos est vide : aucune carte.') +
-        '\nTout le reste repart de zéro. C’est irréversible.')) return;
+    if (!n) return;                       // pas d'ascension à vide, même par un clic égaré
+    if (!confirm('Ascensionner ?\n\n' + n + ' bête' + (n > 1 ? 's' : '') +
+        ' deviendront des cartes.\nTout le reste repart de zéro. C’est irréversible.')) return;
     ascensionner();
   });
   window.addEventListener('keydown', e => {

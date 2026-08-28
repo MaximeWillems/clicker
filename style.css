@@ -36,6 +36,12 @@
 
 * { box-sizing: border-box; }
 
+/* Une classe qui pose `display` bat la règle `[hidden]` du navigateur, et l'élément reste
+   visible alors que le JS le croit caché. C'est ce qui affichait l'écran d'ascension
+   par-dessus tout le jeu en permanence, et le réglage de taille sans mangeoire. Un `hidden`
+   doit cacher, quelle que soit la classe posée à côté. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -623,15 +629,19 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
    Une carte est une capsule : la bête telle qu'elle était. On la regarde autant
    qu'on la lit, donc l'animal passe avant le pourcentage. */
 
-/* Pas de `margin-left: auto` ici : la bourse en porte déjà un, et deux marges automatiques
+/* Discret par principe. Ascensionner est un sacrifice qu'on choisit, pas une étape à franchir :
+   un bouton plein et coloré réclamerait le clic, et ferait croire à une obligation. Il porte
+   donc le gris des outils, et ne prend sa couleur qu'au survol.
+
+   Pas de `margin-left: auto` ici : la bourse en porte déjà un, et deux marges automatiques
    se partagent l'espace libre — la bourse décollerait du bord droit. */
 .asc-call {
   font-family: var(--f-num); font-size: 0.78rem; letter-spacing: 0.06em;
-  background: var(--jade-dim); color: var(--jade);
-  border: 1px solid var(--jade); border-radius: 3px;
+  background: var(--surface); color: var(--soft);
+  border: 1px solid var(--rule); border-radius: 3px;
   padding: 0.35rem 0.9rem; cursor: pointer;
 }
-.asc-call:hover { background: var(--jade); color: var(--ground); }
+.asc-call:hover { border-color: var(--jade); color: var(--jade); }
 
 .album { display: flex; flex-direction: column; gap: 3px; }
 .album-head {
@@ -719,3 +729,8 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   padding: 0.55rem 1.4rem; cursor: pointer;
 }
 .asc-go:hover { background: var(--ink); border-color: var(--ink); }
+/* Un saut sans carte serait une perte sèche : le bouton le dit au lieu de l'accepter. */
+.asc-go:disabled {
+  background: none; color: var(--faint);
+  border-color: var(--rule); cursor: not-allowed;
+}

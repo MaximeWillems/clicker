@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.0.1** | les deux derniers âges renommés — *géant* devient *ancien*, *titan* devient *légende* |
+| **2.0.2** | l'écran d'ascension ne s'affiche plus par-dessus le jeu, et le premier jalon passe au milieu de partie |
+| 2.0.1 | les deux derniers âges renommés — *géant* devient *ancien*, *titan* devient *légende* |
 | 2.0.0 | **l'album et l'ascension** — les bêtes gardées deviennent des cartes, tout le reste repart |
 | 1.5.0 | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
 | 1.4.0 | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
@@ -652,18 +653,32 @@ avant d'avoir joué.
 
 | # | Le jalon | Nature | Emplacement |
 |---|---|---|---|
-| 1 | Mener une bête à l'âge ancien | exploit | — |
-| 2 | Amasser 1 M de pièces | fortune | — |
-| 3 | Mener une bête à l'âge légende | exploit | +1 |
-| 4 | Amasser 100 M | fortune | — |
-| 5 | Avoir un chromatique en enclos | exploit | — |
-| 6 | Amasser 10 Md | fortune | +1 |
-| 7 | Voir les cinq formes d'une même lignée | collection | — |
-| 8 | Amasser 1 Bn | fortune | — |
-| 9 | Mener une mythique à l'âge légende | exploit | +1 |
-| 10 | Amasser 100 Bn | fortune | — |
+| 1 | Mener une **rare** à l'âge adulte | exploit | — |
+| 2 | Amasser 10 M de pièces | fortune | — |
+| 3 | Mener une rare à l'âge légende | exploit | +1 |
+| 4 | Avoir une **épique** en enclos | exploit | — |
+| 5 | Amasser 1 Md | fortune | — |
+| 6 | Mener une épique à l'âge légende | exploit | +1 |
+| 7 | Avoir un chromatique en enclos | exploit | — |
+| 8 | Avoir une **mythique** en enclos | exploit | — |
+| 9 | Amasser 100 Md | fortune | — |
+| 10 | Mener une mythique à l'âge légende | exploit | +1 |
 | 11 | Rencontrer toutes les lignées | collection | — |
 | 12 | Une légende mythique chromatique | exploit | — |
+
+**Le premier jalon tombe en milieu de partie, jamais avant.** La liste s'ancre sur les ères
+plutôt que sur des seuils inventés : il faut avoir ouvert la deuxième ère — autour de deux
+heures de jeu — puis mené une rare à l'âge adulte. La première version ouvrait sur « mener une
+bête à l'âge ancien », soit dix-huit minutes sans rien avoir automatisé : l'ascension arrivait
+avant qu'on ait une ferme à sacrifier, et sacrifier trois têtards n'est pas un choix.
+
+**Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
+entière contre quelques cartes. Un jalon franchi ne réclame rien, ne clignote pas et n'expire
+pas — il attend. Le bouton porte le gris des outils plutôt qu'une couleur d'appel, pour ne pas
+faire croire à une étape obligatoire.
+
+Et **une ascension sans carte est refusée** : sauter avec un enclos vide serait une perte sèche,
+pas un choix. Le panneau le dit et le bouton reste éteint, le jalon restant ouvert pour plus tard.
 
 **La condition se lit sur l'état courant, jamais sur un souvenir.** C'est ce qui interdit
 d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc plus
