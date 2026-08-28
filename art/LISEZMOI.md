@@ -35,6 +35,12 @@ node tools/prompt.js poisson     # le prompt d'une lignée
 node tools/prompt.js --tout      # les vingt et une d'un coup
 ```
 
+**Pour générer plusieurs lignées d'affilée**, ouvrir une conversation dédiée avec
+[`prompts/_seance.md`](../prompts/_seance.md) : il porte la charte, les règles de continuité et
+le contrôle à passer avant de valider une planche. Le style dérive d'une séance à l'autre —
+c'est ce qui a conduit à demander les cinq formes d'une lignée dans une seule image, puis
+plusieurs lignées dans une seule séance.
+
 Le prompt est **écrit dans `prompts/<lignée>.txt`** en plus d'être affiché. Lancée depuis un
 bouton, une commande n'affiche pas forcément son retour, et un prompt qu'on ne retrouve pas
 ne sert à rien.
