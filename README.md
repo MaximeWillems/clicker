@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.6
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.1.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.0.6** | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
+| **2.1.0** | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
+| 2.0.6 | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
 | 2.0.5 | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
 | 2.0.4 | le crabe entre en jeu — ses cinq dessins attendaient depuis août d'être branchés |
 | 2.0.3 | le marchand ne vend plus la bête qu'on regarde — la présence se lit sur l'onglet, plus sur les clics |
@@ -558,6 +559,27 @@ Aux anciens prix, le marchand tombait à 78 min.
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
+
+#### Acheter par lots
+
+Un sélecteur en haut du panneau — **×1, ×10, ×100, max** — dit combien de niveaux part d'un
+clic. Passé l'ère commune une amélioration se monte de cinquante niveaux d'affilée : les
+acheter un par un, c'est cinquante clics qui ne décident de rien, et le jeu cesse d'être un
+clicker à ce moment-là pour devenir une paperasse.
+
+**Un lot coûte exactement ce que coûteraient les achats un par un.** Le prix est la somme des
+prix arrondis niveau par niveau, pas une formule fermée : un lot qui reviendrait moins cher
+serait une remise cachée, et l'équilibrage n'en sait rien.
+
+**Les nombres fixes achètent tout ou rien.** Un ×100 qui n'en achèterait que trente ferait
+douter du prix affiché ; le bouton s'éteint tant que la bourse ne suit pas. **`max`, lui, prend
+tout ce que la bourse permet** et pas un niveau de plus — mesuré : avec un million de pièces,
+la force du clic monte de 58 niveaux et laisse 116 372 pièces, quand le suivant en coûterait
+149 887.
+
+Le plafond de la couveuse est respecté comme partout ailleurs : un ×100 sur une couveuse
+neuve achète les quinze niveaux qui restent, pas cent. Et le bouton annonce ce qu'il fera —
+`Force du clic · niv. 12 → 22`, avec l'effet de départ et celui d'arrivée.
 
 ### L'album et l'ascension
 

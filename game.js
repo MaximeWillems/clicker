@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.6';
+const VERSION = 'alpha 2.1.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -470,6 +470,15 @@ for (const u of UPGRADES) {
 
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
 
+/* Combien de niveaux s'achètent d'un clic. Passé l'ère commune, une amélioration se monte de
+   cinquante niveaux d'affilée : les acheter un par un, c'est cinquante clics qui ne décident
+   de rien, et le jeu n'est plus un clicker à ce moment-là mais une paperasse.
+
+   `max` prend tout ce que la bourse permet ; les nombres fixes achètent EXACTEMENT ce qu'ils
+   annoncent, ou rien. Un ×100 qui n'en achèterait que trente ferait douter du prix affiché. */
+const ACHATS = [1, 10, 100, 'max'];
+const ACHAT_MAX_PAS = 2000;    // garde-fou : une boucle bornée, même à bourse démesurée
+
 /* Chaque forme : [nom, glyphe, genre]. Une forme par âge, dans l'ordre : enfant,
    adolescent, adulte, ancien, légende. La silhouette change au moment où l'on paie
    l'évolution — c'est le seul instant où elle change.
@@ -723,6 +732,7 @@ function freshState() {
        réglage unique obligeait à trancher pour tout le monde. 0 = dès la maturité. */
     sellRank: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
+    achat: 1,           // combien de niveaux d'amélioration par clic — voir ACHATS
     /* Un âge d'évolution PAR RARETÉ. Un péage ne coûte pas la même chose selon la lignée —
        mener une ancienne à la légende coûte 600 000 en commune et 9 milliards en mythique — donc
        ce n'est pas la même décision, et un réglage unique ne pouvait pas l'exprimer. On
@@ -1061,6 +1071,37 @@ const lvl         = key => state.up[key] || 0;
 const force       = key => (state.up[key] || 0) / GRAIN;
 const upCost      = u => Math.round(u.base * Math.pow(u.mult, lvl(u.key)));
 const upMaxed     = u => !!u.max && lvl(u.key) >= u.max;
+
+/* Le prix de n niveaux d'un coup. On additionne les prix ARRONDIS un à un, pas la somme
+   géométrique : upCost arrondit chaque niveau, et une formule fermée rendrait un total
+   légèrement différent de dix achats successifs. Un lot doit coûter exactement ce que
+   coûterait la même chose achetée à la main, sinon le lot devient une remise cachée. */
+function coutPaliers(u, n) {
+  const L = lvl(u.key);
+  let total = 0;
+  for (let i = 0; i < n; i++) total += Math.round(u.base * Math.pow(u.mult, L + i));
+  return total;
+}
+
+// Ce qui reste à monter avant le plafond, Infinity pour celles qui n'en ont pas.
+const paliersRestants = u => (u.max ? Math.max(0, u.max - lvl(u.key)) : Infinity);
+
+/* Combien de niveaux le réglage courant achèterait, ici et maintenant. En `max` on empile
+   tant que la bourse suit ; sur un nombre fixe on rend le nombre demandé, quitte à ce qu'il
+   soit hors de prix — c'est tickView qui éteint le bouton, pas cette fonction. */
+function paliersVises(u) {
+  const reste = paliersRestants(u);
+  if (state.achat !== 'max') return Math.min(state.achat, reste);
+  const L = lvl(u.key);
+  let n = 0, total = 0;
+  while (n < reste && n < ACHAT_MAX_PAS) {
+    const suivant = total + Math.round(u.base * Math.pow(u.mult, L + n));
+    if (suivant > state.coins) break;
+    total = suivant;
+    n++;
+  }
+  return n;
+}
 const clickPower  = () => 1 + force('clic');
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
@@ -1574,10 +1615,12 @@ function buyPen() {
 
 function buyUpgrade(u) {
   if (upMaxed(u)) return;
-  const cost = upCost(u);
+  const n = paliersVises(u);
+  if (!n) return;
+  const cost = coutPaliers(u, n);
   if (state.coins < cost) return;
   state.coins -= cost;
-  state.up[u.key] = lvl(u.key) + 1;
+  state.up[u.key] = lvl(u.key) + n;
   chord([523, 659, 784, 1046], 80);
   refresh();
 }
@@ -1587,12 +1630,14 @@ function buyUpgrade(u) {
 // Un tiers de palier ne tombe pas rond : « ×1,33 » plutôt que « ×1.3333333333 ».
 const nb = v => (Number.isInteger(v) ? String(v) : dec(v, 2));
 
-function upLabel(u) {
-  const n = lvl(u.key);
+function upLabel(u, lot) {
+  const n = lvl(u.key), pas = Math.max(1, lot || 1);
   if (!u.value) return u.desc;
   if (upMaxed(u)) return 'Au maximum · ' + nb(u.value(n)) + u.unit + '.';
-  if (n === 0) return u.desc + ' Niveau 1 : ' + nb(u.value(1)) + u.unit + '.';
-  return 'Niveau ' + n + ' → ' + (n + 1) + ' · ' + nb(u.value(n)) + ' → ' + nb(u.value(n + 1)) + u.unit;
+  // la toute première fois, on présente l'amélioration avant de parler de niveaux
+  if (n === 0 && pas === 1) return u.desc + ' Niveau 1 : ' + nb(u.value(1)) + u.unit + '.';
+  return 'Niveau ' + n + ' → ' + (n + pas) + ' · ' +
+         nb(u.value(n)) + ' → ' + nb(u.value(n + pas)) + u.unit;
 }
 
 /* ─────────────────────────────────────────────
@@ -1954,6 +1999,12 @@ function syncTri() {
   for (const b of $('tri').children) b.setAttribute('aria-pressed', String(b.dataset.tri === state.tri));
 }
 
+function syncAchat() {
+  for (const b of $('achat').children) {
+    b.setAttribute('aria-pressed', String(b.dataset.achat === String(state.achat)));
+  }
+}
+
 // Poser les vignettes d'un groupe dans l'ordre voulu, en ne touchant qu'à ce qui a bougé.
 function peupler(host, sujets) {
   // Retirer des vignettes déplace la barre de défilement. Sans ce report, la bête qu'on
@@ -2237,7 +2288,7 @@ function ascensionner() {
      refaire rareté par rareté à chaque cycle serait une corvée pure, sans aucun enjeu. */
   state = Object.assign(freshState(), {
     album, slots, asc: { n: (state.asc.n || 0) + 1, done: ap.done },
-    seen: state.seen, tri: state.tri, sound: state.sound, speed: state.speed,
+    seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound, speed: state.speed,
     buyKind: state.buyKind, sellAt: state.sellAt, sellRank: state.sellRank,
     evolveUpTo: state.evolveUpTo,
   });
@@ -2679,12 +2730,19 @@ function tickView() {
 
   for (const u of UPGRADES) {
     const r = refs.up[u.key];
-    const n = lvl(u.key), maxed = upMaxed(u), cost = upCost(u);
+    const n = lvl(u.key), maxed = upMaxed(u);
+    /* `vise` est ce que le bouton achèterait ; `montre` ce qu'il affiche. Les deux ne
+       coïncident pas quand `max` n'a pas les moyens d'un seul niveau : on montre alors le
+       prix du prochain, sans quoi le bouton annoncerait « 0 » et n'apprendrait rien. */
+    const vise = maxed ? 0 : paliersVises(u);
+    const montre = Math.max(1, vise);
+    const cout = coutPaliers(u, montre);
     r.el.classList.toggle('owned', n > 0);
-    setText(r.title, u.name + (n > 0 && u.max !== 1 ? ' · niv. ' + n : ''));
-    setText(r.price, maxed ? 'acquis' : fmt(cost));
-    setText(r.desc, upLabel(u));
-    r.el.disabled = maxed || state.coins < cost;
+    setText(r.title, u.name + (n > 0 && u.max !== 1 ? ' · niv. ' + n : '') +
+                     (montre > 1 ? ' → ' + (n + montre) : ''));
+    setText(r.price, maxed ? 'acquis' : fmt(cout));
+    setText(r.desc, upLabel(u, montre));
+    r.el.disabled = maxed || !vise || state.coins < coutPaliers(u, vise);
   }
 
   /* Le réglage de taille n'apparaît qu'avec une mangeoire. Sans automate qui engraisse, la
@@ -2820,6 +2878,17 @@ function bindTools() {
     refresh();
     blip(440, 0.04, 'sine', 0.03);
   });
+
+  $('achat').addEventListener('click', e => {
+    const b = e.target.closest('.tri-opt');
+    if (!b) return;
+    const v = b.dataset.achat === 'max' ? 'max' : parseInt(b.dataset.achat, 10);
+    if (v === state.achat || ACHATS.indexOf(v) === -1) return;
+    state.achat = v;
+    syncAchat();
+    refresh();
+    blip(440, 0.04, 'sine', 0.03);
+  });
 }
 
 function start() {
@@ -2832,7 +2901,9 @@ function start() {
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   syncReglages();
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
+  if (ACHATS.indexOf(state.achat) === -1) state.achat = 1;
   syncTri();
+  syncAchat();
 
   catchUp();
   refresh();

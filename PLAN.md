@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.0.4 · sauvegarde v7 · 10 lignées illustrées sur 21
+    aujourd'hui : alpha 2.1.0 · sauvegarde v7 · 10 lignées illustrées sur 21
 
 ---
 
@@ -25,9 +25,10 @@ réussie.
 | 1.0 → 1.4 | Les cinq âges, les tiers de palier, les consignes par rareté | 3 → 6 | est-ce que la progression cesse de reculer ? |
 | **1.5** ✓ | Les prix — les œufs payants divisés par deux | 6 | est-ce que la partie compressée se joue mieux ? |
 | **2.0** ✓ | L'album et l'ascension — capsules, motifs, emplacements, jalons, reset | 7 | est-ce qu'on veut recommencer ? |
-| **2.0.1 → 2.0.4** ✓ | Les âges renommés, l'écran d'ascension réparé, le marchand qui ne vend plus la bête qu'on regarde, le crabe | 7 | — |
-| **2.1** | La fusion — les paliers, et le repère sur les capsules | 7 | est-ce que les doublons valent d'être gardés ? |
-| **2.2** | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 7 | est-ce que l'ordre des achats suit la vie de la bête ? |
+| **2.0.1 → 2.0.6** ✓ | Les âges renommés, l'écran d'ascension réparé, le marchand sans exception, le crabe, le chromatique à 1/8192 | 7 | — |
+| **2.1** ✓ | Les achats par lots — ×1, ×10, ×100, max | 7 | est-ce que la fin de partie cesse d'être une paperasse ? |
+| **2.2** | La fusion — les paliers, et le repère sur les capsules | 7 | est-ce que les doublons valent d'être gardés ? |
+| **2.3** | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 7 | est-ce que l'ordre des achats suit la vie de la bête ? |
 | **3.0** | La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 8 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
 | **3.1** | La compatibilité — étiquettes, stérilité, durée par distance | 8 | est-ce que la règle se devine sans wiki ? |
 | **3.2** | L'hérédité — les quatre issues, les fusions, les teintes exclusives | 8 | est-ce qu'on a envie de sélectionner ? |
@@ -42,7 +43,7 @@ pension.
 
 ### Ce qui se livre en petit paquet
 
-**2.1, la fusion** est presque gratuite : le champ `palier` existe déjà sur chaque capsule et
+**2.2, la fusion** est presque gratuite : le champ `palier` existe déjà sur chaque capsule et
 la table `PALIERS` est écrite. Une question y reste ouverte — est-ce que le palier 4
 transforme un cadran en *règle* (+1 enclos, +1 clic automatique) plutôt qu'en plus gros
 pourcentage ? Une règle se raconte, un pourcentage s'oublie.
@@ -128,7 +129,7 @@ l'image, jamais la croissance.
 
 ## Où on en est
 
-Le jalon 0 est livré en **alpha 2.0.4**, et il déborde largement de son cadre : 21 lignées au
+Le jalon 0 est livré en **alpha 2.1.0**, et il déborde largement de son cadre : 21 lignées au
 lieu de 5, une vie de cent niveaux en cinq âges, les variantes, quatre raretés, huit
 améliorations, la rente, la collection, l'album et l'ascension. Une partie des jalons 2 et 3
 est donc jouable — mais **entièrement dans le navigateur**.
