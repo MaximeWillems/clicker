@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.0';
+const VERSION = 'alpha 2.0.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -34,13 +34,20 @@ const VERSION = 'alpha 2.0.0';
    vocabulaire qui bouclait, pas les images.
 
    Le temps par niveau triple à peu près à chaque âge — 3 s, 9 s, 30 s, 3 min, 24 min.
-   C'est ce qui fait que l'enfance défile pendant que le titan se mérite. */
+   C'est ce qui fait que l'enfance défile pendant que la légende se mérite. */
+/* Les cinq noms disent UNE SEULE CHOSE : le temps qui passe. Les deux derniers parlaient
+   auparavant de taille — « géant », « titan » — et entraient en collision avec les rangs
+   d'engraissement, qui parlent de taille eux aussi : d'où le « titan titanesque », qui
+   demandait une note pour s'expliquer. Une bête vieillit, elle ne grossit pas d'un âge.
+
+   `fem` marque le genre du NOM D'ÂGE, pas celui de la bête : « légende » est féminin, donc
+   son rang de taille s'accorde — une légende démesurée, un ancien démesuré. */
 const AGES = [
   { nom: 'enfant',     niv: 15,  grow: 45,    value: 40 },
   { nom: 'adolescent', niv: 35,  grow: 180,   value: 500 },
   { nom: 'adulte',     niv: 65,  grow: 900,   value: 6000 },
-  { nom: 'géant',      niv: 85,  grow: 3600,  value: 80000 },
-  { nom: 'titan',      niv: 100, grow: 21600, value: 1500000 },
+  { nom: 'ancien',     niv: 85,  grow: 3600,  value: 80000 },
+  { nom: 'légende',    niv: 100, grow: 21600, value: 1500000, fem: true },
 ];
 const NIV_MAX = AGES[AGES.length - 1].niv;
 
@@ -93,7 +100,7 @@ function liste(mots) {
    La chance de monter d'un cran, elle, grandit avec le prix : 3,5 % · 12 % · 25 %.
 
    LE PRIX SUIT UNE RÈGLE, il n'est pas choisi : un œuf coûte une fraction du bénéfice net
-   d'une bête de l'ère précédente menée au titan — sa valeur, moins tous ses péages. Le
+   d'une bête de l'ère précédente menée à la légende — sa valeur, moins tous ses péages. Le
    coefficient était de 0,7 ; il est passé à 0,35, c'est-à-dire que chaque œuf payant a été
    divisé par deux.
 
@@ -105,7 +112,7 @@ function liste(mots) {
    L'ŒUF COMMUN NE BOUGE PAS. Il se revend 40 à maturité, et cette marge de 3,3× est le
    moteur des dix premières minutes — la seule chose du jeu qui fonctionne sans rien avoir
    acheté. La règle d'or tient toujours : tous les œufs payants se remboursent à l'âge
-   géant, jamais avant. */
+   ancien, jamais avant. */
 const EGG_KINDS = [
   { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
     up: '3,5 %', hatch: 30,
@@ -127,7 +134,7 @@ const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
 
    Mais la couvaison ne pèse jamais lourd dans la vie d'une bête : 30 s de coquille contre
-   sept heures de croissance jusqu'à l'âge titan, soit un millième du cycle. Un incubateur au
+   sept heures de croissance jusqu'à l'âge légende, soit un millième du cycle. Un incubateur au
    niveau 1 nourrit vingt enclos, et les niveaux de couveuse au-delà s'achetaient pour ne
    jamais servir. La couveuse est donc plafonnée à 5 : passé ce point, c'est en incubateurs
    qu'on élargit la couvaison — ils montent en 1,6 par cran au lieu de 1,9, et seuls les
@@ -148,7 +155,7 @@ const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
    n'en a pas besoin, car sizeFactor divise les secondes de mangeoire par la durée de l'âge
    COURANT, quatre à six fois plus longue à chaque cran. Engraisser tôt puis évoluer rend
    donc exactement ce que les mêmes secondes auraient rendu plus tard : l'épithète se
-   dégonfle d'elle-même — un adulte démesuré fait un géant colossal — sans qu'on ait à
+   dégonfle d'elle-même — un adulte démesuré fait un ancien colossal — sans qu'on ait à
    confisquer quoi que ce soit. */
 const FATTEN_X  = 6;        // secondes d'engraissement par seconde et par niveau de mangeoire
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
@@ -158,8 +165,8 @@ const OVER_GAIN = 0.55;     // rendement décroissant de la taille
    avalé, qui ne fait que monter. Chaque évolution ajoute par-dessus un petit bond fixe, pour
    qu'on VOIE ce qu'on vient de payer. */
 const SCALE_MIN  = 0.55;    // taille d'un nouveau-né
-const SCALE_MAX  = 1.75;    // taille d'un titan mûr, avant le bonus d'âge
-const SCALE_GRAS = 1.10;    // ce que l'engraissement peut ajouter au-delà du titan mûr
+const SCALE_MAX  = 1.75;    // taille d'une légende mûre, avant le bonus d'âge
+const SCALE_GRAS = 1.10;    // ce que l'engraissement peut ajouter au-delà de la légende mûre
 const AGE_SCALE  = [1, 1.06, 1.12, 1.18, 1.25];   // le bond visible à chaque évolution
 
 /* ── La rente ─────────────────────────────────────────────────────────────────
@@ -217,7 +224,7 @@ const TINTS = [
    À ×5 il ne pesait rien : la plus belle bête du jeu restait cinq fois sous le moindre
    tirage rare, et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la
    bourse. Mais à ×125 il cassait la partie, et pour une raison qui n'est pas le chiffre
-   lui-même : LE COÛT D'ÉVOLUTION NE SUIT QUE LA LIGNÉE. Mener n'importe quelle bête au titan
+   lui-même : LE COÛT D'ÉVOLUTION NE SUIT QUE LA LIGNÉE. Mener n'importe quelle bête au bout
    rend 2,3 fois ses péages ; un chromatique rend 2,3 × son multiplicateur, puisqu'il paie
    les péages de sa lignée pour la valeur d'une autre. À ×125, une commune chromatique
    rapportait donc 291 fois sa mise quand tout le reste du jeu en rapporte 2,3.
@@ -262,7 +269,7 @@ const RANKS = [
 ];
 
 /* ── L'album et l'ascension ───────────────────────────────────────────────────
-   Le jeu s'arrêtait sur une fin sèche : titans mythiques, ferme pleine, plus rien.
+   Le jeu s'arrêtait sur une fin sèche : légendes mythiques, ferme pleine, plus rien.
    L'ascension lui donne un deuxième tour, et l'album est la seule chose qu'on emporte.
 
    LE CYCLE TIENT EN CINQ TEMPS. On joue. On franchit un jalon. On ascensionne : les bêtes
@@ -302,7 +309,7 @@ const PALIERS = [1, 1.8, 3, 5];
    LES DEUX COLONNES DOIVENT SE RÉPONDRE, et la première version ne le faisait pas. Un `pas`
    deux à trois fois plus petit rendait les plafonds INATTEIGNABLES : six cartes parfaites
    restaient sous chacun d'eux, ce qui veut dire qu'aucun n'était un plafond. À l'autre bout,
-   une première ascension réaliste — trois titans communs ordinaires — rendait +1,4 % de
+   une première ascension réaliste — trois légendes communes ordinaires — rendait +1,4 % de
    valeur et +2,8 % de couvaison en échange de TOUT ce qu'on possédait. Personne n'aurait
    ascensionné deux fois.
 
@@ -334,13 +341,16 @@ const MOTIF_BONUS = {
 
    Les trois natures — fortune, exploit, collection — sont volontairement mélangées. Des
    seuils de fortune seuls n'encourageraient qu'à amasser, alors que l'album récompense de
-   BIEN jouer ; des exploits seuls rendraient le rythme illisible. */
+   BIEN jouer ; des exploits seuls rendraient le rythme illisible.
+
+   Les CLÉS ne changent jamais : elles sont écrites dans la sauvegarde. Les libellés, eux, se
+   lisent dans AGES — un âge renommé ne doit pas laisser un jalon parler de l'ancien nom. */
 const JALONS = [
-  { key: 'geant',  quoi: 'Mener une bête à l’âge géant',
+  { key: 'geant',  quoi: 'Mener une bête à l’âge ' + AGES[3].nom,
     test: () => state.pen.some(c => c.age >= 4) },
   { key: 'or1',    quoi: 'Amasser 1 M de pièces',
     test: () => state.coins >= 1e6 },
-  { key: 'titan',  quoi: 'Mener une bête à l’âge titan', slot: true,
+  { key: 'titan',  quoi: 'Mener une bête à l’âge ' + AGES[4].nom, slot: true,
     test: () => state.pen.some(c => c.age >= 5) },
   { key: 'or2',    quoi: 'Amasser 100 M de pièces',
     test: () => state.coins >= 1e8 },
@@ -352,13 +362,13 @@ const JALONS = [
     test: () => LINES.some(l => AGES.every((a, i) => state.seen[l.key + ':' + (i + 1)])) },
   { key: 'or4',    quoi: 'Amasser 1 Bn de pièces',
     test: () => state.coins >= 1e12 },
-  { key: 'mythe',  quoi: 'Mener une mythique à l’âge titan', slot: true,
+  { key: 'mythe',  quoi: 'Mener une mythique à l’âge ' + AGES[4].nom, slot: true,
     test: () => state.pen.some(c => c.age >= 5 && lineOf(c).rarity === 'mythique') },
   { key: 'or5',    quoi: 'Amasser 100 Bn de pièces',
     test: () => state.coins >= 1e14 },
   { key: 'toutes', quoi: 'Rencontrer toutes les lignées',
     test: () => LINES.every(l => AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)])) },
-  { key: 'sommet', quoi: 'Un titan mythique chromatique',
+  { key: 'sommet', quoi: 'Une ' + AGES[4].nom + ' mythique chromatique',
     test: () => state.pen.some(c => c.age >= 5 && c.prodige && lineOf(c).rarity === 'mythique') },
 ];
 
@@ -435,7 +445,7 @@ for (const u of UPGRADES) {
 const UP_BY_KEY = Object.fromEntries(UPGRADES.map(u => [u.key, u]));
 
 /* Chaque forme : [nom, glyphe, genre]. Une forme par âge, dans l'ordre : enfant,
-   adolescent, adulte, géant, titan. La silhouette change au moment où l'on paie
+   adolescent, adulte, ancien, légende. La silhouette change au moment où l'on paie
    l'évolution — c'est le seul instant où elle change.
 
    Chaque forme portait auparavant un SECOND glyphe, dit juvénile, qui était presque
@@ -672,7 +682,7 @@ function freshState() {
           intendant: 0 },
     /* Un âge de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
        d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
-       titan : une consigne unique forçait à choisir entre les deux. */
+       bout : une consigne unique forçait à choisir entre les deux. */
     sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     /* Une taille minimale PAR RARETÉ. Engraisser une commune, c'est immobiliser un enclos
        pour quelques pièces ; engraisser une mythique, c'est en gagner des milliards. Un
@@ -680,7 +690,7 @@ function freshState() {
     sellRank: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
     /* Un âge d'évolution PAR RARETÉ. Un péage ne coûte pas la même chose selon la lignée —
-       mener une géante au titan coûte 600 000 en commune et 9 milliards en mythique — donc
+       mener une ancienne à la légende coûte 600 000 en commune et 9 milliards en mythique — donc
        ce n'est pas la même décision, et un réglage unique ne pouvait pas l'exprimer. On
        pousse les communes jusqu'au bout pendant qu'on arrête les mythiques à l'âge adulte. */
     evolveUpTo: { commune: 0, rare: 0, epique: 0, mythique: 0 },
@@ -929,7 +939,7 @@ function rollVariants() {
 
 /* À partir de quel âge la bête rembourse l'œuf dont elle sort. Un œuf cher n'est pas un lot
    à encaisser : enfant, une mythique payée 200 000 ne vaut que 1 600. Tous les œufs payants
-   se remboursent à l'âge géant, jamais avant — autant le dire plutôt que de laisser le
+   se remboursent à l'âge ancien, jamais avant — autant le dire plutôt que de laisser le
    joueur le découvrir en perdant sa mise. */
 function seuilRentable(c) {
   const rar = rarityOf(c).mult, b = bonusAlbum();
@@ -947,7 +957,7 @@ const sousLePrix = c => (c.cost || 0) > sellValue(c);
 
 /* Jusqu'à quel âge on ALERTE sur ce fait, rareté par rareté. Une bête chère passe le plus
    clair de sa vie sous le prix de son œuf — une rare ne le repasse qu'en pleine tranche
-   géante. Un bouton rouge qui reste rouge pendant les trois quarts d'une vie cesse d'être
+   ancienne. Un bouton rouge qui reste rouge pendant les trois quarts d'une vie cesse d'être
    un avertissement pour devenir un décor, et on finit par vendre à perte en l'ignorant.
 
    L'alerte se cantonne donc au début de la vie, et chaque rareté a droit à un âge de plus
@@ -988,7 +998,7 @@ const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 // la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
 const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
 // Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
-// l'âge titan pour le prix d'une commune, et toute la progression se court-circuitait.
+// l'âge légende pour le prix d'une commune, et toute la progression se court-circuitait.
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
 const evoRemise = () => 1 / (1 + EVO_RABAIS * force('intendant'));
@@ -1060,7 +1070,7 @@ const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 
 /* La consigne du marchand pour CETTE bête : l'âge à partir duquel il la vend, 0 s'il n'y
    touche jamais. Chaque rareté a la sienne — c'est ce qui permet d'écouler les communes
-   dès l'âge adulte pendant qu'on mène les mythiques jusqu'au titan. */
+   dès l'âge adulte pendant qu'on mène les mythiques jusqu'à la légende. */
 const venteAu = c => (state.sellAt && state.sellAt[lineOf(c).rarity]) || 0;
 
 /* La taille minimale exigée par le marchand n'existe QUE si une mangeoire tourne. Sans
@@ -1090,11 +1100,17 @@ function rankOf(sf) {
 }
 
 /* Comment l'annoncer : son âge, et le rang de taille quand on l'a engraissée au-delà de ce
-   que son âge demandait. « adulte », « adulte énorme », « titan titanesque ». */
-function etatOf(c) {
-  const rang = rankOf(sizeFactor(c)).name;
-  return rang ? AGES[c.age - 1].nom + ' ' + rang : AGES[c.age - 1].nom;
+   que son âge demandait. « adulte », « adulte énorme », « légende démesurée ».
+
+   L'adjectif s'accorde avec le NOM D'ÂGE, jamais avec la bête : c'est l'âge qu'il qualifie.
+   Une seule fonction pour ça, parce que l'album fabrique la même étiquette de son côté et que
+   deux copies finiraient par se contredire. */
+function nomAge(age, rangIdx) {
+  const a = AGES[age - 1], r = RANKS[rangIdx || 0];
+  const adj = a.fem ? r.fem : r.name;
+  return adj ? a.nom + ' ' + adj : a.nom;
 }
+const etatOf = c => nomAge(c.age, rankOf(sizeFactor(c)).i);
 
 /* Ce que vaut le niveau où elle en est, en fraction d'une bête mûre de son âge : 0,15 au
    premier niveau de la tranche, 1 au dernier, et une montée géométrique entre les deux —
@@ -1481,7 +1497,7 @@ function evolve(c) {
 
 /* Protéger une bête, c'est refuser qu'un automate décide de sa vie : ni vendue par le
    marchand, ni fait évoluer — on veut parfois garder une forme précise, et non la pousser
-   jusqu'au titan. C'est le prix d'une place d'enclos immobilisée, et c'est ce qui permet de
+   jusqu'à la légende. C'est le prix d'une place d'enclos immobilisée, et c'est ce qui permet de
    garder un prodige et de continuer l'aventure avec lui. */
 function toggleKeep(c) {
   c.keep = !c.keep;
@@ -1583,7 +1599,7 @@ function runAutomations(dt) {
 
      Mais elle s'arrête à l'âge où le marchand doit prendre le relais. Sans ce frein, régler
      « vendre les communes à l'âge adulte » ne servait à rien : l'évolution les poussait
-     jusqu'au titan avant que le vendeur n'ait son mot à dire, et la consigne de vente était
+     jusqu'à la légende avant que le vendeur n'ait son mot à dire, et la consigne de vente était
      muette. C'est le vendeur qui commande le plafond, rareté par rareté. */
   if (lvl('evolution') && evolueQuelqueChose()) {
     for (const c of state.pen) {
@@ -2034,8 +2050,7 @@ function carteEl(k) {
   bete.style.filter = k.prodige ? PRODIGE_FILTER : (TINTS[k.tint] || TINTS[0]).filter;
   el.querySelector('.carte-nom').textContent = nomCarte(k);
   el.querySelector('.carte-eff').textContent = effetCarte(k);
-  el.title = nomCarte(k) + ' — niveau ' + k.niv + ', ' + AGES[k.age - 1].nom +
-             (RANKS[k.rank].name ? ' ' + RANKS[k.rank].name : '') +
+  el.title = nomCarte(k) + ' — niveau ' + k.niv + ', ' + nomAge(k.age, k.rank) +
              ' · puissance ' + dec(puissanceDe(k), 2);
   return el;
 }
@@ -2496,7 +2511,8 @@ function noteMarchand() {
     liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]) + taille(cle))) + '. ';
   txt += gardees.length
     ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
-    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’à l’âge géant. ';
+    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’à l’âge '
+      + AGES[3].nom + '. ';
 
   /* Le piège de la combinaison : une consigne au-dessus de ce que l'évolution sait atteindre,
      et cette rareté-là ne part jamais. On nomme les raretés concernées, sinon le joueur voit

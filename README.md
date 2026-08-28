@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.0.0** | **l'album et l'ascension** — les bêtes gardées deviennent des cartes, tout le reste repart |
+| **2.0.1** | les deux derniers âges renommés — *géant* devient *ancien*, *titan* devient *légende* |
+| 2.0.0 | **l'album et l'ascension** — les bêtes gardées deviennent des cartes, tout le reste repart |
 | 1.5.0 | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
 | 1.4.0 | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
 | 1.3.0 | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
@@ -69,7 +70,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 ## Ce qui est dans le jalon 0
 
 - 21 lignées et leurs 105 formes, du têtard à l'Ouroboros éternel
-- **Cent niveaux et cinq âges** — enfant, adolescent, adulte, géant, titan — sur une seule
+- **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
   vie qui ne repart jamais de zéro
 - **Variantes** : teinte, motif, tempérament, et un prodige sur cinq cents
 - **Quatre raretés** et quatre sortes d'œufs, dont un coup de chance possible dès la première minute
@@ -116,8 +117,8 @@ et seul le paiement le débloque.
 | enfant | 1 → **15** | 45 s | 3 s | +14 % | — | 40 |
 | adolescent | 16 → **35** | 3 min | 9 s | +10,5 % | 200 | 500 |
 | adulte | 36 → **65** | 15 min | 30 s | +6,8 % | 3 000 | 6 000 |
-| géant | 66 → **85** | 1 h | 3 min | +10,5 % | 40 000 | 80 000 |
-| titan | 86 → **100** | 6 h | 24 min | +14 % | 600 000 | 1 500 000 |
+| ancien | 66 → **85** | 1 h | 3 min | +10,5 % | 40 000 | 80 000 |
+| légende | 86 → **100** | 6 h | 24 min | +14 % | 600 000 | 1 500 000 |
 
 15 · 20 · 30 · 20 · 15, et les péages tombent pile sur 15, 35, 65, 85. Le coût du péage comme
 la valeur se multiplient ensuite par la rareté (×25 rare, ×600 épique, ×15 000 mythique) ; les
@@ -125,8 +126,8 @@ durées, elles, ne bougent jamais.
 
 **Le temps par niveau triple à chaque âge** — 3 s, 9 s, 30 s, 3 min, 24 min. C'est ce qui fait
 que l'enfance défile (trois clics par niveau au tout début, sans rien avoir acheté) pendant que
-le titan se mérite. Sans aucune automatisation : mûre à 45 s, adulte à 3 min 45, géante à
-18 min, titan à 1 h 19, niveau 100 à 7 h 19. C'est exactement le rythme d'avant, redécoupé.
+la légende se mérite. Sans aucune automatisation : mûre à 45 s, adulte à 3 min 45, ancienne à
+18 min, légende à 1 h 19, niveau 100 à 7 h 19. C'est exactement le rythme d'avant, redécoupé.
 
 **Chaque niveau paie.** Le multiplicateur de valeur suit une courbe géométrique de 0,15 à 1,00
 à l'intérieur de chaque tranche : un niveau vaut donc entre +7 % et +14 % de prix de vente. Il
@@ -165,7 +166,7 @@ L'embonpoint aussi survit désormais à l'évolution. Ça ne donne rien de plus 
 les secondes de mangeoire par la durée de l'âge **courant**, quatre à six fois plus longue à
 chaque cran. Engraisser tôt puis évoluer rend donc exactement ce que les mêmes secondes
 auraient rendu plus tard. L'épithète se dégonfle d'elle-même — un *adulte démesuré* fait un
-*géant colossal* — sans qu'on ait à confisquer quoi que ce soit.
+*ancien colossal* — sans qu'on ait à confisquer quoi que ce soit.
 
 ### Raretés
 
@@ -177,7 +178,7 @@ Les deux axes sont calés pour **s'enchaîner** plutôt que se concurrencer. Cha
 une ère, pas un bonus : on épuise ce que les communes peuvent donner avant que les rares
 n'ouvrent.
 
-| Rareté | Valeur | Mûre enfant → mûre titan | Coût des quatre péages |
+| Rareté | Valeur | Mûre enfant → mûre légende | Coût des quatre péages |
 |---|---|---|---|
 | commune | ×1 | 40 → 1,5 M | 643 200 |
 | rare | ×25 | 1 000 → 37,5 M | 16,1 M |
@@ -185,14 +186,14 @@ n'ouvrent.
 | mythique | ×15 000 | 600 000 → 22,5 Md | 9,65 Md |
 
 **Le coût du péage suit la rareté.** C'est le pivot de tout l'équilibrage : sans lui, une rare
-tombée par chance atteignait l'âge titan pour le prix d'une commune et court-circuitait toute
+tombée par chance atteignait l'âge légende pour le prix d'une commune et court-circuitait toute
 la progression.
 
 **Chaque œuf coûte 0,35 bête de l'ère précédente menée au bout** — la même proportion sur les
-trois transitions. On ne s'offre donc un œuf rare qu'après avoir mené des communes au titan,
+trois transitions. On ne s'offre donc un œuf rare qu'après avoir mené des communes à la légende,
 un épique qu'après des rares, et ainsi de suite.
 
-**Tous les œufs payants se remboursent à l'âge géant**, jamais avant : une règle unique, quelle
+**Tous les œufs payants se remboursent à l'âge ancien**, jamais avant : une règle unique, quelle
 que soit l'ère.
 
 Rythme mesuré sur une partie simulée de quatre heures, joueur cliquant quatre fois par
@@ -231,16 +232,16 @@ La chance de monter d'un cran grandit avec le prix — 3,5 %, 12 %, 25 % — et 
 n'ayant rien au-dessus de lui, garantit.
 
 Les prix suivent la règle des ères : **chaque œuf coûte 0,35 bête de l'ère précédente menée à
-l'âge titan**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
+l'âge légende**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
 
 ### Un œuf cher est un investissement, pas un lot
 
-**Tous les œufs payants se remboursent à l'âge géant, jamais avant.** Une mythique payée 180 M
+**Tous les œufs payants se remboursent à l'âge ancien, jamais avant.** Une mythique payée 180 M
 ne vaut que 600 000 mûre à l'âge enfant — la vendre là serait ruineux.
 
 Résultat net, œuf et péages déduits, à chaque âge mûr :
 
-| Œuf | enfant | adolescent | adulte | **géant** | titan |
+| Œuf | enfant | adolescent | adulte | **ancien** | légende |
 |---|---|---|---|---|---|
 | commun (12) | +28 | +288 | +2 788 | +36 788 | +856 788 |
 | rare (300 000) | −299 000 | −292 500 | −230 000 | **+620 000** | +21,1 M |
@@ -250,21 +251,21 @@ Résultat net, œuf et péages déduits, à chaque âge mûr :
 ### Le rouge se cantonne au début de la vie
 
 Une bête chère passe le plus clair de son existence sous le prix de son œuf : une rare ne le
-repasse qu'en pleine tranche géante. Un bouton rouge qui reste rouge pendant les trois quarts
+repasse qu'en pleine tranche ancienne. Un bouton rouge qui reste rouge pendant les trois quarts
 d'une vie cesse d'être un avertissement pour devenir un décor — et on finit par vendre à perte
 en l'ignorant.
 
 L'alerte se cantonne donc au **début** de la vie, et chaque rareté a droit à un âge de plus
 que la précédente : c'est là que la méprise est possible, et seulement là.
 
-| Rareté | enfant | adolescent | adulte | géant | titan |
+| Rareté | enfant | adolescent | adulte | ancien | légende |
 |---|---|---|---|---|---|
 | commune | vert | vert | vert | vert | vert |
 | rare | **rouge** | neutre | neutre | vert | vert |
 | épique | **rouge** | **rouge** | neutre | vert | vert |
 | mythique | **rouge** | **rouge** | **rouge** | vert | vert |
 
-Le vert tombe pile à l'âge géant, à toutes les raretés — c'est la règle de remboursement
+Le vert tombe pile à l'âge ancien, à toutes les raretés — c'est la règle de remboursement
 énoncée plus haut, rendue visible sans un mot.
 
 C'est la mécanique voulue : ce qu'on achète avec un œuf cher, c'est le droit d'investir, pas
@@ -278,7 +279,7 @@ jamais être **silencieuse**. Deux garde-fous :
   plus bas — et il ne s'allume que **si rien n'est prévu pour l'y mener**. Deux façons de ne pas s'alarmer, et elles ne se racontent pas pareil : ou
   la bête est déjà à l'âge qu'il faut et n'a plus qu'à finir de grandir, ou c'est l'évolution
   automatique qui va l'y mener — « son œuf a coûté 180,0 M, ton évolution la mènera à l'âge
-  géant, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait le pire des
+  ancien, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait le pire des
   deux mondes.
 - **Le marchand automatique ne touche qu'aux communes par défaut.** Un troisième réglage
   élargit sa portée rareté par rareté ; tant qu'on ne le fait pas, il ne peut pas brader un
@@ -335,11 +336,11 @@ règle tient en une phrase et se propage d'elle-même à toute l'échelle.
 rare, et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la bourse. Mais à
 ×125 il cassait la partie — et pour une raison qui n'est pas le chiffre lui-même.
 
-**Le coût d'évolution ne suit que la lignée.** Mener n'importe quelle bête au titan rend 2,3
+**Le coût d'évolution ne suit que la lignée.** Mener n'importe quelle bête à la légende rend 2,3
 fois ses péages, à toutes les raretés. Un chromatique, lui, paie les péages de sa lignée pour
 la valeur d'une autre : il rend donc 2,3 × son multiplicateur.
 
-| Menée au titan | Ce qu'elle rend par pièce de péage |
+| Menée à la légende | Ce qu'elle rend par pièce de péage |
 |---|---|
 | commune | ×2,3 |
 | rare | ×2,3 |
@@ -393,7 +394,7 @@ Ce que fait vraiment la mangeoire, c'est **remplir l'attente au péage** — la 
 pièces de l'évolution ne sont pas encore là, elle grossit en attendant. Et ce temps n'est pas
 perdu : l'évolution ne remet plus l'embonpoint à zéro.
 
-Le rendement de l'engraissement ne dépend **pas de l'âge** — 0,83 à l'enfance comme au titan
+Le rendement de l'engraissement ne dépend **pas de l'âge** — 0,83 à l'enfance comme à la légende
 avec les mêmes niveaux. Il ne dépend que du **rapport entre le niveau de mangeoire et celui
 d'éleveur** : l'un fait tourner l'enclos, l'autre l'immobilise pour grossir.
 
@@ -421,7 +422,7 @@ supplément, elle n'est plus un piège.
 
 Le bouton **☆ Garder** met une créature hors de portée des automates : ni vendue par le
 marchand, ni faite évoluer — on veut parfois garder une forme précise, et non la pousser
-jusqu'au titan. La mangeoire continue de l'engraisser, elle. Le bouton *Vendre* se verrouille
+jusqu'à la légende. La mangeoire continue de l'engraisser, elle. Le bouton *Vendre* se verrouille
 tant qu'elle est gardée.
 
 Ce que ça coûte est une place d'enclos immobilisée, et c'est tout l'intérêt : on choisit de
@@ -451,11 +452,11 @@ déjà. C'est la bête qu'un joueur garde, c'est elle qu'on récompense.
 |---|---|---|
 | adulte fraîche, niv. 36 | 900 | 0,25 / s |
 | adulte mûre, niv. 65 | 6 000 | 1,67 / s |
-| géante mûre, niv. 85 | 80 000 | 22,2 / s |
-| titan mûr, niv. 100 | 1,5 M | 417 / s |
-| titan mûr **rare** | 37,5 M | 10 417 / s |
-| titan mûr **mythique** | 22,5 Md | 6,25 M / s |
-| titan mûr **mythique chromatique** | 2,81 Bn | 1,56 Md / s |
+| ancienne mûre, niv. 85 | 80 000 | 22,2 / s |
+| légende mûre, niv. 100 | 1,5 M | 417 / s |
+| légende mûre **rare** | 37,5 M | 10 417 / s |
+| légende mûre **mythique** | 22,5 Md | 6,25 M / s |
+| légende mûre **mythique chromatique** | 2,81 Bn | 1,56 Md / s |
 
 Le montant baisse (417 / s au lieu de 708 pour une commune au bout), mais le **volume** monte :
 toutes les bêtes de l'âge adulte et au-dessus rapportent, là où seules les engraissées le
@@ -464,13 +465,13 @@ faisaient. C'est le vrai changement, et il tient dans les clous :
 - **au moment où elle s'ouvre**, elle pèse environ 2 % du revenu du joueur — qui vient
   justement de payer 200 + 3 000 pièces de péages pour ce premier adulte. Elle arrive comme
   une confirmation, pas comme un raccourci ;
-- **sur une ferme qui tourne** — dix enclos étalés de l'enfance au géant, éleveur 10 — elle
+- **sur une ferme qui tourne** — dix enclos étalés de l'enfance à l'ancien, éleveur 10 — elle
   pèse 1,1 % du débit.
 
 Elle ne remplace jamais l'élevage, et le rapport se calcule d'une ligne : un enclos qui
 recommence rapporte `valeur / (croissance / éleveur)`, un enclos qui garde `valeur / 3600`.
 **Cycler gagne dès que le niveau d'éleveur dépasse la croissance divisée par 3 600** — soit
-0,3 à l'âge adulte, 1,3 au géant, 7,3 au titan. Un joueur qui produit des titans a un éleveur
+0,3 à l'âge adulte, 1,3 à l'ancien, 7,3 à la légende. Un joueur qui produit des légendes a un éleveur
 autour de 15 : cycler lui rapporte alors le double de garder, exactement comme avant. L'ancien
 seuil à *énorme* était 1,7 fois plus haut, donc la rente d'aujourd'hui laisse **plus** de place
 à l'élevage que celle d'hier, pas moins.
@@ -545,7 +546,7 @@ ne dépense de pièces.
 
 ### L'album et l'ascension
 
-Le jeu s'arrêtait sur une fin sèche : titans mythiques, ferme pleine, plus rien. L'ascension
+Le jeu s'arrêtait sur une fin sèche : légendes mythiques, ferme pleine, plus rien. L'ascension
 lui donne un deuxième tour, et **l'album est la seule chose qu'on emporte**.
 
 Le cycle tient en cinq temps. On joue. On franchit un **jalon**. On ascensionne : les bêtes
@@ -614,9 +615,9 @@ palier 1. La qualité, elle, se mérite :
 | La bête transformée | Qualité | Puissance |
 |---|---|---|
 | Têtard commun, niveau 15, ordinaire | 0,45 | 0,45 |
-| Titan commun, niveau 100, ordinaire | 0,70 | 0,70 |
-| Titan mythique, doré, énorme | 0,85 | 3,40 |
-| Titan mythique, albâtre, démesuré, chromatique | 1,00 | 4,00 |
+| Légende commune, niveau 100, ordinaire | 0,70 | 0,70 |
+| Légende mythique, dorée, énorme | 0,85 | 3,40 |
+| Légende mythique, albâtre, démesurée, chromatique | 1,00 | 4,00 |
 
 Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chance.
 
@@ -632,10 +633,10 @@ trois fois plus que trois familles différentes.
 
 | L'album | Ce qu'il rend |
 |---|---|
-| 3 titans communs, motifs éparpillés | +3 % valeur, +7 % couvaison, +7 % engraissement |
-| 3 titans communs, tous tachetés | **+21 % de couvaison** |
-| 3 titans communs, tous unis | +8 % de valeur |
-| 6 titans mythiques dorés tachetés | +150 % — le plafond |
+| 3 légendes communes, motifs éparpillés | +3 % valeur, +7 % couvaison, +7 % engraissement |
+| 3 légendes communes, toutes tachetées | **+21 % de couvaison** |
+| 3 légendes communes, toutes unies | +8 % de valeur |
+| 6 légendes mythiques dorées tachetées | +150 % — le plafond |
 | 6 mythiques albâtre chromatiques, tigrés | +200 % de rente — le plafond |
 
 Le build se choisit sur l'écran d'ascension et **reste verrouillé pour toute la partie**. S'il
@@ -651,18 +652,18 @@ avant d'avoir joué.
 
 | # | Le jalon | Nature | Emplacement |
 |---|---|---|---|
-| 1 | Mener une bête à l'âge géant | exploit | — |
+| 1 | Mener une bête à l'âge ancien | exploit | — |
 | 2 | Amasser 1 M de pièces | fortune | — |
-| 3 | Mener une bête à l'âge titan | exploit | +1 |
+| 3 | Mener une bête à l'âge légende | exploit | +1 |
 | 4 | Amasser 100 M | fortune | — |
 | 5 | Avoir un chromatique en enclos | exploit | — |
 | 6 | Amasser 10 Md | fortune | +1 |
 | 7 | Voir les cinq formes d'une même lignée | collection | — |
 | 8 | Amasser 1 Bn | fortune | — |
-| 9 | Mener une mythique à l'âge titan | exploit | +1 |
+| 9 | Mener une mythique à l'âge légende | exploit | +1 |
 | 10 | Amasser 100 Bn | fortune | — |
 | 11 | Rencontrer toutes les lignées | collection | — |
-| 12 | Un titan mythique chromatique | exploit | — |
+| 12 | Une légende mythique chromatique | exploit | — |
 
 **La condition se lit sur l'état courant, jamais sur un souvenir.** C'est ce qui interdit
 d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc plus
@@ -711,8 +712,8 @@ jauges, prix, focus, sélection — ce qui vidait de son sens le rang des mythiq
 
 Deux conséquences :
 
-**L'âge titan n'a pas de couleur à lui.** Il fait briller plus fort la teinte de sa propre
-rareté — la teinte dit la rareté, l'intensité dit l'âge. Un titan commun reste donc gris-vert,
+**L'âge légende n'a pas de couleur à lui.** Il fait briller plus fort la teinte de sa propre
+rareté — la teinte dit la rareté, l'intensité dit l'âge. Une légende commune reste donc gris-vert,
 seul un mythique brille en or.
 
 **Le bouton *Vendre* est vert quand la vente est rentable et rouge quand elle ne l'est pas.**
@@ -732,7 +733,7 @@ donc réécrit sur trois principes :
   dernière **n'apparaît qu'une fois la mangeoire achetée**. Sans automate qui engraisse, la
   notion n'a rien à faire à l'écran : vendre doit rester la chose la plus simple du jeu.
 - **Chaque réglage écrit ce qu'il produit**, et se réécrit dès qu'on bouge un menu. « En clair :
-  il vend les communes dès l'âge adulte, les rares dès l'âge titan. Les mythiques restent dans
+  il vend les communes dès l'âge adulte, les rares dès l'âge légende. Les mythiques restent dans
   l'enclos. » L'acheteur annonce son débit à l'heure, l'évolution le coût total du chemin
   qu'elle va financer.
 
@@ -747,8 +748,8 @@ mentent pas le jour où un prix bouge, et ils avaient déjà menti une fois.
 
 Les trois consignes de la ferme ont chacune quatre valeurs, une par rareté :
 
-> Il fait monter les **communes jusqu'au titan** et arrête les **mythiques à l'âge adulte**.
-> Il vend les **communes mûres dès l'âge adulte**, les **rares mûres à l'âge titan et grandes
+> Il fait monter les **communes jusqu'à la légende** et arrête les **mythiques à l'âge adulte**.
+> Il vend les **communes mûres dès l'âge adulte**, les **rares mûres à l'âge légende et grandes
 > ou plus**, et ne touche **jamais** aux mythiques.
 
 C'est la consigne qu'on veut vraiment donner. Une valeur unique pour tout le monde forçait à
@@ -757,7 +758,7 @@ pendant qu'on mène le précieux jusqu'au bout, parce que ce ne sont pas les mê
 
 | Ce qui se règle | Pourquoi par rareté |
 |---|---|
-| **jusqu'où la faire monter** | de géante à titan : 600 000 en commune, 9,00 Md en mythique |
+| **jusqu'où la faire monter** | d'ancienne à légende : 600 000 en commune, 9,00 Md en mythique |
 | **à partir de quel âge la vendre** | on écoule tôt ce qui ne vaut rien, on garde le reste |
 | **à quelle taille la vendre** | engraisser une commune immobilise un enclos pour quelques pièces ; une mythique, pour des milliards |
 
@@ -777,21 +778,21 @@ de vente : ce n'est pas la même décision. Le péage suit la rareté, et l'éca
 
 | Faire monter une bête | commune | rare | épique | mythique |
 |---|---|---|---|---|
-| d'adulte à géante | 40 000 | 1,00 M | 24,0 M | 600 M |
-| de géante à titan | 600 000 | 15,0 M | 360 M | **9,00 Md** |
+| d'adulte à ancienne | 40 000 | 1,00 M | 24,0 M | 600 M |
+| d'ancienne à légende | 600 000 | 15,0 M | 360 M | **9,00 Md** |
 
-Pousser un seul mythique de géant à titan coûte quinze mille fois ce que coûte une commune.
+Pousser un seul mythique d'ancien à légende coûte quinze mille fois ce que coûte une commune.
 Un réglage unique forçait à choisir un compromis pour tout le monde : on pousse maintenant les
 communes jusqu'au bout pendant qu'on arrête les mythiques à l'âge adulte, en attendant d'avoir
 les moyens. Chaque menu affiche la facture complète du chemin qu'il finance.
 
 **L'évolution automatique s'arrête quand même à l'âge où le vendeur doit prendre le relais.**
 Sans ce frein, la consigne de vente serait muette : régler « vendre les communes dès l'âge
-adulte » ne servirait à rien, puisque l'évolution les pousserait jusqu'au titan avant que le
+adulte » ne servirait à rien, puisque l'évolution les pousserait jusqu'à la légende avant que le
 vendeur n'ait son mot à dire. Des deux plafonds, c'est le plus bas qui commande.
 
 Un réglage incohérent est signalé, et **les raretés en cause sont nommées** : si l'évolution
-des rares s'arrête à l'adolescence pendant que le vendeur les attend à l'âge géant, la note dit
+des rares s'arrête à l'adolescence pendant que le vendeur les attend à l'âge ancien, la note dit
 lesquelles n'y arriveront jamais, avant que les enclos ne s'engorgent.
 
 **L'évolution passe avant la vente**, pour qu'une bête qu'on peut faire monter ne parte jamais
@@ -895,7 +896,7 @@ montrent le têtard et les deux derniers le colosse. Un seul fichier fonctionne 
 
 Une image fait exactement `1em`, donc **tout ce qui pilotait la taille de l'emoji pilote la
 sienne** — niveau, âge, engraissement, teinte. Un dessin remplace un emoji sans qu'aucun autre
-calcul ne bouge, du nouveau-né à 52 px au titan démesuré à 220 px.
+calcul ne bouge, du nouveau-né à 52 px à la légende démesurée à 220 px.
 
 Le détail du format attendu est dans [`art/LISEZMOI.md`](art/LISEZMOI.md).
 
@@ -951,8 +952,10 @@ centième niveau.
 deux rangs : comme pour les niveaux, c'est le clic qui franchit le rang qui paie.
 
 Les rangs ne disent pas une taille absolue mais **à quel point la bête est grosse pour son
-âge**. C'est ce qui leur permet de survivre à l'évolution sans se contredire, et ce qui donne
-un sens à « titan titanesque » : un titan hors-norme parmi les titans.
+âge**. C'est ce qui leur permet de survivre à l'évolution sans se contredire : une
+« légende titanesque » est une légende hors-norme parmi les légendes, pas une bête plus
+vieille. C'est aussi pourquoi les âges ne parlent plus de taille — ils l'ont fait
+jusqu'à l'alpha 2.0.1, et « titan titanesque » demandait alors une note pour s'expliquer.
 
 | Rang | À partir de | Valeur | Clics à l'âge enfant | Vente (base 40) |
 |---|---|---|---|---|
@@ -964,7 +967,7 @@ un sens à « titan titanesque » : un titan hors-norme parmi les titans.
 | démesuré | ×4,50 | ×4,50 | ~28 000 | 180 (+41 %) |
 
 La barre de progression vise le rang suivant une fois la bête mûre, et l'animal grossit
-vraiment à l'écran — de 0,55 nouveau-né à 2,19 titan mûr, et 2,34 titan bien gras.
+vraiment à l'écran — de 0,55 nouveau-né à 2,19 légende mûre, et 2,34 légende bien grasse.
 
 ### Engraissement
 
@@ -1005,8 +1008,8 @@ avant de changer d'avis.
    toujours évidente ?
 4. À quel moment s'ennuie-t-on ?
 5. **Le pari du découpage** : 65 des 100 niveaux se traversent dans les quatre premières
-   minutes de la vie d'une bête, et les 15 derniers demandent six heures. Est-ce que le titan
-   paraît long ? Si oui, le levier n'est pas le découpage des niveaux mais la durée de la
+   minutes de la vie d'une bête, et les 15 derniers demandent six heures. Est-ce que la légende
+   paraît longue ? Si oui, le levier n'est pas le découpage des niveaux mais la durée de la
    dernière tranche — `AGES[4].grow`, six heures aujourd'hui.
 
 Les créatures sans dessin sont des emoji : des placeholders assumés, en attendant que les
