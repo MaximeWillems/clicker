@@ -182,6 +182,11 @@ body {
   animation: dial-monte 0.22s ease-out;
 }
 .dial-boite:hover { border-color: var(--accent); }
+/* Une réplique qui attend un geste ne se clique pas : la boîte cesse d'inviter au clic, et son
+   repère cesse d'être un chevron « suite » pour devenir un point d'attente. */
+.dial-boite.tient { cursor: default; border-color: var(--amber); }
+.dial-boite.tient:hover { border-color: var(--amber); }
+.dial-boite.tient .dial-suite { color: var(--amber); }
 @keyframes dial-monte { from { transform: translateY(0.5rem); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .dial-boite { animation: none; } }
 

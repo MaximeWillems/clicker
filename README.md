@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.11.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.12.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.11.0** | une professeure accueille le joueur et l'accompagne, en dialogues |
+| **2.12.0** | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
+| 2.11.0 | une professeure accueille le joueur et l'accompagne, en dialogues |
 | 2.10.0 | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
 | 2.9.0 | les paliers de jetons passent au pas de mille — trois jetons au premier million |
 | 2.8.2 | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
@@ -168,6 +169,28 @@ première récompense du jeu.
 La condition est `seen` : elle dit si une forme a *déjà* été rencontrée, elle survit à
 l'ascension, et elle ne peut pas revenir en arrière.
 
+#### Ce qui n'a pas encore de sens ne s'affiche pas
+
+La vue de l'œuf tombait à la première éclosion et **tout le reste arrivait d'un coup** : trois
+boutons de tri pour une seule bête, une collection de 135 cases dont une remplie, une ligne de
+boosts annonçant des multiplicateurs qu'on n'a pas, des compteurs « 1 / 1 » qui ne comptent
+rien, et un pied de page sur la sauvegarde locale. Beaucoup de détails, aucun utilisable.
+
+Chacun attend maintenant le moment où il commence à vouloir dire quelque chose — et le moment
+est toujours **l'existence de ce dont il parle**, jamais un compteur de temps :
+
+| Ce qu'on cache | Jusqu'à |
+|---|---|
+| les boutons de tri de l'enclos | le deuxième enclos — trier une bête n'a pas de sens |
+| les compteurs d'enclos et d'incubateurs | le deuxième du genre |
+| la ligne des boosts | le premier automate, c'est-à-dire ce qu'elle a à multiplier |
+| la collection | trois formes rencontrées, de quoi voir une progression plutôt que du vide |
+| le pied de page | l'ouverture de la boutique |
+
+Le tout est **conditionné au mode histoire** : le bouton 📖 relève l'interface entière d'un
+coup, comme il dévoile la boutique entière. Une partie déjà avancée n'est jamais concernée —
+ses compteurs sont à deux et plus depuis longtemps.
+
 #### La professeure
 
 Le mode histoire ne récite plus des consignes : **quelqu'un les dit**. C'est toute la
@@ -186,6 +209,22 @@ n'importe où dedans — le geste qu'on connaît de tous les jeux à dialogue, e
 
 **Elle ne bloque jamais.** La ferme tourne derrière, l'œuf reste cliquable pendant qu'elle
 parle. C'est la différence entre être accompagné et être retenu.
+
+**Faire la chose la fait avancer.** Une réplique peut porter une action : « Clique dessus »
+disparaît au moment où l'on clique l'œuf, sans qu'on ait à cliquer une deuxième fois pour elle.
+C'est la règle générale — obéir à la professeure vaut mieux qu'un clic sur son texte, et
+demander les deux gestes pour le même conseil est une taxe qu'on paie à chaque phrase.
+
+Une réplique peut en plus **tenir** : la boîte cesse d'être cliquable et attend le geste. On le
+réserve aux **deux actions que la partie ne peut pas contourner** — cliquer l'œuf, cliquer la
+bête. Tenir sur un achat facultatif bloquerait toutes les scènes suivantes pour un joueur qui
+décide autre chose ; « achète une couveuse » avance donc à l'achat *ou* au clic. La croix passe
+tout, y compris ce qui tient : personne ne doit rester coincé.
+
+La vérification tourne à chaque rendu, ce qui règle aussi le rechargement : une consigne déjà
+exécutée avant la fermeture de la page ne se redemande pas à la réouverture. La boucle est
+bornée à quarante répliques — une condition mal écrite ferait défiler une scène, pas geler la
+page.
 
 **Une scène n'est marquée jouée qu'à sa dernière réplique**, et la position est dans la
 sauvegarde : un rechargement au milieu d'un dialogue de quatre phrases le reprend où on l'avait

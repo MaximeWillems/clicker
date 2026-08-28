@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.11.0';
+const VERSION = 'alpha 2.12.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -428,10 +428,25 @@ const PROF = {
   portrait: null,          // 'art/prof-aubier.png' le jour venu
 };
 
-/* Les SCÈNES du mode histoire. Chacune a une condition et plusieurs répliques : on avance
-   d'une phrase à l'autre, comme dans une boîte de dialogue, et la scène n'est marquée jouée
-   qu'à la dernière — un rechargement au milieu la reprend depuis le début plutôt que de
-   l'avaler.
+/* Les SCÈNES du mode histoire. Chacune a une condition et plusieurs répliques, et la scène
+   n'est marquée jouée qu'à la dernière — un rechargement au milieu la reprend où on l'a
+   laissée plutôt que d'avaler le reste.
+
+   UNE RÉPLIQUE EST UNE PHRASE, OU UNE PHRASE ET UNE ACTION :
+
+     'Ah, te voilà.'                                    on avance d'un clic
+     { dit: 'Clique dessus.', fait: () => …            }  FAIRE la chose avance aussi
+     { dit: 'Clique dessus.', fait: () => …, tient: 1 }  et seule la chose avance
+
+   `fait` est la règle générale : obéir à la professeure vaut mieux qu'un clic sur son texte,
+   et cliquer deux fois — une fois pour elle, une fois pour l'œuf — n'a aucun sens.
+
+   `tient` s'y ajoute quand la phrase est un passage obligé : la boîte cesse alors d'être
+   cliquable et attend qu'on fasse le geste. On le réserve aux DEUX actions que la partie ne
+   peut pas contourner — cliquer l'œuf, cliquer la bête. Tenir sur un achat facultatif
+   bloquerait la file des scènes suivantes pour un joueur qui décide autre chose.
+
+   La croix « passer » lève tout, y compris un `tient` : personne ne doit rester coincé.
 
    Elles s'arrêtent à l'enclos. La suite s'écrira en jouant, quand on saura ce qui manque. */
 const NOTES = [
@@ -439,7 +454,9 @@ const NOTES = [
     'Ah, te voilà. Entre — il fait meilleur ici qu’au dehors.',
     'Je suis la professeure Aubier. J’étudie les lignées : ces bêtes qui, d’une forme à l’autre, deviennent tout autre chose sans jamais cesser d’être elles-mêmes.',
     'Cet œuf est pour toi. Il ne demande qu’une chose, et rien d’autre ne la fera à ta place.',
-    'Clique dessus. Encore. Encore. Tu verras.',
+    { dit: 'Clique dessus.', tient: 1,
+      fait: () => state.incub.some(o => o && o.p > 0) },
+    'Voilà. Encore, et encore — il n’avancera pas sans toi.',
   ] },
   { cle: 'craque', test: () => state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3), repliques: [
     'Tu entends ? Elle pousse contre la coquille.',
@@ -447,7 +464,9 @@ const NOTES = [
   ] },
   { cle: 'bete', test: () => state.pen.length > 0, repliques: [
     'La voilà. Regarde-la bien : c’est la seule fois où tu la verras si petite.',
-    'Elle grandit comme l’œuf a éclos, au clic. Son niveau montera jusqu’à cent, et il ne redescendra jamais — quoi qu’il lui arrive.',
+    { dit: 'Elle grandit comme l’œuf a éclos : au clic. Essaie.', tient: 1,
+      fait: () => state.pen.some(c => c.p > 0) },
+    'Son niveau montera jusqu’à cent, et il ne redescendra jamais — quoi qu’il lui arrive.',
     'Je te laisse faire connaissance.',
   ] },
   { cle: 'mure', test: () => state.pen.some(estMur), repliques: [
@@ -457,7 +476,9 @@ const NOTES = [
   ] },
   { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR, repliques: [
     'Voilà tes premières pièces. La boutique s’ouvre à toi.',
-    'Un œuf commun coûte douze pièces et s’en revend quarante une fois la bête mûre. Vends, rachète, recommence : c’est la boucle qui te nourrira longtemps.',
+    { dit: 'Un œuf commun coûte douze pièces et s’en revend quarante une fois la bête mûre. Reprends-en un.',
+      fait: () => state.incub.some(o => o) || totalEggs() > 0 },
+    'Vends, rachète, recommence. C’est la boucle qui te nourrira longtemps.',
   ] },
   { cle: 'peage', test: () => state.coins >= EVOLVE[0] && state.pen.some(estMur), repliques: [
     'Tu as de quoi payer un péage, maintenant.',
@@ -469,7 +490,8 @@ const NOTES = [
     'Aucune ne jouera à ta place. Elles changent la façon dont le temps passe, c’est tout — mais c’est beaucoup.',
   ] },
   { cle: 'couveuse', test: () => state.coins >= UP_BY_KEY.couveuse.base * SEUIL_VOIR, repliques: [
-    'Une couveuse. Achète-la dès que tu peux.',
+    { dit: 'Une couveuse. Achète-la dès que tu peux.',
+      fait: () => lvl('couveuse') > 0 },
     'À partir de là, les œufs éclosent sans toi. Même la nuit, même quand tu fermes la page.',
     'C’est le moment où ce jeu cesse de dépendre de tes doigts. Tu me diras si ça te manque.',
   ] },
@@ -3234,11 +3256,39 @@ function tickView() {
 /* La scène décrite par `state.dial`, ou null si elle ne veut plus rien dire. */
 const scene = () => state.dial && NOTES.find(n => n.cle === state.dial.cle) || null;
 
+// Une réplique est une chaîne ou un objet : ici, toujours un objet.
+const ligne = (n, i) => {
+  const l = n.repliques[Math.min(i, n.repliques.length - 1)];
+  return typeof l === 'string' ? { dit: l } : l;
+};
+
+/* Fait avancer la scène tant que la réplique courante demande une action DÉJÀ FAITE. C'est ce
+   qui permet à « clique sur l'œuf » de disparaître au moment où l'on clique, sans rien
+   demander de plus — et à un rechargement de ne pas rejouer une consigne déjà exécutée.
+
+   La boucle est bornée : une condition mal écrite ferait défiler la scène entière, pas geler
+   la page. */
+function avanceSeule() {
+  let garde = 0;
+  while (state.dial && garde++ < 40) {
+    const n = scene();
+    if (!n) { state.dial = null; return; }
+    const l = ligne(n, state.dial.i);
+    let ok = false;
+    try { ok = !!(l.fait && l.fait()); } catch (e) { ok = false; }
+    if (!ok) return;
+    if (state.dial.i + 1 >= n.repliques.length) { state.vu[n.cle] = true; state.dial = null; }
+    else state.dial.i++;
+  }
+}
+
 /* Avance d'une réplique. À la dernière, la scène se ferme et n'est marquée jouée QU'ICI :
    tant qu'elle n'est pas allée au bout, elle peut reprendre après un rechargement. */
 function replique(saut) {
   const n = scene();
   if (!n) { state.dial = null; return; }
+  // une réplique qui tient n'avance que par l'action ; seule la croix la lève
+  if (!saut && ligne(n, state.dial.i).tient) return;
   if (saut || state.dial.i + 1 >= n.repliques.length) {
     state.vu[n.cle] = true;
     state.dial = null;
@@ -3260,13 +3310,17 @@ function renderTuto() {
     suivreTuto(false);            // le dévoilement continue pendant qu'elle parle
   }
 
+  avanceSeule();
+
   const n = scene();
   if (n && state.tuto) {
     const i = Math.min(state.dial.i, n.repliques.length - 1);
+    const l = ligne(n, i);
     setCreature($('dial-face'), PROF.portrait, PROF.glyphe);
     setText($('dial-nom'), PROF.nom);
-    setText($('dial-dit'), n.repliques[i]);
-    setText($('dial-suite'), i + 1 < n.repliques.length ? '▸' : '✓');
+    setText($('dial-dit'), l.dit);
+    setText($('dial-suite'), l.tient ? '●' : i + 1 < n.repliques.length ? '▸' : '✓');
+    $('dial-boite').classList.toggle('tient', !!l.tient);
     boite.hidden = false;
   } else {
     boite.hidden = true;
@@ -3280,6 +3334,35 @@ function renderTuto() {
      La condition est `seen` : elle dit si une forme a DÉJÀ été rencontrée, elle survit à
      l'ascension, et elle ne peut pas revenir en arrière. */
   document.body.classList.toggle('debut', state.tuto && !seenCount());
+
+  /* ── CE QUI N'A PAS ENCORE DE SENS NE S'AFFICHE PAS ────────────────────────
+     La vue de l'œuf tombe à la première éclosion, et tout le reste arrivait d'un coup : trois
+     boutons de tri pour une seule bête, une collection de 135 cases vides, une ligne de boosts
+     qui annonce « rien sans toi » pendant que la professeure vient de le dire, et un pied de
+     page sur la sauvegarde locale. Beaucoup de détails, aucun utilisable.
+
+     Chacun attend le moment où il commence à vouloir dire quelque chose. Tout se lève d'un
+     coup si l'on éteint le mode histoire. */
+  const jeune = state.tuto;
+
+  // trier n'a de sens qu'à partir de deux enclos
+  $('strip-tri').hidden = jeune && state.pens <= 1;
+
+  // les compteurs « 1 / 1 » et « 1 incubateur » ne comptent rien
+  $('compte-pen').hidden = jeune && state.pens <= 1;
+  $('compte-incub').hidden = jeune && state.incubators <= 1;
+
+  /* La ligne des boosts détaille des multiplicateurs qu'on n'a pas. Elle apparaît avec le
+     premier automate — c'est-à-dire au moment exact où elle a quelque chose à multiplier. */
+  $('stage-boost').hidden = jeune && !lvl('couveuse') && !lvl('eleveur') && !lvl('mangeoire');
+
+  /* La collection montre l'échelle du jeu — 135 cases dont trois remplies — et c'est sa
+     valeur. Mais à la première seconde elle ne montre que du vide : on attend d'avoir
+     rencontré de quoi voir une progression. */
+  $('panel-collection').hidden = jeune && seenCount() < 3;
+
+  // le pied de page parle du prototype, pas du jeu : il attend qu'on ait de quoi acheter
+  $('foot').hidden = jeune && !estDevoile('egg-commun');
 }
 
 function refresh() {
