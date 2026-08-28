@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.5';
+const VERSION = 'alpha 2.0.6';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -229,10 +229,21 @@ const TINTS = [
    les péages de sa lignée pour la valeur d'une autre. À ×125, une commune chromatique
    rapportait donc 291 fois sa mise quand tout le reste du jeu en rapporte 2,3.
 
-   À ×25 l'affaire reste excellente — c'est bien ce qu'on veut d'un coup de chance sur cinq
-   cents — sans être la meilleure ligne de jeu à elle seule. Si ça pèse encore trop à
-   l'essai, le levier suivant n'est plus ce chiffre mais les péages. */
-const PRODIGE_ODDS  = 1 / 500;
+   À ×25 l'affaire reste excellente — c'est bien ce qu'on veut d'un coup de chance — sans être
+   la meilleure ligne de jeu à elle seule. Si ça pèse encore trop à l'essai, le levier suivant
+   n'est plus ce chiffre mais les péages.
+
+   LA CHANCE EST PASSÉE DE 1/500 À 1/8192. À une bête sur cinq cents, le chromatique tombait
+   toutes les demi-heures sur une ferme automatisée : c'était une variante fréquente, pas un
+   coup de chance, et on finissait par en vendre. À 1/8192 il redevient ce qu'il doit être —
+   quelque chose qu'on raconte, et qu'on garde.
+
+   Deux conséquences à connaître. Le jalon d'ascension « avoir un chromatique en enclos »
+   devient un objectif de longue haleine plutôt qu'une étape ; il reste franchissable, mais il
+   ne se planifie plus. Et la carte d'album CONSTELLÉE prend toute sa valeur : plafonnée à ×2
+   sur tout l'album, elle ramène la chance à 1/4096 — un doublement qui se sent enfin, là où
+   il n'était qu'un confort. */
+const PRODIGE_ODDS  = 1 / 8192;
 const PRODIGE_MULT  = 25;
 const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
 
@@ -303,8 +314,9 @@ const PALIERS = [1, 1.8, 3, 5];
 
    `pas` est ce qu'un point de puissance ajoute, `cap` le plafond de la famille. Le prodige
    fait exception et s'exprime EN MULTIPLICATEUR DE LA BASE, jamais en points : la base est à
-   1/500, soit 0,2 %, et un demi-point la multiplierait par trois et demi. On vient de couper
-   le bonus d'élevage de ×25 à ×4 pour protéger ce 1/500 ; une carte ne doit pas le défaire.
+   1/8192, soit 0,012 %, et un demi-point la multiplierait par plus de quarante. Le bonus
+   d'élevage a été coupé de ×25 à ×4 pour protéger cette rareté ; une carte ne doit pas la
+   défaire non plus — d'où le plafond à ×2, qui ramène au mieux la chance à 1/4096.
 
    LES DEUX COLONNES DOIVENT SE RÉPONDRE, et la première version ne le faisait pas. Un `pas`
    deux à trois fois plus petit rendait les plafonds INATTEIGNABLES : six cartes parfaites
@@ -1446,7 +1458,7 @@ function hatchAll() {
     const c = Object.assign({ id: nextId++, line: slot.line, age: 1, p: 0, over: 0,
                               cost: prixOeuf(EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun) },
                            rollVariants());
-    // un prodige est protégé d'office : on ne perd pas une bête sur cinq cents
+    // un prodige est protégé d'office : on ne perd pas une bête sur huit mille
     // parce que le marchand l'a vendue avant qu'on l'ait vue
     if (c.prodige) c.keep = true;
     state.pen.push(c);

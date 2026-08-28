@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.5
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.6
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.0.5** | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
+| **2.0.6** | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
+| 2.0.5 | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
 | 2.0.4 | le crabe entre en jeu — ses cinq dessins attendaient depuis août d'être branchés |
 | 2.0.3 | le marchand ne vend plus la bête qu'on regarde — la présence se lit sur l'onglet, plus sur les clics |
 | 2.0.2 | l'écran d'ascension ne s'affiche plus par-dessus le jeu, et le premier jalon passe au milieu de partie |
@@ -76,7 +77,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - 21 lignées et leurs 105 formes, du têtard à l'Ouroboros éternel
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
   vie qui ne repart jamais de zéro
-- **Variantes** : teinte, motif, tempérament, et un prodige sur cinq cents
+- **Variantes** : teinte, motif, tempérament, et un prodige sur 8 192
 - **Quatre raretés** et quatre sortes d'œufs, dont un coup de chance possible dès la première minute
 - Œuf → clic → éclosion → niveaux → **vendre, ou payer le péage de l'âge suivant**
 - **Rien n'avance tout seul au départ** : seul le clic fait éclore et grandir. Le temps ne se
@@ -319,10 +320,20 @@ où les cinq formes partagent le même glyphe.
 | doré | 3 % | ×1,30 |
 | albâtre | 1,6 % | ×1,40 |
 
-**Le prodige** ignore la lignée : une bête sur cinq cents naît *chromatique*, quelle que soit
+**Le prodige** ignore la lignée : une bête sur **8 192** naît *chromatique*, quelle que soit
 sa rareté — on peut avoir un têtard chromatique. Halo doré battant, et elle naît **protégée
-d'office** : perdre une bête sur cinq cents parce qu'un automate l'a vendue avant qu'on l'ait
+d'office** : perdre une bête sur huit mille parce qu'un automate l'a vendue avant qu'on l'ait
 vue serait impardonnable.
+
+**La chance est passée de 1 sur 500 à 1 sur 8 192.** À une bête sur cinq cents, le chromatique
+tombait toutes les demi-heures sur une ferme automatisée : c'était une variante fréquente, pas
+un coup de chance, et on finissait par en vendre. Il redevient quelque chose qu'on raconte, et
+qu'on garde.
+
+Deux conséquences à connaître. Le jalon d'ascension *avoir un chromatique en enclos* devient un
+objectif de longue haleine plutôt qu'une étape — il reste franchissable, mais il ne se planifie
+plus. Et la carte d'album **constellée** prend enfin sa valeur : plafonnée à ×2 sur tout
+l'album, elle ramène la chance à 1 sur 4 096.
 
 **Un chromatique vaut exactement un cran de rareté** : ×25. Une commune chromatique vaut une
 rare ordinaire, une rare chromatique vaut une épique, et ainsi de suite jusqu'en haut. La
@@ -597,8 +608,9 @@ deuxième partie d'être la première en accéléré : une ferme menée au zébr
 une ferme menée au tacheté.
 
 Le constellé s'exprime **en multiplicateur de la base, jamais en points** : le prodige est à
-1 sur 500, soit 0,2 %, et un demi-point le multiplierait par trois et demi. On a coupé le
-bonus d'élevage de ×25 à ×4 exactement pour protéger ce 1/500.
+1 sur 8 192, soit 0,012 %, et un demi-point le multiplierait par plus de quarante. Le bonus
+d'élevage a été coupé de ×25 à ×4 pour protéger cette rareté ; le plafond à ×2 fait le reste,
+et ramène au mieux la chance à 1 sur 4 096.
 
 #### Ce qui décide de la puissance d'une carte
 
