@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.4.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.5.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **1.4.0** | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
+| **1.5.0** | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
+| 1.4.0 | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
 | 1.3.0 | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
 | 1.2.0 | le seuil de rentabilité cantonné au début de la vie, le chromatique redescendu à un cran de rareté |
 | 1.1.2 | la bête en scène n'est plus protégée pour toujours, seulement dix secondes |
@@ -184,7 +185,7 @@ n'ouvrent.
 tombée par chance atteignait l'âge titan pour le prix d'une commune et court-circuitait toute
 la progression.
 
-**Chaque œuf coûte 0,7 bête de l'ère précédente menée au bout** — la même proportion sur les
+**Chaque œuf coûte 0,35 bête de l'ère précédente menée au bout** — la même proportion sur les
 trois transitions. On ne s'offre donc un œuf rare qu'après avoir mené des communes au titan,
 un épique qu'après des rares, et ainsi de suite.
 
@@ -193,8 +194,12 @@ que soit l'ère.
 
 Rythme mesuré sur une partie simulée de quatre heures, joueur cliquant quatre fois par
 seconde : couveuse à 2 min, éleveur à 3 min, acheteur à 9 min, mangeoire à 10 min, marchand à
-28 min, évolution automatique à 64 min, **ère rare à 3 h 34**. L'ère commune occupe donc les
-trois premières heures et demie, automatisations comprises.
+28 min, évolution automatique à 64 min, **ère rare à 3 h 34**.
+
+⚠ Cette mesure date d'**avant la baisse des prix de l'alpha 1.5.0**. L'œuf rare coûtant
+désormais 300 000 au lieu de 600 000, l'ère rare s'ouvre nettement plus tôt — mais le chiffre
+exact n'a pas été remesuré, et il ne se déduit pas d'une division par deux : le revenu
+n'est pas constant pendant les trois heures et demie. À refaire tourner.
 
 ### Les quatre œufs
 
@@ -205,9 +210,9 @@ L'œuf mythique n'a rien au-dessus de lui : il garantit.
 | Œuf | Prix | Couvaison | commune | rare | épique | mythique | chance de monter |
 |---|---|---|---|---|---|---|---|
 | Œuf commun | 12 | 30 s | 96,5 % | 3,5 % | — | — | 3,5 % |
-| Œuf rare | 600 000 | 3 min | — | 88 % | 12 % | — | 12 % |
-| Œuf épique | 15 M | 12 min | — | — | 75 % | 25 % | 25 % |
-| Œuf mythique | 375 M | 45 min | — | — | — | 100 % | — |
+| Œuf rare | 300 000 | 3 min | — | 88 % | 12 % | — | 12 % |
+| Œuf épique | 7,50 M | 12 min | — | — | 75 % | 25 % | 25 % |
+| Œuf mythique | 180 M | 45 min | — | — | — | 100 % | — |
 
 **La couvaison s'allonge avec la rareté.** Une bête précieuse doit se faire attendre, sinon la
 rareté n'a pas de poids : un mythique qui éclosait en quinze secondes comme un têtard ne
@@ -222,12 +227,12 @@ n'atteint une mythique qu'avec des œufs épiques, qu'on ne s'offre qu'avec l'ar
 La chance de monter d'un cran grandit avec le prix — 3,5 %, 12 %, 25 % — et l'œuf mythique,
 n'ayant rien au-dessus de lui, garantit.
 
-Les prix suivent la règle des ères : **chaque œuf coûte 0,7 bête de l'ère précédente menée à
+Les prix suivent la règle des ères : **chaque œuf coûte 0,35 bête de l'ère précédente menée à
 l'âge titan**, à l'identique sur les trois transitions. C'est ce qui interdit de sauter une ère.
 
 ### Un œuf cher est un investissement, pas un lot
 
-**Tous les œufs payants se remboursent à l'âge géant, jamais avant.** Une mythique payée 375 M
+**Tous les œufs payants se remboursent à l'âge géant, jamais avant.** Une mythique payée 180 M
 ne vaut que 600 000 mûre à l'âge enfant — la vendre là serait ruineux.
 
 Résultat net, œuf et péages déduits, à chaque âge mûr :
@@ -235,9 +240,9 @@ Résultat net, œuf et péages déduits, à chaque âge mûr :
 | Œuf | enfant | adolescent | adulte | **géant** | titan |
 |---|---|---|---|---|---|
 | commun (12) | +28 | +288 | +2 788 | +36 788 | +856 788 |
-| rare (600 000) | −599 000 | −592 500 | −530 000 | **+320 000** | +20,8 M |
-| épique (15 M) | −15,0 M | −14,8 M | −13,3 M | **+7,08 M** | +499,1 M |
-| mythique (375 M) | −374,4 M | −370,5 M | −333,0 M | **+177,0 M** | +12,5 Md |
+| rare (300 000) | −299 000 | −292 500 | −230 000 | **+620 000** | +21,1 M |
+| épique (7,50 M) | −7,48 M | −7,32 M | −5,82 M | **+14,6 M** | +506,6 M |
+| mythique (180 M) | −179,4 M | −175,5 M | −138,0 M | **+372,0 M** | +12,7 Md |
 
 ### Le rouge se cantonne au début de la vie
 
@@ -269,7 +274,7 @@ jamais être **silencieuse**. Deux garde-fous :
   vraiment. Le rouge ne dure donc plus toute la vie — voir « Le rouge se cantonne au début »
   plus bas — et il ne s'allume que **si rien n'est prévu pour l'y mener**. Deux façons de ne pas s'alarmer, et elles ne se racontent pas pareil : ou
   la bête est déjà à l'âge qu'il faut et n'a plus qu'à finir de grandir, ou c'est l'évolution
-  automatique qui va l'y mener — « son œuf a coûté 375,0 M, ton évolution la mènera à l'âge
+  automatique qui va l'y mener — « son œuf a coûté 180,0 M, ton évolution la mènera à l'âge
   géant, où elle vaudra 1,20 Md ». Alarmer un joueur qui a tout bien réglé serait le pire des
   deux mondes.
 - **Le marchand automatique ne touche qu'aux communes par défaut.** Un troisième réglage

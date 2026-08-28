@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 1.4.0';
+const VERSION = 'alpha 1.5.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -86,18 +86,33 @@ function liste(mots) {
 /* Un œuf par rareté, et chacun ne peut donner QUE sa rareté ou celle juste au-dessus.
    C'est ce qui rend la progression séquentielle : on n'atteint une mythique qu'en achetant
    des œufs épiques, qu'on ne s'offre qu'avec l'argent des rares. Pas de raccourci.
-   La chance de monter d'un cran, elle, grandit avec le prix : 3,5 % · 12 % · 25 %. */
+   La chance de monter d'un cran, elle, grandit avec le prix : 3,5 % · 12 % · 25 %.
+
+   LE PRIX SUIT UNE RÈGLE, il n'est pas choisi : un œuf coûte une fraction du bénéfice net
+   d'une bête de l'ère précédente menée au titan — sa valeur, moins tous ses péages. Le
+   coefficient était de 0,7 ; il est passé à 0,35, c'est-à-dire que chaque œuf payant a été
+   divisé par deux.
+
+   La raison n'est pas dans l'ère elle-même mais dans l'ascension : une partie ne se joue
+   plus une fois, elle se rejoue. L'ère commune tenait trois heures et demie — un tempo qui
+   passe une fois et devient une corvée à la deuxième. Diviser les prix par deux ouvre
+   chaque ère à peu près deux fois plus tôt, sans toucher à aucune mécanique.
+
+   L'ŒUF COMMUN NE BOUGE PAS. Il se revend 40 à maturité, et cette marge de 3,3× est le
+   moteur des dix premières minutes — la seule chose du jeu qui fonctionne sans rien avoir
+   acheté. La règle d'or tient toujours : tous les œufs payants se remboursent à l'âge
+   géant, jamais avant. */
 const EGG_KINDS = [
   { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
     up: '3,5 %', hatch: 30,
     odds: { commune: 0.965, rare: 0.035 } },
-  { key: 'rare', name: 'Œuf rare', price: 600000, glyph: '🥚', rarity: 'rare',
+  { key: 'rare', name: 'Œuf rare', price: 300000, glyph: '🥚', rarity: 'rare',
     up: '12 %', hatch: 180,
     odds: { rare: 0.88, epique: 0.12 } },
-  { key: 'epique', name: 'Œuf épique', price: 15000000, glyph: '🥚', rarity: 'epique',
+  { key: 'epique', name: 'Œuf épique', price: 7500000, glyph: '🥚', rarity: 'epique',
     up: '25 %', hatch: 720,
     odds: { epique: 0.75, mythique: 0.25 } },
-  { key: 'mythique', name: 'Œuf mythique', price: 375000000, glyph: '🥚', rarity: 'mythique',
+  { key: 'mythique', name: 'Œuf mythique', price: 180000000, glyph: '🥚', rarity: 'mythique',
     up: null, hatch: 2700,
     odds: { mythique: 1 } },
 ];
