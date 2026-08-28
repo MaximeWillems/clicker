@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.7.4';
+const VERSION = 'alpha 2.8.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -386,6 +386,55 @@ const MOTIF_BONUS = {
    mythique chromatique vaut environ 5,6·10^11, donc le troisième palier demanderait d'en
    vendre un million. C'est voulu : l'échelle ne s'arrête pas avant l'économie, c'est
    l'économie qui s'arrête avant l'échelle. */
+/* ── LE DÉVOILEMENT ────────────────────────────────────────────────────────────
+   Un joueur qui ouvre le jeu possède zéro pièce et un œuf, et on lui montrait au même
+   instant quatorze boutons dont treize inachetables. La seule chose qui compte à cette
+   seconde-là — SEUL LE CLIC FAIT QUELQUE CHOSE — se noyait sous une boutique.
+
+   Un achat n'apparaît donc qu'à 60 % de son prix. Le seuil est CALCULÉ, jamais recopié :
+   un prix qui change déplace son seuil tout seul. Et les prix de base sont déjà ordonnés —
+   60, 120, 150, 400, 500, 1 000, 2 000, 15 000, 50 000, 250 000 — si bien que l'escalier
+   d'apprentissage sort des prix eux-mêmes, sans qu'on écrive nulle part « après celui-ci,
+   celui-là ».
+
+   ON VOIT TOUJOURS LA MARCHE SUIVANTE, JAMAIS L'ESCALIER. Le premier achat non dévoilé
+   reste affiché, éteint, avec son prix : cacher purement enlèverait la notion d'échelle,
+   et voir une chose hors de prix est ce qui fait avancer un joueur d'idle.
+
+   Une fois dévoilé, RIEN NE SE RECACHE. Le prix d'un incubateur monte à chaque achat ; sans
+   cette mémoire, il disparaîtrait juste après avoir été acheté. */
+const SEUIL_VOIR = 0.6;
+
+/* Les notes du mode histoire. Une par étape, dans l'ordre, chacune à usage unique — c'est la
+   même forme que les jalons d'ascension, et pour la même raison : une table se relit, une
+   cascade de `if` se perd.
+
+   `dit` s'affiche une seule fois, dans le bandeau du haut, et ne revient jamais. Aucune ne
+   bloque : on peut toutes les ignorer et jouer. Elles s'arrêtent pour l'instant à l'enclos —
+   la suite s'écrira en jouant, quand on saura lesquelles manquent vraiment. */
+const NOTES = [
+  { cle: 'oeuf', test: () => true,
+    dit: 'Clique sur l’œuf. Rien d’autre ne le fera éclore — dans ce jeu, rien n’avance tout seul au départ.' },
+  { cle: 'craque', test: () => state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3),
+    dit: 'Il craque. Continue.' },
+  { cle: 'bete', test: () => state.pen.length > 0,
+    dit: 'Ta première bête. Elle grandit au clic, exactement comme l’œuf a éclos — et son niveau ne redescendra jamais.' },
+  { cle: 'mure', test: () => state.pen.some(estMur),
+    dit: 'Son niveau se bloque : elle est mûre. C’est le moment de décider quoi en faire.' },
+  { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR,
+    dit: 'Vends une bête mûre, rachète un œuf : voilà la boucle du jeu. Un œuf commun coûte 12 et se revend 40 à maturité.' },
+  { cle: 'peage', test: () => state.coins >= EVOLVE[0] && state.pen.some(estMur),
+    dit: 'Ou paie le péage plutôt que de vendre. La bête garde son niveau, sa taille et son nom, et vaudra douze fois plus. C’est la seule vraie décision du jeu.' },
+  { cle: 'clic', test: () => state.coins >= UP_BY_KEY.clic.base * SEUIL_VOIR,
+    dit: 'Une boutique d’améliorations s’ouvre. Ce qui s’y achète ne joue pas à ta place : ça change la façon dont le temps passe.' },
+  { cle: 'couveuse', test: () => state.coins >= UP_BY_KEY.couveuse.base * SEUIL_VOIR,
+    dit: 'La couveuse fait éclore les œufs sans toi. C’est le moment où le jeu bascule : à partir d’ici, le temps travaille même quand tu n’es pas là.' },
+  { cle: 'incubateur', test: () => state.coins >= INCUB_BASE * SEUIL_VOIR,
+    dit: 'Un incubateur de plus, c’est un œuf de plus à couver en même temps.' },
+  { cle: 'enclos', test: () => state.coins >= PEN_BASE * SEUIL_VOIR,
+    dit: 'Un enclos de plus, c’est une bête de plus à la fois. C’est la place, et non l’argent, qui limitera bientôt ta ferme.' },
+];
+
 const JETON_PAS = 1e6;
 const JETON_PALIERS = [1, 2, 3, 4, 5].map(n => Math.pow(JETON_PAS, n));
 
@@ -715,7 +764,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 9;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 10;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -761,6 +810,11 @@ function freshState() {
        réglage unique obligeait à trancher pour tout le monde. 0 = dès la maturité. */
     sellRank: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
+    /* Le mode histoire. `tuto` l'allume, `vu` retient ce qui a déjà été dit ET ce qui a déjà
+       été dévoilé — les deux se marquent une fois pour toutes, et rien ne revient en arrière.
+       Ils traversent l'ascension : on ne réapprend pas le jeu au deuxième cycle. */
+    tuto: true,
+    vu: {},
     achat: 1,           // combien de niveaux d'amélioration par clic — voir ACHATS
     /* Un âge d'évolution PAR RARETÉ. Un péage ne coûte pas la même chose selon la lignée —
        mener une ancienne à la légende coûte 600 000 en commune et 9 milliards en mythique — donc
@@ -910,6 +964,30 @@ function load() {
     /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
        le relire dans `base` : Object.assign mute sa cible, donc `base` et `merged` sont le
        même objet et `base.v` porte déjà l'ancien numéro. */
+    /* v9 → v10 : le mode histoire. EN DERNIER, une fois tout normalisé — les conditions des
+       notes lisent l'enclos, les incubateurs et la bourse, et elles liraient des champs à
+       moitié convertis si on les évaluait plus haut.
+
+       Une partie DÉJÀ EN COURS ne doit pas recevoir dix bandeaux pour des choses apprises il y
+       a des heures : tout ce dont la condition est remplie est marqué lu en silence, et tout
+       est dévoilé d'office. Une partie neuve arrive avec `vu` vide et découvre le jeu pas à pas.
+
+       On se fie au NUMÉRO DE LA SAUVEGARDE, jamais à la présence de `vu` : `freshState` en pose
+       un vide, et un objet vide est vrai en JavaScript — le test « si vu manque » n'était donc
+       jamais vrai, et la migration ne tournait pas du tout. */
+    merged.tuto = merged.tuto !== false;
+    merged.vu = merged.vu || {};
+    if ((s.v || 0) < 10) {
+      const avant = state;
+      state = merged;                        // les conditions des notes lisent `state`
+      try {
+        for (const n of NOTES) { try { if (n.test()) merged.vu[n.cle] = true; } catch (e) {} }
+      } finally {
+        state = avant;                       // rendu quoi qu'il arrive : tout le jeu en dépend
+      }
+      for (const c of CLES_VOIR) merged.vu['voir:' + c] = true;
+    }
+
     merged.v = SAVE_V;
     nextId = merged.pen.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
     nextCard = merged.album.reduce((m, k) => Math.max(m, k.id || 0), 0) + 1;
@@ -1813,6 +1891,7 @@ function loop() {
   advance(dt);
   runAutomations(dt);
   hatchAll();          // hatchAll rafraîchit déjà l'affichage
+  renderTuto();        // les seuils se franchissent aussi entre deux redessins
 }
 
 function catchUp() {
@@ -1848,6 +1927,11 @@ function catchUp() {
       runAutomations(dt);
       hatched += hatchAll();
     }
+    /* Les seuils franchis pendant l'absence sont marqués LUS EN SILENCE, tant que le drapeau
+       de rattrapage est encore levé. Sans cet appel, la branche silencieuse de suivreTuto
+       n'était jamais atteinte — catchUp ne passe pas par la boucle de jeu — et le joueur qui
+       revient au lendemain enchaînait six bandeaux pour des choses qu'il n'a pas vues arriver. */
+    suivreTuto(false);
   } finally {
     // le drapeau coupe le son et le redessin : le laisser levé figerait l'affichage
     rattrapage = false;
@@ -1995,7 +2079,7 @@ function buildChrome() {
     if (it.rarity) b.classList.add('egg-' + it.rarity);
     li.appendChild(b);
     shop.appendChild(li);
-    refs.shop[it.key] = { el: b, price: b.querySelector('.p'), desc: b.querySelector('.d'),
+    refs.shop[it.key] = { li, el: b, price: b.querySelector('.p'), desc: b.querySelector('.d'),
                           cost: it.cost, base: it.desc, stock: it.rarity };
   }
 
@@ -2011,7 +2095,7 @@ function buildChrome() {
     b.addEventListener('click', () => buyUpgrade(u));
     li.appendChild(b);
     autos.appendChild(li);
-    refs.up[u.key] = { el: b, title: b.querySelector('.t'),
+    refs.up[u.key] = { li, el: b, title: b.querySelector('.t'),
                        price: b.querySelector('.p'), desc: b.querySelector('.d'), up: u };
   }
 }
@@ -2157,6 +2241,80 @@ function renderCollection() {
 /* ─────────────────────────────────────────────
    L'album et l'ascension
    ───────────────────────────────────────────── */
+
+/* Les clés de tout ce qui se dévoile : les entrées de boutique, puis les améliorations.
+   L'ordre compte — c'est celui dans lequel « la marche suivante » se choisit. */
+const CLES_VOIR = EGG_KINDS.map(e => 'egg-' + e.key).concat(['incub', 'pen'])
+                           .concat(UPGRADES.map(u => 'up:' + u.key));
+
+const estDevoile = cle => !state.tuto || !!state.vu['voir:' + cle];
+
+/* Dévoile pour de bon. On ne repasse jamais en arrière : le prix d'un incubateur monte à
+   chaque achat, et sans cette mémoire il disparaîtrait juste après avoir été acheté. */
+function devoiler(cle) {
+  if (state.vu['voir:' + cle]) return false;
+  state.vu['voir:' + cle] = true;
+  return true;
+}
+
+/* Ce qui doit être visible maintenant, calculé depuis les prix en vigueur. Une rareté d'œuf
+   s'ouvre aussi à la PREMIÈRE RENCONTRE : on peut tomber sur une rare bien avant d'avoir de
+   quoi s'en offrir une, et la boutique ne doit pas faire semblant de l'ignorer. */
+function meriteDevoilement(cle) {
+  if (cle.startsWith('up:')) {
+    const u = UP_BY_KEY[cle.slice(3)];
+    return lvl(u.key) > 0 || state.coins >= u.base * SEUIL_VOIR;
+  }
+  if (cle === 'incub') return state.incubators > 1 || state.coins >= INCUB_BASE * SEUIL_VOIR;
+  if (cle === 'pen') return state.pens > 1 || state.coins >= PEN_BASE * SEUIL_VOIR;
+  const e = EGG_BY_KEY[cle.slice(4)];
+  if (!e) return true;
+  if (state.coins >= e.price * SEUIL_VOIR || eggStock(e.key)) return true;
+  return LINES.some(l => l.rarity === e.rarity &&
+                         AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)]));
+}
+
+/* Passe en revue les dévoilements et les notes. Rend la note à afficher, ou null.
+
+   PENDANT UN RATTRAPAGE, ON MARQUE SANS RIEN DIRE : une absence de huit heures franchit cinq
+   seuils en quelques secondes, et le joueur qui revient recevrait cinq bandeaux à la file
+   pour des choses qu'il n'a pas vues arriver. Seule la dernière note d'un même passage
+   s'affiche. */
+function suivreTuto(libre) {
+  if (!state.tuto) return null;
+  for (const cle of CLES_VOIR) if (meriteDevoilement(cle)) devoiler(cle);
+
+  /* PENDANT UN RATTRAPAGE on marque tout sans rien dire : une absence de huit heures franchit
+     cinq seuils en quelques secondes, et le joueur qui revient recevrait cinq bandeaux à la
+     file pour des choses qu'il n'a pas vues arriver. */
+  if (rattrapage) {
+    for (const n of NOTES) if (!state.vu[n.cle] && essaiNote(n)) state.vu[n.cle] = true;
+    return null;
+  }
+
+  /* ON NE CONSOMME RIEN TANT QUE LE BANDEAU EST OCCUPÉ. Le dévoilement, lui, vient de tourner
+     — il n'a pas à attendre qu'on ait fini de lire.
+
+     C'est le même piège deux fois : marquer une note lue sans l'avoir montrée l'efface. La
+     boucle passe ici dix fois par seconde ; sans ce garde-fou, les notes en attente étaient
+     consommées entre deux battements de cils pendant qu'on lisait la précédente. */
+  if (!libre) return null;
+
+  /* On n'en rend qu'UNE, la première, et on ne marque que celle-là. Les suivantes attendent
+     leur tour. Marquer tout d'un coup pour n'afficher que la dernière les avalait : en vendant
+     sa première bête on franchit trois seuils, et deux explications disparaissaient. */
+  for (const n of NOTES) {
+    if (state.vu[n.cle] || !essaiNote(n)) continue;
+    state.vu[n.cle] = true;
+    return n;
+  }
+  return null;
+}
+
+// Une note dont la condition plante ne doit ni s'afficher ni bloquer les suivantes.
+function essaiNote(n) {
+  try { return !!n.test(); } catch (e) { return false; }
+}
 
 // Le prochain palier à franchir, null quand l'échelle est épuisée.
 const prochainPalier = () => (state.asc.paliers < JETON_PALIERS.length
@@ -2418,6 +2576,8 @@ function ascensionner() {
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: state.asc.jetons - 1 },
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
+    // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
+    tuto: state.tuto, vu: state.vu,
   });
   nextId = 1;
 
@@ -2863,19 +3023,39 @@ function tickView() {
   $('strip-meta').hidden = !stock;
   if (stock) setText($('strip-meta'), stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve');
 
+  /* LA MARCHE SUIVANTE, ÉTEINTE. On affiche tout ce qui est dévoilé, plus le PREMIER achat
+     qui ne l'est pas — grisé, avec son prix, sans sa description. Ce qui vient après lui
+     n'existe pas encore à l'écran. Deux marches suivantes : une par liste, sinon la boutique
+     et les améliorations se voleraient l'unique repère. */
+  const marche = { shop: null, up: null };
+  for (const cle of CLES_VOIR) {
+    if (estDevoile(cle)) continue;
+    const ou = cle.startsWith('up:') ? 'up' : 'shop';
+    if (!marche[ou]) marche[ou] = cle;
+  }
+
   for (const key of Object.keys(refs.shop)) {
     const r = refs.shop[key];
+    const verrou = !estDevoile(key);
+    r.li.hidden = verrou && marche.shop !== key;
+    r.el.classList.toggle('verrou', verrou);
+    if (r.li.hidden) continue;
     const cost = r.cost();
     setText(r.price, fmt(cost));
-    r.el.disabled = state.coins < cost;
-    if (r.stock) {
+    r.el.disabled = verrou || state.coins < cost;
+    if (verrou) setText(r.desc, 'Bientôt.');
+    else if (r.stock) {
       const n = eggStock(r.stock);
       setText(r.desc, r.base + (n ? ' En réserve : ' + n + '.' : ''));
-    }
+    } else setText(r.desc, r.base);
   }
 
   for (const u of UPGRADES) {
     const r = refs.up[u.key];
+    const verrou = !estDevoile('up:' + u.key);
+    r.li.hidden = verrou && marche.up !== 'up:' + u.key;
+    r.el.classList.toggle('verrou', verrou);
+    if (r.li.hidden) continue;
     const n = lvl(u.key), maxed = upMaxed(u);
     /* `vise` est ce que le bouton achèterait ; `montre` ce qu'il affiche. Les deux ne
        coïncident pas quand `max` n'a pas les moyens d'un seul niveau : on montre alors le
@@ -2887,9 +3067,13 @@ function tickView() {
     setText(r.title, u.name + (n > 0 && u.max !== 1 ? ' · niv. ' + n : '') +
                      (montre > 1 ? ' → ' + (n + montre) : ''));
     setText(r.price, maxed ? 'acquis' : fmt(cout));
-    setText(r.desc, upLabel(u, montre));
-    r.el.disabled = maxed || !vise || state.coins < coutPaliers(u, vise);
+    setText(r.desc, verrou ? 'Bientôt.' : upLabel(u, montre));
+    r.el.disabled = verrou || maxed || !vise || state.coins < coutPaliers(u, vise);
   }
+
+  /* Le panneau des améliorations n'a rien à montrer tant que la première n'est pas en vue :
+     un cadre vide intitulé « Améliorations » est une promesse qu'on ne tient pas encore. */
+  $('panel-autos').hidden = UPGRADES.every(u => refs.up[u.key].li.hidden);
 
   /* Le réglage de taille n'apparaît qu'avec une mangeoire. Sans automate qui engraisse, la
      notion n'a rien à faire à l'écran : la vente doit rester la chose la plus simple du jeu,
@@ -2912,7 +3096,30 @@ function tickView() {
   }
 }
 
+/* Le bandeau des notes. Il ne remplace jamais une note non lue par une autre : si le joueur
+   n'a pas encore chassé la précédente, la nouvelle attend — elle est déjà marquée lue dans
+   l'état, donc rien ne se perd, mais on ne lui écrase pas son texte sous les yeux. */
+function renderTuto() {
+  const boite = $('tuto-note');
+  const note = suivreTuto(boite.hidden);
+  if (note) {
+    setText($('tuto-dit'), note.dit);
+    boite.hidden = false;
+  }
+  if (!state.tuto) boite.hidden = true;
+
+  /* LA VUE DE L'ŒUF. Avant la toute première éclosion, l'écran ne montre que l'œuf : pas de
+     bande, pas de colonne latérale. On n'a alors rien à désigner du doigt, puisqu'il n'y a
+     qu'une chose à faire — la contrainte enseigne mieux qu'une consigne, et l'ouverture de
+     l'écran à l'éclosion est la première récompense du jeu.
+
+     La condition est `seen` : elle dit si une forme a DÉJÀ été rencontrée, elle survit à
+     l'ascension, et elle ne peut pas revenir en arrière. */
+  document.body.classList.toggle('debut', state.tuto && !seenCount());
+}
+
 function refresh() {
+  renderTuto();
   renderStrip();
   renderCollection();
   renderAlbum();
@@ -3003,6 +3210,20 @@ function bindTools() {
     state.speed = state.speed === 1 ? 10 : state.speed === 10 ? 100 : 1;
     $('btn-speed').textContent = '×' + state.speed;
   });
+
+  /* L'interrupteur du mode histoire. Éteint : tout est visible, plus aucune note. Rallumé :
+     on OUBLIE ce qui a été lu, pour que les notes rejouent — c'est ce qui permet de les
+     vérifier sans effacer sa partie, et un joueur qui rallume veut précisément les revoir. */
+  $('btn-tuto').addEventListener('click', () => {
+    state.tuto = !state.tuto;
+    if (state.tuto) state.vu = {};
+    else $('tuto-note').hidden = true;
+    $('btn-tuto').setAttribute('aria-pressed', String(state.tuto));
+    refresh();
+    blip(state.tuto ? 660 : 330, 0.05, 'triangle', 0.03);
+  });
+
+  $('tuto-ok').addEventListener('click', () => { $('tuto-note').hidden = true; });
 
   $('btn-sound').addEventListener('click', () => {
     state.sound = !state.sound;
@@ -3131,6 +3352,7 @@ function start() {
   $('version').textContent = VERSION;
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
+  $('btn-tuto').setAttribute('aria-pressed', String(state.tuto));
   syncReglages();
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
   if (ACHATS.indexOf(state.achat) === -1) state.achat = 1;

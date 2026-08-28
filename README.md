@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.4
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.8.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 9` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 10` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.7.4** | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
+| **2.8.0** | le mode histoire — le jeu se déplie une marche à la fois |
+| 2.7.4 | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
 | 2.7.3 | maintenir la barre espace ne vaut qu'un seul clic |
 | 2.7.2 | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
 | 2.7.1 | les mythiques passent en charte « idole » — même style, plus mignon du tout |
@@ -96,6 +97,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 ## Ce qui est dans le jalon 0
 
 - 27 lignées et leurs 135 formes, du têtard à l'Ouroboros éternel
+- **Un mode histoire** : le jeu se déplie une marche à la fois, et s'explique en dix notes
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
   vie qui ne repart jamais de zéro
 - **Variantes** : teinte, motif, tempérament, et un prodige sur 8 192
@@ -117,10 +119,81 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 Absent volontairement : gènes, reproduction, pension, fusion des cartes, lignées cachées,
 comptes, marché entre joueurs. Tout cela demande le serveur, ou attend la pension.
 
+### Le mode histoire
+
+Un joueur qui ouvrait Éclosion pour la première fois possédait zéro pièce et un œuf, et voyait
+au même instant **quatorze boutons** dont treize inachetables — quatre œufs de 12 à 180 M, huit
+améliorations, un incubateur, un enclos. La seule chose qui comptait à cette seconde-là, *seul
+le clic fait quelque chose*, se noyait sous une boutique.
+
+Le mode histoire n'est pas un tutoriel posé par-dessus : c'est **le jeu qui se déplie**.
+
+#### Le dévoilement
+
+**Un achat n'apparaît qu'à 60 % de son prix.** Le seuil est calculé, jamais recopié : un prix
+qui change déplace son seuil tout seul. Et les prix de base sont déjà ordonnés, si bien que
+l'escalier d'apprentissage sort des prix eux-mêmes — nulle part on n'écrit « après celui-ci,
+celui-là ».
+
+**On voit toujours la marche suivante, jamais l'escalier.** Le premier achat non dévoilé reste
+affiché, grisé, avec son prix, et sa description dit seulement *Bientôt*. Cacher purement
+enlèverait la notion d'échelle, et voir une chose hors de prix est ce qui fait avancer un
+joueur d'idle.
+
+**Rien ne se recache jamais.** Le dévoilement est écrit dans la sauvegarde : sans cette
+mémoire, l'incubateur disparaîtrait juste après avoir été acheté, puisque son prix monte.
+
+Une rareté d'œuf s'ouvre aussi **à la première rencontre** — on peut tomber sur une rare bien
+avant d'avoir de quoi s'en offrir une, et la boutique ne doit pas faire semblant de l'ignorer.
+
+#### La vue de l'œuf
+
+Avant la toute première éclosion, l'écran ne montre **que l'œuf** : pas de bande, pas de
+colonne latérale. On n'a alors rien à désigner du doigt, puisqu'il n'y a qu'une chose à faire —
+la contrainte enseigne mieux qu'une consigne. L'ouverture de l'écran à l'éclosion est la
+première récompense du jeu.
+
+La condition est `seen` : elle dit si une forme a *déjà* été rencontrée, elle survit à
+l'ascension, et elle ne peut pas revenir en arrière.
+
+#### Les notes
+
+Dix explications, dans l'ordre, chacune à usage unique, dans un bandeau qu'on chasse d'un clic.
+Aucune ne bloque : on peut toutes les ignorer et jouer. Elles s'arrêtent pour l'instant à
+l'enclos — la suite s'écrira en jouant, quand on saura lesquelles manquent vraiment.
+
+Trois règles les gouvernent, et les trois ont été trouvées en les testant plutôt qu'en les
+écrivant :
+
+**Une note qu'on n'affiche pas n'est pas lue.** Marquer tout ce qui est satisfait pour ne
+montrer que la dernière les avalait : en vendant sa première bête on franchit trois seuils, et
+deux explications disparaissaient sans avoir été vues. On n'en consomme donc qu'une, la
+première, et seulement **quand le bandeau est libre** — la boucle passe dix fois par seconde,
+et sans ce garde-fou les suivantes étaient mangées pendant qu'on lisait la précédente.
+
+**Rien pendant le rattrapage.** Une absence de huit heures franchit cinq seuils en quelques
+secondes ; ils sont marqués lus **en silence**, sinon on revient à six bandeaux à la file pour
+des choses qu'on n'a pas vues arriver.
+
+**Les notes traversent l'ascension.** On ne réapprend pas le jeu au deuxième cycle : elles
+voyagent avec la collection, pas avec la ferme.
+
+#### L'interrupteur
+
+Le bouton 📖 éteint le mode histoire : tout devient visible d'un coup, plus aucune note. Le
+rallumer **oublie ce qui a été lu**, pour que les notes rejouent — c'est ce qui permet de les
+vérifier sans effacer sa partie, et un joueur qui rallume veut précisément les revoir.
+
+La migration v9 → v10 marque tout lu et tout dévoilé pour les parties déjà en cours : elle se
+fie au **numéro de la sauvegarde**, jamais à la présence du champ. `freshState` en pose un
+vide, et un objet vide est vrai en JavaScript — le test « si `vu` manque » n'était jamais vrai,
+et la migration ne tournait pas du tout.
+
 ## Boutons de test (en haut à droite)
 
 | Bouton | Effet |
 |---|---|
+| `📖` | Éteint le mode histoire — tout devient visible. Le rallumer rejoue les notes depuis le début. |
 | `×1` | Cycle ×1 → ×10 → ×100. Accélère toute la simulation pour tester une progression complète en quelques minutes. |
 | `♪` | Coupe le son. |
 | `⟲` | Efface la partie et repart de zéro. |

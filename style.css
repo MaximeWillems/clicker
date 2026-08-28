@@ -151,6 +151,37 @@ body {
 }
 .offline-note b { color: var(--jade); font-weight: 500; }
 
+/* ── le mode histoire ────────────────────────────────────────────────────
+   La note reprend le bandeau de retour : même place, même allure. Elle porte sa croix,
+   parce qu'une note qu'on ne peut pas chasser finit par gêner. */
+.tuto-note {
+  display: flex; align-items: flex-start; gap: 1rem;
+  border-left-color: var(--amber);
+  background: var(--amber-dim);
+}
+.tuto-ok {
+  margin-left: auto; flex: none;
+  background: none; border: none; cursor: pointer;
+  color: var(--soft); font-size: 0.9rem; line-height: 1; padding: 0.1rem 0.2rem;
+}
+.tuto-ok:hover { color: var(--ink); }
+
+/* La marche suivante : visible, mais manifestement pas encore à toi. */
+.buy.verrou {
+  opacity: 0.45;
+  border-style: dashed;
+  cursor: default;
+}
+.buy.verrou:hover { border-color: var(--rule); }
+
+/* LA VUE DE L'ŒUF. Avant la première éclosion, il ne reste que la scène : la colonne
+   latérale et la bande disparaissent, et la grille se referme sur une seule colonne. */
+body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "main"; }
+body.debut .side,
+body.debut .strip-wrap,
+body.debut .foot { display: none; }
+body.debut .stage { padding-top: 3.5rem; padding-bottom: 3rem; }
+
 /* ── la scène : un seul sujet, au centre ─────── */
 .stage-col {
   grid-area: main;
