@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.4.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.5.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 8` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 9` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.4.1** | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
+| **2.5.0** | cinq emplacements fixes, et plus aucune réserve — chez personne |
+| 2.4.1 | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
 | 2.4.0 | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
 | 2.3.5 | les consignes de la ferme ne traversent plus l'ascension |
 | 2.3.4 | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
@@ -738,11 +739,17 @@ ascension à l'autre. Le mot servait aussi à compter les œufs non éclos dans 
 d'ascension, ce qui faisait cohabiter deux réserves dans le même panneau — l'une qu'on perd,
 l'autre qui traverse. Les œufs y sont désormais dits *non éclos*.
 
-**Un jeton dépensé ouvre un emplacement, et c'est tout.** La première ascension en donne un,
-la deuxième un second, et ainsi de suite : la puissance de l'album ne dépasse jamais le nombre
-de sauts qu'on a payés. Le compte partait auparavant de trois plus un par ascension, ce qui en
-donnait **quatre avant même d'avoir sauté une seule fois** — trois emplacements offerts pour
-un jeton dépensé, alors que le jeton est justement ce qui se mérite.
+**Cinq emplacements, toujours.** L'album est exactement ces cinq cartes : il n'y a pas de
+réserve derrière, rien n'attend son tour.
+
+Le compte a été mobile — trois plus un par ascension, puis un par jeton dépensé — et les deux
+versions avaient le même défaut : un premier saut à une seule carte ne donne pas un build, il
+donne un chiffre. Cinq d'emblée, c'est une décision dès la première ascension, et un plafond
+qu'on peut calculer sans savoir combien de sauts la partie contiendra.
+
+Les sauvegardes d'avant la 2.5.0 traînaient une réserve — toutes les capsules jamais faites,
+équipées ou non. **Elle est supprimée au chargement** : sans quoi le panneau afficherait des
+cartes qui n'agissent sur rien et qu'aucun écran ne permet plus d'équiper.
 
 Une conséquence utile : **un album se concentre**. Trois cartes d'une même famille rendent
 trois fois plus que trois familles différentes — le jour où l'on a trois emplacements.
@@ -792,7 +799,7 @@ L'échelle ne s'arrête pas avant l'économie ; c'est l'économie qui s'arrête 
 **Le premier jeton tombe en milieu de partie.** Un million de pièces suppose d'avoir mené des
 bêtes au bout et d'en avoir vendu — on n'y arrive pas en cliquant des têtards.
 
-**Les emplacements suivent le nombre d'ascensions** : un par jeton dépensé, pas un de plus.
+**Les emplacements ne dépendent plus des jetons** : ils sont cinq dès la première ascension.
 
 **Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
 entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et n'expire

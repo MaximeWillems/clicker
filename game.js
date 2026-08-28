@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.4.1';
+const VERSION = 'alpha 2.5.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -298,18 +298,21 @@ const RANKS = [
    devant chaque animal — la question devient « lesquelles je garde en vie pour le saut ? »,
    posée une fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 
-   L'ALBUM NE GARDE QUE CE QU'ON ÉQUIPE. Les capsules laissées de côté au moment du saut sont
-   détruites : l'album n'est pas une collection qui s'empile, c'est un BUILD refait à chaque
-   ascension. C'est la règle qui rend le reste calculable — sans limite d'emplacements,
-   vingt-sept cartes se composent et la puissance de l'album n'a plus de plafond.
+   L'ALBUM EST LE BUILD, RIEN D'AUTRE. Cinq cartes actives, aucune réserve derrière : les
+   capsules laissées de côté au moment du saut sont détruites avec la ferme. C'est aussi ce
+   qui rend le reste calculable — sans limite d'emplacements, vingt-sept cartes se composent
+   et la puissance de l'album n'a plus de plafond.
 
-   UN JETON DÉPENSÉ = UN EMPLACEMENT. La première ascension en ouvre un, la deuxième un
-   second, et ainsi de suite : la puissance de l'album ne dépasse jamais le nombre de sauts
-   qu'on a payés. Le compte partait de trois plus une par ascension, ce qui en donnait QUATRE
-   avant même d'avoir sauté une seule fois — trois emplacements offerts pour un jeton dépensé,
-   alors que le jeton est justement ce qui se mérite. */
+   CINQ EMPLACEMENTS, TOUJOURS. L'album est exactement ces cinq cartes : il n'y a pas de
+   réserve derrière, rien n'attend son tour. Ce qu'on ne retient pas au moment du saut est
+   détruit avec la ferme.
 
-const SLOTS_MAX = 6;        // le garde-fou, si l'échelle des jetons s'allongeait un jour
+   Le compte a été mobile — trois plus un par ascension, puis un par jeton dépensé — et les
+   deux versions avaient le même défaut : un premier saut à une seule carte ne donne pas un
+   build, il donne un chiffre. Cinq d'emblée, c'est une décision dès la première ascension, et
+   un plafond qu'on peut calculer sans savoir combien de sauts la partie contiendra. */
+
+const SLOTS = 5;
 
 /* Le palier vient de la fusion, qui arrive en 2.1 : une capsule naît au palier 1 et y reste
    pour l'instant. La table est là dès maintenant parce que la puissance la lit déjà. */
@@ -695,7 +698,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 8;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 9;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -884,7 +887,13 @@ function load() {
     merged.asc.paliers = merged.asc.paliers || 0;
     merged.asc.jetons = merged.asc.jetons || 0;
     merged.slots = (Array.isArray(merged.slots) ? merged.slots : [])
-      .filter(id => merged.album.some(k => k.id === id));
+      .filter(id => merged.album.some(k => k.id === id))
+      .slice(0, SLOTS);
+    /* La réserve n'existe plus : l'album EST le jeu de cartes actives. Une sauvegarde d'avant
+       la 2.5.0 en traîne — toutes les capsules jamais faites, équipées ou non. On ne garde que
+       les équipées, sans quoi le panneau afficherait des cartes qui n'agissent sur rien et
+       qu'aucun écran ne permet plus d'équiper. */
+    merged.album = merged.album.filter(k => merged.slots.indexOf(k.id) !== -1);
     /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
        le relire dans `base` : Object.assign mute sa cible, donc `base` et `merged` sont le
        même objet et `base.v` porte déjà l'ancien numéro. */
@@ -2151,9 +2160,7 @@ function crediterJetons() {
   }
 }
 
-/* Un jeton dépensé, un emplacement. Le nombre de cartes actives est donc exactement le
-   nombre d'ascensions faites — rien n'est offert, tout se paie en sauts. */
-const slotsMax = n => Math.min(SLOTS_MAX, n === undefined ? (state.asc.n || 0) : n);
+
 
 /* La bête telle qu'elle était, figée. `capsuleBrute` ne consomme pas d'identifiant : l'écran
    d'ascension en fabrique une par bête pour montrer ce que le saut donnera, et ces
@@ -2213,7 +2220,7 @@ function renderAlbum() {
 
   const h = document.createElement('p');
   h.className = 'album-head';
-  h.textContent = 'Équipées — ' + state.album.length + ' / ' + slotsMax();
+  h.textContent = 'Équipées — ' + state.album.length + ' / ' + SLOTS;
   host.appendChild(h);
   for (const k of state.album) {
     const el = carteEl(k);
@@ -2235,7 +2242,7 @@ let ascChoix = [];
 function apercuAscension() {
   const jetons = state.asc.jetons || 0;
   const neuves = state.pen.map(c => Object.assign(capsuleBrute(c), { id: -c.id }));
-  return { jetons, neuves, max: slotsMax((state.asc.n || 0) + 1) };
+  return { jetons, neuves, max: SLOTS };
 }
 
 function ouvrirAscension() {
