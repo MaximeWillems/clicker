@@ -30,13 +30,13 @@ The 5 stages, in order:
 1. tiny mouse pup, huge head and ears, thin tail, eyes barely open
 2. small round rat, long thin tail, whiskers, bright eyes
 3. plump coypu, very round body, small round ears, calm face
-4. colossal rodent, enormous round body, tiny ears, short legs
+4. giant prehistoric beaver, enormous round body, tiny ears, short legs
 5. ratatosk, giant squirrel with an enormous fluffy tail curled around it, sleepy face
 
 
 --- une fois la planche enregistrée dans art/source-rongeur.png ---
 
-python tools/decouper.py art/source-rongeur.png rongeur souriceau,rat,ragondin,rongeur-colossal,ratatosk
+python tools/decouper.py art/source-rongeur.png rongeur souriceau,rat,ragondin,castoroide,ratatosk
 
 --- puis dans la table ART, en haut de game.js ---
 
@@ -44,6 +44,6 @@ python tools/decouper.py art/source-rongeur.png rongeur souriceau,rat,ragondin,r
     1: 'rongeur-1-souriceau.png',   // Souriceau
     2: 'rongeur-2-rat.png',   // Rat
     3: 'rongeur-3-ragondin.png',   // Ragondin
-    4: 'rongeur-4-rongeur-colossal.png',   // Rongeur colossal
+    4: 'rongeur-4-castoroide.png',   // Castoroïde
     5: 'rongeur-5-ratatosk.png',   // Ratatosk, messager des cimes
   },

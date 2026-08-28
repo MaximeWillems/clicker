@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.14.0';
+const VERSION = 'alpha 2.15.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -617,7 +617,7 @@ const LINES = [
   // ── communes ────────────────────────────────────────────────────────────
   { key: 'crapaud', name: 'Crapaud', rarity: 'commune', forms: [
     ['Têtard', '🐸'], ['Crapaud', '🐸'], ['Crapaud-buffle', '🐸'],
-    ['Colosse fangeux', '🐸'], ['Gama, crapaud-montagne', '🐸'] ] },
+    ['Crapaud-tourbière', '🐸'], ['Gama, crapaud-montagne', '🐸'] ] },
   { key: 'poisson', name: 'Poisson', rarity: 'commune', forms: [
     ['Alevin', '🐟'], ['Carpe', '🐟', 'f'], ['Carpe centenaire', '🐠', 'f'],
     ['Serpent de mer', '🐍'], ['Léviathan', '🐉'] ] },
@@ -633,10 +633,10 @@ const LINES = [
 
   { key: 'insecte', name: 'Insecte', rarity: 'commune', forms: [
     ['Larve', '🐛', 'f'], ['Scarabée', '🪲'], ['Lucane', '🪲'],
-    ['Scarabée-titan', '🪲'], ['Khépri, porteur du soleil', '🌞'] ] },
+    ['Scarabée-hercule', '🪲'], ['Khépri, porteur du soleil', '🌞'] ] },
   { key: 'rongeur', name: 'Rongeur', rarity: 'commune', forms: [
     ['Souriceau', '🐁'], ['Rat', '🐀'], ['Ragondin', '🦫'],
-    ['Rongeur colossal', '🦫'], ['Ratatosk, messager des cimes', '🐿️'] ] },
+    ['Castoroïde', '🦫'], ['Ratatosk, messager des cimes', '🐿️'] ] },
   { key: 'chiroptere', name: 'Chauve-souris', rarity: 'commune', forms: [
     ['Chiroptère', '🦇'], ['Chauve-souris', '🦇', 'f'], ['Roussette', '🦇', 'f'],
     ['Buveur de nuit', '🧛'], ['Camazotz, l’éclipse', '🌑'] ] },
@@ -653,7 +653,7 @@ const LINES = [
     ['Garou', '🧌'], ['Fenrir, dévoreur', '🌘'] ] },
   { key: 'meduse', name: 'Méduse', rarity: 'rare', forms: [
     ['Éphyrule', '🫧', 'f'], ['Méduse', '🪼', 'f'], ['Méduse abyssale', '🪼', 'f'],
-    ['Cnidaire colossal', '🪼'], ['Physalie-monde', '🌊', 'f'] ] },
+    ['Cyanée', '🪼', 'f'], ['Physalie-monde', '🌊', 'f'] ] },
   { key: 'salamandre', name: 'Salamandre', rarity: 'rare', forms: [
     ['Larve ardente', '🐛', 'f'], ['Salamandre', '🦎', 'f'], ['Salamandre de braise', '🦎', 'f'],
     ['Salamandre de cendre', '🔥', 'f'], ['Ifrit', '👹'] ] },
@@ -672,7 +672,7 @@ const LINES = [
     ['Nymphe', '🕸️', 'f'], ['Araignée', '🕷️', 'f'], ['Veuve noire', '🕷️', 'f'],
     ['Tisseuse d’ombre', '🕷️', 'f'], ['Arachné, fileuse du sort', '🕸️', 'f'] ] },
   { key: 'cerf', name: 'Cerf', rarity: 'rare', forms: [
-    ['Faon', '🦌'], ['Cerf', '🦌'], ['Grand cerf', '🦌'],
+    ['Faon', '🦌'], ['Cerf', '🦌'], ['Dix-cors', '🦌'],
     ['Cerf des brumes', '🦌'], ['Cernunnos, roi des bois', '🌿'] ] },
   { key: 'ours', name: 'Ours', rarity: 'rare', forms: [
     ['Ourson', '🐻'], ['Ours', '🐻'], ['Ours des cavernes', '🐻'],
@@ -693,10 +693,10 @@ const LINES = [
     ['Poulpe des fosses', '🦑'], ['Kraken', '🦑'] ] },
   { key: 'golem', name: 'Golem', rarity: 'epique', forms: [
     ['Éclat', '🪨'], ['Gravier animé', '🪨'], ['Golem', '🗿'],
-    ['Colosse de pierre', '🗿'], ['Titan de granit', '🏔️'] ] },
+    ['Monolithe', '🗿'], ['Ymir de granit', '🏔️'] ] },
   { key: 'sphinx', name: 'Sphinx', rarity: 'epique', forms: [
     ['Chaton sans poil', '🐈'], ['Sphinx', '🐈‍⬛'], ['Sphinx royal', '🦁'],
-    ['Gardien de tombeau', '🗿'], ['Grand Sphinx', '🏜️'] ] },
+    ['Gardien de tombeau', '🗿'], ['Harmakhis, l’horizon', '🏜️'] ] },
   { key: 'cheval', name: 'Cheval', rarity: 'epique', forms: [
     ['Poulain', '🐴'], ['Cheval', '🐎'], ['Destrier', '🐎'],
     ['Licorne', '🦄', 'f'], ['Pégase', '🌠'] ] },
@@ -707,7 +707,7 @@ const LINES = [
     ['Chimère royale', '🦁', 'f'], ['Chimère primordiale', '👹', 'f'] ] },
   { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
     ['Ossement', '🦴'], ['Saurien', '🦕'], ['Béhémoth', '🦖'],
-    ['Béhémoth ancien', '🦖'], ['Béhémoth primordial', '☄️'] ] },
+    ['Béhémoth éternel', '🦖'], ['Béhémoth primordial', '☄️'] ] },
   /* PREMIÈRE LIGNÉE DE L'ARC DE LA RÉVÉLATION. Elle ne commence pas petite : au premier âge
      c'est déjà un serpent qui se mord la queue, anneau fermé et complet. Le nom ne change
      jamais, seule l'épithète pousse — on ne rencontre pas cinq bêtes, on regarde le même dieu
@@ -744,7 +744,7 @@ const ART = {
     1: 'crapaud-1-tetard.png',
     2: 'crapaud-2-crapaud.png',
     3: 'crapaud-3-buffle.png',
-    4: 'crapaud-4-colosse.png',
+    4: 'crapaud-4-crapaud-tourbiere.png',
     5: 'crapaud-5-gama.png',
   },
   poisson: {
@@ -779,14 +779,14 @@ const ART = {
     1: 'insecte-1-larve.png',
     2: 'insecte-2-scarabee.png',
     3: 'insecte-3-lucane.png',
-    4: 'insecte-4-scarabee-titan.png',
+    4: 'insecte-4-scarabee-hercule.png',
     5: 'insecte-5-khepri.png',
   },
   rongeur: {
     1: 'rongeur-1-souriceau.png',
     2: 'rongeur-2-rat.png',
     3: 'rongeur-3-ragondin.png',
-    4: 'rongeur-4-rongeur-colossal.png',
+    4: 'rongeur-4-castoroide.png',
     5: 'rongeur-5-ratatosk.png',
   },
   chiroptere: {

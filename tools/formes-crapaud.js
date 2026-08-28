@@ -81,7 +81,7 @@ const FORMES = {
 
 const ORDRE = [
   ['tetard', 'Têtard'], ['crapaud', 'Crapaud'], ['buffle', 'Crapaud-buffle'],
-  ['colosse', 'Colosse fangeux'], ['gama', 'Gama'],
+  ['colosse', 'Crapaud-tourbière'], ['gama', 'Gama'],
 ];
 
 module.exports = { FORMES, ORDRE };

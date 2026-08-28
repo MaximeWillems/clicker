@@ -30,13 +30,13 @@ The 5 stages, in order:
 1. tiny round grub, no legs, two huge eyes, soft segmented body
 2. small round beetle, shiny domed shell, six dot legs
 3. stag beetle, round shell with two small rounded mandibles
-4. titan beetle, enormous domed shell, short thick legs, small head
+4. hercules beetle, enormous domed shell, single curved horn, short thick legs
 5. khepri, round beetle carrying a small warm sun disc on its back, sleepy face
 
 
 --- une fois la planche enregistrée dans art/source-insecte.png ---
 
-python tools/decouper.py art/source-insecte.png insecte larve,scarabee,lucane,scarabee-titan,khepri
+python tools/decouper.py art/source-insecte.png insecte larve,scarabee,lucane,scarabee-hercule,khepri
 
 --- puis dans la table ART, en haut de game.js ---
 
@@ -44,6 +44,6 @@ python tools/decouper.py art/source-insecte.png insecte larve,scarabee,lucane,sc
     1: 'insecte-1-larve.png',   // Larve
     2: 'insecte-2-scarabee.png',   // Scarabée
     3: 'insecte-3-lucane.png',   // Lucane
-    4: 'insecte-4-scarabee-titan.png',   // Scarabée-titan
+    4: 'insecte-4-scarabee-hercule.png',   // Scarabée-hercule
     5: 'insecte-5-khepri.png',   // Khépri, porteur du soleil
   },

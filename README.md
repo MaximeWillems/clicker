@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.14.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.15.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.14.0** | la réserve d'œufs se vide toute seule, gratuitement |
+| **2.15.0** | aucun nom de bête ne reprend un mot d'âge ni de taille |
+| 2.14.0 | la réserve d'œufs se vide toute seule, gratuitement |
 | 2.13.0 | l'âge, le niveau et la taille prennent chacun leur colonne |
 | 2.12.0 | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
 | 2.11.0 | une professeure accueille le joueur et l'accompagne, en dialogues |
@@ -509,6 +510,41 @@ d'œuf à racheter, et n'intervient que **lorsque la réserve est sèche**. S'il
 payer la sorte demandée il laisse l'incubateur vide : rabattre sur du commun trahirait la
 consigne. C'est le bon partage — dépenser à ta place est une décision, poser un œuf déjà acheté
 n'en est pas une.
+
+### Treize mots que les noms n'ont pas le droit d'employer
+
+L'interface affiche l'âge et la taille dans deux colonnes, à un centimètre du nom. Un nom qui
+reprend un de ces mots dit donc la même chose deux fois — ou, pire, le contraire :
+
+| Ce qui s'affichait | Le problème |
+|---|---|
+| `Crocodile ancien` à l'âge **adulte** | le mot désignait l'âge d'après |
+| `Béhémoth ancien` à l'âge **ancien** | le nom et la colonne se répétaient |
+| `Rongeur colossal` · taille **normale** | le nom contredisait la colonne |
+| `Grand Sphinx` · taille **normale** | idem |
+
+La règle est donc : **aucun des cinq noms d'âge ni des six noms de taille** — enfant,
+adolescent, adulte, ancien, légende, grand(e), énorme, colossal(e), titanesque, démesuré(e) —
+n'apparaît dans le nom d'une forme. Les 135 noms la respectent.
+
+Neuf formes ont changé, et chacune a gagné au change : le mot générique a laissé place à une
+espèce réelle ou à un nom propre, ce qui est le registre du reste du bestiaire.
+
+| Lignée | Âge | Avant | Après |
+|---|---|---|---|
+| Crocodile | adulte | Crocodile ancien | **Sarcosuche** — le crocodilien cuirassé, ce que le dessin montre |
+| Crapaud | ancien | Colosse fangeux | **Crapaud-tourbière** — la mousse et le bois sur son dos annoncent `crapaud-montagne` |
+| Insecte | ancien | Scarabée-titan | **Scarabée-hercule** — le dessin porte déjà sa corne |
+| Rongeur | ancien | Rongeur colossal | **Castoroïde** — le castor géant de la préhistoire, et la lignée passe par 🦫 |
+| Méduse | ancien | Cnidaire colossal | **Cyanée** — la plus grande méduse du monde |
+| Cerf | adulte | Grand cerf | **Dix-cors** — terme de vénerie pour le cerf enfin adulte |
+| Golem | ancien | Colosse de pierre | **Monolithe** |
+| Golem | légende | Titan de granit | **Ymir de granit** — le géant dont le corps devint la terre |
+| Sphinx | légende | Grand Sphinx | **Harmakhis, l'horizon** — le nom que l'Égypte donnait au Grand Sphinx |
+| Béhémoth | ancien | Béhémoth ancien | **Béhémoth éternel** |
+
+**Rien à migrer.** Une sauvegarde ne stocke que des clés de lignée et des numéros d'âge, jamais
+un nom affiché : la collection d'une partie en cours traverse le renommage sans rien perdre.
 
 ### Variantes
 
@@ -1322,8 +1358,8 @@ Ajouter un dessin, c'est poser le fichier dans `art/` et ajouter une ligne à la
 en haut de `game.js`. Rien d'autre — pas de build, pas de manifeste à régénérer.
 
 **Trois dessins suffisent pour une lignée entière.** Un âge sans dessin prend celui de l'âge le
-plus proche en dessous. Avec `{ 1: 'tetard.png', 4: 'colosse.png' }`, les trois premiers âges
-montrent le têtard et les deux derniers le colosse. Un seul fichier fonctionne aussi.
+plus proche en dessous. Avec `{ 1: 'tetard.png', 4: 'tourbiere.png' }`, les trois premiers âges
+montrent le têtard et les deux derniers la tourbière. Un seul fichier fonctionne aussi.
 
 Une image fait exactement `1em`, donc **tout ce qui pilotait la taille de l'emoji pilote la
 sienne** — niveau, âge, engraissement, teinte. Un dessin remplace un emoji sans qu'aucun autre

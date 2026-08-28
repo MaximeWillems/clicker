@@ -36,7 +36,7 @@ The 5 stages, in order:
 
 --- une fois la planche enregistrée dans art/source-golem.png ---
 
-python tools/decouper.py art/source-golem.png golem eclat,gravier-anime,golem,colosse-de-pierre,titan-de-granit
+python tools/decouper.py art/source-golem.png golem eclat,gravier-anime,golem,monolithe,ymir-de-granit
 
 --- puis dans la table ART, en haut de game.js ---
 
@@ -44,6 +44,6 @@ python tools/decouper.py art/source-golem.png golem eclat,gravier-anime,golem,co
     1: 'golem-1-eclat.png',   // Éclat
     2: 'golem-2-gravier-anime.png',   // Gravier animé
     3: 'golem-3-golem.png',   // Golem
-    4: 'golem-4-colosse-de-pierre.png',   // Colosse de pierre
-    5: 'golem-5-titan-de-granit.png',   // Titan de granit
+    4: 'golem-4-monolithe.png',   // Monolithe
+    5: 'golem-5-ymir-de-granit.png',   // Ymir de granit
   },

@@ -36,7 +36,7 @@ The 5 stages, in order:
 
 --- une fois la planche enregistrée dans art/source-crapaud.png ---
 
-python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,crapaud-buffle,colosse-fangeux,gama
+python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,crapaud-buffle,crapaud-tourbiere,gama
 
 --- puis dans la table ART, en haut de game.js ---
 
@@ -44,6 +44,6 @@ python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,crapaud-b
     1: 'crapaud-1-tetard.png',   // Têtard
     2: 'crapaud-2-crapaud.png',   // Crapaud
     3: 'crapaud-3-crapaud-buffle.png',   // Crapaud-buffle
-    4: 'crapaud-4-colosse-fangeux.png',   // Colosse fangeux
+    4: 'crapaud-4-crapaud-tourbiere.png',   // Crapaud-tourbière
     5: 'crapaud-5-gama.png',   // Gama, crapaud-montagne
   },

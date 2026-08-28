@@ -71,6 +71,6 @@ python tools/decouper.py art/source-behemoth.png behemoth ossement,saurien,behem
     1: 'behemoth-1-ossement.png',   // Ossement
     2: 'behemoth-2-saurien.png',   // Saurien
     3: 'behemoth-3-behemoth.png',   // Béhémoth
-    4: 'behemoth-4-behemoth-ancien.png',   // Béhémoth ancien
+    4: 'behemoth-4-behemoth-eternel.png',   // Béhémoth éternel
     5: 'behemoth-5-behemoth-primordial.png',   // Béhémoth primordial
   },

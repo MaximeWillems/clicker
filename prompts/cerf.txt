@@ -43,7 +43,7 @@ python tools/decouper.py art/source-cerf.png cerf faon,cerf,grand-cerf,cerf-des-
   cerf: {
     1: 'cerf-1-faon.png',   // Faon
     2: 'cerf-2-cerf.png',   // Cerf
-    3: 'cerf-3-grand-cerf.png',   // Grand cerf
+    3: 'cerf-3-dix-cors.png',   // Dix-cors
     4: 'cerf-4-cerf-des-brumes.png',   // Cerf des brumes
     5: 'cerf-5-cernunnos.png',   // Cernunnos, roi des bois
   },

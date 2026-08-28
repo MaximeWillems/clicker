@@ -59,8 +59,8 @@ Les modèles d'images sortent les cinq stades sur une seule planche, sur fond bl
 découper :
 
 ```bash
-python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,colosse,gama
-python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,colosse,gama --apercu
+python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,tourbiere,gama
+python tools/decouper.py art/source-crapaud.png crapaud tetard,crapaud,buffle,tourbiere,gama --apercu
 ```
 
 L'outil détoure, sépare les créatures, rogne chacune au plus juste, la centre dans un carré

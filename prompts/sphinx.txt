@@ -45,5 +45,5 @@ python tools/decouper.py art/source-sphinx.png sphinx chaton-sans-poil,sphinx,sp
     2: 'sphinx-2-sphinx.png',   // Sphinx
     3: 'sphinx-3-sphinx-royal.png',   // Sphinx royal
     4: 'sphinx-4-gardien-de-tombeau.png',   // Gardien de tombeau
-    5: 'sphinx-5-grand-sphinx.png',   // Grand Sphinx
+    5: 'sphinx-5-harmakhis.png',   // Harmakhis, l’horizon
   },

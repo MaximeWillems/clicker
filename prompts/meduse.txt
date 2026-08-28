@@ -44,6 +44,6 @@ python tools/decouper.py art/source-meduse.png meduse ephyrule,meduse,meduse-aby
     1: 'meduse-1-ephyrule.png',   // Éphyrule
     2: 'meduse-2-meduse.png',   // Méduse
     3: 'meduse-3-meduse-abyssale.png',   // Méduse abyssale
-    4: 'meduse-4-cnidaire-colossal.png',   // Cnidaire colossal
+    4: 'meduse-4-cyanee.png',   // Cyanée
     5: 'meduse-5-physalie-monde.png',   // Physalie-monde
   },
