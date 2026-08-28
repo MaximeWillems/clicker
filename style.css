@@ -71,10 +71,16 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 21rem;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  /* Une rangée par bandeau. Ils partageaient la case `note`, et la grille — contrairement à
+     une colonne flex — laisse volontiers deux éléments se superposer : la note ambre du
+     tutoriel recouvrait entièrement le résumé d'absence, qui est pourtant la seule trace de
+     ce qui s'est passé pendant des heures. Une rangée dont l'élément est `hidden` reste à
+     zéro, donc rien ne bouge quand un seul des deux bandeaux est là. */
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   grid-template-areas:
     "top  top"
     "note note"
+    "tuto tuto"
     "main side";
   gap: 0 1.5rem;
   padding: 0 1.25rem 1rem;
@@ -86,7 +92,7 @@ body {
     overflow: visible;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
-    grid-template-areas: "top" "note" "main" "side";
+    grid-template-areas: "top" "note" "tuto" "main" "side";
     padding-bottom: 2rem;
   }
   .stage-col, .side { overflow: visible; }
@@ -155,6 +161,7 @@ body {
    La note reprend le bandeau de retour : même place, même allure. Elle porte sa croix,
    parce qu'une note qu'on ne peut pas chasser finit par gêner. */
 .tuto-note {
+  grid-area: tuto;
   display: flex; align-items: flex-start; gap: 1rem;
   border-left-color: var(--amber);
   background: var(--amber-dim);
@@ -166,17 +173,22 @@ body {
 }
 .tuto-ok:hover { color: var(--ink); }
 
-/* La marche suivante : visible, mais manifestement pas encore à toi. */
-.buy.verrou {
-  opacity: 0.45;
+/* La marche suivante : visible, mais manifestement pas encore à toi.
+
+   Le sélecteur est plus précis que `.buy:disabled`, sinon celui-ci gagne à égalité de
+   spécificité — il est plus bas dans le fichier — et la marche suivante prenait exactement
+   l'allure d'un achat simplement trop cher. Toute la distinction se perdait. */
+.shop .buy.verrou {
+  opacity: 0.28;
   border-style: dashed;
   cursor: default;
 }
-.buy.verrou:hover { border-color: var(--rule); }
+.shop .buy.verrou:hover { border-color: var(--rule); }
+.shop .buy.verrou .p { color: var(--faint); }
 
 /* LA VUE DE L'ŒUF. Avant la première éclosion, il ne reste que la scène : la colonne
    latérale et la bande disparaissent, et la grille se referme sur une seule colonne. */
-body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "main"; }
+body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "tuto" "main"; }
 body.debut .side,
 body.debut .strip-wrap,
 body.debut .foot { display: none; }

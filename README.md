@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.8.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.8.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.8.0** | le mode histoire — le jeu se déplie une marche à la fois |
+| **2.8.1** | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
+| 2.8.0 | le mode histoire — le jeu se déplie une marche à la fois |
 | 2.7.4 | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
 | 2.7.3 | maintenir la barre espace ne vaut qu'un seul clic |
 | 2.7.2 | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
@@ -135,6 +136,13 @@ qui change déplace son seuil tout seul. Et les prix de base sont déjà ordonn�
 l'escalier d'apprentissage sort des prix eux-mêmes — nulle part on n'écrit « après celui-ci,
 celui-là ».
 
+**L'ordre est celui des prix, pas celui des tables.** La liste mettait les quatre œufs
+devant : la marche suivante de la boutique était donc l'œuf rare à 300 000 dès les premières
+pièces — sept mille fois la bourse d'un débutant — pendant que l'incubateur à 150 et l'enclos à
+400, les vraies marches, ne pouvaient jamais être désignés. Trié par prix, l'escalier redevient
+un escalier : œuf commun, force du clic, couveuse, éleveur, incubateur, mangeoire, enclos… et
+le tri se refait seul le jour où un prix change.
+
 **On voit toujours la marche suivante, jamais l'escalier.** Le premier achat non dévoilé reste
 affiché, grisé, avec son prix, et sa description dit seulement *Bientôt*. Cacher purement
 enlèverait la notion d'échelle, et voir une chose hors de prix est ce qui fait avancer un
@@ -184,10 +192,15 @@ Le bouton 📖 éteint le mode histoire : tout devient visible d'un coup, plus a
 rallumer **oublie ce qui a été lu**, pour que les notes rejouent — c'est ce qui permet de les
 vérifier sans effacer sa partie, et un joueur qui rallume veut précisément les revoir.
 
-La migration v9 → v10 marque tout lu et tout dévoilé pour les parties déjà en cours : elle se
-fie au **numéro de la sauvegarde**, jamais à la présence du champ. `freshState` en pose un
-vide, et un objet vide est vrai en JavaScript — le test « si `vu` manque » n'était jamais vrai,
-et la migration ne tournait pas du tout.
+La migration v9 → v10 marque tout lu et tout dévoilé pour les parties déjà en cours. Deux
+pièges s'y cachaient. Elle se fie au **numéro de la sauvegarde**, jamais à la présence du champ :
+`freshState` en pose un vide, et un objet vide est vrai en JavaScript — le test « si `vu`
+manque » n'était jamais vrai, et la migration ne tournait pas du tout. Et elle marque **sans
+évaluer** : en ne marquant que les notes dont la condition passait à l'instant du chargement,
+elle laissait armées les conditions *transitoires* — « il craque » veut un œuf à deux tiers de
+couvaison — et une ferme à cinquante millions recevait trente secondes plus tard « Ta première
+bête. Elle grandit au clic ». Les notes ne parlent que du tout début : une partie enregistrée
+les a toutes dépassées par construction.
 
 ## Boutons de test (en haut à droite)
 

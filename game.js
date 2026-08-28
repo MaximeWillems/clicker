@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.8.0';
+const VERSION = 'alpha 2.8.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -978,13 +978,17 @@ function load() {
     merged.tuto = merged.tuto !== false;
     merged.vu = merged.vu || {};
     if ((s.v || 0) < 10) {
-      const avant = state;
-      state = merged;                        // les conditions des notes lisent `state`
-      try {
-        for (const n of NOTES) { try { if (n.test()) merged.vu[n.cle] = true; } catch (e) {} }
-      } finally {
-        state = avant;                       // rendu quoi qu'il arrive : tout le jeu en dépend
-      }
+      /* On marque TOUTES les notes lues, sans en évaluer aucune. La première version ne
+         marquait que celles dont la condition passait à l'instant du chargement, et laissait
+         donc armées les conditions TRANSITOIRES : « il craque » veut un œuf à deux tiers de
+         couvaison, « elle est mûre » veut une bête mûre en enclos. Une ferme à cinquante
+         millions rouvrait sans, puis recevait trente secondes plus tard « Ta première bête.
+         Elle grandit au clic » — exactement les bandeaux que la migration devait supprimer.
+
+         Les notes ne parlent que du tout début du jeu : une partie déjà enregistrée les a
+         toutes dépassées par construction. Marquer sans évaluer supprime du même coup
+         l'échange temporaire de `state` et sa dépendance à l'ordre des normalisations. */
+      for (const n of NOTES) merged.vu[n.cle] = true;
       for (const c of CLES_VOIR) merged.vu['voir:' + c] = true;
     }
 
@@ -2242,10 +2246,26 @@ function renderCollection() {
    L'album et l'ascension
    ───────────────────────────────────────────── */
 
-/* Les clés de tout ce qui se dévoile : les entrées de boutique, puis les améliorations.
-   L'ordre compte — c'est celui dans lequel « la marche suivante » se choisit. */
-const CLES_VOIR = EGG_KINDS.map(e => 'egg-' + e.key).concat(['incub', 'pen'])
-                           .concat(UPGRADES.map(u => 'up:' + u.key));
+/* Ce que coûte la première unité d'un achat — c'est sur ce prix que porte le seuil des 60 %.
+   Pour une amélioration, la boucle sous UPGRADES a déjà converti `base` en TIERS de palier :
+   c'est donc bien le prix du premier niveau, celui que le joueur verra affiché. */
+const prixVoir = cle => cle.startsWith('up:') ? UP_BY_KEY[cle.slice(3)].base
+                      : cle === 'incub' ? INCUB_BASE
+                      : cle === 'pen' ? PEN_BASE
+                      : EGG_BY_KEY[cle.slice(4)].price;
+
+/* Tout ce qui se dévoile, RANGÉ PAR PRIX et non par table. L'ordre décide de « la marche
+   suivante », et la table mettait les quatre œufs devant : la marche de la boutique était donc
+   l'œuf rare à 300 000 dès les premières pièces — sept mille fois la bourse d'un débutant —
+   pendant que l'incubateur à 150 et l'enclos à 400, les vraies marches, ne pouvaient JAMAIS
+   être désignés. Deux branches mortes et un repère absurde.
+
+   Trié par prix, l'escalier redevient un escalier : œuf commun, incubateur, enclos, puis les
+   raretés. Et le tri se refait tout seul le jour où un prix change. */
+const CLES_VOIR = EGG_KINDS.map(e => 'egg-' + e.key)
+  .concat(['incub', 'pen'])
+  .concat(UPGRADES.map(u => 'up:' + u.key))
+  .sort((a, b) => prixVoir(a) - prixVoir(b));
 
 const estDevoile = cle => !state.tuto || !!state.vu['voir:' + cle];
 
@@ -2261,15 +2281,13 @@ function devoiler(cle) {
    s'ouvre aussi à la PREMIÈRE RENCONTRE : on peut tomber sur une rare bien avant d'avoir de
    quoi s'en offrir une, et la boutique ne doit pas faire semblant de l'ignorer. */
 function meriteDevoilement(cle) {
-  if (cle.startsWith('up:')) {
-    const u = UP_BY_KEY[cle.slice(3)];
-    return lvl(u.key) > 0 || state.coins >= u.base * SEUIL_VOIR;
-  }
-  if (cle === 'incub') return state.incubators > 1 || state.coins >= INCUB_BASE * SEUIL_VOIR;
-  if (cle === 'pen') return state.pens > 1 || state.coins >= PEN_BASE * SEUIL_VOIR;
+  if (state.coins >= prixVoir(cle) * SEUIL_VOIR) return true;
+  if (cle.startsWith('up:')) return lvl(cle.slice(3)) > 0;
+  if (cle === 'incub') return state.incubators > 1;
+  if (cle === 'pen') return state.pens > 1;
   const e = EGG_BY_KEY[cle.slice(4)];
   if (!e) return true;
-  if (state.coins >= e.price * SEUIL_VOIR || eggStock(e.key)) return true;
+  if (eggStock(e.key)) return true;
   return LINES.some(l => l.rarity === e.rarity &&
                          AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)]));
 }
@@ -3071,9 +3089,6 @@ function tickView() {
     r.el.disabled = verrou || maxed || !vise || state.coins < coutPaliers(u, vise);
   }
 
-  /* Le panneau des améliorations n'a rien à montrer tant que la première n'est pas en vue :
-     un cadre vide intitulé « Améliorations » est une promesse qu'on ne tient pas encore. */
-  $('panel-autos').hidden = UPGRADES.every(u => refs.up[u.key].li.hidden);
 
   /* Le réglage de taille n'apparaît qu'avec une mangeoire. Sans automate qui engraisse, la
      notion n'a rien à faire à l'écran : la vente doit rester la chose la plus simple du jeu,
