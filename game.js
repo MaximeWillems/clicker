@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.5.0';
+const VERSION = 'alpha 2.6.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -571,9 +571,21 @@ const LINES = [
   { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
     ['Ossement', '🦴'], ['Saurien', '🦕'], ['Béhémoth', '🦖'],
     ['Béhémoth ancien', '🦖'], ['Béhémoth primordial', '☄️'] ] },
+  /* PREMIÈRE LIGNÉE DE L'ARC DE LA RÉVÉLATION. Elle ne commence pas petite : au premier âge
+     c'est déjà un serpent qui se mord la queue, anneau fermé et complet. Le nom ne change
+     jamais, seule l'épithète pousse — on ne rencontre pas cinq bêtes, on regarde le même dieu
+     se réveiller.
+
+     Elle naissait en « Anneau de mue », une dépouille, avec un glyphe de ver : le contraire de
+     ce qu'elle est. Un dieu qui commence en ver n'est plus un dieu.
+
+     L'anneau, lui, est identique du premier au dernier âge. CE QUI GRANDIT EST CE QU'IL
+     CONTIENT — rien, puis une lueur, puis un monde. C'est ce qui donne du grandiose sans
+     rien casser de la charte : la bête reste ronde et endormie, c'est le cadre qui devient
+     immense. */
   { key: 'ouroboros', name: 'Ouroboros', rarity: 'mythique', forms: [
-    ['Anneau de mue', '🐛'], ['Serpent gris', '🐍'], ['Serpent-monde', '🐍'],
-    ['Ouroboros', '🐉'], ['Ouroboros éternel', '♾️'] ] },
+    ['Ouroboros', '🐍'], ['Ouroboros éveillé', '🐍'], ['Ouroboros clos', '🐍'],
+    ['Ouroboros sans fin', '🌀'], ['Ouroboros, la boucle du monde', '♾️'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));

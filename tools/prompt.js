@@ -49,6 +49,46 @@ No texture, no dithering, no noise, no gradients, no glow. Simple geometric shap
 Front-facing, centered, full body. Transparent background. No shadow, no ground line,
 no background, no text, no frame.`;
 
+/* ── La seconde charte : l'arc de la révélation ────────────────────────────
+   Les mythiques ne grandissent pas, elles s'accomplissent. Elles naissent déjà elles-mêmes,
+   et l'évolution ne les transforme pas : elle leur ajoute des attributs.
+
+   Deux règles de l'en-tête ordinaire y deviennent fausses. Les PROPORTIONS DE BÉBÉ — la tête
+   qui fait la moitié de la bête — disent l'inverse d'une créature accomplie. Et la continuité
+   « une bête qui grandit » se remplace par « la même bête qui se révèle ».
+
+   Tout le reste ne bouge pas : rond, endormi, sans crocs, six couleurs à plat. Un dieu de ce
+   jeu est attendrissant, sinon ce n'est plus le même jeu. */
+const ENTETE_REVELATION = ENTETE
+  .replace(`CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes`, `CUTE MASCOT STYLE — this is the most important instruction:
+- ALREADY ACCOMPLISHED at stage 1: this is not a baby, it is a small complete god
+- adult proportions, calm and settled — never a hatchling, never a larva
+- huge round eyes`)
+  .replace(`- chubby bean-shaped or egg-shaped bodies, tiny stubby feet`,
+           `- a rounded, settled body — it may have no legs at all if the creature has none`)
+  /* La charte ordinaire interdit toute lueur, et les derniers âges d'un dieu en réclament une.
+     On l'autorise, mais en APLAT : une forme pâle de plus, jamais un dégradé ni un flou —
+     sinon le pixel art se dissout et la contrainte des six couleurs saute avec lui. */
+  .replace(`No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.`,
+           `No texture, no dithering, no noise, no gradients. Simple geometric shapes.
+Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
+never a blur, never a gradient, and it still counts toward the 6 colors.`)
+  .replace(`CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept`,
+`REVELATION — the five stages are ONE being waking up, not one growing up:
+- the SILHOUETTE barely changes from stage 1 to stage 5. It is already right at stage 1
+- what changes is what the being GAINS: an attribute, a mark, a glow, sheer size
+- same palette, same outline color, same eye shape throughout
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must be overwhelming in SCALE and COMPOSITION, never in menace:
+  still round, still sleepy, still no fangs. The awe comes from what surrounds it`);
+
 /* Cinq descriptions par lignée. On décrit la MASSE et la POSTURE, pas les accessoires.
    Le dernier stade garde toujours un petit visage endormi : c'est ce qui rend une bête
    énorme attachante plutôt qu'inquiétante. */
@@ -204,6 +244,21 @@ const STADES = {
     'reef crab, the same thick asymmetric pincers held close to the body, same stalked eyes, the domed carapace now TALL and humped, crusted with small round coral bumps, drowsy eyes',
     'karkinos, enormous crab much WIDER than tall, the same asymmetric pincers now massive and raised high on each side, same stalked eyes, a low broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle'],
 
+  /* Le fil de l'ouroboros : LA MORSURE. Il se mord la queue dès le premier âge et ne lâche
+     jamais — la silhouette est un anneau FERMÉ du début à la fin, jamais une ligne, jamais une
+     courbe ouverte. C'est ce qui le sépare du serpent-plume et du ver d'un seul coup d'œil,
+     même en vignette de 32 pixels.
+
+     Ce qui grandit n'est pas la bête, c'est CE QUE L'ANNEAU CONTIENT. Le centre est vide au
+     premier âge, il s'éclaire au quatrième, il porte un monde au cinquième. Le grandiose vient
+     de là, et non d'une créature devenue menaçante. */
+  ouroboros: [
+    'a small serpent ALREADY biting its own tail, forming one simple closed ring, slender rounded body, huge round sleepy eyes, one flat color band along the back — never a worm, never an open curve, the mouth holds the tail gently with no fangs and no strain',
+    'the same closed ring and the same gentle bite, the body now thicker and rounder with simple flat hexagon scales, the same sleepy eyes, a faint pale line running along the inside edge of the ring',
+    'the same gentle bite, the ring now DOUBLED — a second coil nested inside the first, both closed, the same hexagon scales, the same sleepy face at the point where mouth meets tail',
+    'the same gentle bite, three nested coils now, the same scales, and the empty middle of the ring filled for the first time with a soft pale glowing disc — the ring has begun to hold something',
+    'ouroboros, enormous, the same gentle bite and the same nested coils now filling the entire frame, soft golden ring marks along the back, and held inside the ring a small pale world with soft round continents and two tiny moons, tiny sleepy face at the point where the mouth meets the tail'],
+
   /* Le fil de l'araignée : huit pattes courtes et rondes, un abdomen bulbeux marqué d'un
      sablier pâle, et une masse qui passe des pattes au ventre de stade en stade. */
   araignee: [
@@ -269,8 +324,23 @@ const cle = process.argv[2];
    prompt qu'on ne retrouve pas ne sert à rien. */
 function ecrire(ligne) {
   const stades = STADES[ligne.key];
-  const suffixes = ligne.forms.map(f => sansAccents(f[0].split(',')[0]));
-  const l = [ENTETE, '', 'The 5 stages, in order:'];
+  /* Le suffixe de fichier vient du nom, mais l'arc de la révélation garde le MÊME nom aux cinq
+     âges : « Ouroboros » et « Ouroboros, la boucle du monde » donnaient deux fois `ouroboros`,
+     et la commande de découpe annonçait des noms en double. Quand le premier bout est déjà
+     pris, on descend sur l'épithète — ce qui suit la virgule est justement ce qui distingue. */
+  const vus = new Set();
+  const suffixes = ligne.forms.map(f => {
+    const bouts = f[0].split(',').map(x => x.trim());
+    let su = sansAccents(bouts[0]);
+    if (vus.has(su) && bouts[1]) su = sansAccents(bouts[1]);
+    while (vus.has(su)) su += '-bis';
+    vus.add(su);
+    return su;
+  });
+  // une mythique naît accomplie : elle ne suit pas la charte des bêtes qui grandissent
+  const entete = ligne.rarity === 'mythique' || ligne.rarity === 'merveilleux'
+               ? ENTETE_REVELATION : ENTETE;
+  const l = [entete, '', 'The 5 stages, in order:'];
   ligne.forms.forEach((f, i) => l.push((i + 1) + '. ' + stades[i]));
   l.push('', '', '--- une fois la planche enregistrée dans art/source-' + ligne.key + '.png ---', '');
   l.push('python tools/decouper.py art/source-' + ligne.key + '.png ' + ligne.key + ' ' + suffixes.join(','));

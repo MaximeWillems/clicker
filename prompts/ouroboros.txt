@@ -4,46 +4,50 @@ evenly spaced.
 TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
 
 CUTE MASCOT STYLE — this is the most important instruction:
-- baby proportions: the head is at least half the whole creature
+- ALREADY ACCOMPLISHED at stage 1: this is not a baby, it is a small complete god
+- adult proportions, calm and settled — never a hatchling, never a larva
 - huge round eyes, set low and wide apart, each about one third of the face width,
   with one single white highlight dot
 - tiny simple smiling mouth, never a wide slit, never fangs
 - small pink blush oval on each cheek
 - everything rounded and soft, no sharp angles, no spikes, no horns, no talons
-- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- a rounded, settled body — it may have no legs at all if the creature has none
 - friendly, sleepy, harmless expression on every stage
 
-CONTINUITY — the five stages are ONE animal growing up, not five animals:
-- same palette, same outline color, same eye shape from stage 1 to stage 5
-- every feature a stage gains, all LATER stages keep and grow: ears stay big,
-  a marking stays in the same place, a shell keeps the same spiral
+REVELATION — the five stages are ONE being waking up, not one growing up:
+- the SILHOUETTE barely changes from stage 1 to stage 5. It is already right at stage 1
+- what changes is what the being GAINS: an attribute, a mark, a glow, sheer size
+- same palette, same outline color, same eye shape throughout
 - later stages only ADD. Nothing is ever dropped from one stage to the next
-- stage 5 must still contain stage 1 — one should be able to point at what it kept
+- stage 5 must be overwhelming in SCALE and COMPOSITION, never in menace:
+  still round, still sleepy, still no fangs. The awe comes from what surrounds it
 
 STRICT: maximum 6 flat colors per creature including the outline.
-No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+No texture, no dithering, no noise, no gradients. Simple geometric shapes.
+Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
+never a blur, never a gradient, and it still counts toward the 6 colors.
 
 Front-facing, centered, full body. Transparent background. No shadow, no ground line,
 no background, no text, no frame.
 
 The 5 stages, in order:
-1. tiny shed ring of skin with two huge eyes peeking through
-2. small grey snake coiled once, round head, shy eyes
-3. world serpent, long soft body coiled into a wide loop
-4. ouroboros, serpent gently holding its own tail, forming a soft closed circle
-5. eternal ouroboros, enormous circle of coiled body, tiny sleepy face at the bottom
+1. a small serpent ALREADY biting its own tail, forming one simple closed ring, slender rounded body, huge round sleepy eyes, one flat color band along the back — never a worm, never an open curve, the mouth holds the tail gently with no fangs and no strain
+2. the same closed ring and the same gentle bite, the body now thicker and rounder with simple flat hexagon scales, the same sleepy eyes, a faint pale line running along the inside edge of the ring
+3. the same gentle bite, the ring now DOUBLED — a second coil nested inside the first, both closed, the same hexagon scales, the same sleepy face at the point where mouth meets tail
+4. the same gentle bite, three nested coils now, the same scales, and the empty middle of the ring filled for the first time with a soft pale glowing disc — the ring has begun to hold something
+5. ouroboros, enormous, the same gentle bite and the same nested coils now filling the entire frame, soft golden ring marks along the back, and held inside the ring a small pale world with soft round continents and two tiny moons, tiny sleepy face at the point where the mouth meets the tail
 
 
 --- une fois la planche enregistrée dans art/source-ouroboros.png ---
 
-python tools/decouper.py art/source-ouroboros.png ouroboros anneau-de-mue,serpent-gris,serpent-monde,ouroboros,ouroboros-eternel
+python tools/decouper.py art/source-ouroboros.png ouroboros ouroboros,ouroboros-eveille,ouroboros-clos,ouroboros-sans-fin,la-boucle-du-monde
 
 --- puis dans la table ART, en haut de game.js ---
 
   ouroboros: {
-    1: 'ouroboros-1-anneau-de-mue.png',   // Anneau de mue
-    2: 'ouroboros-2-serpent-gris.png',   // Serpent gris
-    3: 'ouroboros-3-serpent-monde.png',   // Serpent-monde
-    4: 'ouroboros-4-ouroboros.png',   // Ouroboros
-    5: 'ouroboros-5-ouroboros-eternel.png',   // Ouroboros éternel
+    1: 'ouroboros-1-ouroboros.png',   // Ouroboros
+    2: 'ouroboros-2-ouroboros-eveille.png',   // Ouroboros éveillé
+    3: 'ouroboros-3-ouroboros-clos.png',   // Ouroboros clos
+    4: 'ouroboros-4-ouroboros-sans-fin.png',   // Ouroboros sans fin
+    5: 'ouroboros-5-la-boucle-du-monde.png',   // Ouroboros, la boucle du monde
   },

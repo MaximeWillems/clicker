@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.5.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.6.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.5.0** | cinq emplacements fixes, et plus aucune réserve — chez personne |
+| **2.6.0** | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
+| 2.5.0 | cinq emplacements fixes, et plus aucune réserve — chez personne |
 | 2.4.1 | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
 | 2.4.0 | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
 | 2.3.5 | les consignes de la ferme ne traversent plus l'ascension |
@@ -1040,6 +1041,37 @@ ils étaient noyés. Ils y sont présentés comme la chaîne qu'ils forment vrai
 1 · l'acheteur rachète, 2 · l'évolution fait monter, 3 · le marchand vend. Le panneau
 n'apparaît que lorsqu'on possède au moins un automate à régler, et la consigne du marchand
 affiche sa conséquence en clair plutôt que de la laisser deviner.
+
+### Deux arcs, deux chartes
+
+Les lignées **communes, rares et épiques** suivent l'arc de la transformation : cinq
+silhouettes distinctes, du pitoyable au glorieux. C'est le principe qui rend une évolution
+mémorable — ce n'est pas l'évolution, c'est l'écart.
+
+Les **mythiques** suivent l'arc de la révélation. Elles naissent déjà elles-mêmes, complètes
+et reconnaissables au premier âge : un dieu qui commence en avorton n'est plus un dieu. Le nom
+ne change jamais, seule l'épithète pousse, et la silhouette bouge à peine — ce qui grandit,
+ce sont les attributs.
+
+`tools/prompt.js` porte donc **deux en-têtes**, choisis sur la rareté. Celui de la révélation
+retire les proportions de bébé, remplace la continuité « une bête qui grandit » par « le même
+être qui se réveille », et autorise la lueur — mais **en aplat seulement**, une forme pâle de
+plus à bord net, jamais un dégradé : sinon le pixel art se dissout et la contrainte des six
+couleurs saute avec lui.
+
+**L'Ouroboros est la première lignée écrite sous cette charte.** Il naissait en « Anneau de
+mue », une dépouille, avec un glyphe de ver. Il est maintenant un serpent qui se mord la queue
+dès le premier âge, et **l'anneau ne change plus jamais** : ce qui grandit, c'est ce qu'il
+contient — rien, puis une lueur, puis un monde. Le grandiose vient de là, et non d'une créature
+devenue menaçante.
+
+| Âge | Ce qu'on voit |
+|---|---|
+| Ouroboros | un petit serpent qui se mord déjà la queue, anneau fermé, corps mince |
+| Ouroboros éveillé | le même anneau, épaissi, écailles hexagonales |
+| Ouroboros clos | l'anneau **doublé** — une seconde boucle à l'intérieur |
+| Ouroboros sans fin | trois boucles, et le centre s'éclaire pour la première fois |
+| **Ouroboros, la boucle du monde** | les boucles emplissent le cadre et **tiennent un monde** |
 
 ### Illustrations
 
