@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.4.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.4.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.4.0** | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
+| **2.4.1** | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
+| 2.4.0 | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
 | 2.3.5 | les consignes de la ferme ne traversent plus l'ascension |
 | 2.3.4 | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
 | 2.3.3 | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
@@ -819,6 +820,13 @@ C'est la conséquence la moins évidente de la règle. **Les cartes viennent des
 dans l'enclos au moment du saut** — or le marchand automatique vide l'enclos en continu,
 absences comprises. Un joueur qui ascensionne sans y penser trouve une ferme vide et repart
 avec zéro carte, après des heures de jeu.
+
+**La ferme s'arrête pendant l'écran d'ascension.** On y décide du sort de bêtes précises ; les
+laisser vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le panneau menteur
+au moment même où il demande une décision irréversible. Et les capsules d'aperçu portent
+l'identifiant de leur **bête**, non leur position dans l'enclos : elles étaient numérotées « la
+première, la deuxième », si bien qu'une vente automatique décalait tout et qu'on gardait une
+carte qu'on n'avait pas choisie.
 
 L'écran d'ascension annonce donc combien de cartes le saut produira, et **prévient quand le
 marchand est encore actif**. Préparer une ascension, c'est passer ses consignes sur « jamais » —

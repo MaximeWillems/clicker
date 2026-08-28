@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.4.0';
+const VERSION = 'alpha 2.4.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1780,6 +1780,11 @@ function runAutomations(dt) {
 
 function loop() {
   const now = Date.now();
+  /* LA FERME S'ARRÊTE PENDANT L'ÉCRAN D'ASCENSION. On y décide du sort de bêtes précises ;
+     les laisser vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le
+     panneau menteur au moment même où il demande une décision irréversible. On recale
+     l'horloge à chaque tour pour qu'aucune dette de temps ne s'accumule derrière. */
+  if (!$('ascension').hidden) { lastFrame = now; return; }
   const dt = Math.min(5, (now - lastFrame) / 1000) * state.speed;
   lastFrame = now;
   if (dt <= 0) return;
@@ -2217,14 +2222,19 @@ function renderAlbum() {
   }
 }
 
-/* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent un
-   identifiant NÉGATIF, qui ne peut se confondre avec aucune carte de l'album. Elles
-   reçoivent leur vrai numéro à la validation, et pas avant. */
+/* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent
+   l'identifiant de leur bête, EN NÉGATIF — il ne peut donc se confondre avec aucune carte de
+   l'album, et il désigne un animal précis. Elles reçoivent leur vrai numéro à la validation.
+
+   L'aperçu était numéroté par POSITION — la première, la deuxième — et l'enclos bougeait sous
+   les pieds du joueur pendant qu'il choisissait : une vente automatique décalait tout, et « la
+   troisième » n'était plus la même bête entre le clic et la confirmation. On gardait une carte
+   qu'on n'avait pas choisie, et depuis que les autres sont détruites, on perdait la bonne. */
 let ascChoix = [];
 
 function apercuAscension() {
   const jetons = state.asc.jetons || 0;
-  const neuves = state.pen.map((c, i) => Object.assign(capsuleBrute(c), { id: -(i + 1) }));
+  const neuves = state.pen.map(c => Object.assign(capsuleBrute(c), { id: -c.id }));
   return { jetons, neuves, max: slotsMax((state.asc.n || 0) + 1) };
 }
 
@@ -2286,9 +2296,14 @@ function renderAscension() {
     autos + ' amélioration' + (autos > 1 ? 's' : '') + ' sur ' + UPGRADES.length +
     ' · les bêtes non transformées. Ta collection et ton album, eux, restent.');
 
+  /* Une bête vendue ou une carte disparue ne doit pas rester cochée en fantôme : le compte
+     d'emplacements mentirait, et la confirmation promettrait ce qu'elle ne peut pas tenir. */
+  const dispo = state.album.concat(ap.neuves);
+  ascChoix = ascChoix.filter(id => dispo.some(k => k.id === id));
+
   const choix = $('asc-choix');
   choix.textContent = '';
-  for (const k of state.album.concat(ap.neuves)) {
+  for (const k of dispo) {
     const el = carteEl(k);
     el.classList.add('choisir');
     if (ascChoix.indexOf(k.id) !== -1) el.classList.add('active');
