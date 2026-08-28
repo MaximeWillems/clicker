@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 1.5.0';
+const VERSION = 'alpha 2.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -69,12 +69,16 @@ const SLOT_MULT  = 1.6;
    d'une rareté fait sauter à peu près deux âges, et le coût d'évolution suit le même
    multiplicateur. Monter une rare coûte donc vingt-cinq fois ce que coûte une commune —
    on ne s'y met qu'une fois la ferme commune arrivée à maturité. Chaque rareté est une ère,
-   pas un bonus. */
+   pas un bonus.
+
+   `plafond` ne sert qu'aux cartes de l'album : c'est ce qu'une capsule de cette rareté peut
+   donner au mieux. Il monte bien plus doucement que `mult` — une carte mythique doit valoir
+   mieux qu'une commune, pas quinze mille fois mieux. */
 const RARITY = {
-  commune:  { name: 'commune',  plur: 'communes',  mult: 1,     rank: 0 },
-  rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1 },
-  epique:   { name: 'épique',   plur: 'épiques',   mult: 600,   rank: 2 },
-  mythique: { name: 'mythique', plur: 'mythiques', mult: 15000, rank: 3 },
+  commune:  { name: 'commune',  plur: 'communes',  mult: 1,     rank: 0, plafond: 1 },
+  rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1, plafond: 1.6 },
+  epique:   { name: 'épique',   plur: 'épiques',   mult: 600,   rank: 2, plafond: 2.5 },
+  mythique: { name: 'mythique', plur: 'mythiques', mult: 15000, rank: 3, plafond: 4 },
 };
 
 // « a, b et c » plutôt que « a, b, c » : les notes doivent se lire à voix haute.
@@ -235,7 +239,9 @@ const TEMPERS = [
   { key: 'rêveur',   name: 'rêveur',   fem: 'rêveuse',   grow: 0.90, fat: 1.15 },
 ];
 
-// Purement descriptif : aucun effet, juste de quoi reconnaître une bête entre mille.
+/* Le motif était purement descriptif jusqu'à l'album : il n'avait aucun effet, il servait
+   seulement à reconnaître une bête entre mille. C'est justement ce qui en fait le bon
+   support pour le bonus d'une carte — voir MOTIF_BONUS plus bas. */
 const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé'];
 
 /* Les rangs de taille qualifient une bête MÛRE qu'on n'a pas fait évoluer : « adulte »,
@@ -253,6 +259,107 @@ const RANKS = [
   { at: 2.30, name: 'colossal',   fem: 'colossale' },
   { at: 3.20, name: 'titanesque', fem: 'titanesque' },
   { at: 4.50, name: 'démesuré',   fem: 'démesurée' },
+];
+
+/* ── L'album et l'ascension ───────────────────────────────────────────────────
+   Le jeu s'arrêtait sur une fin sèche : titans mythiques, ferme pleine, plus rien.
+   L'ascension lui donne un deuxième tour, et l'album est la seule chose qu'on emporte.
+
+   LE CYCLE TIENT EN CINQ TEMPS. On joue. On franchit un jalon. On ascensionne : les bêtes
+   de l'enclos deviennent des CAPSULES — la bête figée telle qu'elle était. On équipe
+   quelques cartes. Tout le reste repart de zéro.
+
+   Une bête ne devient jamais une carte en cours de partie : la transformation n'a lieu qu'au
+   moment du saut, sur ce qu'il reste dans l'enclos. Il n'y a donc aucun arbitrage à faire
+   devant chaque animal — la question devient « lesquelles je garde en vie pour le saut ? »,
+   posée une fois sur une ferme entière plutôt que trente fois sur trente bêtes.
+
+   L'ALBUM GARDE TOUT, SEULES LES CARTES ÉQUIPÉES AGISSENT. C'est la règle qui rend le reste
+   calculable : sans limite d'emplacements, vingt-et-une cartes se composent et la puissance
+   de l'album n'a plus de plafond. Avec six au maximum, elle est bornée par six plafonds. */
+
+const SLOTS_BASE = 3;       // emplacements à la première ascension
+const SLOTS_MAX  = 6;       // et jamais plus, quoi qu'on fasse
+
+/* Le palier vient de la fusion, qui arrive en 2.1 : une capsule naît au palier 1 et y reste
+   pour l'instant. La table est là dès maintenant parce que la puissance la lit déjà. */
+const PALIERS = [1, 1.8, 3, 5];
+
+/* LE MOTIF DÉCIDE DE CE QUE LA CARTE ACCÉLÈRE. Il ne servait à rien, il est déjà tiré à
+   l'éclosion et gardé à vie : lui confier le bonus ne demande aucune mécanique neuve, et il
+   devient chassable. Faire dire le bonus par la LIGNÉE aurait figé vingt-et-un bonus dans la
+   pierre et rendu une lignée entière inintéressante le jour où le sien l'est.
+
+   Deux familles baissent des PRIX au lieu d'augmenter des vitesses. C'est ce qui empêche la
+   deuxième partie d'être la première en accéléré : une ferme menée au zébré ne se joue pas
+   comme une ferme menée au tacheté.
+
+   `pas` est ce qu'un point de puissance ajoute, `cap` le plafond de la famille. Le prodige
+   fait exception et s'exprime EN MULTIPLICATEUR DE LA BASE, jamais en points : la base est à
+   1/500, soit 0,2 %, et un demi-point la multiplierait par trois et demi. On vient de couper
+   le bonus d'élevage de ×25 à ×4 pour protéger ce 1/500 ; une carte ne doit pas le défaire.
+
+   LES DEUX COLONNES DOIVENT SE RÉPONDRE, et la première version ne le faisait pas. Un `pas`
+   deux à trois fois plus petit rendait les plafonds INATTEIGNABLES : six cartes parfaites
+   restaient sous chacun d'eux, ce qui veut dire qu'aucun n'était un plafond. À l'autre bout,
+   une première ascension réaliste — trois titans communs ordinaires — rendait +1,4 % de
+   valeur et +2,8 % de couvaison en échange de TOUT ce qu'on possédait. Personne n'aurait
+   ascensionné deux fois.
+
+   Les plafonds n'ont pas bougé : la puissance maximale de l'album est exactement celle
+   annoncée. Seule la pente change, de sorte qu'un album mûr — six emplacements bien remplis,
+   autour de quatorze points — vienne buter contre ses plafonds au lieu de les frôler.
+
+   La conséquence est qu'un album se CONCENTRE. Trois cartes d'une même famille rendent trois
+   fois plus que trois familles différentes : le joueur choisit un build, il ne ramasse pas. */
+const MOTIF_BONUS = {
+  'uni':       { key: 'valeur',  quoi: 'valeur de vente',       pas: 0.04, cap: 0.60, signe: 1 },
+  'tacheté':   { key: 'couvee',  quoi: 'vitesse de couvaison',  pas: 0.10, cap: 1.50, signe: 1 },
+  'moucheté':  { key: 'pousse',  quoi: 'vitesse de croissance', pas: 0.10, cap: 1.50, signe: 1 },
+  'rayé':      { key: 'gras',    quoi: 'engraissement',         pas: 0.10, cap: 1.50, signe: 1 },
+  'tigré':     { key: 'rente',   quoi: 'rente',                 pas: 0.14, cap: 2.00, signe: 1 },
+  'marbré':    { key: 'peage',   quoi: 'prix des évolutions',   pas: 0.03, cap: 0.40, signe: -1 },
+  'zébré':     { key: 'oeuf',    quoi: 'prix des œufs',         pas: 0.03, cap: 0.40, signe: -1 },
+  'constellé': { key: 'prodige', quoi: 'chance de prodige',     pas: 0.07, cap: 1.00, signe: 1 },
+};
+
+/* Un jalon est un exploit à USAGE UNIQUE : le franchir autorise une ascension, l'ascension
+   en consomme un. Le nombre total d'ascensions est donc borné par cette liste — et comme les
+   emplacements et les paliers le sont aussi, la puissance maximale de l'album est un nombre
+   qu'on peut calculer avant d'avoir joué.
+
+   La condition se lit SUR L'ÉTAT COURANT, jamais sur un souvenir. C'est ce qui interdit
+   d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc
+   plus aucun jalon ne tient. Il faut rejouer pour rouvrir le suivant.
+
+   Les trois natures — fortune, exploit, collection — sont volontairement mélangées. Des
+   seuils de fortune seuls n'encourageraient qu'à amasser, alors que l'album récompense de
+   BIEN jouer ; des exploits seuls rendraient le rythme illisible. */
+const JALONS = [
+  { key: 'geant',  quoi: 'Mener une bête à l’âge géant',
+    test: () => state.pen.some(c => c.age >= 4) },
+  { key: 'or1',    quoi: 'Amasser 1 M de pièces',
+    test: () => state.coins >= 1e6 },
+  { key: 'titan',  quoi: 'Mener une bête à l’âge titan', slot: true,
+    test: () => state.pen.some(c => c.age >= 5) },
+  { key: 'or2',    quoi: 'Amasser 100 M de pièces',
+    test: () => state.coins >= 1e8 },
+  { key: 'chroma', quoi: 'Avoir un chromatique en enclos',
+    test: () => state.pen.some(c => c.prodige) },
+  { key: 'or3',    quoi: 'Amasser 10 Md de pièces', slot: true,
+    test: () => state.coins >= 1e10 },
+  { key: 'lignee', quoi: 'Voir les cinq formes d’une même lignée',
+    test: () => LINES.some(l => AGES.every((a, i) => state.seen[l.key + ':' + (i + 1)])) },
+  { key: 'or4',    quoi: 'Amasser 1 Bn de pièces',
+    test: () => state.coins >= 1e12 },
+  { key: 'mythe',  quoi: 'Mener une mythique à l’âge titan', slot: true,
+    test: () => state.pen.some(c => c.age >= 5 && lineOf(c).rarity === 'mythique') },
+  { key: 'or5',    quoi: 'Amasser 100 Bn de pièces',
+    test: () => state.coins >= 1e14 },
+  { key: 'toutes', quoi: 'Rencontrer toutes les lignées',
+    test: () => LINES.every(l => AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)])) },
+  { key: 'sommet', quoi: 'Un titan mythique chromatique',
+    test: () => state.pen.some(c => c.age >= 5 && c.prodige && lineOf(c).rarity === 'mythique') },
 ];
 
 /* ── La granularité des améliorations ─────────────────────────────────────────
@@ -527,10 +634,10 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 6;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 7;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
-let state, nextId = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
+let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
 
 /* Vrai pendant qu'on rejoue une absence. Les automates tournent alors des milliers de fois
    d'affilée : ni son, ni étincelles, ni redessin à chaque tour — on n'affiche que le résultat.
@@ -578,6 +685,13 @@ function freshState() {
        pousse les communes jusqu'au bout pendant qu'on arrête les mythiques à l'âge adulte. */
     evolveUpTo: { commune: 0, rare: 0, epique: 0, mythique: 0 },
     seen: {},
+    /* Ce qui traverse l'ascension. `album` garde TOUTES les capsules, `slots` ne porte que
+       les identifiants des cartes équipées — seules celles-là agissent. `asc.done` liste les
+       jalons déjà dépensés : c'est lui qui borne le nombre d'ascensions et le nombre
+       d'emplacements. Ces quatre-là et `seen` sont recopiés tels quels au moment du saut. */
+    album: [],
+    slots: [],
+    asc: { n: 0, done: [] },
     speed: 1,
     sound: true,
     t: Date.now(),
@@ -693,11 +807,20 @@ function load() {
     if ((s.v || 0) < 4) {
       for (const u of UPGRADES) if (u.grain) merged.up[u.key] = (merged.up[u.key] || 0) * GRAIN;
     }
+    /* v6 → v7 : l'album et le cycle d'ascension. La migration est purement additive — une
+       partie en cours ne perd rien et devient ascensionnable dès son premier jalon franchi.
+       On nettoie seulement les emplacements qui pointeraient vers une carte absente. */
+    merged.album = Array.isArray(merged.album) ? merged.album : [];
+    merged.asc = Object.assign({ n: 0, done: [] }, merged.asc || {});
+    if (!Array.isArray(merged.asc.done)) merged.asc.done = [];
+    merged.slots = (Array.isArray(merged.slots) ? merged.slots : [])
+      .filter(id => merged.album.some(k => k.id === id));
     /* Le numéro de ce que la sauvegarde contient, pas celui d'où elle vient. On ne peut PAS
        le relire dans `base` : Object.assign mute sa cible, donc `base` et `merged` sont le
        même objet et `base.v` porte déjà l'ancien numéro. */
     merged.v = SAVE_V;
     nextId = merged.pen.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
+    nextCard = merged.album.reduce((m, k) => Math.max(m, k.id || 0), 0) + 1;
     return merged;
   } catch (e) {
     isNewGame = true;
@@ -749,8 +872,43 @@ const nivDansTranche = c => niveau(c) - nivBase(c.age) - 1;
 // taille reste la valeur brute de l'âge, sinon un tempérament vif cumulerait deux bonus.
 const growRate = c => temperOf(c).grow;
 
+/* ── L'album, côté calcul ─────────────────────────────────────────────────────
+   Une capsule est la bête figée : sa lignée dit son plafond, son motif dit CE QUE la carte
+   accélère, et le reste dit COMBIEN. Quatre axes pour la qualité, tous déjà stockés sur la
+   bête, et le niveau domine — c'est le seul qui demande du temps plutôt que de la chance. */
+const carteDe    = id => state.album.find(k => k.id === id) || null;
+const plafondDe  = k => RARITY[LINE_BY_KEY[k.line].rarity].plafond;
+const motifBonus = k => MOTIF_BONUS[MOTIFS[k.motif]] || MOTIF_BONUS.uni;
+
+function qualiteDe(k) {
+  const q = 0.50 * ((k.niv || 1) / NIV_MAX)
+          + 0.20 * ((k.tint || 0) / (TINTS.length - 1))
+          + 0.20 * ((k.rank || 0) / (RANKS.length - 1))
+          + 0.10 * (k.prodige ? 1 : 0);
+  return 0.4 + 0.6 * q;      // de 0,40 pour une carte bâclée à 1,00 pour un trophée
+}
+const puissanceDe = k => plafondDe(k) * PALIERS[(k.palier || 1) - 1] * qualiteDe(k);
+
+/* Ce que l'album ajoute, famille par famille. Recalculé seulement quand les cartes équipées
+   changent — c'est-à-dire à l'ascension et au chargement : baseValue l'appelle une fois par
+   bête et par image, et refaire la somme à chaque appel se paierait à l'écran. */
+let bonusCache = null;
+const oublierAlbum = () => { bonusCache = null; };
+function bonusAlbum() {
+  if (bonusCache) return bonusCache;
+  const b = { valeur: 0, couvee: 0, pousse: 0, gras: 0, rente: 0, peage: 0, oeuf: 0, prodige: 0 };
+  for (const id of state.slots || []) {
+    const k = carteDe(id);
+    if (!k) continue;
+    const m = motifBonus(k);
+    b[m.key] = Math.min(m.cap, b[m.key] + m.pas * puissanceDe(k));
+  }
+  return (bonusCache = b);
+}
+
 const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
-const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c);
+const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c)
+                     * (1 + bonusAlbum().valeur);
 
 function pickWeighted(list) {
   let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
@@ -764,7 +922,8 @@ function rollVariants() {
     tint: pickWeighted(TINTS),
     temper: Math.floor(Math.random() * TEMPERS.length),
     motif: Math.floor(Math.random() * MOTIFS.length),
-    prodige: Math.random() < PRODIGE_ODDS,
+    // le constellé pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
+    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige),
   };
 }
 
@@ -773,11 +932,11 @@ function rollVariants() {
    se remboursent à l'âge géant, jamais avant — autant le dire plutôt que de laisser le
    joueur le découvrir en perdant sa mise. */
 function seuilRentable(c) {
-  const rar = rarityOf(c).mult;
-  const mult = rar * variantMult(c);
+  const rar = rarityOf(c).mult, b = bonusAlbum();
+  const mult = rar * variantMult(c) * (1 + b.valeur);
   let cumul = 0;
   for (let a = 1; a <= AGES.length; a++) {
-    if (a > 1) cumul += (EVOLVE[a - 2] || 0) * rar;
+    if (a > 1) cumul += (EVOLVE[a - 2] || 0) * rar * (1 - b.peage);
     if (VALUE[a - 1] * mult - cumul >= (c.cost || 0)) return a;
   }
   return null;
@@ -834,7 +993,12 @@ const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
 const evoRemise = () => 1 / (1 + EVO_RABAIS * force('intendant'));
 const evoCost   = c => EVOLVE[c.age - 1] === null ? null
-                     : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise());
+                     : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise()
+                                  * (1 - bonusAlbum().peage));
+
+/* Le prix d'un œuf passe toujours par ici : le zébré de l'album le baisse, et un prix qui
+   s'afficherait ailleurs qu'à l'endroit où il se paie finirait par mentir. */
+const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)));
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
 const penFull   = () => state.pen.length >= state.pens;
 
@@ -857,12 +1021,26 @@ const autoRate = s => s.kind === 'egg' ? force('couveuse')
                     : estMur(s.c) ? FATTEN_X * force('mangeoire') * temperOf(s.c).fat
                     : force('eleveur');
 
+/* Ce que l'album ajoute à CE sujet-là, selon ce qu'il est en train de faire : un œuf couve,
+   une bête grandit, une bête mûre engraisse. Trois familles de motifs, une seule fonction. */
+const albumVitesse = s => {
+  const b = bonusAlbum();
+  return 1 + (s.kind === 'egg' ? b.couvee : estMur(s.c) ? b.gras : b.pousse);
+};
+
+// La vitesse réellement observée : celle des automates, poussée par l'album. C'est elle
+// qu'il faut afficher, sinon le panneau annonce une durée que la barre ne tient pas.
+const autoReel = s => autoRate(s) * albumVitesse(s);
+
 /* Un clic vaut toujours le même temps réel, quoi qu'on ait automatisé. Sans ça les
    automates nerfaient le clic au moment même où on payait pour aller plus vite :
    à éleveur ×7, un « +14 s » n'avançait la bête que de deux secondes de ce que la
    machine faisait déjà. Le clic apporte donc clickPower secondes d'automate — il reste
    un raccourci qui se sent, du premier œuf au centième niveau. */
-const clickGain = s => clickPower() * Math.max(1, autoRate(s));
+/* L'album multiplie le clic AVANT le plancher, pas après : c'est ce qui le fait sentir dès
+   la première seconde d'une nouvelle partie, quand plus aucun automate n'est acheté. Une fois
+   un automate en route, le produit redonne exactement la vitesse réelle de la machine. */
+const clickGain = s => clickPower() * albumVitesse(s) * Math.max(1, autoRate(s));
 
 /* La taille se mesure en durées de croissance avalées EN PLUS de ce que son âge demandait.
    Le diviseur est la tranche courante, quatre à six fois plus longue à chaque cran : c'est
@@ -876,6 +1054,7 @@ const sellValue  = c => Math.max(1, Math.round(baseValue(c) * nivMult(c)));
    directement, et une bête rapporte à proportion exacte de ce qu'elle vaut. */
 const renteOf = c => c.age >= AGE_RENTE
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
+                     * (1 + bonusAlbum().rente)
                    : 0;
 const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 
@@ -1225,7 +1404,7 @@ function hatchAll() {
     // on retient le prix de l'œuf : c'est la seule façon de dire au joueur, plus tard,
     // qu'il est en train de vendre à perte
     const c = Object.assign({ id: nextId++, line: slot.line, age: 1, p: 0, over: 0,
-                              cost: (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).price },
+                              cost: prixOeuf(EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun) },
                            rollVariants());
     // un prodige est protégé d'office : on ne perd pas une bête sur cinq cents
     // parce que le marchand l'a vendue avant qu'on l'ait vue
@@ -1314,8 +1493,9 @@ function toggleKeep(c) {
 
 function buyEgg(kind) {
   const e = EGG_BY_KEY[kind];
-  if (!e || state.coins < e.price) return;
-  state.coins -= e.price;
+  const prix = prixOeuf(e);
+  if (!e || state.coins < prix) return;
+  state.coins -= prix;
   state.eggs[kind] = eggStock(kind) + 1;
   const free = state.incub.indexOf(null);
   if (free !== -1) placeEgg(free, kind); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
@@ -1370,7 +1550,8 @@ function upLabel(u) {
 // Le temps ne fait avancer que ce qui a été automatisé. Tant que rien n'est acheté,
 // seuls le clic et la nourriture font bouger quoi que ce soit.
 function advance(dt) {
-  const couve = force('couveuse'), eleve = force('eleveur');
+  const b = bonusAlbum();
+  const couve = force('couveuse') * (1 + b.couvee), eleve = force('eleveur') * (1 + b.pousse);
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -1444,7 +1625,7 @@ function runAutomations(dt) {
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
-    const debit = dt * FATTEN_X * force('mangeoire');
+    const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras);
     for (const c of state.pen) {
       if (estMur(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
@@ -1457,9 +1638,10 @@ function runAutomations(dt) {
       if (state.incub[i]) continue;
       let kind = bestStocked();
       if (kind) state.eggs[kind]--;
-      else if (state.coins >= voulu.price) {
-        state.coins -= voulu.price;
-        bilanAuto.depense += voulu.price;
+      else if (state.coins >= prixOeuf(voulu)) {
+        const prix = prixOeuf(voulu);
+        state.coins -= prix;
+        bilanAuto.depense += prix;
         kind = voulu.key;
       }
       else break;      // on laisse l'incubateur vide plutôt que de brader la consigne
@@ -1571,7 +1753,7 @@ function remplirMenus() {
   ach.textContent = '';
   for (const e of EGG_KINDS) {
     ach.appendChild(option(e.key, e.name.replace('Œuf ', 'Œufs ') + 's — ' +
-      fmt(e.price) + ', couve en ' + fmtTime(e.hatch)));
+      fmt(prixOeuf(e)) + ', couve en ' + fmtTime(e.hatch)));
   }
 
   for (const cle of Object.keys(RARITY)) {
@@ -1638,7 +1820,7 @@ function buildChrome() {
 
   const items = EGG_KINDS.map(e => ({
     key: 'egg-' + e.key, title: e.name, desc: eggDesc(e), rarity: e.key,
-    cost: () => e.price, run: () => buyEgg(e.key),
+    cost: () => prixOeuf(e), run: () => buyEgg(e.key),
   })).concat([
     { key: 'incub', title: 'Incubateur', desc: 'Un œuf de plus en couvaison.',        cost: incubCost, run: buyIncubator },
     { key: 'pen',   title: 'Enclos',     desc: 'Une créature de plus en croissance.', cost: penCost,   run: buyPen },
@@ -1811,6 +1993,205 @@ function renderCollection() {
   $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * AGES.length);
 }
 
+/* ─────────────────────────────────────────────
+   L'album et l'ascension
+   ───────────────────────────────────────────── */
+
+const jalonDe   = key => JALONS.find(j => j.key === key) || null;
+const jalonFait = key => (state.asc.done || []).indexOf(key) !== -1;
+const jalonsOuverts = () => JALONS.filter(j => !jalonFait(j.key) && j.test());
+
+const slotsMax = done =>
+  Math.min(SLOTS_MAX, SLOTS_BASE + (done || state.asc.done || [])
+    .filter(k => (jalonDe(k) || {}).slot).length);
+
+/* La bête telle qu'elle était, figée. `capsuleBrute` ne consomme pas d'identifiant : l'écran
+   d'ascension en fabrique une par bête pour montrer ce que le saut donnera, et ces
+   aperçus-là sont jetés si le joueur referme sans valider. */
+function capsuleBrute(c) {
+  return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, tint: c.tint,
+           temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige, palier: 1 };
+}
+const capsuleDe = c => Object.assign(capsuleBrute(c), { id: nextCard++ });
+
+const nomCarte = k => form(k.line, k.age)[0];
+
+// Ce qu'une carte annonce en une ligne. Un pourcentage qu'on ne relie pas à un motif ne se
+// chasse pas : le motif vient donc en premier, et l'effet derrière.
+function effetCarte(k) {
+  const m = motifBonus(k), v = Math.min(m.cap, m.pas * puissanceDe(k));
+  return MOTIFS[k.motif] + ' · ' + m.quoi + ' ' +
+         (m.signe < 0 ? '−' : '+') + Math.round(v * 100) + ' %';
+}
+
+function carteEl(k) {
+  const el = document.createElement('div');
+  el.className = 'carte rar-' + LINE_BY_KEY[k.line].rarity;
+  el.innerHTML = '<span class="carte-bete"></span><span class="carte-txt">' +
+                 '<b class="carte-nom"></b><i class="carte-eff"></i></span>';
+  const bete = el.querySelector('.carte-bete');
+  setCreature(bete, artAt(k.line, k.age), form(k.line, k.age)[1]);
+  bete.style.filter = k.prodige ? PRODIGE_FILTER : (TINTS[k.tint] || TINTS[0]).filter;
+  el.querySelector('.carte-nom').textContent = nomCarte(k);
+  el.querySelector('.carte-eff').textContent = effetCarte(k);
+  el.title = nomCarte(k) + ' — niveau ' + k.niv + ', ' + AGES[k.age - 1].nom +
+             (RANKS[k.rank].name ? ' ' + RANKS[k.rank].name : '') +
+             ' · puissance ' + dec(puissanceDe(k), 2);
+  return el;
+}
+
+let albumSig = '';
+function renderAlbum() {
+  const sig = state.album.map(k => k.id + ':' + k.palier).join(',') + '|' +
+              state.slots.join(',') + '|' + state.asc.n;
+  if (sig === albumSig) return;
+  albumSig = sig;
+
+  $('panel-album').hidden = !state.album.length && !state.asc.n;
+  const host = $('album');
+  host.textContent = '';
+  $('album-meta').textContent = state.album.length +
+    (state.album.length > 1 ? ' cartes' : ' carte');
+
+  if (!state.album.length) {
+    $('album-intro').textContent = 'Aucune carte pour l’instant. Les bêtes présentes dans ' +
+      'ton enclos au moment de l’ascension deviendront des capsules.';
+    return;
+  }
+  $('album-intro').textContent = state.asc.n +
+    (state.asc.n > 1 ? ' ascensions' : ' ascension') + '. Seules les cartes équipées agissent, ' +
+    'et le choix se refait au prochain saut.';
+
+  const equipees = state.slots.map(carteDe).filter(Boolean);
+  const reste = state.album.filter(k => state.slots.indexOf(k.id) === -1);
+  const bloc = (titre, cartes, actif) => {
+    if (!cartes.length) return;
+    const h = document.createElement('p');
+    h.className = 'album-head';
+    h.textContent = titre;
+    host.appendChild(h);
+    for (const k of cartes) {
+      const el = carteEl(k);
+      if (actif) el.classList.add('active');
+      host.appendChild(el);
+    }
+  };
+  bloc('Équipées — ' + equipees.length + ' / ' + slotsMax(), equipees, true);
+  bloc('En réserve', reste, false);
+}
+
+/* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent un
+   identifiant NÉGATIF, qui ne peut se confondre avec aucune carte de l'album. Elles
+   reçoivent leur vrai numéro à la validation, et pas avant. */
+let ascChoix = [];
+
+function apercuAscension() {
+  const jalon = jalonsOuverts()[0] || null;
+  const done = jalon ? (state.asc.done || []).concat([jalon.key]) : (state.asc.done || []);
+  const neuves = state.pen.map((c, i) => Object.assign(capsuleBrute(c), { id: -(i + 1) }));
+  return { jalon, done, neuves, max: slotsMax(done) };
+}
+
+function ouvrirAscension() {
+  if (!jalonsOuverts().length) return;
+  ascChoix = state.slots.slice();
+  $('ascension').hidden = false;
+  renderAscension();
+}
+
+function fermerAscension() { $('ascension').hidden = true; }
+
+function renderAscension() {
+  const ap = apercuAscension();
+  if (!ap.jalon) { fermerAscension(); return; }
+
+  setText($('asc-jalon'), 'Jalon franchi : ' + ap.jalon.quoi + '. Ce saut le dépense.');
+
+  const gain = $('asc-gain');
+  gain.textContent = '';
+  if (!ap.neuves.length) {
+    const p = document.createElement('p');
+    p.className = 'asc-vide';
+    p.textContent = 'Ton enclos est vide : ce saut ne produira aucune carte.';
+    gain.appendChild(p);
+  } else {
+    for (const k of ap.neuves) gain.appendChild(carteEl(k));
+  }
+
+  /* Le marchand vide l'enclos en continu, absences comprises — et les cartes viennent de ce
+     qui reste dedans. Sans cet avertissement, un joueur ascensionne après des heures de jeu
+     et repart avec zéro carte. C'est le seul piège que la règle crée. */
+  const vend = !!state.up.marchand &&
+               Object.keys(RARITY).some(cle => (state.sellAt[cle] || 0) > 0);
+  $('asc-warn').hidden = !vend;
+  if (vend) setText($('asc-warn'),
+    '⚠ Ton marchand vend encore. Tant qu’il tourne il vide l’enclos, et les cartes viennent ' +
+    'de ce qu’il y reste au moment du saut. Passe ses consignes sur « jamais » avant.');
+
+  const eggs = totalEggs(), autos = UPGRADES.filter(u => lvl(u.key)).length;
+  setText($('asc-perte'),
+    fmt(state.coins) + ' pièces · ' +
+    (eggs ? eggs + ' œuf' + (eggs > 1 ? 's' : '') + ' en réserve · ' : '') +
+    state.incubators + ' incubateur' + (state.incubators > 1 ? 's' : '') + ' · ' +
+    state.pens + ' enclos · ' +
+    autos + ' amélioration' + (autos > 1 ? 's' : '') + ' sur ' + UPGRADES.length +
+    ' · les bêtes non transformées. Ta collection et ton album, eux, restent.');
+
+  const choix = $('asc-choix');
+  choix.textContent = '';
+  for (const k of state.album.concat(ap.neuves)) {
+    const el = carteEl(k);
+    el.classList.add('choisir');
+    if (ascChoix.indexOf(k.id) !== -1) el.classList.add('active');
+    el.addEventListener('click', () => {
+      const i = ascChoix.indexOf(k.id);
+      if (i !== -1) ascChoix.splice(i, 1);
+      else if (ascChoix.length < ap.max) ascChoix.push(k.id);
+      else return;                       // plein : on ne remplace pas au hasard
+      renderAscension();
+    });
+    choix.appendChild(el);
+  }
+  setText($('asc-slots'), ascChoix.length + ' / ' + ap.max + ' emplacement' +
+    (ap.max > 1 ? 's' : '') + ' — le choix se fige jusqu’au prochain saut.');
+}
+
+function ascensionner() {
+  const ap = apercuAscension();
+  if (!ap.jalon) return;
+
+  // les aperçus deviennent de vraies capsules, et les choix suivent leur nouvel identifiant
+  const vrai = {};
+  const neuves = ap.neuves.map(k => {
+    const c = Object.assign({}, k, { id: nextCard++ });
+    vrai[k.id] = c.id;
+    return c;
+  });
+  const album = state.album.concat(neuves);
+  const slots = ascChoix.map(id => (id < 0 ? vrai[id] : id))
+                        .filter(id => album.some(k => k.id === id))
+                        .slice(0, ap.max);
+
+  /* Tout repart de zéro SAUF ce qui est recopié ici. Les réglages traversent aussi : les
+     refaire rareté par rareté à chaque cycle serait une corvée pure, sans aucun enjeu. */
+  state = Object.assign(freshState(), {
+    album, slots, asc: { n: (state.asc.n || 0) + 1, done: ap.done },
+    seen: state.seen, tri: state.tri, sound: state.sound, speed: state.speed,
+    buyKind: state.buyKind, sellAt: state.sellAt, sellRank: state.sellRank,
+    evolveUpTo: state.evolveUpTo,
+  });
+  nextId = 1;
+  oublierAlbum();
+  albumSig = collSig = '';
+  fermerAscension();
+  remplirMenus();          // les prix des œufs bougent avec le zébré
+  syncReglages();
+  syncTri();
+  refresh();
+  save();
+  chord([392, 523, 659, 784], 90);
+}
+
 function renderStage() {
   const s = current();
   const stage = document.querySelector('.stage');
@@ -1854,7 +2235,7 @@ function renderStage() {
       setWidth($('stage-fill'), Math.min(100, (slot.p / hatchTime(slot)) * 100) + '%');
       setText($('stage-timer'), ready
         ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
-        : remaining(hatchTime(slot) - slot.p, autoRate(s)));
+        : remaining(hatchTime(slot) - slot.p, autoReel(s)));
       $('stage-timer').classList.toggle('done', ready);
       setText($('stage-hint'), state.up.couveuse
         ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
@@ -1921,7 +2302,7 @@ function renderStage() {
     const pas = ageGrow(c) / nivDansAge(c.age);
     const dedans = (c.p - bandFrom(c)) - nivDansTranche(c) * pas;
     setWidth($('stage-fill'), Math.min(100, (dedans / pas) * 100).toFixed(1) + '%');
-    setText($('stage-timer'), remaining((pas - dedans) / growRate(c), autoRate(s)) +
+    setText($('stage-timer'), remaining((pas - dedans) / growRate(c), autoReel(s)) +
       ' → niv. ' + (niv + 1) + (niv + 1 === dernier ? ' · mûre' : ''));
     $('stage-timer').classList.remove('done');
     setText($('stage-hint'), state.up.eleveur
@@ -1935,7 +2316,7 @@ function renderStage() {
       // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
       const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * ageGrow(c);
       setText($('stage-timer'), 'mûre · ' +
-        remaining(cible - (c.over || 0), autoRate(s)) + ' → ' + rank.next.name +
+        remaining(cible - (c.over || 0), autoReel(s)) + ' → ' + rank.next.name +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
@@ -2035,39 +2416,41 @@ function renderStage() {
    devient avec ce qu'on possède, et ce qu'un clic apporte. Sans ça on achète des niveaux
    sans jamais voir ce qu'ils changent. */
 function ligneBoosts(sujet) {
-  const bouts = [];
+  const bouts = [], alb = albumVitesse(sujet);
   if (sujet.kind === 'egg') {
     if (!sujet.slot) return '';
-    const base = hatchTime(sujet.slot), n = force('couveuse');
+    const base = hatchTime(sujet.slot), brut = force('couveuse'), n = brut * alb;
     bouts.push('Couvaison ' + fmtTime(base) + ' → ' + (n ? fmtTime(base / n) : 'rien sans toi'));
-    if (n) bouts.push('couveuse ×' + dec(n, 2));
+    if (brut) bouts.push('couveuse ×' + dec(brut, 2));
   } else {
     const c = sujet.c, t = temperOf(c);
     if (!estMur(c)) {
       // la durée annoncée est celle d'UN NIVEAU : c'est l'attente que le joueur vit
-      const pas = ageGrow(c) / nivDansAge(c.age), n = force('eleveur');
+      const pas = ageGrow(c) / nivDansAge(c.age), brut = force('eleveur'), n = brut * alb;
       bouts.push('Croissance ' + fmtTime(pas) + ' par niveau → ' +
                  (n ? fmtTime(pas / (n * t.grow)) : 'rien sans toi'));
       if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));
-      if (n) bouts.push('éleveur ×' + dec(n, 2));
+      if (brut) bouts.push('éleveur ×' + dec(brut, 2));
     } else {
-      const n = force('mangeoire');
+      const brut = force('mangeoire'), n = brut * alb;
       bouts.push('Engraissement ' + (n ? '+' + dec(FATTEN_X * n * t.fat, 1) + ' s par seconde'
                                        : 'rien sans toi'));
       if (n && t.fat !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.fat));
-      if (n) bouts.push('mangeoire ×' + dec(n, 2));
+      if (brut) bouts.push('mangeoire ×' + dec(brut, 2));
     }
     // la rente ne dépend plus de la maturité mais de l'âge : elle se lit dans les deux cas
     const r = renteOf(c);
     if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
   }
+  if (alb > 1) bouts.push('album ×' + dec(alb, 2));
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
   return bouts.join('  ·  ');
 }
 
 // ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
 function valeurAu(c, age) {
-  return Math.round(VALUE[age - 1] * rarityOf(c).mult * variantMult(c));
+  return Math.round(VALUE[age - 1] * rarityOf(c).mult * variantMult(c)
+                    * (1 + bonusAlbum().valeur));
 }
 
 function noteAcheteur() {
@@ -2075,8 +2458,8 @@ function noteAcheteur() {
   const parHeure = Math.floor(3600 / (e.hatch / Math.max(1, force('couveuse'))));
   return 'Environ ' + parHeure + ' éclosion' + (parHeure > 1 ? 's' : '') +
     ' par heure et par incubateur, à ta couveuse actuelle. ' +
-    (e.price > 12
-      ? 'S’il ne peut pas payer les ' + fmt(e.price) + ', il laisse l’incubateur vide et attend.'
+    (prixOeuf(e) > 12
+      ? 'S’il ne peut pas payer les ' + fmt(prixOeuf(e)) + ', il laisse l’incubateur vide et attend.'
       : 'Il ne s’arrêtera jamais faute de moyens.');
 }
 
@@ -2202,6 +2585,16 @@ function tickView() {
     }
   }
 
+  /* Le bouton n'apparaît que lorsqu'un jalon est franchi, et il ne presse pas : ascensionner
+     trop tôt gâche des cartes. Il dit lequel, pour qu'on sache ce qu'on est en train de
+     dépenser. */
+  const ouvert = jalonsOuverts()[0];
+  $('btn-asc').hidden = !ouvert;
+  if (ouvert) {
+    setText($('btn-asc'), 'Ascension');
+    $('btn-asc').title = ouvert.quoi;
+  }
+
   const stock = totalEggs();
   setText($('compte-pen'), state.pen.length + ' / ' + state.pens);
   setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
@@ -2254,6 +2647,7 @@ function tickView() {
 function refresh() {
   renderStrip();
   renderCollection();
+  renderAlbum();
   renderStage();
   tickView();
   if (popNext) { popNext = false; flash($('subject'), 'pop'); }
@@ -2263,8 +2657,35 @@ function refresh() {
    Démarrage
    ───────────────────────────────────────────── */
 
+/* Les menus reprennent leur valeur depuis l'état. Appelé au démarrage, et de nouveau après
+   une ascension : les réglages traversent le saut, les éléments du DOM non. */
+function syncReglages() {
+  for (const cle of Object.keys(RARITY)) {
+    $('vente-' + cle).value = String(state.sellAt[cle] || 0);
+    $('taille-' + cle).value = String(state.sellRank[cle] || 0);
+    $('evolution-' + cle).value = String(state.evolveUpTo[cle] || 0);
+  }
+  $('sel-acheteur').value = state.buyKind;
+}
+
 function bindTools() {
   $('subject').addEventListener('click', tapStage);
+
+  $('btn-asc').addEventListener('click', ouvrirAscension);
+  $('asc-close').addEventListener('click', fermerAscension);
+  $('ascension').addEventListener('click', e => {
+    if (e.target === $('ascension')) fermerAscension();     // clic sur le fond
+  });
+  $('asc-go').addEventListener('click', () => {
+    const n = state.pen.length;
+    if (!confirm('Ascensionner ?\n\n' + (n ? n + ' bête' + (n > 1 ? 's' : '') +
+        ' deviendront des cartes.' : 'Ton enclos est vide : aucune carte.') +
+        '\nTout le reste repart de zéro. C’est irréversible.')) return;
+    ascensionner();
+  });
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !$('ascension').hidden) fermerAscension();
+  });
 
   /* La barre espace martèle la scène. Sans ce garde-fou elle ferait défiler la page, ce qui
      rend le martèlement au clavier impraticable. On laisse le navigateur faire son travail
@@ -2345,14 +2766,7 @@ function start() {
   $('version').textContent = VERSION;
   $('btn-speed').textContent = '×' + state.speed;
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
-  for (const cle of Object.keys(RARITY)) $('vente-' + cle).value = String(state.sellAt[cle] || 0);
-  for (const cle of Object.keys(RARITY)) {
-    $('taille-' + cle).value = String(state.sellRank[cle] || 0);
-  }
-  for (const cle of Object.keys(RARITY)) {
-    $('evolution-' + cle).value = String(state.evolveUpTo[cle] || 0);
-  }
-  $('sel-acheteur').value = state.buyKind;
+  syncReglages();
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
   syncTri();
 

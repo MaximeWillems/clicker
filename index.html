@@ -26,6 +26,8 @@
     <span class="purse-rente" id="rente" hidden></span>
   </div>
 
+  <button type="button" id="btn-asc" class="asc-call" hidden>Ascension</button>
+
   <div class="tools">
     <button type="button" id="btn-speed" class="tool" title="Accélérer le temps (test)">×1</button>
     <button type="button" id="btn-sound" class="tool" title="Couper le son" aria-pressed="true">♪</button>
@@ -182,6 +184,15 @@
     </div>
   </section>
 
+  <section class="panel" id="panel-album" hidden>
+    <div class="panel-head">
+      <h2>Album</h2>
+      <span class="panel-meta" id="album-meta"></span>
+    </div>
+    <p class="panel-intro" id="album-intro"></p>
+    <div class="album" id="album"></div>
+  </section>
+
   <section class="panel">
     <div class="panel-head">
       <h2>Collection</h2>
@@ -191,6 +202,39 @@
   </section>
 
 </aside>
+
+<!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :
+     ce que je gagne, ce que je perds, avec quoi je repars. -->
+<div id="ascension" class="asc" hidden>
+  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="asc-title">
+    <div class="asc-head">
+      <h2 id="asc-title">Ascension</h2>
+      <button type="button" class="asc-close" id="asc-close" title="Fermer">✕</button>
+    </div>
+    <p class="asc-jalon" id="asc-jalon"></p>
+
+    <section class="asc-sec">
+      <h3>Ce que tu vas gagner</h3>
+      <p class="asc-warn" id="asc-warn" hidden></p>
+      <div class="asc-cartes" id="asc-gain"></div>
+    </section>
+
+    <section class="asc-sec">
+      <h3>Ce que tu vas perdre</h3>
+      <p class="asc-perte" id="asc-perte"></p>
+    </section>
+
+    <section class="asc-sec">
+      <h3>Avec quoi tu repars</h3>
+      <p class="asc-slots" id="asc-slots"></p>
+      <div class="asc-cartes asc-choix" id="asc-choix"></div>
+    </section>
+
+    <div class="asc-foot">
+      <button type="button" class="asc-go" id="asc-go">Ascensionner</button>
+    </div>
+  </div>
+</div>
 
 <div id="fx" class="fx" aria-hidden="true"></div>
 

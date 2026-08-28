@@ -618,3 +618,104 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 /* pour du pixel art, décommenter :
 .subject-glyph img, .thumb-glyph img, .cell img { image-rendering: pixelated; } */
 .cell img { width: 1.05em; height: 1.05em; }
+
+/* ── l'album et l'ascension ──────────────────────────────────────────────
+   Une carte est une capsule : la bête telle qu'elle était. On la regarde autant
+   qu'on la lit, donc l'animal passe avant le pourcentage. */
+
+/* Pas de `margin-left: auto` ici : la bourse en porte déjà un, et deux marges automatiques
+   se partagent l'espace libre — la bourse décollerait du bord droit. */
+.asc-call {
+  font-family: var(--f-num); font-size: 0.78rem; letter-spacing: 0.06em;
+  background: var(--jade-dim); color: var(--jade);
+  border: 1px solid var(--jade); border-radius: 3px;
+  padding: 0.35rem 0.9rem; cursor: pointer;
+}
+.asc-call:hover { background: var(--jade); color: var(--ground); }
+
+.album { display: flex; flex-direction: column; gap: 3px; }
+.album-head {
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--faint);
+  margin: 0.7rem 0 0.15rem;
+}
+.album-head:first-child { margin-top: 0; }
+
+.carte {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-left: 2px solid var(--rar, var(--rule-hi));
+  padding: 0.4rem 0.6rem; border-radius: 3px;
+}
+.carte.active { background: var(--raised); border-color: var(--rule-hi); border-left-color: var(--rar); }
+.carte-bete { font-size: 1.5rem; line-height: 1; flex: none; }
+.carte-bete img { width: 1em; height: 1em; display: block; object-fit: contain; }
+.carte-txt { display: flex; flex-direction: column; min-width: 0; }
+.carte-nom {
+  font-family: var(--f-name); font-weight: 400; font-size: 0.82rem;
+  color: var(--ink); line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.carte-eff {
+  font-family: var(--f-num); font-style: normal; font-size: 0.68rem;
+  color: var(--soft); line-height: 1.35;
+}
+
+/* ── l'écran d'ascension ─────────────────────────────────────────────── */
+.asc {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(6, 9, 7, 0.78);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 3vh 1rem; overflow-y: auto;
+}
+.asc-box {
+  background: var(--ground); border: 1px solid var(--rule-hi); border-radius: 4px;
+  width: min(46rem, 100%); padding: 1.4rem 1.6rem 1.6rem;
+}
+.asc-head { display: flex; align-items: baseline; gap: 1rem; }
+.asc-head h2 {
+  font-family: var(--f-name); font-weight: 400; font-size: 1.5rem; margin: 0; flex: 1;
+}
+.asc-close {
+  background: none; border: none; color: var(--faint);
+  font-size: 1rem; cursor: pointer; padding: 0.2rem 0.4rem;
+}
+.asc-close:hover { color: var(--ink); }
+
+.asc-jalon {
+  font-family: var(--f-num); font-size: 0.74rem; color: var(--jade);
+  border-left: 2px solid var(--jade); padding-left: 0.6rem;
+  margin: 0.6rem 0 0;
+}
+.asc-sec { margin-top: 1.5rem; }
+.asc-sec h3 {
+  font-family: var(--f-num); font-size: 0.68rem; letter-spacing: 0.11em;
+  text-transform: uppercase; color: var(--faint);
+  margin: 0 0 0.6rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule);
+}
+.asc-warn {
+  background: var(--jade-dim); border-left: 3px solid var(--red);
+  color: var(--ink); font-size: 0.8rem; line-height: 1.5;
+  padding: 0.6rem 0.8rem; margin: 0 0 0.7rem;
+}
+.asc-perte, .asc-slots, .asc-vide {
+  font-size: 0.8rem; color: var(--soft); line-height: 1.55; margin: 0 0 0.6rem;
+}
+.asc-slots { font-family: var(--f-num); font-size: 0.74rem; color: var(--jade); }
+
+.asc-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 4px; }
+.asc-choix .carte { cursor: pointer; opacity: 0.55; }
+.asc-choix .carte:hover { opacity: 0.85; border-color: var(--rule-hi); }
+.asc-choix .carte.active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px var(--jade);
+}
+
+.asc-foot { margin-top: 1.8rem; display: flex; justify-content: flex-end; }
+.asc-go {
+  font-family: var(--f-num); font-size: 0.85rem; letter-spacing: 0.06em;
+  background: var(--jade); color: var(--ground);
+  border: 1px solid var(--jade); border-radius: 3px;
+  padding: 0.55rem 1.4rem; cursor: pointer;
+}
+.asc-go:hover { background: var(--ink); border-color: var(--ink); }

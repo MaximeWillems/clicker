@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 1.5.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.0.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 6` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 7` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **1.5.0** | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
+| **2.0.0** | **l'album et l'ascension** — les bêtes gardées deviennent des cartes, tout le reste repart |
+| 1.5.0 | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
 | 1.4.0 | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
 | 1.3.0 | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
 | 1.2.0 | le seuil de rentabilité cantonné au début de la vie, le chromatique redescendu à un cran de rareté |
@@ -83,9 +84,11 @@ pas une protection, juste une discrétion suffisante pour un test privé.
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
 - Collection des 105 formes découvertes
+- **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
+  du bonus, et tout le reste repart de zéro
 
-Absent volontairement : gènes, reproduction, fusion, lignées cachées, comptes, marché entre
-joueurs. Tout cela demande le serveur.
+Absent volontairement : gènes, reproduction, pension, fusion des cartes, lignées cachées,
+comptes, marché entre joueurs. Tout cela demande le serveur, ou attend la pension.
 
 ## Boutons de test (en haut à droite)
 
@@ -539,6 +542,159 @@ Aux anciens prix, le marchand tombait à 78 min.
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
+
+### L'album et l'ascension
+
+Le jeu s'arrêtait sur une fin sèche : titans mythiques, ferme pleine, plus rien. L'ascension
+lui donne un deuxième tour, et **l'album est la seule chose qu'on emporte**.
+
+Le cycle tient en cinq temps. On joue. On franchit un **jalon**. On ascensionne : les bêtes
+présentes dans l'enclos deviennent des **capsules** — la bête figée telle qu'elle était. On
+choisit les cartes à équiper. Tout le reste repart de zéro.
+
+**Une bête ne devient jamais une carte en cours de partie.** La transformation n'a lieu qu'au
+moment du saut, sur ce qu'il reste dans l'enclos. Il n'y a donc aucun arbitrage à faire devant
+chaque animal — la question devient « lesquelles je garde en vie pour le saut ? », posée une
+fois sur une ferme entière plutôt que trente fois sur trente bêtes.
+
+| Ce qui traverse | Ce qui repart de zéro |
+|---|---|
+| L'album — toutes les capsules | Les pièces |
+| Les emplacements, et les cartes équipées | Les œufs en réserve |
+| La collection des formes vues | Incubateurs et enclos |
+| Les jalons déjà dépensés | Les huit améliorations |
+| Les réglages : tri, consignes, son | Les bêtes non transformées |
+
+La collection survit : c'est un musée de ce qu'on a rencontré, pas une ressource. Elle ne
+donne aucun bonus — **seules les cartes équipées en donnent** — donc la garder ne déséquilibre
+rien, et la remettre à zéro ne ferait que forcer à redécouvrir ce qu'on a déjà vu.
+
+#### Le motif décide ce que la carte accélère
+
+Le motif ne servait à rien : tiré à l'éclosion, gardé à vie, purement décoratif. Lui confier
+le bonus ne demande aucune mécanique neuve, et il devient chassable. Faire dire le bonus par
+la *lignée* aurait figé vingt-et-un bonus dans la pierre, et rendu une lignée entière
+inintéressante le jour où le sien l'est.
+
+| Motif | Ce que la carte touche | Par point | Plafond |
+|---|---|---|---|
+| uni | valeur de vente | +4 % | +60 % |
+| tacheté | vitesse de couvaison | +10 % | +150 % |
+| moucheté | vitesse de croissance | +10 % | +150 % |
+| rayé | engraissement | +10 % | +150 % |
+| tigré | rente | +14 % | +200 % |
+| marbré | prix des évolutions | −3 % | −40 % |
+| zébré | prix des œufs | −3 % | −40 % |
+| constellé | chance de prodige | ×1,07 | ×2 |
+
+**Deux familles baissent des prix au lieu d'augmenter des vitesses.** C'est ce qui empêche la
+deuxième partie d'être la première en accéléré : une ferme menée au zébré ne se joue pas comme
+une ferme menée au tacheté.
+
+Le constellé s'exprime **en multiplicateur de la base, jamais en points** : le prodige est à
+1 sur 500, soit 0,2 %, et un demi-point le multiplierait par trois et demi. On a coupé le
+bonus d'élevage de ×25 à ×4 exactement pour protéger ce 1/500.
+
+#### Ce qui décide de la puissance d'une carte
+
+Le motif dit *quoi*. Trois facteurs disent *combien*, et ils sont tous bornés — c'est ce qui
+permet de dire à l'avance ce que vaudra la dixième ascension.
+
+    puissance = plafond(rareté) × palier × qualité(spécimen)
+
+Le plafond vient de la rareté de la lignée : ×1 en commune, ×1,6 en rare, ×2,5 en épique,
+×4 en mythique. Le palier vient de la fusion, qui n'existe pas encore — toute capsule naît au
+palier 1. La qualité, elle, se mérite :
+
+    qualité = 0,4 + 0,6 × ( 0,50 × niveau/100
+                          + 0,20 × teinte/7
+                          + 0,20 × rang de taille/5
+                          + 0,10 × chromatique )
+
+| La bête transformée | Qualité | Puissance |
+|---|---|---|
+| Têtard commun, niveau 15, ordinaire | 0,45 | 0,45 |
+| Titan commun, niveau 100, ordinaire | 0,70 | 0,70 |
+| Titan mythique, doré, énorme | 0,85 | 3,40 |
+| Titan mythique, albâtre, démesuré, chromatique | 1,00 | 4,00 |
+
+Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chance.
+
+#### Les emplacements : un build, pas une collection
+
+**L'album garde toutes les capsules, seules celles qu'on équipe agissent.** Sans limite,
+vingt-et-une cartes se composent et la puissance de l'album n'a plus de plafond — c'est de ça
+que meurent les jeux idle. Le compte démarre à **trois** et monte à **six**, un emplacement
+étant offert par trois des jalons.
+
+Une conséquence utile : **un album se concentre**. Trois cartes d'une même famille rendent
+trois fois plus que trois familles différentes.
+
+| L'album | Ce qu'il rend |
+|---|---|
+| 3 titans communs, motifs éparpillés | +3 % valeur, +7 % couvaison, +7 % engraissement |
+| 3 titans communs, tous tachetés | **+21 % de couvaison** |
+| 3 titans communs, tous unis | +8 % de valeur |
+| 6 titans mythiques dorés tachetés | +150 % — le plafond |
+| 6 mythiques albâtre chromatiques, tigrés | +200 % de rente — le plafond |
+
+Le build se choisit sur l'écran d'ascension et **reste verrouillé pour toute la partie**. S'il
+se permutait librement, on mettrait la couvaison au début et la valeur à la fin : on aurait de
+fait toutes les cartes, et la limite ne limiterait rien.
+
+#### Les jalons
+
+Un jalon est un exploit à **usage unique** : le franchir autorise une ascension, l'ascension en
+consomme un. Le nombre total d'ascensions est donc borné par la liste — et comme les
+emplacements le sont aussi, la puissance maximale de l'album est un nombre qu'on peut calculer
+avant d'avoir joué.
+
+| # | Le jalon | Nature | Emplacement |
+|---|---|---|---|
+| 1 | Mener une bête à l'âge géant | exploit | — |
+| 2 | Amasser 1 M de pièces | fortune | — |
+| 3 | Mener une bête à l'âge titan | exploit | +1 |
+| 4 | Amasser 100 M | fortune | — |
+| 5 | Avoir un chromatique en enclos | exploit | — |
+| 6 | Amasser 10 Md | fortune | +1 |
+| 7 | Voir les cinq formes d'une même lignée | collection | — |
+| 8 | Amasser 1 Bn | fortune | — |
+| 9 | Mener une mythique à l'âge titan | exploit | +1 |
+| 10 | Amasser 100 Bn | fortune | — |
+| 11 | Rencontrer toutes les lignées | collection | — |
+| 12 | Un titan mythique chromatique | exploit | — |
+
+**La condition se lit sur l'état courant, jamais sur un souvenir.** C'est ce qui interdit
+d'enchaîner deux sauts : après une ascension la bourse est vide et l'enclos aussi, donc plus
+aucun jalon ne tient et il faut rejouer pour rouvrir le suivant. Le saut dépense toujours le
+premier jalon ouvert de la liste — le moins cher —, ce qui garde les autres pour plus tard.
+
+Les trois natures sont mélangées volontairement : des seuils de fortune seuls n'encourageraient
+qu'à amasser, alors que l'album récompense de *bien* jouer.
+
+#### Le piège du marchand
+
+C'est la conséquence la moins évidente de la règle. **Les cartes viennent des bêtes présentes
+dans l'enclos au moment du saut** — or le marchand automatique vide l'enclos en continu,
+absences comprises. Un joueur qui ascensionne sans y penser trouve une ferme vide et repart
+avec zéro carte, après des heures de jeu.
+
+L'écran d'ascension annonce donc combien de cartes le saut produira, et **prévient quand le
+marchand est encore actif**. Préparer une ascension, c'est passer ses consignes sur « jamais » —
+ce qui donne enfin un usage stratégique à un réglage qui n'était qu'un confort.
+
+Effet de bord heureux : garder une bête vivante rapporte maintenant deux fois, en rente pendant
+la partie et en carte au moment du saut.
+
+#### Ce qui n'est pas encore là
+
+**La fusion** — trois capsules d'une même lignée en forgeraient une supérieure, et la carte
+forgée garderait le meilleur des trois spécimens. Elle vient en 2.1, et elle n'a rien à faire
+avant : à la première ascension on n'a aucun doublon. Le champ `palier` existe déjà sur chaque
+capsule et la table `PALIERS` est écrite, si bien que 2.1 sera purement additive.
+
+**La merveilleuse**, cinquième rareté, ne s'obtiendra qu'en pension : l'album sort donc avec
+quatre plafonds au lieu de cinq.
 
 ### Le code couleur
 
