@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.2.2';
+const VERSION = 'alpha 2.2.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -300,10 +300,15 @@ const RANKS = [
 
    L'ALBUM GARDE TOUT, SEULES LES CARTES ÉQUIPÉES AGISSENT. C'est la règle qui rend le reste
    calculable : sans limite d'emplacements, vingt-et-une cartes se composent et la puissance
-   de l'album n'a plus de plafond. Avec six au maximum, elle est bornée par six plafonds. */
+   de l'album n'a plus de plafond.
 
-const SLOTS_BASE = 3;       // emplacements à la première ascension
-const SLOTS_MAX  = 6;       // et jamais plus, quoi qu'on fasse
+   UN JETON DÉPENSÉ = UN EMPLACEMENT. La première ascension en ouvre un, la deuxième un
+   second, et ainsi de suite : la puissance de l'album ne dépasse jamais le nombre de sauts
+   qu'on a payés. Le compte partait de trois plus une par ascension, ce qui en donnait QUATRE
+   avant même d'avoir sauté une seule fois — trois emplacements offerts pour un jeton dépensé,
+   alors que le jeton est justement ce qui se mérite. */
+
+const SLOTS_MAX = 6;        // le garde-fou, si l'échelle des jetons s'allongeait un jour
 
 /* Le palier vient de la fusion, qui arrive en 2.1 : une capsule naît au palier 1 et y reste
    pour l'instant. La table est là dès maintenant parce que la puissance la lit déjà. */
@@ -2114,10 +2119,9 @@ function crediterJetons() {
   }
 }
 
-/* Les emplacements suivent le nombre d'ascensions : trois à la première, un de plus à chaque
-   saut, six au bout. C'était accroché à trois jalons nommés ; l'échelle de fortune n'a plus de
-   jalon nommé, et le compte d'ascensions dit la même chose en plus simple. */
-const slotsMax = n => Math.min(SLOTS_MAX, SLOTS_BASE + (n === undefined ? state.asc.n : n));
+/* Un jeton dépensé, un emplacement. Le nombre de cartes actives est donc exactement le
+   nombre d'ascensions faites — rien n'est offert, tout se paie en sauts. */
+const slotsMax = n => Math.min(SLOTS_MAX, n === undefined ? (state.asc.n || 0) : n);
 
 /* La bête telle qu'elle était, figée. `capsuleBrute` ne consomme pas d'identifiant : l'écran
    d'ascension en fabrique une par bête pour montrer ce que le saut donnera, et ces

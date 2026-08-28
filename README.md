@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.2
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.2.3
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.2.2** | la montée d'un cran passe à **1 sur 1 000**, la même à toutes les raretés |
+| **2.2.3** | un jeton dépensé = un emplacement de carte — il en offrait trois avant le premier saut |
+| 2.2.2 | la montée d'un cran passe à **1 sur 1 000**, la même à toutes les raretés |
 | 2.2.1 | le marchand automatique garde la case, comme une vente à la main |
 | 2.2.0 | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
 | 2.1.1 | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
@@ -684,11 +685,16 @@ Le niveau domine : c'est le seul axe qui demande du temps plutôt que de la chan
 
 **L'album garde toutes les capsules, seules celles qu'on équipe agissent.** Sans limite,
 vingt-et-une cartes se composent et la puissance de l'album n'a plus de plafond — c'est de ça
-que meurent les jeux idle. Le compte démarre à **trois** et monte à **six**, un emplacement
-étant offert par trois des jalons.
+que meurent les jeux idle.
+
+**Un jeton dépensé ouvre un emplacement, et c'est tout.** La première ascension en donne un,
+la deuxième un second, et ainsi de suite : la puissance de l'album ne dépasse jamais le nombre
+de sauts qu'on a payés. Le compte partait auparavant de trois plus un par ascension, ce qui en
+donnait **quatre avant même d'avoir sauté une seule fois** — trois emplacements offerts pour
+un jeton dépensé, alors que le jeton est justement ce qui se mérite.
 
 Une conséquence utile : **un album se concentre**. Trois cartes d'une même famille rendent
-trois fois plus que trois familles différentes.
+trois fois plus que trois familles différentes — le jour où l'on a trois emplacements.
 
 | L'album | Ce qu'il rend |
 |---|---|
@@ -697,6 +703,12 @@ trois fois plus que trois familles différentes.
 | 3 légendes communes, toutes unies | +8 % de valeur |
 | 6 légendes mythiques dorées tachetées | +150 % — le plafond |
 | 6 mythiques albâtre chromatiques, tigrés | +200 % de rente — le plafond |
+
+Les deux dernières lignes disent ce que six emplacements rendraient. **Elles sont hors
+d'atteinte aujourd'hui** : six emplacements demandent six ascensions, donc six paliers de
+fortune, alors que l'échelle n'en compte que cinq et que les derniers dépassent l'économie.
+Elles restent dans la table parce qu'elles bornent le calcul — et parce que la fusion, en 2.3,
+attaquera ce plafond par l'autre bout.
 
 Le build se choisit sur l'écran d'ascension et **reste verrouillé pour toute la partie**. S'il
 se permutait librement, on mettrait la couvaison au début et la valeur à la fin : on aurait de
@@ -729,8 +741,7 @@ L'échelle ne s'arrête pas avant l'économie ; c'est l'économie qui s'arrête 
 **Le premier jeton tombe en milieu de partie.** Un million de pièces suppose d'avoir mené des
 bêtes au bout et d'en avoir vendu — on n'y arrive pas en cliquant des têtards.
 
-**Les emplacements suivent le nombre d'ascensions** : trois à la première, un de plus à chaque
-saut, six au bout.
+**Les emplacements suivent le nombre d'ascensions** : un par jeton dépensé, pas un de plus.
 
 **Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
 entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et n'expire
