@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.10.0';
+const VERSION = 'alpha 2.11.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -412,27 +412,76 @@ const SEUIL_VOIR = 0.6;
    `dit` s'affiche une seule fois, dans le bandeau du haut, et ne revient jamais. Aucune ne
    bloque : on peut toutes les ignorer et jouer. Elles s'arrêtent pour l'instant à l'enclos —
    la suite s'écrira en jouant, quand on saura lesquelles manquent vraiment. */
+/* ── LA PROFESSEURE ────────────────────────────────────────────────────────────
+   Le mode histoire ne récite plus des consignes : quelqu'un les dit. C'est toute la
+   différence entre « clique sur l'œuf » et « il ne demande qu'une chose, et rien d'autre ne
+   la fera à ta place ».
+
+   Elle n'a pas encore de portrait. Le glyphe tient la place exactement comme les emoji
+   tiennent celle des créatures : le jour où le dessin arrive, on pose un fichier dans `art/`
+   et on remplit `portrait` — rien d'autre ne bouge.
+
+   Un seul endroit à changer pour la renommer ou changer de personne. */
+const PROF = {
+  nom: 'Professeure Aubier',
+  glyphe: '🔬',
+  portrait: null,          // 'art/prof-aubier.png' le jour venu
+};
+
+/* Les SCÈNES du mode histoire. Chacune a une condition et plusieurs répliques : on avance
+   d'une phrase à l'autre, comme dans une boîte de dialogue, et la scène n'est marquée jouée
+   qu'à la dernière — un rechargement au milieu la reprend depuis le début plutôt que de
+   l'avaler.
+
+   Elles s'arrêtent à l'enclos. La suite s'écrira en jouant, quand on saura ce qui manque. */
 const NOTES = [
-  { cle: 'oeuf', test: () => true,
-    dit: 'Clique sur l’œuf. Rien d’autre ne le fera éclore — dans ce jeu, rien n’avance tout seul au départ.' },
-  { cle: 'craque', test: () => state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3),
-    dit: 'Il craque. Continue.' },
-  { cle: 'bete', test: () => state.pen.length > 0,
-    dit: 'Ta première bête. Elle grandit au clic, exactement comme l’œuf a éclos — et son niveau ne redescendra jamais.' },
-  { cle: 'mure', test: () => state.pen.some(estMur),
-    dit: 'Son niveau se bloque : elle est mûre. C’est le moment de décider quoi en faire.' },
-  { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR,
-    dit: 'Vends une bête mûre, rachète un œuf : voilà la boucle du jeu. Un œuf commun coûte 12 et se revend 40 à maturité.' },
-  { cle: 'peage', test: () => state.coins >= EVOLVE[0] && state.pen.some(estMur),
-    dit: 'Ou paie le péage plutôt que de vendre. La bête garde son niveau, sa taille et son nom, et vaudra douze fois plus. C’est la seule vraie décision du jeu.' },
-  { cle: 'clic', test: () => state.coins >= UP_BY_KEY.clic.base * SEUIL_VOIR,
-    dit: 'Une boutique d’améliorations s’ouvre. Ce qui s’y achète ne joue pas à ta place : ça change la façon dont le temps passe.' },
-  { cle: 'couveuse', test: () => state.coins >= UP_BY_KEY.couveuse.base * SEUIL_VOIR,
-    dit: 'La couveuse fait éclore les œufs sans toi. C’est le moment où le jeu bascule : à partir d’ici, le temps travaille même quand tu n’es pas là.' },
-  { cle: 'incubateur', test: () => state.coins >= INCUB_BASE * SEUIL_VOIR,
-    dit: 'Un incubateur de plus, c’est un œuf de plus à couver en même temps.' },
-  { cle: 'enclos', test: () => state.coins >= PEN_BASE * SEUIL_VOIR,
-    dit: 'Un enclos de plus, c’est une bête de plus à la fois. C’est la place, et non l’argent, qui limitera bientôt ta ferme.' },
+  { cle: 'oeuf', test: () => true, repliques: [
+    'Ah, te voilà. Entre — il fait meilleur ici qu’au dehors.',
+    'Je suis la professeure Aubier. J’étudie les lignées : ces bêtes qui, d’une forme à l’autre, deviennent tout autre chose sans jamais cesser d’être elles-mêmes.',
+    'Cet œuf est pour toi. Il ne demande qu’une chose, et rien d’autre ne la fera à ta place.',
+    'Clique dessus. Encore. Encore. Tu verras.',
+  ] },
+  { cle: 'craque', test: () => state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3), repliques: [
+    'Tu entends ? Elle pousse contre la coquille.',
+    'Ne t’arrête pas maintenant. Ici, rien n’avance sans toi — pas encore.',
+  ] },
+  { cle: 'bete', test: () => state.pen.length > 0, repliques: [
+    'La voilà. Regarde-la bien : c’est la seule fois où tu la verras si petite.',
+    'Elle grandit comme l’œuf a éclos, au clic. Son niveau montera jusqu’à cent, et il ne redescendra jamais — quoi qu’il lui arrive.',
+    'Je te laisse faire connaissance.',
+  ] },
+  { cle: 'mure', test: () => state.pen.some(estMur), repliques: [
+    'Son niveau s’est bloqué. On dit qu’elle est mûre : elle a fini l’âge où elle était.',
+    'C’est ici que le métier commence. Tu peux la vendre, ou payer son péage pour qu’elle passe à l’âge suivant.',
+    'Il n’y a pas de bonne réponse à cette question. Il y en a une pour aujourd’hui.',
+  ] },
+  { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR, repliques: [
+    'Voilà tes premières pièces. La boutique s’ouvre à toi.',
+    'Un œuf commun coûte douze pièces et s’en revend quarante une fois la bête mûre. Vends, rachète, recommence : c’est la boucle qui te nourrira longtemps.',
+  ] },
+  { cle: 'peage', test: () => state.coins >= EVOLVE[0] && state.pen.some(estMur), repliques: [
+    'Tu as de quoi payer un péage, maintenant.',
+    'Une bête qui le franchit garde tout — son niveau, sa taille, son nom — et vaudra douze fois plus. Mais elle t’immobilise un enclos pendant ce temps.',
+    'Vendre tout de suite, ou attendre davantage. Toute la partie tient dans cette hésitation-là.',
+  ] },
+  { cle: 'clic', test: () => state.coins >= UP_BY_KEY.clic.base * SEUIL_VOIR, repliques: [
+    'Il y a des choses à acheter qui ne sont pas des œufs.',
+    'Aucune ne jouera à ta place. Elles changent la façon dont le temps passe, c’est tout — mais c’est beaucoup.',
+  ] },
+  { cle: 'couveuse', test: () => state.coins >= UP_BY_KEY.couveuse.base * SEUIL_VOIR, repliques: [
+    'Une couveuse. Achète-la dès que tu peux.',
+    'À partir de là, les œufs éclosent sans toi. Même la nuit, même quand tu fermes la page.',
+    'C’est le moment où ce jeu cesse de dépendre de tes doigts. Tu me diras si ça te manque.',
+  ] },
+  { cle: 'incubateur', test: () => state.coins >= INCUB_BASE * SEUIL_VOIR, repliques: [
+    'Un incubateur de plus, c’est un œuf de plus à couver en même temps.',
+    'Ils ne coûtent pas cher au début. Ils doublent presque de prix à chaque fois — profite-en tant qu’ils sont donnés.',
+  ] },
+  { cle: 'enclos', test: () => state.coins >= PEN_BASE * SEUIL_VOIR, repliques: [
+    'Et un enclos de plus, c’est une bête de plus à la fois.',
+    'Retiens ceci : bientôt, ce ne sera plus l’argent qui te limitera, mais la place. Une bête que tu gardes est un enclos qui ne tourne pas.',
+    'Voilà. Tu sais tout ce que je sais. Le reste, tu vas me l’apprendre.',
+  ] },
 ];
 
 const JETON_PAS = 1000;
@@ -827,6 +876,10 @@ function freshState() {
        Ils traversent l'ascension : on ne réapprend pas le jeu au deuxième cycle. */
     tuto: true,
     vu: {},
+    /* La scène en cours, `{ cle, i }`, ou null. Elle est DANS LA SAUVEGARDE : une scène de
+       quatre répliques interrompue par un rechargement reprend où on l'avait laissée, au lieu
+       de disparaître avec le reste de ce que la professeure avait à dire. */
+    dial: null,
     achat: 1,           // combien de niveaux d'amélioration par clic — voir ACHATS
     /* Un âge d'évolution PAR RARETÉ. Un péage ne coûte pas la même chose selon la lignée —
        mener une ancienne à la légende coûte 600 000 en commune et 9 milliards en mythique — donc
@@ -2332,6 +2385,7 @@ function suivreTuto(libre) {
      file pour des choses qu'il n'a pas vues arriver. */
   if (rattrapage) {
     for (const n of NOTES) if (!state.vu[n.cle] && essaiNote(n)) state.vu[n.cle] = true;
+    state.dial = null;
     return null;
   }
 
@@ -2346,9 +2400,12 @@ function suivreTuto(libre) {
   /* On n'en rend qu'UNE, la première, et on ne marque que celle-là. Les suivantes attendent
      leur tour. Marquer tout d'un coup pour n'afficher que la dernière les avalait : en vendant
      sa première bête on franchit trois seuils, et deux explications disparaissaient. */
+  /* On rend la scène sans la marquer : c'est `replique()` qui la marquera à sa dernière
+     phrase. Une scène sortie mais non finie reste donc à rejouer, ce qui est exactement ce
+     qu'on veut d'un rechargement au milieu d'un dialogue. Elle ne peut pas ressortir en
+     double : `state.dial` la retient tant qu'elle est à l'écran. */
   for (const n of NOTES) {
     if (state.vu[n.cle] || !essaiNote(n)) continue;
-    state.vu[n.cle] = true;
     return n;
   }
   return null;
@@ -2655,7 +2712,7 @@ function ascensionner() {
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: state.asc.jetons - 1 },
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
-    tuto: state.tuto, vu: state.vu,
+    tuto: state.tuto, vu: state.vu, dial: state.dial,
   });
   nextId = 1;
 
@@ -3174,14 +3231,46 @@ function tickView() {
 /* Le bandeau des notes. Il ne remplace jamais une note non lue par une autre : si le joueur
    n'a pas encore chassé la précédente, la nouvelle attend — elle est déjà marquée lue dans
    l'état, donc rien ne se perd, mais on ne lui écrase pas son texte sous les yeux. */
-function renderTuto() {
-  const boite = $('tuto-note');
-  const note = suivreTuto(boite.hidden);
-  if (note) {
-    setText($('tuto-dit'), note.dit);
-    boite.hidden = false;
+/* La scène décrite par `state.dial`, ou null si elle ne veut plus rien dire. */
+const scene = () => state.dial && NOTES.find(n => n.cle === state.dial.cle) || null;
+
+/* Avance d'une réplique. À la dernière, la scène se ferme et n'est marquée jouée QU'ICI :
+   tant qu'elle n'est pas allée au bout, elle peut reprendre après un rechargement. */
+function replique(saut) {
+  const n = scene();
+  if (!n) { state.dial = null; return; }
+  if (saut || state.dial.i + 1 >= n.repliques.length) {
+    state.vu[n.cle] = true;
+    state.dial = null;
+  } else {
+    state.dial.i++;
   }
-  if (!state.tuto) boite.hidden = true;
+  refresh();
+  save();
+}
+
+function renderTuto() {
+  const boite = $('dial');
+
+  // une scène en cours occupe la boîte ; sinon on demande la suivante
+  if (!state.dial) {
+    const n = suivreTuto(true);
+    if (n) state.dial = { cle: n.cle, i: 0 };
+  } else {
+    suivreTuto(false);            // le dévoilement continue pendant qu'elle parle
+  }
+
+  const n = scene();
+  if (n && state.tuto) {
+    const i = Math.min(state.dial.i, n.repliques.length - 1);
+    setCreature($('dial-face'), PROF.portrait, PROF.glyphe);
+    setText($('dial-nom'), PROF.nom);
+    setText($('dial-dit'), n.repliques[i]);
+    setText($('dial-suite'), i + 1 < n.repliques.length ? '▸' : '✓');
+    boite.hidden = false;
+  } else {
+    boite.hidden = true;
+  }
 
   /* LA VUE DE L'ŒUF. Avant la toute première éclosion, l'écran ne montre que l'œuf : pas de
      bande, pas de colonne latérale. On n'a alors rien à désigner du doigt, puisqu'il n'y a
@@ -3296,13 +3385,21 @@ function bindTools() {
   $('btn-tuto').addEventListener('click', () => {
     state.tuto = !state.tuto;
     if (state.tuto) state.vu = {};
-    else $('tuto-note').hidden = true;
+    state.dial = null;
     $('btn-tuto').setAttribute('aria-pressed', String(state.tuto));
     refresh();
     blip(state.tuto ? 660 : 330, 0.05, 'triangle', 0.03);
   });
 
-  $('tuto-ok').addEventListener('click', () => { $('tuto-note').hidden = true; });
+  /* Un clic n'importe où dans la boîte avance d'une réplique — c'est le geste qu'on connaît
+     de tous les jeux à dialogue, et il évite d'avoir à viser une petite flèche. La croix, elle,
+     passe la scène entière. */
+  $('dial-boite').addEventListener('click', e => {
+    if (e.target.closest('#dial-passer')) return;
+    replique(false);
+    blip(520, 0.03, 'triangle', 0.02);
+  });
+  $('dial-passer').addEventListener('click', () => replique(true));
 
   $('btn-sound').addEventListener('click', () => {
     state.sound = !state.sound;

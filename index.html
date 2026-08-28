@@ -39,12 +39,19 @@
 
 <div id="offline-note" class="offline-note" hidden></div>
 
-<!-- La note du mode histoire. Même emplacement et même allure que le bandeau de retour :
-     au-dessus de tout, sans rien recouvrir, et on la chasse d'un clic. Jamais de boîte
-     modale — une note qui bloque est une note qu'on ferme sans lire. -->
-<div id="tuto-note" class="offline-note tuto-note" hidden>
-  <span id="tuto-dit"></span>
-  <button type="button" class="tuto-ok" id="tuto-ok" title="J’ai lu">✕</button>
+<!-- La boîte de dialogue de la professeure. En bas de l'écran, comme il se doit, et
+     JAMAIS bloquante : le jeu continue derrière, on peut cliquer son œuf pendant qu'elle
+     parle. Un clic n'importe où dans la boîte fait avancer d'une réplique. -->
+<div id="dial" class="dial" hidden>
+  <div class="dial-boite" id="dial-boite">
+    <span class="dial-face" id="dial-face" aria-hidden="true"></span>
+    <div class="dial-texte">
+      <p class="dial-nom" id="dial-nom"></p>
+      <p class="dial-dit" id="dial-dit"></p>
+    </div>
+    <span class="dial-suite" id="dial-suite" aria-hidden="true">▸</span>
+    <button type="button" class="dial-passer" id="dial-passer" title="Passer">✕</button>
+  </div>
 </div>
 
 <main class="stage-col">

@@ -76,11 +76,10 @@ body {
      tutoriel recouvrait entièrement le résumé d'absence, qui est pourtant la seule trace de
      ce qui s'est passé pendant des heures. Une rangée dont l'élément est `hidden` reste à
      zéro, donc rien ne bouge quand un seul des deux bandeaux est là. */
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   grid-template-areas:
     "top  top"
     "note note"
-    "tuto tuto"
     "main side";
   gap: 0 1.5rem;
   padding: 0 1.25rem 1rem;
@@ -92,7 +91,7 @@ body {
     overflow: visible;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
-    grid-template-areas: "top" "note" "tuto" "main" "side";
+    grid-template-areas: "top" "note" "main" "side";
     padding-bottom: 2rem;
   }
   .stage-col, .side { overflow: visible; }
@@ -157,21 +156,69 @@ body {
 }
 .offline-note b { color: var(--jade); font-weight: 500; }
 
-/* ── le mode histoire ────────────────────────────────────────────────────
-   La note reprend le bandeau de retour : même place, même allure. Elle porte sa croix,
-   parce qu'une note qu'on ne peut pas chasser finit par gêner. */
-.tuto-note {
-  grid-area: tuto;
-  display: flex; align-items: flex-start; gap: 1rem;
-  border-left-color: var(--amber);
-  background: var(--amber-dim);
+/* ── le mode histoire : la boîte de dialogue ─────────────────────────────
+   En bas de l'écran, posée par-dessus le jeu mais SANS le bloquer : la ferme tourne derrière,
+   et l'œuf reste cliquable pendant que la professeure parle. C'est la différence entre être
+   accompagné et être retenu.
+
+   Elle est `fixed` et non dans la grille : la grille défile en interne, et une boîte de
+   dialogue qui disparaît quand on descend d'un cran ne sert à rien. */
+.dial {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; justify-content: center;
+  padding: 0 1rem 1rem;
+  pointer-events: none;                   /* seul le cadre reçoit les clics */
 }
-.tuto-ok {
-  margin-left: auto; flex: none;
+.dial-boite {
+  pointer-events: auto;
+  width: min(46rem, 100%);
+  display: flex; align-items: flex-start; gap: 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--rule-hi);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  box-shadow: 0 0.6rem 1.6rem -0.6rem rgba(0, 0, 0, 0.55);
+  animation: dial-monte 0.22s ease-out;
+}
+.dial-boite:hover { border-color: var(--accent); }
+@keyframes dial-monte { from { transform: translateY(0.5rem); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dial-boite { animation: none; } }
+
+/* La place du portrait. Le glyphe la tient exactement comme un emoji tient celle d'une
+   créature : le jour où le dessin arrive, l'image prend sa place sans rien changer d'autre. */
+.dial-face {
+  flex: none; width: 2.6rem; height: 2.6rem;
+  display: grid; place-items: center;
+  font-size: 1.5rem; line-height: 1;
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+}
+.dial-face img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.dial-texte { flex: 1; min-width: 0; }
+.dial-nom {
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 0.15rem;
+}
+.dial-dit { margin: 0; font-size: 0.92rem; line-height: 1.5; }
+.dial-suite {
+  flex: none; align-self: flex-end;
+  color: var(--accent); font-size: 0.9rem; line-height: 1;
+  animation: dial-appel 1.4s ease-in-out infinite;
+}
+@keyframes dial-appel { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .dial-suite { animation: none; opacity: 0.8; } }
+.dial-passer {
+  flex: none; align-self: flex-start;
   background: none; border: none; cursor: pointer;
-  color: var(--soft); font-size: 0.9rem; line-height: 1; padding: 0.1rem 0.2rem;
+  color: var(--faint); font-size: 0.8rem; line-height: 1; padding: 0.1rem 0.2rem;
 }
-.tuto-ok:hover { color: var(--ink); }
+.dial-passer:hover { color: var(--ink); }
+
+/* La boîte laisse la place au pied de page pendant qu'elle est là. */
+.dial:not([hidden]) ~ * .foot { padding-bottom: 5rem; }
 
 /* La marche suivante : visible, mais manifestement pas encore à toi.
 
@@ -188,7 +235,7 @@ body {
 
 /* LA VUE DE L'ŒUF. Avant la première éclosion, il ne reste que la scène : la colonne
    latérale et la bande disparaissent, et la grille se referme sur une seule colonne. */
-body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "tuto" "main"; }
+body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "main"; }
 body.debut .side,
 body.debut .strip-wrap,
 body.debut .foot { display: none; }

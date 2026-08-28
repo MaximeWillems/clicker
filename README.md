@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.10.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.11.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.10.0** | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
+| **2.11.0** | une professeure accueille le joueur et l'accompagne, en dialogues |
+| 2.10.0 | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
 | 2.9.0 | les paliers de jetons passent au pas de mille — trois jetons au premier million |
 | 2.8.2 | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
 | 2.8.1 | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
@@ -167,11 +168,30 @@ première récompense du jeu.
 La condition est `seen` : elle dit si une forme a *déjà* été rencontrée, elle survit à
 l'ascension, et elle ne peut pas revenir en arrière.
 
-#### Les notes
+#### La professeure
 
-Dix explications, dans l'ordre, chacune à usage unique, dans un bandeau qu'on chasse d'un clic.
-Aucune ne bloque : on peut toutes les ignorer et jouer. Elles s'arrêtent pour l'instant à
-l'enclos — la suite s'écrira en jouant, quand on saura lesquelles manquent vraiment.
+Le mode histoire ne récite plus des consignes : **quelqu'un les dit**. C'est toute la
+différence entre « clique sur l'œuf » et *« il ne demande qu'une chose, et rien d'autre ne la
+fera à ta place »*.
+
+La **professeure Aubier** étudie les lignées. Elle accueille le joueur, lui donne son premier
+œuf, et revient à chaque étape — dix scènes, de l'accueil jusqu'à l'enclos. Elle n'a pas encore
+de portrait : le glyphe tient la place exactement comme les emoji tiennent celle des créatures,
+et le jour où le dessin arrive, on pose un fichier dans `art/` et on remplit `portrait`. Rien
+d'autre ne bouge. Son nom et sa personne vivent dans une seule constante, `PROF`.
+
+Elle parle dans une **boîte de dialogue en bas de l'écran**, qu'on fait avancer d'un clic
+n'importe où dedans — le geste qu'on connaît de tous les jeux à dialogue, et qui évite d'avoir
+à viser une flèche. Une croix passe la scène entière.
+
+**Elle ne bloque jamais.** La ferme tourne derrière, l'œuf reste cliquable pendant qu'elle
+parle. C'est la différence entre être accompagné et être retenu.
+
+**Une scène n'est marquée jouée qu'à sa dernière réplique**, et la position est dans la
+sauvegarde : un rechargement au milieu d'un dialogue de quatre phrases le reprend où on l'avait
+laissé, au lieu d'avaler le reste de ce qu'elle avait à dire.
+
+Les scènes s'arrêtent à l'enclos — la suite s'écrira en jouant, quand on saura ce qui manque.
 
 Trois règles les gouvernent, et les trois ont été trouvées en les testant plutôt qu'en les
 écrivant :
