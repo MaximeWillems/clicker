@@ -21,10 +21,25 @@ const debut = src.indexOf('const LINES = [');
 const bloc = src.slice(debut, src.indexOf('\n];', debut) + 3);
 const LINES = eval('(' + bloc.replace('const LINES =', '').replace(/;\s*$/, '') + ')');
 
-const ENTETE = `Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+/* ── Ce qui ne change jamais ───────────────────────────────────────────────
+   La technique est commune aux deux chartes : c'est elle qui fait que 27 lignées dessinées à
+   des mois d'écart appartiennent au même jeu. Ce qui change d'une charte à l'autre est le
+   REGISTRE — mascotte ou idole — jamais la grille, ni le nombre de couleurs. */
+const CADRE = `Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
 evenly spaced.
 
-TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.`;
+
+const TECHNIQUE = `STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.`;
+
+/* ── Charte 1 : la mascotte ────────────────────────────────────────────────
+   Communes, rares, épiques. Le principe Magicarpe : on part minable, on finit glorieux, et
+   c'est l'écart qui rend l'évolution mémorable. */
+const ENTETE = `${CADRE}
 
 CUTE MASCOT STYLE — this is the most important instruction:
 - baby proportions: the head is at least half the whole creature
@@ -43,51 +58,49 @@ CONTINUITY — the five stages are ONE animal growing up, not five animals:
 - later stages only ADD. Nothing is ever dropped from one stage to the next
 - stage 5 must still contain stage 1 — one should be able to point at what it kept
 
-STRICT: maximum 6 flat colors per creature including the outline.
-No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+${TECHNIQUE.replace('No gradients.', 'No gradients, no glow.')}`;
 
-Front-facing, centered, full body. Transparent background. No shadow, no ground line,
-no background, no text, no frame.`;
+/* ── Charte 2 : l'idole ────────────────────────────────────────────────────
+   Mythiques et merveilleuses. Elles naissent accomplies, et l'évolution ne les transforme
+   pas : elle leur ajoute des attributs.
 
-/* ── La seconde charte : l'arc de la révélation ────────────────────────────
-   Les mythiques ne grandissent pas, elles s'accomplissent. Elles naissent déjà elles-mêmes,
-   et l'évolution ne les transforme pas : elle leur ajoute des attributs.
+   La première version se contentait d'ajouter « c'est un dieu » PAR-DESSUS la charte
+   mascotte. Ça ne marche pas : les joues roses, les yeux ronds énormes et le petit sourire
+   gagnent toujours, et on obtenait un dieu adorable — ce qui n'est pas un dieu. Le registre
+   se remplace en entier.
 
-   Deux règles de l'en-tête ordinaire y deviennent fausses. Les PROPORTIONS DE BÉBÉ — la tête
-   qui fait la moitié de la bête — disent l'inverse d'une créature accomplie. Et la continuité
-   « une bête qui grandit » se remplace par « la même bête qui se révèle ».
+   Ce qui reste identique, et c'est tout ce qui compte pour la cohérence : la grille de 32,
+   les six couleurs à plat, le contour, l'absence de dégradé. Un mythique doit être RECONNU
+   comme appartenant au même jeu qu'un crapaud, sans lui ressembler. */
+const ENTETE_REVELATION = `${CADRE}
 
-   Tout le reste ne bouge pas : rond, endormi, sans crocs, six couleurs à plat. Un dieu de ce
-   jeu est attendrissant, sinon ce n'est plus le même jeu. */
-const ENTETE_REVELATION = ENTETE
-  .replace(`CUTE MASCOT STYLE — this is the most important instruction:
-- baby proportions: the head is at least half the whole creature
-- huge round eyes`, `CUTE MASCOT STYLE — this is the most important instruction:
-- ALREADY ACCOMPLISHED at stage 1: this is not a baby, it is a small complete god
-- adult proportions, calm and settled — never a hatchling, never a larva
-- huge round eyes`)
-  .replace(`- chubby bean-shaped or egg-shaped bodies, tiny stubby feet`,
-           `- a rounded, settled body — it may have no legs at all if the creature has none`)
-  /* La charte ordinaire interdit toute lueur, et les derniers âges d'un dieu en réclament une.
-     On l'autorise, mais en APLAT : une forme pâle de plus, jamais un dégradé ni un flou —
-     sinon le pixel art se dissout et la contrainte des six couleurs saute avec lui. */
-  .replace(`No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.`,
-           `No texture, no dithering, no noise, no gradients. Simple geometric shapes.
-Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
-never a blur, never a gradient, and it still counts toward the 6 colors.`)
-  .replace(`CONTINUITY — the five stages are ONE animal growing up, not five animals:
-- same palette, same outline color, same eye shape from stage 1 to stage 5
-- every feature a stage gains, all LATER stages keep and grow: ears stay big,
-  a marking stays in the same place, a shell keeps the same spiral
-- later stages only ADD. Nothing is ever dropped from one stage to the next
-- stage 5 must still contain stage 1 — one should be able to point at what it kept`,
-`REVELATION — the five stages are ONE being waking up, not one growing up:
+IDOL STYLE — this is the most important instruction:
+- ALREADY ACCOMPLISHED at stage 1: not a baby, not a hatchling. A small complete god
+- adult proportions, calm and settled. The head is a normal head
+- NO blush marks. NO wide smile. NO kawaii. This is NOT a mascot
+- eyes are NARROW and half-lidded, almond or slit-shaped, calm and aware —
+  never huge round eyes, at most one small highlight
+- mouth closed and neutral, or simply doing what the creature does
+- expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
+- clean readable forms, and SHARPNESS IS ALLOWED where it means something:
+  a defined jaw, angular plates, a crown, a fin — never gore, never bared fangs
+- SYMMETRY: it should read like an emblem stamped on a coin
+- ornament is INSIGNIA, not decoration: rings, plates, glyphs, banded marks,
+  concentric shapes — never polka dots, never freckles, never confetti
+- palette: deep and rich, with ONE metallic accent used sparingly — gold, jade or bone.
+  Never a bright candy palette
+
+REVELATION — the five stages are ONE being waking up, not one growing up:
 - the SILHOUETTE barely changes from stage 1 to stage 5. It is already right at stage 1
 - what changes is what the being GAINS: an attribute, a mark, a glow, sheer size
 - same palette, same outline color, same eye shape throughout
 - later stages only ADD. Nothing is ever dropped from one stage to the next
 - stage 5 must be overwhelming in SCALE and COMPOSITION, never in menace:
-  still round, still sleepy, still no fangs. The awe comes from what surrounds it`);
+  no snarl, no weapon, no threat. The awe comes from what surrounds it
+
+${TECHNIQUE}
+Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
+never a blur, never a gradient, and it still counts toward the 6 colors.`;
 
 /* Cinq descriptions par lignée. On décrit la MASSE et la POSTURE, pas les accessoires.
    Le dernier stade garde toujours un petit visage endormi : c'est ce qui rend une bête
@@ -253,11 +266,11 @@ const STADES = {
      premier âge, il s'éclaire au quatrième, il porte un monde au cinquième. Le grandiose vient
      de là, et non d'une créature devenue menaçante. */
   ouroboros: [
-    'a small serpent ALREADY biting its own tail, forming one simple closed ring, slender rounded body, huge round sleepy eyes, one flat color band along the back — never a worm, never an open curve, the mouth holds the tail gently with no fangs and no strain',
-    'the same closed ring and the same gentle bite, the body now thicker and rounder with simple flat hexagon scales, the same sleepy eyes, a faint pale line running along the inside edge of the ring',
-    'the same gentle bite, the ring now DOUBLED — a second coil nested inside the first, both closed, the same hexagon scales, the same sleepy face at the point where mouth meets tail',
-    'the same gentle bite, three nested coils now, the same scales, and the empty middle of the ring filled for the first time with a soft pale glowing disc — the ring has begun to hold something',
-    'ouroboros, enormous, the same gentle bite and the same nested coils now filling the entire frame, soft golden ring marks along the back, and held inside the ring a small pale world with soft round continents and two tiny moons, tiny sleepy face at the point where the mouth meets the tail'],
+    'a serpent ALREADY biting its own tail, forming one perfect closed ring, slender body, narrow half-lidded eyes, one banded mark along the back — never a worm, never an open curve. The jaw is closed on the tail without effort, as if it had always been',
+    'the same closed ring and the same bite, the body now thicker with flat angular scale plates, the same narrow eyes, a pale line running the whole inside edge of the ring',
+    'the same bite, the ring now DOUBLED — a second coil nested inside the first, both perfectly concentric, the same scale plates, the same impassive face at the point where jaw meets tail',
+    'the same bite, three concentric coils now, the same plates, and the empty middle filled for the first time with one flat pale disc of light — the ring has begun to hold something',
+    'ouroboros, enormous, the same bite and the same concentric coils now filling the entire frame, gold ring glyphs set into the back like insignia, and held at the centre a small world with flat continents and two moons in orbit. The face stays small and impassive where the jaw meets the tail — the awe is the composition, never the expression'],
 
   /* Le fil de l'araignée : huit pattes courtes et rondes, un abdomen bulbeux marqué d'un
      sablier pâle, et une masse qui passe des pattes au ventre de stade en stade. */

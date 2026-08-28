@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.7.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.7.0** | la réserve revient, et les cartes se déplacent au glisser-déposer |
+| **2.7.1** | les mythiques passent en charte « idole » — même style, plus mignon du tout |
+| 2.7.0 | la réserve revient, et les cartes se déplacent au glisser-déposer |
 | 2.6.0 | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
 | 2.5.0 | cinq emplacements fixes, et plus aucune réserve — chez personne |
 | 2.4.1 | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
@@ -1056,11 +1057,25 @@ et reconnaissables au premier âge : un dieu qui commence en avorton n'est plus 
 ne change jamais, seule l'épithète pousse, et la silhouette bouge à peine — ce qui grandit,
 ce sont les attributs.
 
-`tools/prompt.js` porte donc **deux en-têtes**, choisis sur la rareté. Celui de la révélation
-retire les proportions de bébé, remplace la continuité « une bête qui grandit » par « le même
-être qui se réveille », et autorise la lueur — mais **en aplat seulement**, une forme pâle de
-plus à bord net, jamais un dégradé : sinon le pixel art se dissout et la contrainte des six
-couleurs saute avec lui.
+`tools/prompt.js` porte donc **deux chartes**, choisies sur la rareté — *mascotte* et
+*idole* — et une **technique commune** : la grille de 32, les six couleurs à plat, le contour,
+l'absence de dégradé. C'est elle qui fait que des lignées dessinées à des mois d'écart
+appartiennent au même jeu. Ce qui change d'une charte à l'autre est le **registre**, jamais la
+grille.
+
+La première tentative se contentait d'ajouter « c'est un dieu » **par-dessus** la charte
+mascotte. Ça ne marche pas : les joues roses, les yeux ronds énormes et le petit sourire
+gagnent toujours, et on obtenait un dieu adorable — ce qui n'est pas un dieu. Le registre se
+remplace donc en entier. La charte idole interdit explicitement les joues roses et le sourire,
+demande des **yeux mi-clos en amande**, une expression *composée, ancienne, un peu impérieuse*,
+autorise la **netteté** là où elle veut dire quelque chose — une mâchoire, des plaques, une
+couronne —, exige la **symétrie d'un emblème frappé sur une pièce**, et remplace la décoration
+par de l'**insigne** : anneaux, glyphes, marques concentriques, jamais des pois. La palette est
+profonde avec un seul accent métallique, jamais un nuancier de bonbons.
+
+La lueur reste autorisée pour les deux, mais **en aplat seulement** — une forme pâle à bord
+net, jamais un dégradé : sinon le pixel art se dissout et la contrainte des six couleurs saute
+avec lui.
 
 **L'Ouroboros est la première lignée écrite sous cette charte.** Il naissait en « Anneau de
 mue », une dépouille, avec un glyphe de ver. Il est maintenant un serpent qui se mord la queue

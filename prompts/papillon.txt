@@ -21,7 +21,7 @@ CONTINUITY — the five stages are ONE animal growing up, not five animals:
 - stage 5 must still contain stage 1 — one should be able to point at what it kept
 
 STRICT: maximum 6 flat colors per creature including the outline.
-No texture, no dithering, no noise, no gradients, no glow. Simple geometric shapes.
+No texture, no dithering, no noise, no gradients. Simple geometric shapes.
 
 Front-facing, centered, full body. Transparent background. No shadow, no ground line,
 no background, no text, no frame.
