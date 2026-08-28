@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.4
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.3.5
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.3.4** | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
+| **2.3.5** | les consignes de la ferme ne traversent plus l'ascension |
+| 2.3.4 | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
 | 2.3.3 | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
 | 2.3.2 | un brief de séance, pour générer plusieurs planches d'affilée sans dérive de style |
 | 2.3.1 | les prompts d'illustration des six nouvelles rares |
@@ -636,14 +637,27 @@ fois sur une ferme entière plutôt que trente fois sur trente bêtes.
 | Ce qui traverse | Ce qui repart de zéro |
 |---|---|
 | L'album — toutes les capsules | Les pièces |
-| Les emplacements, et les cartes équipées | Les œufs en réserve |
+| Les emplacements, et les cartes équipées | Les œufs non éclos |
 | La collection des formes vues | Incubateurs et enclos |
-| Les jalons déjà dépensés | Les huit améliorations |
-| Les réglages : tri, consignes, son | Les bêtes non transformées |
+| Les paliers de fortune déjà franchis | Les huit améliorations |
+| Le confort d'affichage : tri, taille des lots, son | **Les consignes du marchand, de l'évolution et de l'acheteur** |
 
 La collection survit : c'est un musée de ce qu'on a rencontré, pas une ressource. Elle ne
 donne aucun bonus — **seules les cartes équipées en donnent** — donc la garder ne déséquilibre
 rien, et la remettre à zéro ne ferait que forcer à redécouvrir ce qu'on a déjà vu.
+
+**Les consignes de la ferme, elles, repartent à zéro.** Elles traversaient le saut au motif que
+les refaire rareté par rareté serait une corvée. C'était un mauvais calcul sur deux points.
+D'abord elles deviennent fausses : on finit un cycle sur « ne vends jamais les mythiques, monte
+les communes jusqu'à la légende », consignes qui n'ont aucun sens sur une ferme qui recommence
+avec un œuf commun et zéro pièce — les objectifs d'un cycle ne sont pas ceux du suivant.
+Ensuite, et c'est plus grave, elles étaient **invisibles** : les trois panneaux de réglage ne
+s'affichent qu'avec l'automate correspondant, et une ferme neuve n'en possède aucun. Les
+consignes gouvernaient donc en silence et tombaient d'un coup au rachat du marchand. Un réglage
+qu'on ne peut pas voir ne doit pas agir.
+
+Ce qui traverse encore n'agit sur rien : l'ordre de la bande, la taille des lots d'achat, le
+son. Du confort d'affichage, pas des décisions.
 
 #### Le motif décide ce que la carte accélère
 

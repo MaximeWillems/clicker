@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.3.4';
+const VERSION = 'alpha 2.3.5';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2327,16 +2327,28 @@ function ascensionner() {
                         .filter(id => album.some(k => k.id === id))
                         .slice(0, ap.max);
 
-  /* Tout repart de zéro SAUF ce qui est recopié ici. Les réglages traversent aussi : les
-     refaire rareté par rareté à chaque cycle serait une corvée pure, sans aucun enjeu. */
+  /* TOUT REPART DE ZÉRO SAUF QUATRE CHOSES : l'album, les emplacements, le compte
+     d'ascensions et la collection. Le reste de la liste n'est que du confort d'affichage —
+     l'ordre de la bande, la taille des lots, le son — qui n'agit sur rien.
+
+     LES CONSIGNES DE LA FERME NE TRAVERSENT PLUS. Elles le faisaient, au motif que les refaire
+     rareté par rareté serait une corvée. C'était un mauvais calcul sur deux points.
+
+     D'abord elles deviennent fausses : on finit une partie sur « ne vends jamais les
+     mythiques, monte les communes jusqu'à la légende », consignes qui n'ont aucun sens sur une
+     ferme qui recommence avec un œuf commun et zéro pièce. Les objectifs d'un cycle ne sont
+     pas ceux du suivant.
+
+     Ensuite, et c'est plus grave, elles étaient INVISIBLES. Les trois panneaux de réglage ne
+     s'affichent qu'avec l'automate correspondant, et une ferme neuve n'en possède aucun : les
+     consignes gouvernaient donc en silence, et tombaient d'un coup sur la ferme à l'instant du
+     rachat du marchand. Un réglage qu'on ne peut pas voir ne doit pas agir. */
   state = Object.assign(freshState(), {
     album, slots,
     /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: state.asc.jetons - 1 },
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
-    buyKind: state.buyKind, sellAt: state.sellAt, sellRank: state.sellRank,
-    evolveUpTo: state.evolveUpTo,
   });
   nextId = 1;
 
