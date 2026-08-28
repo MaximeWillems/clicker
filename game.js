@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.0.3';
+const VERSION = 'alpha 2.0.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -620,6 +620,13 @@ const ART = {
     3: 'escargot-3-achatine.png',
     4: 'escargot-4-porte-tour.png',
     5: 'escargot-5-ammon.png',
+  },
+  crabe: {
+    1: 'crabe-1-zoe.png',
+    2: 'crabe-2-crabe.png',
+    3: 'crabe-3-tourteau.png',
+    4: 'crabe-4-crabe-recif.png',
+    5: 'crabe-5-karkinos.png',
   },
 };
 
