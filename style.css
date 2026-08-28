@@ -414,6 +414,35 @@ body.debut .stage { padding-top: 3.5rem; padding-bottom: 3rem; }
 .axe-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--rule-hi); }
 .axe-pip.on { background: var(--rar, var(--accent)); }
 
+/* ── LE BONHEUR ─────────────────────────────────────────────────────────────
+   Une LIGNE, pas une colonne. Le bonheur n'est pas un quatrième axe de la valeur de la
+   bête — il ne change ni son prix, ni sa rente, ni sa taille — et lui donner une case dans
+   la grille des axes aurait défait exactement ce que cette grille venait de clarifier. */
+.joie {
+  display: flex; align-items: center; gap: 0.5rem;
+  width: min(100%, 30rem);
+  font-family: var(--f-num); font-size: 0.66rem;
+  color: var(--faint);
+}
+.joie-coeur { color: var(--red); font-size: 0.85rem; line-height: 1; }
+.joie-nom { letter-spacing: 0.12em; text-transform: uppercase; }
+.joie-bar {
+  flex: 1; height: 3px; background: var(--sunken);
+  border-radius: 2px; overflow: hidden;
+}
+.joie-bar > i {
+  display: block; height: 100%; width: 0;
+  background: var(--red); border-radius: 2px;
+  transition: width 0.12s linear;
+}
+.joie-n { font-variant-numeric: tabular-nums; }
+/* Le jade des jauges, pas l'or : celui-ci reste aux mythiques. */
+.joie-fren {
+  color: var(--accent); border: 1px solid var(--jade-dim);
+  border-radius: 3px; padding: 0.05rem 0.32rem;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
 .timer-ligne {
   display: flex; align-items: baseline; justify-content: center;
   flex-wrap: wrap; gap: 0.45rem; margin: 0;

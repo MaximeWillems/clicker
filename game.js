@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.15.0';
+const VERSION = 'alpha 2.16.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -504,6 +504,11 @@ const NOTES = [
     'Retiens ceci : bientôt, ce ne sera plus l’argent qui te limitera, mais la place. Une bête que tu gardes est un enclos qui ne tourne pas.',
     'Voilà. Tu sais tout ce que je sais. Le reste, tu vas me l’apprendre.',
   ] },
+  { cle: 'cadeau', test: () => (state.dons || 0) > 0, repliques: [
+    'Tu as vu ? Elle vient de t’offrir quelque chose.',
+    'Une bête qu’on garde sous les yeux finit par s’attacher. Ça ne s’achète pas et ça ne se force pas — il faut rester, simplement.',
+    'Ce n’est pas grand-chose : tes clics comptent double, le temps de quelques secondes. Mais c’est elle qui te le donne, et ça, aucune amélioration ne le fera.',
+  ] },
 ];
 
 const JETON_PAS = 1000;
@@ -896,6 +901,8 @@ function freshState() {
     /* Le mode histoire. `tuto` l'allume, `vu` retient ce qui a déjà été dit ET ce qui a déjà
        été dévoilé — les deux se marquent une fois pour toutes, et rien ne revient en arrière.
        Ils traversent l'ascension : on ne réapprend pas le jeu au deuxième cycle. */
+    frenesie: 0,        // secondes de clic double encore en réserve
+    dons: 0,            // combien de cadeaux reçus en tout — sert aussi de test au tutoriel
     tuto: true,
     vu: {},
     /* La scène en cours, `{ cle, i }`, ou null. Elle est DANS LA SAUVEGARDE : une scène de
@@ -1318,7 +1325,32 @@ function paliersVises(u) {
   }
   return n;
 }
-const clickPower  = () => 1 + force('clic');
+/* ── LE BONHEUR ET LA FRÉNÉSIE ────────────────────────────────────────────────
+   Une bête gagne du bonheur QUAND ELLE EST EN SCÈNE, et elle seule. C'est ce qui rend la
+   chose bornée : une ferme de quarante enclos n'en tire pas quarante fois plus qu'un enclos
+   unique, puisqu'on ne regarde jamais qu'une bête à la fois. Sans cette règle, la frénésie
+   serait permanente passé le milieu de partie, ce qui est exactement ce qu'on ne veut pas.
+
+   Chaque palier de présence tire au sort un cadeau. Il ne donne qu'une chose : LE CLIC
+   COMPTE DOUBLE, dix, vingt ou trente secondes selon le palier atteint. Rien sur les
+   automates, rien sur les prix, rien sur la rente — le clic est ce que le joueur fait de ses
+   mains, et c'est la seule chose qu'un cadeau doit récompenser.
+
+   Elle reste petite par construction : un cadeau tous les quatre à cinq minutes environ,
+   d'au plus trente secondes, soit moins d'un dixième du temps passé à ×2. Et elle ne monte
+   pas pendant une absence — elle est heureuse parce que tu es là. */
+const JOIE_PALIER  = 90;            // secondes de présence avant un tirage
+const JOIE_CHANCE  = 0.35;          // ce que vaut un palier : un cadeau une fois sur trois
+const FRENESIE     = [10, 20, 30];  // paliers 1, 2, puis 3 et au-delà
+const FRENESIE_MAX = 60;            // jamais plus d'une minute d'avance
+const FRENESIE_X   = 2;             // le clic compte double, et c'est tout
+
+const enFrenesie = () => (state.frenesie || 0) > 0;
+
+/* Le doublement se pose ICI, à la source : clickGain en découle, et `remaining()` compte
+   déjà en clics à partir de la même fonction — la frénésie annonce donc toute seule qu'il
+   reste deux fois moins de clics à donner, sans une ligne de plus. */
+const clickPower  = () => (1 + force('clic')) * (enFrenesie() ? FRENESIE_X : 1);
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
@@ -1891,6 +1923,11 @@ function advance(dt) {
      absence — une bête qu'on garde travaille, présent ou pas. */
   const rente = renteTotale();
   if (rente) state.coins += rente * dt;
+  /* La frénésie s'écoule ICI et non dans tickJoie : advance tourne aussi pendant un
+     rattrapage, si bien qu'une frénésie en cours au moment où l'on ferme la page a bien
+     brûlé ses trente secondes quand on revient. Trente secondes de clic double ne doivent
+     pas attendre six heures dans un tiroir. */
+  if (state.frenesie) state.frenesie = Math.max(0, state.frenesie - dt);
   // un palier de fortune franchi pendant une absence est franchi quand même
   crediterJetons();
 }
@@ -1992,6 +2029,33 @@ function runAutomations(dt) {
   }
 }
 
+/* Appelé PAR LA BOUCLE SEULE, jamais par le rattrapage : une absence ne fabrique ni bonheur
+   ni cadeaux — vingt frénésies gagnées pendant la nuit expireraient toutes avant qu'on ait
+   posé un doigt sur l'écran, et elle est heureuse parce que tu es là, pas parce que le temps
+   passe. Le compte à rebours d'une frénésie déjà en cours, lui, tombe dans advance : il
+   s'écoule pendant l'absence comme tout le reste. */
+function tickJoie(dt) {
+  const s = current();
+  if (!s || s.kind !== 'creature') return;
+  const c = s.c;
+  const avant = Math.floor((c.bonheur || 0) / JOIE_PALIER);
+  c.bonheur = (c.bonheur || 0) + dt;
+  // en ×100 on peut franchir plusieurs paliers d'un coup : chacun a droit à son tirage
+  for (let n = avant + 1; n <= Math.floor(c.bonheur / JOIE_PALIER); n++) {
+    if (Math.random() < JOIE_CHANCE) offrirFrenesie(n);
+  }
+}
+
+function offrirFrenesie(palier) {
+  const duree = FRENESIE[Math.min(palier, FRENESIE.length) - 1];
+  // les cadeaux s'ajoutent sans jamais dépasser la minute : deux ×2 ne feront pas un ×4
+  state.frenesie = Math.min(FRENESIE_MAX, (state.frenesie || 0) + duree);
+  state.dons = (state.dons || 0) + 1;
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y - 90, '⚡ cadeau · clic ×2 pendant ' + duree + ' s', 'gain');
+  chord([523, 659, 784, 1046], 70);
+}
+
 function loop() {
   const now = Date.now();
   /* LA FERME S'ARRÊTE PENDANT L'ÉCRAN D'ASCENSION. On y décide du sort de bêtes précises ;
@@ -2004,6 +2068,7 @@ function loop() {
   if (dt <= 0) return;
   advance(dt);
   runAutomations(dt);
+  tickJoie(dt);
   hatchAll();          // hatchAll rafraîchit déjà l'affichage
   renderTuto();        // les seuils se franchissent aussi entre deux redessins
 }
@@ -2117,10 +2182,23 @@ function peindreAxes(c, mur, rank, niv, dernier, mult) {
   $('timer-axe').hidden = false;
 }
 
-// Un œuf n'a ni âge ni taille : les colonnes et l'étiquette de barre s'effacent.
+/* La ligne du bonheur. Pendant le mode histoire elle attend qu'il y ait quelque chose à
+   voir — un tiers de palier, une trentaine de secondes — pour ne pas arriver dans la même
+   seconde que la bête elle-même et les trois colonnes. */
+function peindreJoie(c) {
+  const j = c.bonheur || 0, n = Math.floor(j / JOIE_PALIER);
+  $('stage-joie').hidden = state.tuto && j < JOIE_PALIER / 3 && !(state.dons || 0);
+  setWidth($('joie-fill'), ((j % JOIE_PALIER) / JOIE_PALIER * 100).toFixed(1) + '%');
+  setText($('joie-n'), n ? n + ' palier' + (n > 1 ? 's' : '') : '');
+  $('joie-fren').hidden = !enFrenesie();
+  if (enFrenesie()) setText($('joie-fren'), '⚡ ×2 · ' + Math.ceil(state.frenesie) + ' s');
+}
+
+// Un œuf n'a ni âge ni taille ni bonheur : tout ce bloc s'efface.
 function cacherAxes() {
   $('stage-axes').hidden = true;
   $('timer-axe').hidden = true;
+  $('stage-joie').hidden = true;
 }
 
 function setStageRarity(stage, cls) {
@@ -2909,6 +2987,7 @@ function renderStage() {
   setHtml($('stage-meta'),
     '<span class="rar rar-' + lineOf(c).rarity + '">' + rar.name + '</span>');
   peindreAxes(c, mur, rank, niv, dernier, mult);
+  peindreJoie(c);
 
   /* La rente s'annonce AVANT d'exister : sans ça, personne ne devine qu'une bête se met à
      payer toute seule à l'âge adulte. Une fois ouverte, c'est le montant qu'on affiche. */
@@ -3067,6 +3146,7 @@ function ligneBoosts(sujet) {
     if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
   }
   if (alb > 1) bouts.push('album ×' + dec(alb, 2));
+  if (enFrenesie()) bouts.push('frénésie ×' + FRENESIE_X);
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
   return bouts.join('  ·  ');
 }

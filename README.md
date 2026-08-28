@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.15.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.16.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.15.0** | aucun nom de bête ne reprend un mot d'âge ni de taille |
+| **2.16.0** | le bonheur d'une bête, et la frénésie de clic qu'elle offre |
+| 2.15.0 | aucun nom de bête ne reprend un mot d'âge ni de taille |
 | 2.14.0 | la réserve d'œufs se vide toute seule, gratuitement |
 | 2.13.0 | l'âge, le niveau et la taille prennent chacun leur colonne |
 | 2.12.0 | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
@@ -106,6 +107,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 ## Ce qui est dans le jalon 0
 
 - 27 lignées et leurs 135 formes, du têtard à l'Ouroboros éternel
+- **Le bonheur d'une bête** : la garder en scène lui fait offrir, de loin en loin, quelques secondes de clic double
 - **Un mode histoire** : le jeu se déplie une marche à la fois, et s'explique en dix notes
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
   vie qui ne repart jamais de zéro
@@ -545,6 +547,43 @@ espèce réelle ou à un nom propre, ce qui est le registre du reste du bestiair
 
 **Rien à migrer.** Une sauvegarde ne stocke que des clés de lignée et des numéros d'âge, jamais
 un nom affiché : la collection d'une partie en cours traverse le renommage sans rien perdre.
+
+### Le bonheur et la frénésie
+
+Une bête gagne du bonheur **quand elle est en scène**, et elle seule. Chaque palier de présence
+tire au sort un cadeau, et le cadeau ne donne qu'une chose : **le clic compte double**, dix,
+vingt ou trente secondes selon le palier atteint.
+
+| | |
+|---|---|
+| un palier | 90 s de présence |
+| chance au palier | 35 % |
+| durée offerte | 10 s au 1er palier, 20 s au 2e, 30 s ensuite |
+| plafond | 60 s en réserve — deux ×2 ne feront jamais un ×4 |
+
+**En scène, et pas dans l'enclos.** C'est la règle qui rend la chose bornée : une ferme de
+quarante enclos n'en tire pas quarante fois plus qu'un enclos unique, puisqu'on ne regarde
+jamais qu'une bête à la fois. Sans elle, la frénésie serait permanente passé le milieu de
+partie — exactement ce qu'on ne veut pas. Elle a aussi le mérite d'être la vraie définition de
+« garder » : ce n'est pas posséder, c'est passer du temps avec.
+
+**Mesuré sur une heure devant la même bête** : 11 cadeaux, un toutes les cinq minutes et demie,
+**9 % du temps passé à ×2** — soit un clic moyen à ×1,09. C'est un cadeau, pas une amélioration.
+
+**Le clic, et rien d'autre.** Ni les automates, ni les prix, ni la rente. Le clic est ce que le
+joueur fait de ses mains, et c'est la seule chose qu'un cadeau doit récompenser. Le doublement
+se pose à la source, dans `clickPower()` : tout en découle, y compris les décomptes en clics
+(« 12 clics → niv. 8 ») qui annoncent d'eux-mêmes qu'il en reste deux fois moins à donner.
+
+**Rien ne se fabrique pendant une absence.** Ni bonheur ni cadeaux : vingt frénésies gagnées
+pendant la nuit expireraient toutes avant qu'on ait posé un doigt sur l'écran, et elle est
+heureuse parce que tu es là, pas parce que le temps passe. Le compte à rebours d'une frénésie
+déjà en cours, lui, s'écoule pendant l'absence comme tout le reste : on rentre les mains vides.
+
+**Une ligne, pas une colonne.** Le bonheur ne change ni le prix de la bête, ni sa rente, ni sa
+taille — lui donner une case dans la grille des trois axes aurait défait ce que cette grille
+venait de clarifier. Il vit donc sur une ligne à part, juste en dessous : un cœur, une jauge
+fine, le compte des paliers, et la frénésie en cours quand il y en a une.
 
 ### Variantes
 
