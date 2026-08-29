@@ -58,6 +58,31 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le dialogue** | 2.12, 2.26, 2.28 | la professeure regarde-t-elle ce qu'on fait ? | oui, et elle peut retenir : trois passages obligés éteignent l'écran |
 | **L'ouverture** | 2.29 | le début est-il trop facile ? | il l'était — trois fois plus long désormais, mesuré |
 
+### La ligne d'arrivée de l'alpha
+
+**Le mot « alpha » tombe quand la pension, la fusion des cartes et les premières merveilleuses
+sont en place ensemble.** C'est la seule définition de la bêta qu'on se donne, et elle a le
+mérite de ne dépendre d'aucune date.
+
+Elle tient parce que ces trois-là **forment une boucle**, ce qu'aucune ne fait seule :
+
+- la **pension** donne une raison d'élever plutôt que de vendre ;
+- les **merveilleuses** donnent une raison d'utiliser la pension — c'est la seule rareté qui
+  ne s'achète pas, et elle n'existe nulle part ailleurs ;
+- la **fusion** donne une raison de garder les doublons que tout ça produit, au lieu de les
+  laisser dormir en réserve.
+
+Sans la fusion, l'album se remplit de cartes qu'on n'équipera jamais. Sans les merveilleuses,
+la pension n'offre qu'un raccourci vers ce qu'on pouvait déjà acheter. Sans la pension, les
+merveilleuses n'ont pas de porte. **Le jeu est aujourd'hui un très bon prototype de sa moitié
+d'avant**, et ces trois pièces sont ce qui manque pour qu'il soit un jeu.
+
+Le tableau qui suit est donc, en pratique, **la liste de ce qu'il reste avant la bêta** — plus
+les dix-sept lignées à dessiner, qui conditionnent l'ouverture de la pension.
+
+Les nombres continuent : la bêta ne remet rien à zéro, et la pension est le majeur qui ouvrira
+la série 3.
+
 ### Ce qui vient ensuite
 
 | Ce qui tombe | Sauv. | La question qu'elle pose au joueur |

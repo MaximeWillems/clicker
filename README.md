@@ -25,8 +25,26 @@ Un nombre qui monte remet à zéro ceux qui le suivent. On le change **dans le c
 apporte la modification**, jamais après coup : c'est ce qui permet de savoir, devant une page
 laissée ouverte, si elle est à jour ou s'il faut la recharger.
 
-Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
-nombre : `alpha 2.0.0` est toujours une alpha.
+### Quand le mot change
+
+Le mot **alpha** n'est pas un quatrième nombre : `alpha 2.0.0` est toujours une alpha. Il
+tombe le jour où **trois choses sont en place ensemble** :
+
+1. **la pension** — deux bêtes parquées, une durée, un œuf ;
+2. **la fusion des cartes** — les paliers de l'album, qui donnent une raison de garder les
+   doublons ;
+3. **les premières merveilleuses** — la cinquième rareté, celle qui ne s'achète pas.
+
+Ce n'est pas une date, c'est une définition, et elle tient parce que ces trois-là **forment
+une boucle** : on élève pour reproduire, on reproduit pour obtenir ce qui ne s'achète nulle
+part, et l'album donne enfin une raison de garder ce qu'on a en double. Tant qu'il en manque
+une, le jeu est un très bon prototype de sa moitié d'avant.
+
+Les nombres continuent — la bêta ne remet rien à zéro. La pension est le **majeur** qui
+ouvrira la série 3.
+
+Le squelette de la pension est [déjà posé, porte scellée](#la-pension--squelette-porte-fermée),
+et il n'ouvrira pas avant que les dix-sept lignées manquantes soient dessinées.
 
 À ne pas confondre avec le `v` de la sauvegarde (`v: 14` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux

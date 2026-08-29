@@ -14,7 +14,18 @@
    MAJEUR     un morceau de jeu qui n'existait pas, et qui rebat les cartes du reste
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
-   dans tout le projet : on la change dans le commit qui apporte la modification. */
+   dans tout le projet : on la change dans le commit qui apporte la modification.
+
+   QUAND LE MOT CHANGE. « alpha » tombe le jour où TROIS choses sont en place ensemble :
+   la pension, la fusion des cartes, et les premières merveilleuses. Ce n'est pas une date,
+   c'est une définition — et elle tient parce que ces trois-là forment une boucle complète :
+   on élève pour reproduire, on reproduit pour obtenir ce qui ne s'achète pas, et l'album
+   donne enfin une raison de garder les doublons.
+
+   Tant qu'il en manque une, le jeu est un très bon prototype de sa moitié avant.
+
+   Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
+   remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
 const VERSION = 'alpha 2.29.1';
 
 /* ─────────────────────────────────────────────
