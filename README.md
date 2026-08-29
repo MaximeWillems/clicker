@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.16.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.16.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.16.0** | le bonheur d'une bête, et la frénésie de clic qu'elle offre |
+| **2.16.1** | le banc d'essai entre dans le dépôt, la scène se découpe en trois |
+| 2.16.0 | le bonheur d'une bête, et la frénésie de clic qu'elle offre |
 | 2.15.0 | aucun nom de bête ne reprend un mot d'âge ni de taille |
 | 2.14.0 | la réserve d'œufs se vide toute seule, gratuitement |
 | 2.13.0 | l'âge, le niveau et la taille prennent chacun leur colonne |
@@ -93,6 +94,35 @@ Ouvrir `index.html` directement dans le navigateur suffit. Pour servir propremen
 ```bash
 python -m http.server 5291
 ```
+
+## Vérifier
+
+```bash
+node tools/test.js
+```
+
+Seize scénarios, trois cent cinquante-six vérifications. Passer un mot en argument ne joue que
+les scénarios dont le nom le contient : `node tools/test.js frénésie`.
+
+**C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
+navigateur : `tools/banc.js` fait tourner `game.js` sous Node avec un DOM minimal et les
+identifiants lus dans `index.html`, et expose **tout ce que `game.js` déclare au premier
+niveau**. Cette liste d'exports était écrite à la main et se périmait à chaque fonction
+ajoutée — un test échouait alors pour une raison qui ressemblait exactement à un bug du jeu.
+
+Les scénarios ont été écrits au fil des versions, chacun le jour où quelque chose s'est
+cassé : ils visent des endroits précis plutôt que de couvrir uniformément. Trois d'entre eux
+gardent des invariants qu'aucune relecture ne tiendrait à la main —
+
+- **chaque `$('id')` de `game.js` existe dans `index.html`** (le banc note ceux qu'il a dû
+  inventer) ;
+- **chaque fichier cité par la table `ART` est sur le disque** — le crabe a dormi cinq jours
+  dans `art/` sans être branché ;
+- **aucun des 135 noms de forme ne reprend un mot d'âge ni de taille**, les deux colonnes qui
+  s'affichent à un centimètre du nom.
+
+**Ce qu'ils ne prouvent pas : rien de visuel.** Le DOM du banc ne met rien en page. Un panneau
+superposé, un texte illisible ou une couleur ratée passent tous les tests.
 
 ## Déployer
 

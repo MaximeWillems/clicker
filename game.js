@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.16.0';
+const VERSION = 'alpha 2.16.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2593,7 +2593,6 @@ function capsuleBrute(c) {
   return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, tint: c.tint,
            temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige, palier: 1 };
 }
-const capsuleDe = c => Object.assign(capsuleBrute(c), { id: nextCard++ });
 
 const nomCarte = k => form(k.line, k.age)[0];
 
@@ -2825,9 +2824,11 @@ function ascensionner() {
       return c;
     })
     .slice(0, SLOTS);
-  /* RIEN NE SE PERD. Les capsules qu'on n'équipe pas rejoignent la réserve, d'où on pourra
-     les sortir quand on voudra. L'écran d'ascension ne choisit donc que le build de départ du
-     prochain cycle — un confort, pas un couperet. */
+  /* Ce qui entre dans l'album, ce sont les bêtes RETENUES, et rien d'autre : le filtre juste
+     au-dessus a déjà écarté les autres. Ce commentaire disait l'inverse — « rien ne se perd,
+     les capsules qu'on n'équipe pas rejoignent la réserve » — et décrivait l'ascension d'avant
+     la 2.10, quand tout un enclos y était versé. Ce qui glisse en réserve aujourd'hui, ce sont
+     les cartes DÉJÀ POSSÉDÉES qu'un nouveau choix déloge de leurs emplacements. */
   const album = state.album.concat(neuves);
   /* Les bêtes retenues d'abord, puis les cartes déjà équipées pour combler ce qui reste : ne
      rien choisir ne doit pas vider son build. Le joueur réarrangera dans l'album s'il veut. */
@@ -2892,75 +2893,91 @@ function ascensionner() {
   chord([392, 523, 659, 784], 90);
 }
 
+/* LA SCÈNE A TROIS CAS QUI N'ONT RIEN EN COMMUN : une case vide, un œuf qui couve, une bête
+   qui vit. Ils tenaient dans une seule fonction de deux cent vingt lignes où trois jeux de
+   variables se croisaient sans jamais se servir les uns des autres — `stage` et `subject` ne
+   servaient qu'aux deux derniers, `slot` qu'au deuxième, la moitié du reste qu'au troisième. */
 function renderStage() {
   const s = current();
+  if (!s) return renderRien();
+  /* Les deux seules lignes que le cas plein partage : la sélection se recale sur ce qui est
+     réellement en scène, et la ligne des boosts se lit d'un œuf comme d'une bête. */
+  if (state.sel !== s.key) state.sel = s.key;
+  setText($('stage-boost'), ligneBoosts(s));
+  return s.kind === 'egg' ? renderOeuf(s) : renderBete(s);
+}
+
+// Rien en scène : l'enclos est vide et aucun incubateur ne tourne.
+function renderRien() {
+  const acts = refs.acts;
+  const hide = k => { acts[k].hidden = true; };
+  setCreature($('stage-glyph'), null, '◌');
+  setText($('stage-name'), 'Rien en vue');
+  setHtml($('stage-meta'), '');
+  setText($('stage-timer'), '');
+  setWidth($('stage-fill'), '0%');
+  setText($('stage-hint'), 'Achète un œuf pour recommencer.');
+  setText($('stage-boost'), '');
+  cacherAxes();
+  ['place', 'sell', 'evo', 'keep'].forEach(hide);
+}
+
+// Un œuf, placé ou non. Il n'a ni âge, ni niveau, ni taille, ni bonheur : tout ce bloc-là
+// s'efface, et la scène se réduit à une couvaison qui avance.
+function renderOeuf(s) {
   const stage = document.querySelector('.stage');
   const subject = $('subject');
   const acts = refs.acts;
   const hide = k => { acts[k].hidden = true; };
+  const slot = s.slot;
+  cacherAxes();
+  stage.classList.remove('apex');
+  // l'œuf gonfle doucement à mesure qu'il couve
+  const ratio = slot ? Math.min(1, slot.p / hatchTime(slot)) : 0;
+  const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
+  setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
+  setCreature($('stage-glyph'), null, slot ? kind.glyph : '◌');
+  setFilter($('stage-glyph'), '');
+  stage.classList.remove('prodige');
+  setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
+  setStageRarity(stage, slot ? 'egg-' + kind.key : null);
+  stage.classList.toggle('cracking', !!slot && ratio > 0.65);
 
-  if (!s) {
-    setCreature($('stage-glyph'), null, '◌');
-    setText($('stage-name'), 'Rien en vue');
-    setHtml($('stage-meta'), '');
-    setText($('stage-timer'), '');
-    setWidth($('stage-fill'), '0%');
-    setText($('stage-hint'), 'Achète un œuf pour recommencer.');
-    setText($('stage-boost'), '');
-    cacherAxes();
+  if (slot) {
+    const ready = slot.p >= hatchTime(slot);
+    stage.classList.toggle('ready', ready);
+    setHtml($('stage-meta'), ready ? 'ça sort !' : (ratio > 0.65 ? 'ça craque' : 'en couvaison'));
+    setWidth($('stage-fill'), Math.min(100, (slot.p / hatchTime(slot)) * 100) + '%');
+    setText($('stage-timer'), ready
+      ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
+      : remaining(hatchTime(slot) - slot.p, autoReel(s)));
+    $('stage-timer').classList.toggle('done', ready);
+    setText($('stage-hint'), state.up.couveuse
+      ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
     ['place', 'sell', 'evo', 'keep'].forEach(hide);
-    return;
+  } else {
+    stage.classList.remove('ready');
+    setHtml($('stage-meta'), 'vide');
+    setWidth($('stage-fill'), '0%');
+    setText($('stage-timer'), '');
+    $('stage-timer').classList.remove('done');
+    const stock = totalEggs();
+    setText($('stage-hint'), stock
+      ? 'Tu as ' + stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve.'
+      : 'Achète un œuf dans la boutique.');
+    ['sell', 'evo', 'keep'].forEach(hide);
+    acts.place.hidden = false;
+    const best = bestStocked();
+    setText(acts.place, best ? 'Placer un ' + EGG_BY_KEY[best].name.toLowerCase() : 'Placer un œuf');
+    acts.place.disabled = !best;
   }
+}
 
-  if (state.sel !== s.key) state.sel = s.key;
-  setText($('stage-boost'), ligneBoosts(s));
-
-  if (s.kind === 'egg') {
-    const slot = s.slot;
-    cacherAxes();
-    stage.classList.remove('apex');
-    // l'œuf gonfle doucement à mesure qu'il couve
-    const ratio = slot ? Math.min(1, slot.p / hatchTime(slot)) : 0;
-    const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
-    setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
-    setCreature($('stage-glyph'), null, slot ? kind.glyph : '◌');
-    setFilter($('stage-glyph'), '');
-    stage.classList.remove('prodige');
-    setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
-    setStageRarity(stage, slot ? 'egg-' + kind.key : null);
-    stage.classList.toggle('cracking', !!slot && ratio > 0.65);
-
-    if (slot) {
-      const ready = slot.p >= hatchTime(slot);
-      stage.classList.toggle('ready', ready);
-      setHtml($('stage-meta'), ready ? 'ça sort !' : (ratio > 0.65 ? 'ça craque' : 'en couvaison'));
-      setWidth($('stage-fill'), Math.min(100, (slot.p / hatchTime(slot)) * 100) + '%');
-      setText($('stage-timer'), ready
-        ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
-        : remaining(hatchTime(slot) - slot.p, autoReel(s)));
-      $('stage-timer').classList.toggle('done', ready);
-      setText($('stage-hint'), state.up.couveuse
-        ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
-      ['place', 'sell', 'evo', 'keep'].forEach(hide);
-    } else {
-      stage.classList.remove('ready');
-      setHtml($('stage-meta'), 'vide');
-      setWidth($('stage-fill'), '0%');
-      setText($('stage-timer'), '');
-      $('stage-timer').classList.remove('done');
-      const stock = totalEggs();
-      setText($('stage-hint'), stock
-        ? 'Tu as ' + stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve.'
-        : 'Achète un œuf dans la boutique.');
-      ['sell', 'evo', 'keep'].forEach(hide);
-      acts.place.hidden = false;
-      const best = bestStocked();
-      setText(acts.place, best ? 'Placer un ' + EGG_BY_KEY[best].name.toLowerCase() : 'Placer un œuf');
-      acts.place.disabled = !best;
-    }
-    return;
-  }
-
+// Une bête : le seul cas qui remplisse les trois colonnes et la ligne du bonheur.
+function renderBete(s) {
+  const stage = document.querySelector('.stage');
+  const subject = $('subject');
+  const acts = refs.acts;
   const c = s.c;
   const mur = estMur(c);
   const sf = sizeFactor(c);

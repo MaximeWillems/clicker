@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.3.0 · sauvegarde v8 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.16.0 · sauvegarde v11 · 10 lignées illustrées sur 27
 
 ---
 
@@ -20,28 +20,43 @@ n'existait pas, mineur pour une nouveauté qui tient dans le jeu tel qu'il est, 
 le reste. Chaque version répond à une question, et c'est la question qui décide si elle est
 réussie.
 
-**Ce qui reste à venir ne porte plus de numéro**, seulement un ordre : trois fois de suite une
+**Ce qui reste à venir ne porte pas de numéro**, seulement un ordre : trois fois de suite une
 idée non prévue s'est glissée devant, et il a fallu renuméroter la moitié de la table. Le
 numéro se décide au moment du commit, là où la règle sait quoi en faire.
 
-| Ver. | Ce qui tombe | Sauv. | La question qu'elle pose au joueur |
+### Ce qui est tombé
+
+Le détail version par version est dans le [README](README.md#ce-qui-est-sorti). Ce tableau
+regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
+
+| Chantier | Versions | La question qu'il posait | Réponse |
 |---|---|---|---|
-| 1.0 → 1.4 | Les cinq âges, les tiers de palier, les consignes par rareté | 3 → 6 | est-ce que la progression cesse de reculer ? |
-| **1.5** ✓ | Les prix — les œufs payants divisés par deux | 6 | est-ce que la partie compressée se joue mieux ? |
-| **2.0** ✓ | L'album et l'ascension — capsules, motifs, emplacements, jalons, reset | 7 | est-ce qu'on veut recommencer ? |
-| **2.0.1 → 2.0.6** ✓ | Les âges renommés, l'écran d'ascension réparé, le marchand sans exception, le crabe, le chromatique à 1/8192 | 7 | — |
-| **2.1** ✓ | Les achats par lots — ×1, ×10, ×100, max | 7 | est-ce que la fin de partie cesse d'être une paperasse ? |
-| **2.1.1** ✓ | La couveuse sans plafond | 7 | — |
-| **2.2** ✓ | Les jetons d'ascension — un palier de fortune tous les ×1 000 000 | 8 | est-ce que l'ascension se mérite ? |
-| **2.2.1 → 2.2.3** ✓ | La case tenue à la vente auto, la montée d'un cran à 1/1 000, un jeton = un emplacement | 8 | — |
-| **2.3** ✓ | Six lignées rares de plus — l'ère rare passe de 4 à 10 | 8 | est-ce que l'ère rare cesse de se répéter ? |
-| **à venir** | La fusion — les paliers, et le repère sur les capsules | 8 | est-ce que les doublons valent d'être gardés ? |
-| **à venir** | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 8 | est-ce que l'ordre des achats suit la vie de la bête ? |
-| **à venir** | La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 9 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
-| **à venir** | La compatibilité — étiquettes, stérilité, durée par distance | 9 | est-ce que la règle se devine sans wiki ? |
-| **à venir** | L'hérédité — les quatre issues, les fusions, les teintes exclusives | 9 | est-ce qu'on a envie de sélectionner ? |
-| **à venir** | La rareté de l'enfant — le tirage entre parents, la montée par âge | 9 | est-ce que la montée reste un cadeau et non une voie ? |
-| **à venir** | Les merveilleuses — la rareté, les recettes, trois lignées dessinées | 9 | est-ce qu'une merveilleuse se raconte ? |
+| **Les cinq âges** | 1.0 → 1.4 | est-ce que la progression cesse de reculer ? | oui — plus rien ne redescend, par construction |
+| **Les prix de moitié** | 1.5 | est-ce que la partie compressée se joue mieux ? | à mesurer encore |
+| **L'album et l'ascension** | 2.0 → 2.5 | est-ce qu'on veut recommencer ? | **jamais joué de bout en bout** |
+| **Les achats par lots** | 2.1 | est-ce que la fin de partie cesse d'être une paperasse ? | oui |
+| **Les jetons de fortune** | 2.2, 2.9 | est-ce que l'ascension se mérite ? | le pas de mille tient, non éprouvé |
+| **Dix lignées rares** | 2.3 | est-ce que l'ère rare cesse de se répéter ? | oui sur le papier — six lignées sans dessin |
+| **Le glisser-déposer des cartes** | 2.7 | est-ce que l'album se manipule ? | non vérifié : rien de visuel ne l'est |
+| **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
+| **La charte « idole »** | 2.6, 2.7.1 | est-ce qu'une mythique impressionne ? | oui — validé sur l'Ouroboros |
+| **Le mode histoire** | 2.8, 2.11 → 2.12 | est-ce qu'on se sent accompagné ? | à voir en jouant |
+| **Les trois axes** | 2.13 | est-ce qu'on comprend ce qui monte ? | oui — âge, niveau, taille, chacun sa colonne |
+| **Le confort de la ferme** | 2.14 | est-ce que l'achat par lots tient sa promesse ? | oui — la réserve se vide seule |
+| **Le vocabulaire** | 2.15 | est-ce qu'un nom peut contredire une colonne ? | plus maintenant, et c'est vérifié |
+| **Le bonheur** | 2.16 | est-ce qu'être présent paie ? | un peu, enfin |
+
+### Ce qui vient ensuite
+
+| Ce qui tombe | Sauv. | La question qu'elle pose au joueur |
+|---|---|---|
+| La fusion — les paliers, et le repère sur les capsules | 11 | est-ce que les doublons valent d'être gardés ? |
+| Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 11 | est-ce que l'ordre des achats suit la vie de la bête ? |
+| La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 12 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
+| La compatibilité — étiquettes, stérilité, durée par distance | 12 | est-ce que la règle se devine sans wiki ? |
+| L'hérédité — les quatre issues, les fusions, les teintes exclusives | 12 | est-ce qu'on a envie de sélectionner ? |
+| La rareté de l'enfant — le tirage entre parents, la montée par âge | 12 | est-ce que la montée reste un cadeau et non une voie ? |
+| Les merveilleuses — la rareté, les recettes, trois lignées dessinées | 12 | est-ce qu'une merveilleuse se raconte ? |
 
 L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
 passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
@@ -65,16 +80,27 @@ réserve déborde à la première absence.
 
 **17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
 serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
-sphinx, cheval) et les trois mythiques (chimère, béhémoth, ouroboros). Ce n'est pas une version, c'est une voie de fond
-qui avance entre les autres. Rien n'en dépend, tout en bénéficie.
+sphinx, cheval) et les trois mythiques (chimère, béhémoth, ouroboros). Ce n'est pas une
+version, c'est une voie de fond qui avance entre les autres. Rien n'en dépend, tout en
+bénéficie.
 
 C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
 poubelle au jalon 1, les PNG resteront tels quels dans le vrai jeu. Chaque heure passée là est
 acquise, contrairement à tout le reste.
 
-Le crabe a servi de leçon : ses cinq dessins ont dormi cinq jours dans `art/` sans être
-branchés dans la table `ART`, et la lignée s'affichait en emoji alors qu'elle était prête.
-Poser les fichiers ne suffit pas.
+Les 28 fiches de `prompts/` portent chacune le brief, la commande de découpe et la ligne à
+coller dans la table `ART`. La charte a deux registres : **mascotte** pour les communes, les
+rares et les épiques, **idole** pour les mythiques et les merveilleuses — le second est né en
+2.7.1, quand l'Ouroboros mignon a été rejeté.
+
+Deux leçons payées cher, à ne pas réapprendre :
+
+- Le crabe a dormi cinq jours dans `art/` sans être branché dans la table `ART`, et la lignée
+  s'affichait en emoji alors qu'elle était prête. **Poser les fichiers ne suffit pas.**
+- Un nom de forme ne doit reprendre **aucun des cinq noms d'âge ni des six noms de taille** :
+  ils s'affichent à un centimètre du nom, et « Rongeur colossal · taille normale » se
+  contredit tout seul. Neuf formes ont dû être renommées en 2.15.0. Le scénario
+  `noms` de `tools/test.js` monte la garde.
 
 ### Deux pièges de migration à ne pas oublier
 
@@ -83,7 +109,38 @@ indice ; en insérer une au milieu repeindrait tout le bestiaire déjà éclos.
 
 La réserve d'œufs doit prendre son plafond **avant** la pension, pas après. C'est le seul
 frein du hors-ligne, et une partie qui tourne déjà sans lui rentrera sur cinquante œufs le
-jour où on l'ajoutera.
+jour où on l'ajoutera. La 2.14.0 a rendu ce piège plus pressant : la réserve se vide
+maintenant toute seule dans les incubateurs libres, donc un stock énorme se convertit sans
+qu'on ait à cliquer.
+
+---
+
+## L'outillage
+
+Le projet n'ouvre jamais de navigateur. Tout ce qui n'est pas lu à l'œil passe par le banc
+d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de mémoire à
+chaque session. Il est dans le dépôt depuis la revue de structure.
+
+```
+node tools/test.js              les 16 scénarios
+node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
+```
+
+- **`tools/banc.js`** fait tourner `game.js` sous Node : un DOM minimal, les identifiants lus
+  dans `index.html`, et **tout ce que `game.js` déclare au premier niveau exposé
+  automatiquement**. La liste d'exports était écrite à la main et se périmait à chaque
+  fonction ajoutée — un test échouait alors pour une raison qui ressemblait à un bug du jeu.
+- **`tools/test.js`** porte les scénarios. Ils ont été écrits au fil des versions, chacun le
+  jour où quelque chose s'est cassé : ils visent des endroits précis plutôt que de couvrir
+  uniformément.
+
+**Ce qu'ils ne prouvent pas : rien de visuel.** Le DOM du banc ne met rien en page. Un panneau
+superposé, un texte illisible, une couleur ratée passent tous les tests. C'est la première
+dette du projet, et elle ne se réglera pas ici.
+
+Les autres outils servent aux dessins : `decouper.py` découpe une planche source en cinq PNG,
+`prompt.js` fabrique les fiches de `prompts/`, et `rendu.js` / `formes-*.js` / `styles.js`
+sont les restes d'une exploration de formes procédurales abandonnée au profit des PNG.
 
 ---
 
@@ -97,25 +154,31 @@ est ce qu'il faut avoir en tête pour choisir.
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
 | **Export / import de la sauvegarde** | la seule catastrophe irrattrapable du jeu | une heure |
-| **Compteurs de partie** | le jeu ne garde aucune trace de ce qu'on a fait | une soirée |
+| **Compteurs de partie** | le jeu ne garde presque aucune trace de ce qu'on a fait | une soirée |
 | **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
-| **Frénésie de clic** | le clic ne fait plus rien qu'on ne puisse acheter | deux soirées |
-| **Événements courts** | être présent ne rapporte plus rien | deux soirées |
+| **Événements courts** | l'éclosion ne surprend plus | deux soirées |
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
+
+**La frénésie de clic est sortie du vivier** : livrée en 2.16.0, sous une forme plus douce que
+prévu. Elle ne s'achète pas et ne se déclenche pas — une bête qu'on garde en scène l'offre
+d'elle-même, tous les quatre à cinq cents secondes de présence, et ne double que le clic. Neuf
+pour cent du temps à ×2, mesuré : c'est un cadeau, pas une amélioration.
 
 ### Le diagnostic en trois phrases
 
-**Le jeu ne se souvient de rien.** Un seul compteur cumulé existe, `bilanAuto`, remis à zéro
-à chaque absence. Aucun total, aucun record, aucun temps de jeu — alors qu'un idle est fait de
-ces nombres-là.
+**Le jeu ne se souvient presque de rien.** `bilanAuto` est remis à zéro à chaque absence, et
+`state.dons` — le compte des cadeaux — est le seul total cumulé qui existe. Aucun record,
+aucun temps de jeu, alors qu'un idle est fait de ces nombres-là.
 
 **Il n'a plus un seul objectif nommé.** Les douze jalons ont disparu en 2.2.0 quand les jetons
 ont pris leur place. Ils sont écrits, gradués, et inutilisés.
 
-**Être présent ne paie plus.** Le chromatique à 1/8 192 et la montée à 1/1 000 sont deux
-décisions justes qui se sont additionnées la même semaine. Les deux surprises de l'éclosion
-sont parties ensemble, et rien n'a pris leur place.
+**Être présent paie un peu, depuis peu.** Le chromatique à 1/8 192 et la montée à 1/1 000 sont
+deux décisions justes qui se sont additionnées la même semaine, et les deux surprises de
+l'éclosion sont parties ensemble. Le bonheur de la 2.16.0 rend quelque chose à la présence,
+mais il récompense de rester *devant une bête*, pas d'ouvrir la page : la surprise de
+l'éclosion, elle, n'a toujours rien qui la remplace.
 
 ### Trois règles à ne pas perdre en chemin
 
@@ -144,6 +207,9 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
   idle devient illisible.
 - **Remonter les taux pour compenser.** Si l'éclosion paraît plate, la réponse est la couche
   d'événements, pas un retour en arrière qui redonnerait aux surprises leur banalité.
+- **Découper `game.js` en modules.** Le fichier fait 3 800 lignes et part à la poubelle au
+  jalon 1 : le scinder coûterait une demi-journée pour un confort qui ne survivrait pas au
+  serveur. Ses dix sections commentées suffisent à s'y retrouver.
 
 ---
 
@@ -181,6 +247,11 @@ tire immédiatement ce qui en sortira et on le range, caché. Sans ça, huit heu
 sont incalculables. C'est déjà le cas dans le prototype — la lignée se tire à la mise en
 couvaison, pas à l'éclosion.
 
+**Ce qui dépend de la présence ne se rattrape pas.** Le bonheur de la 2.16.0 est le premier
+morceau de jeu qui ne tourne PAS pendant une absence, et c'est délibéré : vingt frénésies
+gagnées pendant la nuit expireraient toutes avant qu'on ait posé un doigt sur l'écran. La
+règle vaudra pour tout ce qui viendra ensuite — un événement, une caresse, un soin.
+
 **Le même calcul tourne à deux endroits** — sur le serveur pour la vérité, dans le navigateur
 pour que les nombres montent joliment. Écrit deux fois dans deux langages, il divergera et
 coûtera des mois de bugs d'affichage. C'est le seul vrai argument technique du projet, et il
@@ -198,12 +269,13 @@ l'image, jamais la croissance.
 
 ## Où on en est
 
-Le jalon 0 est livré en **alpha 2.3.0**, et il déborde largement de son cadre : 27 lignées au
+Le jalon 0 est livré en **alpha 2.16.0**, et il déborde largement de son cadre : 27 lignées au
 lieu de 5, une vie de cent niveaux en cinq âges, les variantes, quatre raretés, huit
-améliorations, la rente, la collection, l'album et l'ascension. Une partie des jalons 2 et 3
-est donc jouable — mais **entièrement dans le navigateur**.
+améliorations, la rente, la collection, l'album, l'ascension, un mode histoire avec une
+professeure, et le bonheur des bêtes. Une partie des jalons 2 et 3 est donc jouable — mais
+**entièrement dans le navigateur**.
 
-Trois écarts avec le plan d'origine, tous volontaires :
+Quatre écarts avec le plan d'origine, tous volontaires :
 
 - **Les cinq paliers sont devenus cent niveaux en cinq âges.** L'évolution n'est plus une
   transition, c'est un **péage** : arrivée au dernier niveau de son âge la bête se bloque, et
@@ -211,8 +283,20 @@ Trois écarts avec le plan d'origine, tous volontaires :
   au lieu d'une.
 - **Rien ne se nourrit contre des pièces.** Une bête grandit au clic et au temps.
 - **L'album et l'ascension sont arrivés avant la pension**, alors qu'ils étaient prévus après.
+- **Un mode histoire est apparu**, qui n'était nulle part au plan. Le jeu ouvrait sur quatorze
+  boutons dont treize inachetables ; il ouvre maintenant sur un œuf et quelqu'un qui parle.
 
 ### Les dettes
+
+**Rien de visuel n'a jamais été vérifié.** C'est la dette qui grossit le plus vite : l'album,
+l'écran d'ascension, le sélecteur de lots, la boîte de dialogue, les trois colonnes d'axes, la
+ligne du bonheur — tout ce CSS n'a été relu qu'à l'œil, dans le code. Le banc d'essai ne met
+rien en page et ne le dira jamais. Une demi-heure passée à ouvrir la page pour de vrai
+vaudrait plus que dix scénarios de plus.
+
+**L'ascension n'a jamais été jouée de bout en bout.** Six versions l'ont construite et
+réparée, aucune ne l'a éprouvée. Tant que ce n'est pas fait, tout ce qui s'empile dessus —
+fusion, paliers de cartes — se construit sur du non-vérifié.
 
 **La mesure du rythme est périmée deux fois.** « Ère rare à 3 h 34 » date d'avant la baisse
 des prix de la 1.5, et la montée d'un cran passée à 1/1 000 en 2.2.2 l'a déplacée encore : le
@@ -220,12 +304,8 @@ changement d'ère ne se fait plus par coup de chance mais uniquement par la bour
 déduit d'aucune division — le revenu n'est pas constant sur trois heures et demie — et demande
 une nouvelle simulation. C'est elle qui dira si le premier jeton tombe bien vers deux heures.
 
-**Le rendu visuel n'a jamais été regardé.** L'album, l'écran d'ascension et le sélecteur de
-lots sont du CSS neuf, vérifié seulement par la lecture et par le banc d'essai.
-
 **Deux lignes du tableau de puissance du README sont hors d'atteinte.** Elles décrivent ce que
-six cartes équipées rendraient, alors que six emplacements demanderaient six ascensions et que
-l'échelle des jetons n'en offre pas tant. À retrancher si le pas des jetons ne bouge pas.
+six cartes équipées rendraient, alors que l'album n'a que cinq emplacements. À retrancher.
 
 **Les cinq questions du README** (« À vérifier en jouant ») restent ouvertes. Quatre se
 répondront en jouant. La cinquième — la durée de la dernière tranche — coûtera plus cher après
@@ -234,8 +314,8 @@ avec des parties en cours, c'est une migration.
 
 ### La note de conception
 
-Le détail de l'album, de l'ascension et de la pension vit dans deux artifacts, qui portent les
-tableaux, les formules et les arbitrages que ce document résume :
+Le détail de l'album, de l'ascension et de la pension vit dans trois artifacts, qui portent
+les tableaux, les formules et les arbitrages que ce document résume :
 
 - **Album et ascension** — https://claude.ai/code/artifact/037135da-4a26-4745-b37d-fd0e8990d396
 - **Pension, album, ascension** — https://claude.ai/code/artifact/d2577c90-6db3-41e6-b82d-611a0df96e3c
