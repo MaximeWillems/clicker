@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.26.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.27.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.26.0** | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
+| **2.27.0** | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
+| 2.26.0 | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
 | 2.25.0 | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
 | 2.24.1 | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
 | 2.24.0 | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
@@ -112,7 +113,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Trente-huit scénarios, six cent cinquante-six vérifications. Passer un mot en argument ne joue que
+Trente-neuf scénarios, six cent soixante-quatorze vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -356,7 +357,8 @@ vendre. Le seul geste restant était d'effacer la partie. Le chemin le plus cour
 le conseil de la professeure — on vend sa première bête pour quarante pièces, elle annonce
 qu'il y a des choses à acheter qui ne sont pas des œufs, la Force du clic en coûte trente.
 
-Alors on lave des assiettes. **Une assiette, une pièce.** Douze pour un œuf commun.
+Alors on lave des assiettes. **Dix clics l'assiette, une pièce l'assiette.** Cent vingt clics
+pour un œuf commun.
 
 **C'est une punition, et elle est assumée.** Une punition pour avoir mal géré, mais
 rattrapable : on ne perd pas sa partie, on perd du temps. Un idle ne doit jamais pouvoir se
@@ -368,19 +370,40 @@ pas un détail d'équilibrage, c'est ce qui rend tout garde-fou inutile : une pl
 que là où rien d'autre n'existe ne peut pas devenir un revenu alternatif ni une stratégie
 d'ouverture. Rien à doser, rien à surveiller.
 
-**Ni frénésie, ni auto-clic.** Une assiette vaut une pièce quoi qu'on ait acheté — le
-doublement de la frénésie passe par `clickPower`, qui n'entre pas ici, et la carte ocellée est
-refusée explicitement. Doubler les assiettes récompenserait l'erreur chez le joueur le mieux
-équipé ; laisser la carte les laver ferait que l'erreur ne coûte rien à qui a déjà un album.
-**La punition est la même pour tout le monde, sinon elle n'en est plus une pour personne.**
+**Tout est plat ici, et rien n'y touche.** Ni la Force du clic, ni la frénésie, ni la Poigne,
+ni la Main preste, ni la carte ocellée : dix clics font une assiette qu'on ait tout acheté ou
+rien du tout. C'est la seule mécanique du jeu qui ignore volontairement tout ce qu'on a
+construit — parce qu'**une punition qui s'achète n'en est pas une**, et que celui qui a le plus
+d'améliorations est aussi celui qui aurait dû le moins se retrouver là. Un scénario du banc
+rallume tout ce qui accélère le clic (`clickPower` à 136 secondes) et vérifie qu'il faut
+toujours exactement dix coups d'éponge.
 
-Un détail de structure qui vaut d'être noté : la plonge est un **état du jeu, pas un sujet de
-la scène**. `subjects()` liste toujours les incubateurs, même vides, donc il y a toujours
-quelque chose en scène et `current()` ne rend jamais `null` — `renderStage` et `tapStage`
-regardent donc la plonge *avant* de regarder le sujet.
+**La barre suit l'assiette en cours, pas la sortie de l'impasse.** Cent vingt clics pour un
+œuf, c'est moins d'un pour cent par clic sur une barre globale — invisible. Sur l'assiette,
+chaque clic vaut dix pour cent et la barre se remplit douze fois. Même règle que la scène d'une
+bête : la jauge vise le prochain palier, le texte dit la distance au but. Le frottage en cours
+est **dans la sauvegarde** — perdre neuf clics parce qu'on a rechargé la page ajouterait une
+punition à la punition.
 
-La professeure a enfin une scène pour les mauvais jours, et elle ne s'excuse pas : *« Je ne la
-ferai pas à ta place. Tu as pris la décision, tu prends les assiettes avec. »*
+**L'évier ne se montre pas tout seul.** Être dans l'impasse et voir la vaisselle sont deux
+choses : la première fois, la professeure parle d'abord — elle constate, elle nomme la bêtise,
+elle propose. L'écran ne montre alors que `Plus rien · l'enclos est vide, la bourse aussi`, et
+un conseil qui renvoie à elle. L'évier n'apparaît qu'à sa dernière réplique. C'est tout ce qui
+sépare un mécanisme d'un moment — et c'est elle qui ouvre la porte, littéralement.
+
+**Deux portes de secours**, parce qu'une impasse ne doit jamais dépendre d'un dialogue : le
+mode histoire éteint ouvre l'évier immédiatement, et une scène déjà jouée aussi. On ne raconte
+la même histoire qu'une fois ; la deuxième fois on a juste besoin de l'évier.
+
+Sa scène ne s'excuse pas, et ne nomme jamais la vaisselle — *« Il y a une porte au fond du
+couloir. Je n'y emmène pas les visiteurs. »* La révélation est visuelle : c'est l'écran qui
+montre l'évier, pas elle qui le décrit.
+
+Deux détails de structure. La plonge est un **état du jeu, pas un sujet de la scène** :
+`subjects()` liste toujours les incubateurs même vides, donc `current()` ne rend jamais `null`
+— `renderStage` et `tapStage` regardent la plonge *avant* de regarder le sujet. Et
+`renderRien()`, qui n'était **atteignable par personne** pour cette même raison, sert enfin :
+c'est l'écran de l'impasse avant qu'elle parle.
 
 ### Les trophées
 

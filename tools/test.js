@@ -390,15 +390,51 @@ scenario('dialogue — agir fait avancer, jamais rater la leçon', () => {
   ok('évoluer fait avancer « peage »', ditDial() !== avantEvo);
   ok('sans fermer la scène', dialOuvert(), 'la leçon a été perdue');
 
-  // et la plonge : laver une assiette passe à la réplique suivante
-  jeu = seule('plonge', (j, s) => {
+});
+
+scenario('plonge — c’est elle qui ouvre la porte, pas le moteur', () => {
+  /* L'évier ne se montre pas tout seul : être dans l'impasse et voir la vaisselle sont deux
+     choses. La professeure constate, nomme la bêtise, propose — et l'évier n'apparaît qu'après.
+     C'est tout ce qui sépare un mécanisme d'un moment. */
+  const jeu = seule('plonge', (j, s) => {
     s.coins = 5; s.pen = []; s.incub = [null];
     s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
   });
-  jeu.replique(false); jeu.replique(false);
-  const avantLavage = ditDial();
-  jeu.tapStage(); jeu.refresh();
-  ok('laver fait avancer « plonge »', ditDial() !== avantLavage, avantLavage);
+  const s = jeu.state;
+  ok('on est bien dans l’impasse', jeu.enPlonge());
+  ok('mais l’évier reste fermé', !jeu.plongeOuverte());
+  eq('la scène ne montre pas la vaisselle',
+     (noeuds.get('stage-name').textContent || '').trim(), 'Plus rien');
+  ok('elle renvoie à la professeure',
+     /professeure/.test(noeuds.get('stage-hint').textContent || ''));
+
+  jeu.tapStage();
+  eq('et cliquer ne lave rien', s.stats.assiettes || 0, 0);
+  eq('ni ne rapporte quoi que ce soit', s.coins, 5);
+
+  // on l'écoute jusqu'au bout
+  let garde = 0;
+  while (dialOuvert() && garde++ < 20) jeu.replique(false);
+  jeu.refresh();
+  ok('la porte s’ouvre quand elle a fini', jeu.plongeOuverte());
+  eq('et l’évier se montre', (noeuds.get('stage-name').textContent || '').trim(), 'La plonge');
+  for (let i = 0; i < jeu.ASSIETTE_CLICS; i++) jeu.tapStage();
+  eq('maintenant on lave', s.stats.assiettes, 1);
+
+  /* DEUX PORTES DE SECOURS : une impasse ne doit jamais dépendre d'un dialogue. */
+  const eteint = neuf();
+  eteint.state.tuto = false;
+  eteint.state.coins = 5; eteint.state.pen = []; eteint.state.incub = [null];
+  eteint.state.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  eteint.refresh();
+  ok('mode histoire éteint : l’évier est là tout de suite', eteint.plongeOuverte());
+
+  const revenu = neuf();
+  revenu.state.vu.plonge = true;
+  revenu.state.coins = 5; revenu.state.pen = []; revenu.state.incub = [null];
+  revenu.state.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  revenu.refresh();
+  ok('scène déjà jouée : on ne raconte pas deux fois', revenu.plongeOuverte());
 });
 
 scenario('dévoilement — l’escalier suit les prix, pas l’ordre des tables', () => {
@@ -577,29 +613,39 @@ scenario('plonge — elle ne s’ouvre que dans l’impasse, et se referme en so
   ok('de quoi acheter la referme', !jeu.enPlonge());
 });
 
-scenario('plonge — une assiette, une pièce, quoi qu’on ait acheté', () => {
+scenario('plonge — dix clics l’assiette, et rien ne les réduit', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   impasse(jeu, 0);
-  const cible = jeu.oeufPlancher();
+  const cible = jeu.oeufPlancher(), parAssiette = jeu.ASSIETTE_CLICS;
+
+  for (let i = 1; i < parAssiette; i++) jeu.tapStage();
+  eq('neuf clics ne rapportent rien', s.coins, 0);
+  eq('aucune assiette lavée', s.stats.assiettes || 0, 0);
+  eq('mais le frottage est compté', s.frotte, parAssiette - 1);
+  eq('et chaque clic compte comme un clic du joueur', s.stats.clics, parAssiette - 1);
 
   jeu.tapStage();
-  eq('une assiette rapporte une pièce', s.coins, 1);
-  eq('elle est comptée', s.stats.assiettes, 1);
-  eq('et elle compte comme un clic du joueur', s.stats.clics, 1);
+  eq('le dixième la finit', s.stats.assiettes, 1);
+  eq('et rapporte une pièce', s.coins, 1);
+  eq('le frottage repart de zéro', s.frotte, 0);
 
-  // ni la frénésie ni la Force du clic ne changent quoi que ce soit
-  s.up.clic = 20; s.frenesie = 30; s.primes.poigne = true; s.primes.main = true;
-  ok('le clic vaut beaucoup ailleurs', jeu.clickPower() > 10, jeu.clickPower());
-  const avant = s.coins;
+  /* TOUT EST PLAT : on rallume tout ce qui accélère le clic ailleurs, et rien ne bouge ici.
+     Une punition qui s'achète n'en est pas une. */
+  s.up.clic = 30; s.frenesie = 60; s.primes.poigne = true; s.primes.main = true;
+  ok('le clic vaut énormément ailleurs', jeu.clickPower() > 100, jeu.clickPower());
+  for (let i = 1; i < parAssiette; i++) jeu.tapStage();
+  eq('neuf clics ne suffisent toujours pas', s.coins, 1);
   jeu.tapStage();
-  eq('mais une assiette vaut toujours une pièce', s.coins, avant + 1);
+  eq('il en faut toujours dix', s.coins, 2);
 
   // on lave jusqu'au bout
   let n = 0;
-  while (jeu.enPlonge() && n++ < 100) jeu.tapStage();
+  while (jeu.enPlonge() && n++ < 500) jeu.tapStage();
   eq('on sort avec de quoi acheter un œuf', s.coins, cible);
-  ok('et la plonge s’est refermée', !jeu.enPlonge());
+  eq('en autant d’assiettes que de pièces', s.stats.assiettes, cible);
+  eq('et en dix fois plus de clics', s.stats.clics, cible * parAssiette);
+  ok('la plonge s’est refermée', !jeu.enPlonge());
   jeu.refresh();
   ok('la scène redevient un incubateur',
      (noeuds.get('stage-name').textContent || '').trim() !== 'La plonge');
@@ -614,9 +660,10 @@ scenario('plonge — la carte ocellée ne lave pas à ta place', () => {
   eq('elle clique pourtant très vite ailleurs', jeu.bonusAlbum().clicAuto, jeu.MOTIF_BONUS['ocellé'].cap);
   for (let i = 0; i < 200; i++) jeu.tickOcelle(0.5);   // cent secondes
   eq('aucune assiette lavée', s.stats.assiettes || 0, 0);
+  eq('aucun coup d’éponge donné', s.frotte || 0, 0);
   eq('aucune pièce gagnée', s.coins, 0);
   ok('on est toujours dans l’impasse', jeu.enPlonge());
-  jeu.tapStage();
+  for (let i = 0; i < jeu.ASSIETTE_CLICS; i++) jeu.tapStage();
   eq('seule la main du joueur lave', s.stats.assiettes, 1);
 });
 
@@ -646,7 +693,7 @@ scenario('trophées — six objectifs visibles, six surprises cachées', () => {
   // une surprise apparaît au moment où on la décroche, pas avant
   ok('« La plonge » est invisible', ![...lignes()].some(l => nom(l) === 'La plonge'));
   impasse(jeu, 0);
-  jeu.tapStage();
+  for (let i = 0; i < jeu.ASSIETTE_CLICS; i++) jeu.tapStage();
   jeu.verifierTrophees();
   ok('elle apparaît une fois lavée', [...lignes()].some(l => nom(l) === 'La plonge'));
   ok('et elle est marquée prise',

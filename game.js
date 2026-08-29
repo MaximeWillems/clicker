@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.26.0';
+const VERSION = 'alpha 2.27.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -432,7 +432,14 @@ const MOTIF_BONUS = {
    le conseil de la professeure : on vend sa première bête pour quarante pièces, elle annonce
    qu'il y a des choses à acheter qui ne sont pas des œufs, la Force du clic en coûte trente.
 
-   Alors on lave des assiettes. UNE ASSIETTE, UNE PIÈCE. Douze pour un œuf commun.
+   Alors on lave des assiettes. DIX CLICS PAR ASSIETTE, UNE PIÈCE PAR ASSIETTE. Cent vingt
+   clics pour un œuf commun.
+
+   TOUT EST PLAT ICI, ET RIEN N'Y TOUCHE. Ni la Force du clic, ni la frénésie, ni la Poigne,
+   ni la Main preste, ni la carte ocellée : dix clics font une assiette, qu'on ait tout acheté
+   ou rien du tout. C'est la seule mécanique du jeu qui ignore volontairement tout ce qu'on a
+   construit — parce qu'une punition qui s'achète n'en est pas une, et que celui qui a le plus
+   d'améliorations est aussi celui qui aurait dû le moins se retrouver là.
 
    C'EST UNE PUNITION, ET ELLE EST ASSUMÉE. Une punition pour avoir mal géré, mais rattrapable :
    on ne perd pas sa partie, on perd du temps. Un idle ne doit jamais pouvoir se rendre
@@ -454,7 +461,8 @@ const MOTIF_BONUS = {
    C'EST UN ÉTAT DU JEU, PAS UN SUJET DE LA SCÈNE. `subjects()` liste toujours les incubateurs,
    même vides, donc il y a toujours quelque chose en scène et `current()` ne rend jamais null.
    `renderStage` et `tapStage` regardent donc la plonge AVANT de regarder le sujet. */
-const ASSIETTE = 1;              // ce que vaut une assiette
+const ASSIETTE = 1;              // ce que rapporte une assiette lavée
+const ASSIETTE_CLICS = 10;       // et ce qu'elle coûte : dix clics, quoi qu'on possède
 
 // Le prix plancher du jeu : l'œuf le moins cher, quoi qu'on ait réglé ailleurs.
 const oeufPlancher = () => prixOeuf(EGG_BY_KEY.commun);
@@ -464,6 +472,16 @@ const oeufPlancher = () => prixOeuf(EGG_BY_KEY.commun);
 const enPlonge = () => !state.pen.length && !totalEggs()
                     && !state.incub.some(Boolean)
                     && state.coins < oeufPlancher();
+
+/* L'ÉVIER NE SE MONTRE PAS TOUT SEUL. Être dans l'impasse et voir la vaisselle sont deux
+   choses : la première fois, la professeure parle d'abord — elle constate, elle nomme la
+   bêtise, elle propose. L'évier n'apparaît qu'après, et c'est tout ce qui sépare un mécanisme
+   d'un moment.
+
+   DEUX PORTES DE SECOURS, parce qu'une impasse ne doit jamais dépendre d'un dialogue. Le mode
+   histoire éteint ouvre l'évier immédiatement, et une scène déjà jouée aussi : on ne raconte
+   la même histoire qu'une fois, et la deuxième fois on a juste besoin de l'évier. */
+const plongeOuverte = () => enPlonge() && (!state.tuto || !!(state.vu && state.vu.plonge));
 
 // Combien d'assiettes avant de pouvoir racheter un œuf.
 const assiettesRestantes = () =>
@@ -720,12 +738,18 @@ const NOTES = [
     'Retiens ceci : bientôt, ce ne sera plus l’argent qui te limitera, mais la place. Une bête que tu gardes est un enclos qui ne tourne pas.',
     'Voilà. Tu sais tout ce que je sais. Le reste, tu vas me l’apprendre.',
   ] },
+  /* Pas de `fait` sur cette scène : ce qu'elle propose n'existe pas encore. L'évier n'ouvre
+     qu'à la dernière réplique, quand `vu.plonge` se marque — c'est elle qui ouvre la porte,
+     littéralement, et c'est tout ce qui sépare un mécanisme d'un moment. */
   { cle: 'plonge', test: () => enPlonge(), perime: () => !enPlonge(), repliques: [
-    'Ah. Tu n’as plus rien.',
-    'Ça arrive, et ce n’est pas grave — on n’a pas encore vu d’éleveur qui ne se soit jamais retrouvé sans un sou.',
-    { dit: 'Il y a de la vaisselle derrière. Une assiette, une pièce. Douze et tu repars avec un œuf.',
-      fait: () => (state.stats.assiettes || 0) > 0 },
-    'Je ne la ferai pas à ta place. Tu as pris la décision, tu prends les assiettes avec.',
+    'Attends. Ne clique pas — il n’y a plus rien à cliquer.',
+    'Pas une bête dans tes enclos. Pas un œuf en couvaison, pas un en réserve. Et dans ta bourse, moins que ce qu’un œuf coûte.',
+    'Tu as tout dépensé, y compris ce qu’il te fallait pour recommencer. C’est la seule erreur de ce métier dont on ne se relève pas tout seul.',
+    'Ne fais pas cette tête. Je n’ai pas dit qu’on ne s’en relevait pas.',
+    'Il y a une porte au fond du couloir. Je n’y emmène pas les visiteurs.',
+    'Derrière, il y a du travail. Ce n’est pas glorieux, c’est long, et ça ne paie presque rien — une pièce l’assiette. Douze et tu repars avec un œuf.',
+    'Et ne compte pas sur ce que tu as acheté : là-dedans, une assiette demande dix coups d’éponge à tout le monde.',
+    'Vas-y. Je ne le ferai pas à ta place : tu as pris la décision, tu prends ce qui vient avec.',
   ] },
   { cle: 'cadeau', test: () => (state.dons || 0) > 0, repliques: [
     'Tu as vu ? Elle vient de t’offrir quelque chose.',
@@ -1143,6 +1167,9 @@ function freshState() {
     },
     // les trophées décrochés, par clé. Ils traversent l'ascension, comme les compteurs.
     trophees: {},
+    /* Les clics déjà donnés sur l'assiette en cours, de 0 à neuf. Dans la sauvegarde : perdre
+       neuf clics parce qu'on a rechargé la page ajouterait une punition à la punition. */
+    frotte: 0,
     frenesie: 0,        // secondes de clic double encore en réserve
     dons: 0,            // combien de cadeaux reçus en tout — sert aussi de test au tutoriel
     tuto: true,
@@ -2006,7 +2033,8 @@ function monteeNiveau(c, valueBefore, pt) {
    ───────────────────────────────────────────── */
 
 function tapStage() {
-  if (enPlonge()) { laverAssiette(); return; }
+  // tant qu'elle n'a pas ouvert la porte, il n'y a rien à laver
+  if (enPlonge()) { if (plongeOuverte()) laverAssiette(); return; }
   const s = current();
   if (!s) return;
   const el = $('subject');
@@ -2048,17 +2076,29 @@ function tapStage() {
 
 /* Laver une assiette. Refusée à la carte ocellée : `mainDeCarte` est levé pendant ses clics,
    et c'est le seul endroit du jeu où l'on distingue la main du joueur de celle d'une carte. */
+/* Un coup d'éponge. Dix en font une assiette, et une assiette fait une pièce — aucun
+   multiplicateur n'entre nulle part dans cette fonction, et c'est délibéré. */
 function laverAssiette() {
-  if (mainDeCarte || !enPlonge()) return;
-  state.coins += ASSIETTE;
-  state.stats.assiettes = (state.stats.assiettes || 0) + 1;
+  if (mainDeCarte || !plongeOuverte()) return;
   state.stats.clics++;
-  state.stats.gagne += ASSIETTE;
   const el = $('subject'), pt = centerOf(el);
   flash(el, 'shake');
+  state.frotte = (state.frotte || 0) + 1;
+
+  if (state.frotte < ASSIETTE_CLICS) {
+    blip(240 + state.frotte * 12, 0.025, 'triangle', 0.015);
+    refresh();
+    return;
+  }
+
+  // l'assiette est propre
+  state.frotte = 0;
+  state.coins += ASSIETTE;
+  state.stats.assiettes = (state.stats.assiettes || 0) + 1;
+  state.stats.gagne += ASSIETTE;
   floatText(pt.x + (Math.random() * 40 - 20), pt.y - 20, '+' + ASSIETTE);
-  blip(300 + Math.random() * 80, 0.03, 'triangle', 0.02);
-  // la dernière assiette sonne autrement : c'est le moment où l'on redevient éleveur
+  blip(520, 0.05, 'sine', 0.03);
+  // la dernière sonne autrement : c'est le moment où l'on redevient éleveur
   if (!enPlonge()) chord([392, 523, 659], 60);
   refresh();
 }
@@ -3334,7 +3374,7 @@ function ascensionner() {
    servaient qu'aux deux derniers, `slot` qu'au deuxième, la moitié du reste qu'au troisième. */
 function renderStage() {
   // la plonge passe avant tout : c'est un état du jeu, pas un sujet en scène
-  if (enPlonge()) return renderPlonge();
+  if (enPlonge()) return plongeOuverte() ? renderPlonge() : renderRien();
   const s = current();
   if (!s) return renderRien();
   /* Les deux seules lignes que le cas plein partage : la sélection se recale sur ce qui est
@@ -3352,34 +3392,54 @@ function renderPlonge() {
   setText($('stage-boost'), '');
   ['place', 'sell', 'evo', 'keep'].forEach(k => { acts[k].hidden = true; });
 
-  const reste = assiettesRestantes(), prix = oeufPlancher();
+  /* LA BARRE SUIT L'ASSIETTE EN COURS, pas la sortie de l'impasse. Cent vingt clics pour un
+     œuf, c'est moins d'un pour cent par clic sur une barre globale — invisible. Sur l'assiette,
+     chaque clic vaut dix pour cent, et la barre se remplit douze fois. Même règle que la scène
+     d'une bête : la jauge vise le prochain palier, le texte dit la distance au but. */
+  const reste = assiettesRestantes(), frotte = state.frotte || 0;
   stage.classList.remove('apex', 'ready', 'cracking', 'prodige');
   setStageRarity(stage, null);
   setVar($('subject'), '--sz', '1');
   setCreature($('stage-glyph'), null, '🍽️');
   setFilter($('stage-glyph'), '');
   setText($('stage-name'), 'La plonge');
-  setHtml($('stage-meta'), 'une assiette, une pièce');
-  setWidth($('stage-fill'), ((prix - reste) / prix * 100).toFixed(1) + '%');
-  setText($('stage-timer'), reste + ' assiette' + (reste > 1 ? 's' : '') + ' avant un œuf');
+  setHtml($('stage-meta'), ASSIETTE_CLICS + ' clics l’assiette, une pièce l’assiette');
+  setWidth($('stage-fill'), (frotte / ASSIETTE_CLICS * 100).toFixed(1) + '%');
+  setText($('stage-timer'), frotte + ' / ' + ASSIETTE_CLICS + ' · ' +
+    reste + ' assiette' + (reste > 1 ? 's' : '') + ' avant un œuf');
   $('stage-timer').classList.remove('done');
-  setText($('stage-hint'), 'Plus de bête, plus d’œuf, plus assez pour en acheter un. ' +
-    'Alors on lave. Ce n’est pas rapide, mais on s’en sort toujours.');
+  setText($('stage-hint'), 'Rien ne compte double ici. Ni la force du clic, ni la frénésie, ' +
+    'ni tes cartes : dix clics font une assiette, comme pour tout le monde.');
 }
 
-// Rien en scène : l'enclos est vide et aucun incubateur ne tourne.
+/* Rien en scène. Cette fonction n'était atteignable par personne — `subjects()` liste les
+   incubateurs même vides, donc `current()` ne rend jamais null — et c'est exactement l'écran
+   qu'il fallait pour l'impasse AVANT que la professeure parle : rien, et quelqu'un qui a
+   quelque chose à dire. On n'y montre pas la vaisselle : elle n'existe pas encore pour le
+   joueur, et c'est tout l'intérêt. */
 function renderRien() {
-  const acts = refs.acts;
-  const hide = k => { acts[k].hidden = true; };
-  setCreature($('stage-glyph'), null, '◌');
-  setText($('stage-name'), 'Rien en vue');
-  setHtml($('stage-meta'), '');
-  setText($('stage-timer'), '');
-  setWidth($('stage-fill'), '0%');
-  setText($('stage-hint'), 'Achète un œuf pour recommencer.');
-  setText($('stage-boost'), '');
+  const acts = refs.acts, stage = document.querySelector('.stage');
   cacherAxes();
-  ['place', 'sell', 'evo', 'keep'].forEach(hide);
+  setText($('stage-boost'), '');
+  ['place', 'sell', 'evo', 'keep'].forEach(k => { acts[k].hidden = true; });
+  stage.classList.remove('apex', 'ready', 'cracking', 'prodige');
+  setStageRarity(stage, null);
+  setVar($('subject'), '--sz', '1');
+  setCreature($('stage-glyph'), null, '◌');
+  setFilter($('stage-glyph'), '');
+  setWidth($('stage-fill'), '0%');
+  setText($('stage-timer'), '');
+  $('stage-timer').classList.remove('done');
+
+  if (!enPlonge()) {
+    setText($('stage-name'), 'Rien en vue');
+    setHtml($('stage-meta'), '');
+    setText($('stage-hint'), 'Achète un œuf pour recommencer.');
+    return;
+  }
+  setText($('stage-name'), 'Plus rien');
+  setHtml($('stage-meta'), 'l’enclos est vide, la bourse aussi');
+  setText($('stage-hint'), 'La professeure a quelque chose à te dire.');
 }
 
 // Un œuf, placé ou non. Il n'a ni âge, ni niveau, ni taille, ni bonheur : tout ce bloc-là
