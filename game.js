@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.20.0';
+const VERSION = 'alpha 2.22.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -425,6 +425,65 @@ const MOTIF_BONUS = {
    mythique chromatique vaut environ 5,6·10^11, donc le troisième palier demanderait d'en
    vendre un million. C'est voulu : l'échelle ne s'arrête pas avant l'économie, c'est
    l'économie qui s'arrête avant l'échelle. */
+/* ── LES PRIMES ────────────────────────────────────────────────────────────────
+   Des achats UNIQUES, en petites cases, qui s'allument dès qu'on a de quoi. Une amélioration
+   à niveaux dit toujours la même chose — « couveuse niv. 5 → niv. 6 » — et cinquante achats
+   plus tard elle la dit encore. Une prime dit une chose et une seule, puis se tait : c'est ce
+   qui permet d'en écrire vingt différentes plutôt qu'une répétée vingt fois.
+
+   ELLES NE TRAVERSENT PAS L'ASCENSION. Ce sont des améliorations comme les autres — la ferme
+   repart de zéro, et les primes avec elle. Seul l'album voyage.
+
+   Les quatre premières étaient déjà là, au milieu de la liste à niveaux où elles n'avaient
+   rien à faire : l'acheteur, le marchand et l'évolution ne montent pas, ils s'allument. Et
+   l'intendant, qui montait, se dit mieux en deux crans nommés qu'en trente niveaux.
+
+   L'ordre de la table EST l'ordre des prix : c'est lui qui dessine la grille, et un prix
+   déplacé déplace la case toute seule. */
+const PRIMES = [
+  { cle: 'soin',      prix: 250,       glyphe: '💗', nom: 'Soins attentifs',
+    dit: 'Le bonheur de la bête que tu regardes monte deux fois plus vite — donc deux fois plus de cadeaux.' },
+  { cle: 'nichoir',   prix: 600,       glyphe: '🪺', nom: 'Nichoir',
+    dit: 'Deux incubateurs de plus, offerts. Ils ne font pas monter le prix des suivants.' },
+  { cle: 'paille',    prix: 1200,      glyphe: '🌾', nom: 'Paille fraîche',
+    dit: 'Deux enclos de plus, offerts. Ils ne font pas monter le prix des suivants.' },
+  { cle: 'acheteur',  prix: 2000,      glyphe: '🥚', nom: 'Acheteur automatique',
+    dit: 'Rachète un œuf dès qu’un incubateur se libère et que ta réserve est vide.' },
+  { cle: 'negoce-commune', prix: 4000, glyphe: '🪙', nom: 'Négoce commun',
+    dit: 'Les communes se vendent un quart plus cher.' },
+  { cle: 'poigne',    prix: 8000,      glyphe: '✊', nom: 'Poigne',
+    dit: 'Trois secondes de plus à chaque clic, quoi que tu aies acheté par ailleurs.' },
+  { cle: 'marchand',  prix: 15000,     glyphe: '🤝', nom: 'Marchand automatique',
+    dit: 'Vend les bêtes mûres tout seul, à l’âge que tu règles pour chaque rareté.' },
+  { cle: 'grossiste', prix: 30000,     glyphe: '📦', nom: 'Grossiste',
+    dit: 'Les œufs de la boutique coûtent un cinquième de moins.' },
+  { cle: 'evolution', prix: 50000,     glyphe: '🧬', nom: 'Évolution automatique',
+    dit: 'Fait passer les bêtes mûres d’un âge au suivant, jusqu’où tu décides. Elle agit avant le marchand.' },
+  { cle: 'negoce-rare', prix: 80000,   glyphe: '🔷', nom: 'Négoce rare',
+    dit: 'Les rares se vendent un quart plus cher.' },
+  { cle: 'etable',    prix: 150000,    glyphe: '⭐', nom: 'Étable',
+    dit: 'Les bêtes que tu gardes ☆ ne comptent plus dans la limite d’enclos. Une ménagerie cesse de coûter du débit.' },
+  { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
+    dit: 'Chaque évolution coûte un quart de moins. Passé l’ère commune, ce n’est plus la vitesse qui freine mais la mise de fonds.' },
+  { cle: 'oeil',      prix: 500000,    glyphe: '👁️', nom: 'Œil exercé',
+    dit: 'Une chance sur deux de plus de voir naître un chromatique — de 1 sur 8 192 à 1 sur 5 461.' },
+  { cle: 'generosite', prix: 1000000,  glyphe: '🎁', nom: 'Générosité',
+    dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
+  { cle: 'negoce-epique', prix: 2000000, glyphe: '🔮', nom: 'Négoce épique',
+    dit: 'Les épiques se vendent un quart plus cher.' },
+  { cle: 'intendance2', prix: 5000000, glyphe: '📜', nom: 'Grande intendance',
+    dit: 'Encore un quart de moins sur chaque évolution, par-dessus l’Intendance.' },
+  { cle: 'couvoir',   prix: 12000000,  glyphe: '🏠', nom: 'Couvoir',
+    dit: 'Trois incubateurs de plus, offerts.' },
+  { cle: 'paturage',  prix: 30000000,  glyphe: '🏞️', nom: 'Pâturage',
+    dit: 'Trois enclos de plus, offerts.' },
+  { cle: 'negoce-mythique', prix: 80000000, glyphe: '👑', nom: 'Négoce mythique',
+    dit: 'Les mythiques se vendent un quart plus cher.' },
+  { cle: 'main',      prix: 200000000, glyphe: '🖐️', nom: 'Main preste',
+    dit: 'Chacun de tes clics compte double. Le plus cher, et le seul qui touche à ce que tu fais de tes mains.' },
+];
+const PRIME_BY_CLE = Object.fromEntries(PRIMES.map(p => [p.cle, p]));
+
 /* ── LE DÉVOILEMENT ────────────────────────────────────────────────────────────
    Un joueur qui ouvre le jeu possède zéro pièce et un œuf, et on lui montrait au même
    instant quatorze boutons dont treize inachetables. La seule chose qui compte à cette
@@ -614,19 +673,6 @@ const UPGRADES = [
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
     desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
     value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
-  { key: 'acheteur', name: 'Acheteur automatique', base: 2000, mult: 1, max: 1,
-    desc: 'Rachète un œuf dès qu’un incubateur se libère et que ta réserve est vide. Poser ceux que tu as déjà se fait tout seul, sans lui.' },
-  { key: 'marchand', name: 'Marchand automatique', base: 15000, mult: 1, max: 1,
-    desc: 'Vend les bêtes mûres tout seul, à l’âge que tu règles pour chaque rareté.' },
-  { key: 'evolution', name: 'Évolution automatique', base: 50000, mult: 1, max: 1,
-    desc: 'Fait passer les bêtes mûres d’un âge au suivant, jusqu’où tu décides. Elle agit avant le marchand.' },
-  /* Passé l'ère commune, ce n'est plus la vitesse qui freine mais la mise de fonds : un cycle
-     épique immobilise 401 M et un cycle mythique 10 Md, quand la boutique entière n'en coûte
-     que 50. Rien n'agissait sur ce mur-là — l'intendant est la seule amélioration qui attaque
-     le coût au lieu du temps, et la seule qui ait de quoi grandir avec l'économie. */
-  { key: 'intendant', name: 'Intendant', base: 250000, mult: 1.65,
-    desc: 'Négocie chaque passage d’âge : toutes les évolutions coûtent moins cher, à toutes les raretés.',
-    value: n => Math.round(100 - 100 / (1 + EVO_RABAIS * n / GRAIN)), unit: ' % de moins sur chaque évolution' },
 ];
 
 /* Les trois déblocages à un seul niveau (acheteur, marchand, évolution) n'ont pas de
@@ -896,7 +942,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 12;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 13;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -931,8 +977,13 @@ function freshState() {
     incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
     pen: [],
     sel: 'i:0',
-    up: { clic: 0, couveuse: 0, eleveur: 0, acheteur: 0, mangeoire: 0, marchand: 0, evolution: 0,
-          intendant: 0 },
+    up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 },
+    // les primes achetées, par clé. Elles ne traversent pas l'ascension.
+    primes: {},
+    /* Ce qui est replié dans la collection : la clé `tout` pour la section entière, une clé
+       par rareté pour les groupes. Du confort d'affichage, donc ça traverse l'ascension —
+       comme l'ordre de la bande et la taille des lots. */
+    plie: {},
     /* Un âge de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
        d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
        bout : une consigne unique forçait à choisir entre les deux. */
@@ -1036,6 +1087,7 @@ function load() {
     const base = freshState();
     const merged = Object.assign(base, s, {
       up: Object.assign(base.up, s.up || {}),
+      primes: Object.assign({}, s.primes || {}),
       // fusionné et non remplacé : un compteur ajouté après coup doit trouver son zéro
       stats: Object.assign(base.stats, s.stats || {}),
     });
@@ -1151,6 +1203,21 @@ function load() {
        perdu — au plus deux tiers de seconde, jamais entamés. */
     if ((s.v || 0) < 12) merged.up.clic = Math.floor((merged.up.clic || 0) / GRAIN);
 
+    /* v12 → v13 : quatre améliorations quittent la liste à niveaux pour devenir des primes.
+       On ne retire jamais rien à qui avait payé — les trois achats uniques se transposent tels
+       quels, et l'intendant, qui montait, donne son premier cran dès le premier achat et le
+       second à partir du quinzième. La conversion est GÉNÉREUSE par principe : mal convertir
+       vers le bas, c'est reprendre des heures de jeu à quelqu'un qui n'a rien demandé. */
+    if ((s.v || 0) < 13) {
+      const vieux = s.up || {};
+      for (const cle of ['acheteur', 'marchand', 'evolution']) {
+        if (vieux[cle]) merged.primes[cle] = true;
+      }
+      if (vieux.intendant >= 1) merged.primes.intendance = true;
+      if (vieux.intendant >= 15) merged.primes.intendance2 = true;
+      for (const cle of ['acheteur', 'marchand', 'evolution', 'intendant']) delete merged.up[cle];
+    }
+
     merged.tuto = merged.tuto !== false;
     merged.vu = merged.vu || {};
     if ((s.v || 0) < 10) {
@@ -1258,8 +1325,11 @@ function bonusAlbum() {
 }
 
 const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
+// Une prime de négoce par rareté : c'est le seul bonus du jeu qui ne vaut que pour une
+// partie du bestiaire, et c'est ce qui lui donne un sens de choix plutôt que de cumul.
+const negoce    = c => prime('negoce-' + lineOf(c).rarity) ? 1.25 : 1;
 const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c)
-                     * (1 + bonusAlbum().valeur);
+                     * (1 + bonusAlbum().valeur) * negoce(c);
 
 function pickWeighted(list) {
   let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
@@ -1274,7 +1344,7 @@ function rollVariants() {
     temper: Math.floor(Math.random() * TEMPERS.length),
     motif: Math.floor(Math.random() * MOTIFS.length),
     // le constellé pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
-    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige),
+    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige) * (prime('oeil') ? 1.5 : 1),
   };
 }
 
@@ -1342,14 +1412,15 @@ const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)
 // l'âge légende pour le prix d'une commune, et toute la progression se court-circuitait.
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
-const evoRemise = () => 1 / (1 + EVO_RABAIS * force('intendant'));
+const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2') ? 0.75 : 1);
 const evoCost   = c => EVOLVE[c.age - 1] === null ? null
                      : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise()
                                   * (1 - bonusAlbum().peage));
 
 /* Le prix d'un œuf passe toujours par ici : le zébré de l'album le baisse, et un prix qui
    s'afficherait ailleurs qu'à l'endroit où il se paie finirait par mentir. */
-const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)));
+const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)
+                                              * (prime('grossiste') ? 0.8 : 1)));
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
 /* Les enclos de l'album s'ajoutent au compte, JAMAIS au prix : `penCost` continue de se
    fonder sur `state.pens`, ce qu'on a réellement acheté. Sinon une carte perlée rendrait le
@@ -1358,11 +1429,28 @@ const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
    vaut 0,9999999999999999 en virgule flottante : une carte perlée parfaite pèse donc
    3,9999…96 au lieu de 4, son effet 1,9999…98 au lieu de 2, et le plancher tombait d'un cran.
    La carte annonçait « +2,0 enclos » et n'en donnait qu'un. */
-const pensTotal = () => state.pens + Math.floor(bonusAlbum().place + 1e-9);
-const penFull   = () => state.pen.length >= pensTotal();
+const pensTotal = () => state.pens + Math.floor(bonusAlbum().place + 1e-9)
+                      + (prime('paille') ? 2 : 0) + (prime('paturage') ? 3 : 0);
+/* L'étable sort les bêtes gardées du compte. Garder coûtait un enclos, donc du débit : c'est
+   ce qui rendait toute collection payante. Après elle, une ménagerie ne ralentit plus rien. */
+const penUsed   = () => prime('etable') ? state.pen.filter(c => !c.keep).length : state.pen.length;
+const penFull   = () => penUsed() >= pensTotal();
+const incubTotal = () => state.incubators + (prime('nichoir') ? 2 : 0) + (prime('couvoir') ? 3 : 0);
+/* Le tableau des incubateurs EST le stockage : il doit suivre le compte, sinon une prime
+   donne des cases que rien ne parcourt. Appelé au chargement et à chaque achat. */
+function syncIncub() {
+  const n = incubTotal();
+  state.incub = state.incub.slice(0, n);
+  while (state.incub.length < n) state.incub.push(null);
+}
 
 const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incubators - 1));
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
+
+// Une prime achetée, ou non. Toute la table passe par ici.
+const prime       = cle => !!(state.primes && state.primes[cle]);
+const primeCout   = p => p.prix;
+const primePrise  = p => prime(p.cle);
 
 const lvl         = key => state.up[key] || 0;
 /* Le NIVEAU est ce qui s'achète, la PUISSANCE est ce que ce niveau produit. Depuis que les
@@ -1431,7 +1519,8 @@ const enFrenesie = () => (state.frenesie || 0) > 0;
 /* Le doublement se pose ICI, à la source : clickGain en découle, et `remaining()` compte
    déjà en clics à partir de la même fonction — la frénésie annonce donc toute seule qu'il
    reste deux fois moins de clics à donner, sans une ligne de plus. */
-const clickPower  = () => (1 + force('clic')) * (enFrenesie() ? FRENESIE_X : 1);
+const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
+                          (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1);
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
@@ -1940,6 +2029,20 @@ function buyEgg(kind) {
   if (free !== -1) placeEgg(free, kind); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
 }
 
+/* Une prime s'achète une fois, ne se revend pas, et n'a pas de niveau. La seule chose à
+   surveiller est le tableau des incubateurs, qui doit suivre quand la prime en donne. */
+function buyPrime(p) {
+  if (prime(p.cle) || state.coins < p.prix) return;
+  state.coins -= p.prix;
+  state.primes[p.cle] = true;
+  if (p.cle === 'nichoir' || p.cle === 'couvoir') syncIncub();
+  chord([392, 523, 659], 70);
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y - 60, p.glyphe + ' ' + p.nom, 'gain');
+  refresh();
+  save();
+}
+
 function buyIncubator() {
   const cost = incubCost();
   if (state.coins < cost) return;
@@ -2035,7 +2138,7 @@ function runAutomations(dt) {
      « vendre les communes à l'âge adulte » ne servait à rien : l'évolution les poussait
      jusqu'à la légende avant que le vendeur n'ait son mot à dire, et la consigne de vente était
      muette. C'est le vendeur qui commande le plafond, rareté par rareté. */
-  if (lvl('evolution') && evolueQuelqueChose()) {
+  if (prime('evolution') && evolueQuelqueChose()) {
     for (const c of state.pen) {
       if (c.keep || !estMur(c) || c.age >= plafondEvolution(c)) continue;
       const cost = evoCost(c);
@@ -2051,7 +2154,7 @@ function runAutomations(dt) {
   /* Le marchand attend l'âge réglé pour SA rareté, sur une bête mûre. La taille minimale
      n'est qu'un supplément, et le réglage ne s'affiche même pas tant qu'aucune mangeoire
      n'existe : sans automate qui engraisse, la notion n'a pas à encombrer l'écran. */
-  if (state.up.marchand) {
+  if (prime('marchand')) {
     /* LA CONSIGNE NE FAIT AUCUNE EXCEPTION, pas même pour la bête en scène. Une automatisation
        qu'on configure doit faire exactement ce qu'on a réglé : si elle épargne la case qu'on
        regarde, le compte ne tombe jamais juste et le joueur ne peut plus prévoir sa ferme.
@@ -2111,7 +2214,7 @@ function runAutomations(dt) {
   /* L'acheteur prend le relais quand la réserve est sèche. C'est la seule moitié qui se paie,
      et c'est la bonne : DÉPENSER à ta place est une décision, poser un œuf déjà acheté n'en
      est pas une. */
-  if (state.up.acheteur) {
+  if (prime('acheteur')) {
     const voulu = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
     for (let i = 0; i < state.incub.length; i++) {
       if (state.incub[i]) continue;
@@ -2154,7 +2257,7 @@ function tickJoie(dt) {
   if (!s || s.kind !== 'creature') return;
   const c = s.c;
   const avant = Math.floor((c.bonheur || 0) / JOIE_PALIER);
-  c.bonheur = (c.bonheur || 0) + dt;
+  c.bonheur = (c.bonheur || 0) + dt * (prime('soin') ? 2 : 1);
   // en ×100 on peut franchir plusieurs paliers d'un coup : chacun a droit à son tirage
   for (let n = avant + 1; n <= Math.floor(c.bonheur / JOIE_PALIER); n++) {
     if (Math.random() < JOIE_CHANCE) offrirFrenesie(n);
@@ -2162,9 +2265,10 @@ function tickJoie(dt) {
 }
 
 function offrirFrenesie(palier) {
-  const duree = FRENESIE[Math.min(palier, FRENESIE.length) - 1];
+  const large = prime('generosite') ? 2 : 1;
+  const duree = FRENESIE[Math.min(palier, FRENESIE.length) - 1] * large;
   // les cadeaux s'ajoutent sans jamais dépasser la minute : deux ×2 ne feront pas un ×4
-  state.frenesie = Math.min(FRENESIE_MAX, (state.frenesie || 0) + duree);
+  state.frenesie = Math.min(FRENESIE_MAX * large, (state.frenesie || 0) + duree);
   state.dons = (state.dons || 0) + 1;
   const pt = centerOf($('subject'));
   floatText(pt.x, pt.y - 90, '⚡ cadeau · clic ×2 pendant ' + duree + ' s', 'gain');
@@ -2426,6 +2530,26 @@ function buildChrome() {
                           cost: it.cost, base: it.desc, stock: it.rarity };
   }
 
+  /* Les cases se construisent UNE FOIS, dans l'ordre de la table — qui est celui des prix.
+     Seules leur classe et leur disponibilité changent ensuite, ce que tickView repasse. */
+  refs.primes = {};
+  const grille = $('primes');
+  grille.textContent = '';
+  for (const p of PRIMES) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'prime';
+    b.innerHTML = '<span class="prime-glyphe"></span><span class="prime-nom"></span>' +
+                  '<span class="prime-prix"></span>';
+    b.querySelector('.prime-glyphe').textContent = p.glyphe;
+    b.querySelector('.prime-nom').textContent = p.nom;
+    b.querySelector('.prime-prix').textContent = fmt(p.prix);
+    b.title = p.nom + ' · ' + fmt(p.prix) + '\n\n' + p.dit;
+    b.addEventListener('click', () => buyPrime(p));
+    grille.appendChild(b);
+    refs.primes[p.cle] = { el: b, prime: p };
+  }
+
   refs.up = {};
   const autos = $('autos');
   autos.textContent = '';
@@ -2555,23 +2679,47 @@ function peindreVignette(t, s) {
   }
 }
 
+/* Plie ou déplie une partie de la collection. `cle` vaut 'tout' pour la section entière, ou
+   une rareté pour un seul groupe. */
+function plier(cle) {
+  state.plie[cle] = !state.plie[cle];
+  collSig = null;               // la signature porte l'état de pliage : on force le redessin
+  refresh();
+  save();
+}
+const estPlie = cle => !!(state.plie && state.plie[cle]);
+
 function renderCollection() {
-  const sig = seenCount() + '';
+  /* La signature porte AUSSI le pliage : sans ça, replier un groupe ne redessinerait rien,
+     puisque le nombre de formes rencontrées n'a pas bougé. */
+  const sig = seenCount() + '|' + LINES.map(l => l.rarity)
+    .filter((r, i, t) => t.indexOf(r) === i).map(r => estPlie(r) ? 1 : 0).join('');
   if (sig === collSig) return;
   collSig = sig;
 
   const host = $('collection');
   host.textContent = '';
-  let rarity = null;
+  let rarity = null, grille = null;
   for (const line of LINES) {
     // un intertitre à chaque changement de rareté : c'est la hiérarchie, rendue lisible
     if (line.rarity !== rarity) {
       rarity = line.rarity;
-      const h = document.createElement('p');
+      const cle = rarity;
+      const h = document.createElement('button');
+      h.type = 'button';
       h.className = 'coll-head rar-' + rarity;
-      h.textContent = RARITY[rarity].name + ' · ×' + RARITY[rarity].mult;
+      h.setAttribute('aria-expanded', String(!estPlie(cle)));
+      h.innerHTML = '<span class="plier" aria-hidden="true"></span><span class="coll-nom"></span>';
+      h.querySelector('.plier').textContent = estPlie(cle) ? '▸' : '▾';
+      h.querySelector('.coll-nom').textContent = RARITY[rarity].name + ' · ×' + RARITY[rarity].mult;
+      h.addEventListener('click', () => plier(cle));
       host.appendChild(h);
+      grille = document.createElement('div');
+      grille.className = 'coll-grille';
+      grille.hidden = estPlie(cle);
+      host.appendChild(grille);
     }
+    const dedans = grille;
     AGES.forEach((age, i) => {
       const a = i + 1, got = !!state.seen[line.key + ':' + a];
       const cell = document.createElement('div');
@@ -2580,10 +2728,14 @@ function renderCollection() {
       cell.title = (got ? line.forms[i][0] : line.name + ' — ' + age.nom) +
                    ' (' + RARITY[line.rarity].name + ')';
       if (got) setCreature(cell, artAt(line.key, a), line.forms[i][1]);
-      host.appendChild(cell);
+      dedans.appendChild(cell);
     });
   }
   $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * AGES.length);
+  // la section entière se replie par son titre, et le compteur reste lisible
+  $('collection').hidden = estPlie('tout');
+  setText($('coll-fleche'), estPlie('tout') ? '▸' : '▾');
+  $('coll-tete').setAttribute('aria-expanded', String(!estPlie('tout')));
 }
 
 /* ─────────────────────────────────────────────
@@ -2870,7 +3022,7 @@ function renderAscension() {
   /* Le marchand vide l'enclos en continu, absences comprises — et les cartes viennent de ce
      qui reste dedans. Sans cet avertissement, un joueur ascensionne après des heures de jeu
      et repart avec zéro carte. C'est le seul piège que la règle crée. */
-  const vend = !!state.up.marchand &&
+  const vend = prime('marchand') &&
                Object.keys(RARITY).some(cle => (state.sellAt[cle] || 0) > 0);
   $('asc-warn').hidden = !vend;
   if (vend) setText($('asc-warn'),
@@ -3192,7 +3344,7 @@ function renderBete(s) {
     const dejaLa = !!seuil && c.age >= seuil;
     // le plafond qui compte est celui de SA rareté : une consigne de vente précoce arrête
     // l'évolution avant, et la bête ne remboursera peut-être jamais son œuf
-    const menee = !!seuil && !dejaLa && !c.keep && !!lvl('evolution') &&
+    const menee = !!seuil && !dejaLa && !c.keep && prime('evolution') &&
                   plafondEvolution(c) >= seuil;
     const prisEnCharge = dejaLa || menee;
     setText($('stage-hint'),
@@ -3348,13 +3500,13 @@ function noteMarchand() {
      et cette rareté-là ne part jamais. On nomme les raretés concernées, sinon le joueur voit
      l'enclos s'engorger sans savoir laquelle de ses quatre consignes est en cause. */
   // le plafond qui compte est celui de SA rareté ; sans évolution du tout, rien ne dépasse l'âge 1
-  const plafond = cle => (lvl('evolution') ? (state.evolveUpTo[cle] || 0) : 0) || 1;
+  const plafond = cle => (prime('evolution') ? (state.evolveUpTo[cle] || 0) : 0) || 1;
   const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond(cle)).map(([, r]) => r.plur);
   if (bloquees.length) {
     /* Nommer le blocage ne suffit pas : sans la sortie, le joueur relit la même phrase et
        reste coincé. Chaque avertissement dit donc quoi faire, et l'ordre des remèdes va du
        gratuit au payant. */
-    txt += lvl('evolution') && evolueQuelqueChose()
+    txt += prime('evolution') && evolueQuelqueChose()
       ? '⚠ Ton évolution ne mène pas les ' + liste(bloquees) + ' assez haut : elles ' +
         'n’atteindront jamais leur âge de vente, et tes enclos vont s’engorger. ' +
         'Monte leur plafond d’évolution, ou redescends leur âge de vente.'
@@ -3448,8 +3600,20 @@ function tickView() {
       ' d’ascension — tu peux sauter quand tu veux, ou jamais.';
   }
 
+  /* Le panneau s'ouvre quand la première prime est à portée, comme la boutique : voir une
+     chose hors de prix fait avancer un joueur d'idle, ne rien voir du tout ne fait rien. */
+  const prises = PRIMES.filter(p => prime(p.cle)).length;
+  $('panel-primes').hidden = state.tuto && !prises && state.coins < PRIMES[0].prix * SEUIL_VOIR;
+  setText($('primes-meta'), prises + ' / ' + PRIMES.length);
+  for (const p of PRIMES) {
+    const r = refs.primes[p.cle], pris = prime(p.cle);
+    r.el.classList.toggle('prise', pris);
+    r.el.classList.toggle('prete', !pris && state.coins >= p.prix);
+    r.el.disabled = pris || state.coins < p.prix;
+  }
+
   const stock = totalEggs();
-  setText($('compte-pen'), state.pen.length + ' / ' + pensTotal());
+  setText($('compte-pen'), penUsed() + ' / ' + pensTotal());
   setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
   // La réserve n'existe que si on a acheté des œufs d'avance : pas de ligne vide sinon.
   $('strip-meta').hidden = !stock;
@@ -3508,16 +3672,16 @@ function tickView() {
      notion n'a rien à faire à l'écran : la vente doit rester la chose la plus simple du jeu,
      surtout au début, et une condition de taille qu'on ne peut pas remplir engorge l'enclos. */
   $('cond-taille').hidden = !lvl('mangeoire');
-  $('cfg-marchand').hidden = !state.up.marchand;
-  $('cfg-evolution').hidden = !state.up.evolution;
-  $('cfg-acheteur').hidden = !state.up.acheteur;
-  $('panel-reglages').hidden = !state.up.marchand && !state.up.evolution && !state.up.acheteur;
+  $('cfg-marchand').hidden = !prime('marchand');
+  $('cfg-evolution').hidden = !prime('evolution');
+  $('cfg-acheteur').hidden = !prime('acheteur');
+  $('panel-reglages').hidden = !prime('marchand') && !prime('evolution') && !prime('acheteur');
 
   // Chaque réglage dit en clair ce qu'il produit. Une phrase qu'on relit après avoir
   // bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une fois.
-  if (state.up.acheteur) setText($('note-acheteur'), noteAcheteur());
-  if (state.up.evolution) setText($('note-evolution'), noteEvolution());
-  if (state.up.marchand) {
+  if (prime('acheteur')) setText($('note-acheteur'), noteAcheteur());
+  if (prime('evolution')) setText($('note-evolution'), noteEvolution());
+  if (prime('marchand')) {
     const txt = noteMarchand();
     setText($('note-marchand'), txt);
     // un ⚠ en gris pâle de 0,72 rem ne prévient personne : la note entière passe au rouge
@@ -3912,6 +4076,8 @@ function bindTools() {
     jugerSav('');
   };
   const ouvrirStats = v => { $('statistiques').hidden = !v; if (v) renderStats(); };
+  $('coll-tete').addEventListener('click', () => plier('tout'));
+
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
   $('stat-close').addEventListener('click', () => ouvrirStats(false));
   $('statistiques').addEventListener('click', e => {
@@ -4076,6 +4242,7 @@ function bindTools() {
 
 function start() {
   state = load();
+  syncIncub();          // les primes peuvent donner des incubateurs : le tableau doit suivre
   buildChrome();
   bindTools();
 

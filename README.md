@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.20.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.22.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 12` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 13` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,9 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.20.0** | l'album gagne l'auto-clic et la place, et dit enfin ce que ses cartes font |
+| **2.22.0** | la collection se replie, section par section |
+| 2.21.0 | vingt primes en petites cases, et quatre améliorations qui les rejoignent |
+| 2.20.0 | l'album gagne l'auto-clic et la place, et dit enfin ce que ses cartes font |
 | 2.19.0 | une page de statistiques, et des compteurs qui traversent l'ascension |
 | 2.18.0 | un achat de clic vaut une seconde entière, et l'âge enfant ne tombe plus en 45 clics |
 | 2.17.0 | la partie se télécharge, se copie et se restaure |
@@ -105,7 +107,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Vingt-trois scénarios, quatre cent trente-six vérifications. Passer un mot en argument ne joue que
+Vingt-huit scénarios, cinq cent trente-huit vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -919,11 +921,11 @@ double presque, donc chaque niveau se mérite et les rendements décroissent d'e
 |---|---|---|---|
 | Force du clic | 30 | ×1,6 | *n*+1 secondes gagnées par clic, à la vitesse des automates · **sans tiers** |
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
-| Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
-| Acheteur automatique | 2 000 | — | achat unique · il rachète, il ne place pas |
-| Mangeoire automatique | 2 500 | ×1,9 | *n*×3 s d'engraissement par seconde |
-| Marchand automatique | 15 000 | — | achat unique |
-| Évolution automatique | 50 000 | — | achat unique |
+| Éleveur automatique | 500 | ×1,65 | ×*n* sur la vitesse de croissance |
+| Mangeoire automatique | 1 000 | ×1,65 | *n*×3 s d'engraissement par seconde |
+
+Il n'en reste que quatre : l'acheteur, le marchand, l'évolution et l'intendant sont passés en
+[primes](#les-primes) en 2.21.0. Quatre choses qui montent, vingt qui n'arrivent qu'une fois.
 
 L'échelle est calée pour qu'une partie **bascule en pilote automatique en une demi-heure**
 plutôt qu'en une heure et demie. Simulation d'un joueur cliquant quatre fois par seconde,
@@ -934,6 +936,78 @@ Aux anciens prix, le marchand tombait à 78 min.
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
+
+### Les primes
+
+Vingt achats **uniques**, en petites cases, qui s'allument dès qu'on a de quoi les payer.
+
+Une amélioration à niveaux dit toujours la même chose — *« couveuse niv. 5 → niv. 6 »* — et
+cinquante achats plus tard elle la dit encore. Une prime dit une chose et une seule, puis se
+tait : c'est ce qui permet d'en écrire vingt différentes plutôt qu'une répétée vingt fois.
+
+| Prix | Prime | Ce qu'elle fait |
+|---|---|---|
+| 250 | 💗 Soins attentifs | le bonheur monte deux fois plus vite |
+| 600 | 🪺 Nichoir | +2 incubateurs |
+| 1 200 | 🌾 Paille fraîche | +2 enclos |
+| 2 000 | 🥚 Acheteur automatique | rachète un œuf quand la réserve est sèche |
+| 4 000 | 🪙 Négoce commun | les communes se vendent +25 % |
+| 8 000 | ✊ Poigne | +3 secondes par clic |
+| 15 000 | 🤝 Marchand automatique | vend les bêtes mûres |
+| 30 000 | 📦 Grossiste | les œufs coûtent −20 % |
+| 50 000 | 🧬 Évolution automatique | fait monter les bêtes d'âge |
+| 80 000 | 🔷 Négoce rare | les rares se vendent +25 % |
+| 150 000 | ⭐ Étable | les bêtes gardées ☆ ne comptent plus dans la limite d'enclos |
+| 250 000 | 📋 Intendance | les évolutions coûtent −25 % |
+| 500 000 | 👁️ Œil exercé | +50 % de chance de chromatique |
+| 1 M | 🎁 Générosité | les cadeaux de frénésie durent deux fois plus |
+| 2 M | 🔮 Négoce épique | les épiques se vendent +25 % |
+| 5 M | 📜 Grande intendance | encore −25 % sur les évolutions |
+| 12 M | 🏠 Couvoir | +3 incubateurs |
+| 30 M | 🏞️ Pâturage | +3 enclos |
+| 80 M | 👑 Négoce mythique | les mythiques se vendent +25 % |
+| 200 M | 🖐️ Main preste | chaque clic compte double |
+
+**Elles ne traversent pas l'ascension.** Ce sont des améliorations comme les autres : la ferme
+repart de zéro et les primes avec elle. Seul l'album voyage.
+
+**Trois états, trois traitements.** Éteinte, elle est grise et son glyphe est désaturé — mais
+elle se voit, avec son prix. Prête, elle s'allume et son prix prend la couleur de la monnaie.
+Prise, elle reste dans la grille : une case qui disparaît une fois achetée efface la trace de
+ce qu'on a construit, et c'est justement ce qu'on vient voir dans une grille.
+
+**Le négoce est le seul bonus qui ne vaut que pour une partie du bestiaire**, et c'est ce qui
+en fait un choix plutôt qu'un cumul : à 4 000 pièces on n'achète pas la même chose selon qu'on
+compte écouler des communes ou monter des rares.
+
+#### Quatre améliorations les ont rejointes
+
+L'acheteur, le marchand et l'évolution étaient déclarés dans la liste à niveaux avec un
+plafond à 1 : ils ne montent pas, ils s'allument. Ils étaient donc déjà des primes, au mauvais
+endroit. Et l'**intendant**, qui montait, se dit mieux en deux crans nommés qu'en trente
+niveaux — d'autant qu'il coûtait `250 000 × 1,65^n` pour une remise asymptotique que presque
+personne n'a poussée.
+
+Il reste **quatre améliorations à niveaux** : la force du clic, la couveuse, l'éleveur et la
+mangeoire. Quatre choses qui montent, vingt qui n'arrivent qu'une fois.
+
+La migration v12 → v13 est **généreuse par principe** : les trois achats uniques se transposent
+tels quels, et le premier achat d'intendant donne l'Intendance, le quinzième la Grande. Un cas
+limite existe et se dit : un intendant poussé au-delà du niveau 26 offrait plus de 44 % de
+remise et retombe à 44 %. En échange, le même effet coûte désormais 5,25 M au lieu de quelques
+dizaines de millions.
+
+### La collection se replie
+
+135 cases dont trois remplies au début, en haut de la colonne, pour un panneau qu'on consulte
+rarement. Tout s'y replie maintenant : **la section entière par son titre**, et **chaque
+rareté par le sien**. Le compteur `6 / 135` reste visible même repliée — c'est la seule chose
+qu'on vient y lire du coin de l'œil.
+
+Chaque rareté a désormais sa propre grille plutôt qu'une grille unique traversée d'intertitres :
+replier devient un `hidden` sur un conteneur au lieu de cacher vingt cases une à une. Le
+pliage vit dans la sauvegarde, avec l'ordre de la bande et la taille des lots — du confort
+d'affichage, donc il traverse l'ascension.
 
 #### La force du clic ne se granule pas
 

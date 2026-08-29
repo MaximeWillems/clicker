@@ -177,7 +177,7 @@ scenario('réserve d’œufs — elle se vide toute seule, et gratuitement', () 
   eq('et aucune pièce dépensée', s.coins, avant);
 
   // avec l'acheteur, il paie
-  s.up.acheteur = 1; s.buyKind = 'commun';
+  s.primes.acheteur = true; s.buyKind = 'commun';
   jeu.runAutomations(0.1);
   eq('l’acheteur remplit', s.incub.filter(Boolean).length, 4);
   ok('et il a payé', s.coins < avant, s.coins);
@@ -396,6 +396,144 @@ scenario('jetons — un palier de fortune tous les ×1000, à partir du premier 
   const apres = s.asc.jetons;
   jeu.crediterJetons();
   eq('un palier ne paie qu’une fois', s.asc.jetons, apres);
+});
+
+scenario('collection — tout se replie, et le pliage tient au rechargement', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.seen = { 'crapaud:1': 1, 'crabe:1': 1, 'loup:1': 1 };
+  jeu.refresh();
+  const coll = noeuds.get('collection');
+  const grilles = () => coll.children.filter(n => (n.className || '').includes('coll-grille'));
+  const raretes = [...new Set(jeu.LINES.map(l => l.rarity))];
+
+  eq('une grille par rareté', grilles().length, raretes.length);
+  eq('toutes les cases sont là', grilles().reduce((n, g) => n + g.children.length, 0),
+     jeu.LINES.length * jeu.AGES.length);
+  ok('rien n’est replié au départ', grilles().every(g => !g.hidden));
+
+  jeu.plier(raretes[0]);
+  eq('le premier groupe se replie', grilles().filter(g => g.hidden).length, 1);
+  ok('mais ses cases existent toujours', grilles()[0].children.length > 0);
+
+  jeu.plier('tout');
+  ok('la section entière se replie', coll.hidden);
+  eq('la flèche du titre suit', (noeuds.get('coll-fleche').textContent || '').trim(), '▸');
+  ok('le compteur reste lisible', (noeuds.get('coll-meta').textContent || '').includes('/'));
+
+  jeu.plier('tout');
+  ok('elle se rouvre', !coll.hidden);
+  eq('et le pliage du groupe a tenu', grilles().filter(g => g.hidden).length, 1);
+
+  jeu.save(); jeu.load(); jeu.refresh();
+  ok('le pliage traverse un rechargement', jeu.state.plie[raretes[0]] === true);
+});
+
+/* ────────────────────────── les primes ────────────────────────── */
+
+scenario('primes — la table tient debout et s’allume par paliers', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const cles = new Set();
+  let dernier = 0;
+  for (const p of jeu.PRIMES) {
+    ok('« ' + p.cle + ' » a un nom, un glyphe et une phrase',
+       !!(p.nom && p.glyphe && p.dit && p.dit.length > 20));
+    ok('« ' + p.cle + ' » n’est pas en double', !cles.has(p.cle));
+    cles.add(p.cle);
+    ok('les prix montent (' + p.cle + ' à ' + p.prix + ')', p.prix > dernier);
+    dernier = p.prix;
+  }
+  // une prime n'est prête que si on peut la payer, jamais avant
+  for (const p of [jeu.PRIMES[0], jeu.PRIMES[5], jeu.PRIMES[jeu.PRIMES.length - 1]]) {
+    s.coins = p.prix - 1; jeu.refresh();
+    ok('« ' + p.cle +' » reste éteinte à un sou près',
+       !noeuds.get('primes').children.find(b => b.title.startsWith(p.nom + ' ')).classList.contains('prete'));
+    s.coins = p.prix; jeu.refresh();
+    ok('et s’allume au prix juste',
+       noeuds.get('primes').children.find(b => b.title.startsWith(p.nom + ' ')).classList.contains('prete'));
+  }
+});
+
+scenario('primes — chacune fait ce qu’elle dit, et une seule fois', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const prendre = cle => jeu.buyPrime(jeu.PRIME_BY_CLE[cle]);
+
+  const clicNu = jeu.clickPower();
+  prendre('poigne'); eq('la poigne ajoute trois secondes', jeu.clickPower(), clicNu + 3);
+  prendre('main');   eq('la main preste double le tout', jeu.clickPower(), (clicNu + 3) * 2);
+
+  eq('le nichoir donne deux incubateurs', jeu.incubTotal(), s.incubators);
+  prendre('nichoir');
+  eq('…deux de plus', jeu.incubTotal(), s.incubators + 2);
+  eq('et le tableau suit', s.incub.length, jeu.incubTotal());
+  prendre('couvoir');
+  eq('le couvoir en ajoute trois', jeu.incubTotal(), s.incubators + 5);
+
+  const avantPen = jeu.pensTotal(), prixPen = jeu.penCost();
+  prendre('paille');
+  eq('la paille donne deux enclos', jeu.pensTotal(), avantPen + 2);
+  eq('sans faire monter le prix du prochain', jeu.penCost(), prixPen);
+
+  const oeufNu = jeu.prixOeuf(jeu.EGG_BY_KEY.commun);
+  prendre('grossiste');
+  ok('le grossiste baisse le prix des œufs', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) < oeufNu);
+
+  // le négoce ne vaut que pour SA rareté
+  const commune = bete(jeu, 'crapaud', 3, 3000);
+  const avant = jeu.sellValue(commune);
+  prendre('negoce-rare');
+  eq('le négoce rare ne touche pas une commune', jeu.sellValue(commune), avant);
+  prendre('negoce-commune');
+  eq('le négoce commun la paie un quart de plus', jeu.sellValue(commune), Math.round(avant * 1.25));
+
+  // une prime ne s'achète pas deux fois
+  const poche = s.coins;
+  prendre('poigne');
+  eq('repayer une prime déjà prise ne coûte rien', s.coins, poche);
+});
+
+scenario('primes — l’étable sort les bêtes gardées du compte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 2;
+  const a = bete(jeu, 'crapaud', 1, 5);
+  const b = bete(jeu, 'crabe', 1, 5);
+  eq('deux bêtes dans deux enclos', jeu.penUsed(), 2);
+  ok('l’enclos est plein', jeu.penFull());
+  a.keep = true;
+  ok('garder ne suffit pas sans l’étable', jeu.penFull());
+  jeu.buyPrime(jeu.PRIME_BY_CLE.etable);
+  eq('avec l’étable, la gardée ne compte plus', jeu.penUsed(), 1);
+  ok('et la place se rouvre', !jeu.penFull());
+});
+
+scenario('primes — elles ne traversent pas l’ascension, la migration ne perd rien', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 5e6; s.pens = 6;
+  jeu.buyPrime(jeu.PRIME_BY_CLE.soin);
+  jeu.buyPrime(jeu.PRIME_BY_CLE.acheteur);
+  bete(jeu, 'crapaud', 3, 3000);
+  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = [ap.neuves[0].id];
+  jeu.ascensionner();
+  eq('les primes repartent de zéro', Object.keys(jeu.state.primes).length, 0);
+  ok('alors que l’album traverse', jeu.state.album.length > 0);
+
+  // une partie d'avant : les trois automates et l'intendant deviennent des primes
+  const vieux = neuf({
+    v: 12, coins: 1e6, pens: 3, incubators: 2, pen: [], incub: [null, null], eggs: { commun: 0 },
+    up: { clic: 3, acheteur: 1, marchand: 1, evolution: 1, intendant: 30 },
+    tuto: false, seen: {}, devoile: {}, vu: {}, t: Date.now(),
+  });
+  for (const cle of ['acheteur', 'marchand', 'evolution', 'intendance', 'intendance2']) {
+    ok('« ' + cle + ' » est rendue au joueur', vieux.state.primes[cle] === true);
+  }
+  for (const cle of ['acheteur', 'marchand', 'evolution', 'intendant']) {
+    ok('« ' + cle + ' » ne traîne plus dans les améliorations', !(cle in vieux.state.up));
+  }
+  eq('le format a bougé', vieux.state.v, jeu.SAVE_V);
 });
 
 /* ────────────────────────── l'album, carte par carte ────────────────────────── */

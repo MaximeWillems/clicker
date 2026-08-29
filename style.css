@@ -664,14 +664,27 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   border: 1px solid var(--rule-hi); border-radius: 3px; padding: 0.35rem 0.4rem;
 }
 
-.collection { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+/* La collection n'est plus une grille unique : chaque rareté a la sienne, ce qui permet de
+   la replier d'un `hidden` plutôt qu'en cachant vingt cases une à une. */
+.collection { display: flex; flex-direction: column; }
+.coll-grille { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
 .coll-head {
-  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 0.35rem; width: 100%;
   font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.11em;
-  text-transform: uppercase; margin: 0.55rem 0 0.1rem;
+  text-transform: uppercase; margin: 0.55rem 0 0.25rem; padding: 0;
+  background: none; border: 0; cursor: pointer; text-align: left;
   color: var(--rar, var(--faint));
 }
 .coll-head:first-child { margin-top: 0; }
+.coll-head:hover { color: var(--ink); }
+.plier { font-size: 0.7rem; line-height: 1; width: 0.7em; }
+
+/* Un en-tête de panneau qui se replie : même allure qu'avant, mais c'est un bouton. */
+.panel-pliable {
+  width: 100%; background: none; border: 0; padding: 0;
+  cursor: pointer; text-align: left; font: inherit; color: inherit;
+}
+.panel-pliable:hover h2 { color: var(--ink); }
 .cell {
   aspect-ratio: 1; display: grid; place-items: center;
   background: var(--sunken); border-radius: 2px; font-size: 1.05rem;
@@ -900,6 +913,55 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   background: var(--ground); border: 1px solid var(--rule-hi); border-radius: 4px;
   width: min(46rem, 100%); padding: 1.4rem 1.6rem 1.6rem;
 }
+/* ── LES PRIMES ────────────────────────────────────────────────────────────────
+   Une grille de petites cases plutôt qu'une liste de lignes. La liste convient à ce qui monte
+   — un prix, un niveau, une flèche — mais vingt achats uniques n'ont pas de niveau à montrer :
+   ils ont un nom, un prix et un état. Trois états, trois traitements : éteinte, prête, prise. */
+.primes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.4rem, 1fr));
+  gap: 5px;
+}
+.prime {
+  display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  padding: 0.5rem 0.25rem 0.45rem;
+  background: var(--sunken); color: var(--faint);
+  border: 1px solid var(--rule); border-radius: 4px;
+  cursor: not-allowed; text-align: center;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.prime-glyphe { font-size: 1.15rem; line-height: 1.2; filter: grayscale(1); opacity: 0.5; }
+.prime-nom {
+  font-family: var(--f-ui); font-size: 0.6rem; line-height: 1.25;
+  text-wrap: balance;
+}
+.prime-prix {
+  font-family: var(--f-num); font-size: 0.62rem;
+  font-variant-numeric: tabular-nums; color: var(--faint);
+}
+
+/* Prête : elle s'allume, et son prix prend la couleur de la monnaie. */
+.prime.prete {
+  cursor: pointer; color: var(--ink);
+  background: var(--raised); border-color: var(--rule-hi);
+}
+.prime.prete .prime-glyphe { filter: none; opacity: 1; }
+.prime.prete .prime-prix { color: var(--coin); }
+.prime.prete:hover { border-color: var(--accent); }
+
+/* Prise : elle reste là. Une case qui disparaît une fois achetée efface la trace de ce qu'on
+   a construit, et c'est justement ce qu'on vient voir dans une grille. */
+.prime.prise {
+  color: var(--soft); border-color: var(--jade-dim); background: var(--surface);
+}
+.prime.prise .prime-glyphe { filter: none; opacity: 1; }
+.prime.prise .prime-prix { color: var(--accent); font-size: 0.58rem; }
+
+#primes-meta {
+  font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.06em;
+  color: var(--faint); margin-left: auto;
+}
+
 /* ── L'écran de statistiques ──────────────────────────────────────────────────
    Deux colonnes : le nom à gauche, le nombre à droite, aligné sur ses chiffres. Des filets
    entre les lignes plutôt qu'un tableau — il n'y a rien à comparer d'une ligne à l'autre,

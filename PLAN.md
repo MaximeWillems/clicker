@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.20.0 · sauvegarde v12 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.22.0 · sauvegarde v13 · 10 lignées illustrées sur 27
 
 ---
 
@@ -49,6 +49,8 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le clic** | 2.18 | un achat de clic se sent-il ? | oui — une seconde entière, et le premier âge ne s'évapore plus |
 | **Les compteurs** | 2.19 | le jeu se souvient-il de quelque chose ? | dix-sept nombres, cumulés sur le fichier |
 | **Les cartes** | 2.20 | l'ascension donne-t-elle envie ? | deux effets qui se voient dès la première seconde du cycle |
+| **Les primes** | 2.21 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | vingt achats uniques, chacun disant une seule chose |
+| **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
 
 ### Ce qui vient ensuite
 
@@ -126,7 +128,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 23 scénarios
+node tools/test.js              les 28 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 

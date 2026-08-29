@@ -177,6 +177,16 @@
     <ul class="shop" id="autos"></ul>
   </section>
 
+  <!-- LES PRIMES. Des achats uniques, en petites cases : elles s'allument dès qu'on a de
+       quoi, et ne disent jamais deux fois la même chose. -->
+  <section class="panel" id="panel-primes" hidden>
+    <div class="panel-head">
+      <h2>Primes</h2>
+      <span id="primes-meta"></span>
+    </div>
+    <div class="primes" id="primes"></div>
+  </section>
+
   <section class="panel" id="panel-reglages" hidden>
     <div class="panel-head"><h2>Réglages de la ferme</h2></div>
     <p class="panel-intro">Tes automates travaillent en boucle, toujours dans cet ordre.
@@ -260,11 +270,16 @@
     </div>
   </section>
 
+  <!-- LA COLLECTION. 135 cases dont trois remplies au début : c'est le panneau le plus haut
+       de la colonne, et celui qu'on consulte le moins souvent. Tout s'y replie — la section
+       entière par son titre, et chaque rareté par le sien. -->
   <section class="panel" id="panel-collection">
-    <div class="panel-head">
+    <button type="button" class="panel-head panel-pliable" id="coll-tete"
+            aria-expanded="true" aria-controls="collection">
+      <span class="plier" id="coll-fleche" aria-hidden="true">▾</span>
       <h2>Collection</h2>
       <span class="panel-meta" id="coll-meta"></span>
-    </div>
+    </button>
     <div class="collection" id="collection"></div>
   </section>
 
