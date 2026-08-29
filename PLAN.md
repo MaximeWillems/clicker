@@ -174,6 +174,7 @@ est ce qu'il faut avoir en tête pour choisir.
 
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
+| **Sortir de l'impasse** | le jeu peut se rendre injouable en deux minutes | une heure à deux soirées |
 | **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
@@ -194,6 +195,50 @@ restauration n'est pas de rater le geste, c'est de restaurer le mauvais fichier.
 prévu. Elle ne s'achète pas et ne se déclenche pas — une bête qu'on garde en scène l'offre
 d'elle-même, tous les quatre à cinq cents secondes de présence, et ne double que le clic. Neuf
 pour cent du temps à ×2, mesuré : c'est un cadeau, pas une amélioration.
+
+### Sortir de l'impasse
+
+Le jeu peut se rendre injouable : plus de bête, plus d'œuf, et moins que le prix d'un œuf.
+Quatre façons d'en sortir, du filet muet au vrai morceau de jeu. Aucune n'est tranchée.
+
+| La sortie | Ce qu'elle règle | Ce qu'elle coûte |
+|---|---|---|
+| **Le filet muet** | l'impasse ne peut plus arriver | une heure, et une décision retirée au joueur |
+| **L'œuf de secours** | on repart, sans rien devoir | une heure, et un cadeau qui ne se raconte pas |
+| **La plonge** | l'impasse devient un moment de jeu | une soirée |
+| **Le prêt** | l'impasse devient une décision | deux soirées, et un risque d'impasse pire |
+
+**Le filet muet.** La boutique refuse tout achat qui laisserait le joueur sans bête, sans œuf
+et sans de quoi en payer un. C'est la sortie la moins chère et la plus sûre, mais elle grise un
+bouton sans rien expliquer, et retire au joueur une décision qu'il avait le droit de prendre.
+À garder en réserve si rien de mieux ne sort.
+
+**L'œuf de secours.** Quand on n'a plus rien, la boutique offre un œuf commun. Une condition,
+une ligne, aucun nouveau système. Mais un cadeau qui tombe du ciel ne se raconte pas, et le
+jeu a jusqu'ici toujours préféré une règle à une exception.
+
+**La plonge.** Sans rien à élever, on peut travailler de ses mains : chaque clic rapporte
+quelques pièces, jusqu'à de quoi racheter un œuf. C'est la seule sortie qui rende l'état vide
+JOUABLE au lieu de le rendre impossible, et elle raconte quelque chose — on repart de rien, à
+la main, comme au premier jour. Elle se limite d'elle-même : personne ne plonge quand il
+possède une ferme.
+
+Deux garde-fous si on la prend. Elle ne doit **jamais** être un revenu alternatif : le débit
+doit rester très en dessous de ce que rapporte une seule bête commune, sinon elle devient la
+stratégie optimale du début de partie. Et elle ne doit **pas tourner hors ligne**, pour la même
+raison que le bonheur — c'est une main qui travaille, et une main ne travaille pas quand on
+dort.
+
+**Le prêt.** On emprunte, on rembourse avec intérêt. C'est la sortie la plus intéressante sur
+le papier : elle transforme l'impasse en décision, et elle donne enfin un sens économique à
+une partie qui ne connaît que l'accumulation. C'est aussi la plus dangereuse — **une dette
+peut fabriquer une impasse pire que celle qu'elle répare** : emprunter, mal dépenser, et se
+retrouver sans bête ET endetté. Si on la prend, la dette doit être bornée à ce qu'une bête
+commune rembourse, et le jeu ne doit jamais pouvoir refuser un second prêt.
+
+**La règle qui vaut quelle que soit la sortie choisie :** un idle ne doit jamais pouvoir se
+rendre injouable. C'est la seule faute dont un joueur ne revient pas, et elle ne se rattrape
+pas par un bon équilibrage ailleurs.
 
 ### Le diagnostic en trois phrases
 
@@ -317,6 +362,20 @@ Quatre écarts avec le plan d'origine, tous volontaires :
   boutons dont treize inachetables ; il ouvre maintenant sur un œuf et quelqu'un qui parle.
 
 ### Les dettes
+
+**LE JEU A UNE IMPASSE SÈCHE, ET ELLE EST À DEUX MINUTES DU DÉBUT.** Zéro bête, zéro œuf en
+réserve, et moins que le prix d'un œuf commun : plus rien ne peut rentrer. Pas de rente sans
+bête, pas de clic sans sujet, pas de vente sans rien à vendre. Le seul geste possible est
+d'effacer la partie.
+
+Ce n'est pas un cas de coin. Le chemin le plus court passe par **le conseil du tutoriel** :
+on vend sa première bête pour 40 pièces, la professeure annonce qu'« il y a des choses à
+acheter qui ne sont pas des œufs », la Force du clic en coûte 30 — et il en reste 10 pour un
+œuf qui en vaut 12. Cinq minutes de boucle plus tard, toujours 10.
+
+La sortie est à écrire ; les candidats sont dans le vivier, sous
+[Sortir de l'impasse](#sortir-de-limpasse). Ce qui est certain, c'est qu'un idle ne doit
+jamais pouvoir se rendre injouable — c'est la seule faute dont un joueur ne revient pas.
 
 **Rien de visuel n'a jamais été vérifié.** C'est la dette qui grossit le plus vite : l'album,
 l'écran d'ascension, le sélecteur de lots, la boîte de dialogue, les trois colonnes d'axes, la
