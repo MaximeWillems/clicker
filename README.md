@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.24.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.24.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.24.0** | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
+| **2.24.1** | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
+| 2.24.0 | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
 | 2.23.0 | le squelette de la pension, porte fermée — rien ne change pour le joueur |
 | 2.22.0 | la collection se replie, section par section |
 | 2.21.0 | vingt primes en petites cases, et quatre améliorations qui les rejoignent |
@@ -109,7 +110,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Trente-et-un scénarios, cinq cent soixante-dix-sept vérifications. Passer un mot en argument ne joue que
+Trente-et-un scénarios, cinq cent soixante-sept vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -1002,10 +1003,11 @@ dizaines de millions.
 
 ### La pension — squelette, porte fermée
 
-> **Rien de cette section n'est joignable.** `PENSION_OUVERTE` est à `false`, aucune boucle
-> n'appelle `avancePension`, aucun bouton ne mène à `accoupler`, et `state.pension.couples`
-> reste vide pour tout le monde. Une partie jouée aujourd'hui se comporte exactement comme
-> avant la 2.23.0.
+> **Rien de cette section n'est joignable, et rien ne peut l'ouvrir.** `PENSION_OUVERTE` est
+> une **constante** à `false` : aucune boucle n'appelle `avancePension`, aucun bouton ne mène à
+> `accoupler`, `state.pension.couples` reste vide pour tout le monde, et le banc d'essai lui-même
+> ne peut pas forcer la porte. Une partie jouée aujourd'hui se comporte exactement comme avant
+> la 2.23.0.
 
 **Pourquoi poser des os avant d'avoir un corps.** Le socle de la pension est un *atome* de cinq
 pièces — des emplacements, deux parents, une durée, un œuf, et la rente suspendue. Les cinq
@@ -1026,12 +1028,19 @@ avant de payer le prix d'une version jouable.
 case, cessent de rapporter, et n'avancent plus. Parquer deux bêtes doit se sentir, et ça ne se
 sent que si ça coûte la seule chose qui manque vraiment en fin de partie — la place.
 
-**Le squelette est vérifié, pas seulement écrit.** Deux scénarios du banc l'exercent : l'un
-prouve que la porte reste close (deux cents tours de boucle, aucun couple, aucune rente
-suspendue), l'autre l'ouvre le temps du test et fait tourner le cycle entier — la durée qui
-suit la distance, les refus qui disent pourquoi, la rente qui s'arrête puis revient, l'œuf qui
-tombe au terme, et le couple qui se dissout sans rien rendre si un parent est vendu en route.
-C'est toute la raison d'écrire un squelette avant un corps.
+**Pourquoi la porte est scellée et non seulement fermée.** Le drapeau a été `let` le temps
+d'une version, pour qu'un scénario puisse faire tourner le cycle entier. C'était une porte de
+trop : la pension ne veut rien dire tant que le bestiaire n'est pas fini — la compatibilité
+demande des étiquettes sur des lignées qui n'existent pas toutes, et l'hérédité vise une
+cinquième rareté qui n'existe pas du tout. **Un cycle qu'on peut faire tourner est un cycle
+qu'on finit par croire réglé**, et on bâtit dessus.
+
+**Ce qui reste vérifié l'est sans rien ouvrir.** Deux scénarios du banc : l'un prouve que la
+porte tient — deux cents tours de boucle, aucun couple, aucune rente suspendue, et forcer le
+drapeau ne change rien puisque c'est une constante ; l'autre exerce les **trois fonctions de
+calcul**, qui ne consultent pas le drapeau : la distance entre deux lignées, la durée qui en
+découle, et la sorte d'œuf qui sortirait. C'est la forme du socle, vérifiée sans le faire
+tourner.
 
 **Ce qui manque encore, et qui ne sera pas deviné ici :**
 

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.24.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.24.1 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -51,7 +51,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les cartes** | 2.20 | l'ascension donne-t-elle envie ? | deux effets qui se voient dès la première seconde du cycle |
 | **Les primes** | 2.21 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | vingt achats uniques, chacun disant une seule chose |
 | **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
-| **Le socle de la pension** | 2.23 | les cinq pièces s'emboîtent-elles ? | oui — écrit, vérifié, porte fermée |
+| **Le socle de la pension** | 2.23–2.24.1 | les cinq pièces s'emboîtent-elles ? | écrites et scellées : on attend le bestiaire |
 | **Les écrans bas** | 2.24 | le jeu tient-il sur un portable ? | tout se replie, et deux ruptures en hauteur |
 
 ### Ce qui vient ensuite
@@ -84,12 +84,18 @@ suspendue tombent ensemble ou ne tombent pas. Retirer n'importe lequel des cinq 
 incohérent — une pension sans rente suspendue est gratuite, une pension sans plafond de
 réserve déborde à la première absence.
 
-**Les cinq sont écrites depuis la 2.23.0, et la porte est fermée.** Le banc les exerce dans
-les deux sens : un scénario prouve que rien ne bouge porte close, l'autre l'ouvre le temps du
-test et fait tourner le cycle entier. Ce qu'il reste à faire pour ouvrir tient en trois
-choses — un écran pour désigner deux bêtes, le plafond de la réserve d'œufs, et passer
-`PENSION_OUVERTE` à `true`. Les deux versions suivantes (compatibilité, hérédité) remplacent
-alors les deux bouchons : `distanceDe` et `oeufDe`.
+**Les cinq sont écrites depuis la 2.23.0, et la porte est SCELLÉE depuis la 2.24.1** —
+`PENSION_OUVERTE` est une constante que même le banc ne peut pas forcer.
+
+**Elle ne s'ouvrira pas avant le bestiaire.** C'est l'ordre qui compte ici : la compatibilité
+demande des étiquettes posées sur des lignées dont dix-sept n'ont pas encore de dessin, et
+l'hérédité vise les merveilleuses, une cinquième rareté qui n'existe pas du tout. Ouvrir avant
+reviendrait à régler une mécanique sur un bestiaire qui va changer sous elle — et un cycle
+qu'on peut faire tourner est un cycle qu'on finit par croire réglé.
+
+Ce qu'il restera à faire le jour venu tient en quatre choses : finir les dessins, poser le
+plafond de la réserve d'œufs, écrire l'écran qui désigne deux bêtes, et remplacer les deux
+bouchons `distanceDe` et `oeufDe` par la compatibilité et l'hérédité.
 
 ### Le chantier parallèle : les dessins
 

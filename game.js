@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.24.0';
+const VERSION = 'alpha 2.24.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -458,10 +458,16 @@ const MOTIF_BONUS = {
    LE SACRIFICE EST DANS LES ENCLOS. Les parents ne quittent pas la ferme : ils gardent leur
    case, cessent de rapporter, et n'avancent plus. Parquer deux bêtes doit se sentir, et ça ne
    se sent que si ça coûte la seule chose qui manque vraiment en fin de partie — la place. */
-/* `let` et non `const` pour une seule raison : le banc d'essai doit pouvoir ouvrir la porte
-   le temps d'un scénario. RIEN DANS LE JEU N'ÉCRIT CETTE VARIABLE — si un jour quelque chose
-   le fait, c'est un bug, et le scénario « la porte reste fermée » le dira. */
-let PENSION_OUVERTE = false;
+/* `const`, et c'est délibéré : RIEN NE PEUT L'OUVRIR, pas même le banc d'essai. Le drapeau a
+   été `let` le temps d'une version, pour qu'un scénario puisse faire tourner le cycle entier —
+   et c'était une porte de trop. La pension ne veut rien dire tant que le bestiaire n'est pas
+   fini : la compatibilité demande des étiquettes sur des lignées qui n'existent pas toutes, et
+   l'hérédité vise une cinquième rareté qui n'existe pas du tout. Un cycle qu'on peut faire
+   tourner est un cycle qu'on finit par croire réglé.
+
+   Ce qui reste vérifiable l'est sans ouvrir quoi que ce soit : les trois fonctions de calcul
+   — distance, durée, sorte d'œuf — ne consultent pas ce drapeau. */
+const PENSION_OUVERTE = false;
 
 const PENSION = {
   places: 1,           // combien de couples à la fois, au départ
