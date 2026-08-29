@@ -1512,6 +1512,21 @@ Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour déc
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
 
+#### L'acheteur peut se taire
+
+C'est **le seul des trois automates qui dépense**, et c'était le seul qui n'avait pas de
+« jamais » : le marchand et l'évolution en ont un par rareté depuis toujours.
+
+Ça ne manquait pas tant que la boutique était la seule source d'œufs. Depuis que la pension en
+produit, l'acheteur devient une **fuite** — il rachète au prix fort ce qu'on fabrique déjà,
+pendant qu'on regarde ailleurs. Et une prime ne se revend pas : sans interrupteur, l'avoir
+achetée était irréversible.
+
+La consigne s'ajoute en tête de son menu, à la place où les deux autres ont la leur :
+*« jamais — je m'en occupe moi-même »*. **La réserve continue de se vider toute seule** dans les
+incubateurs libres : elle est déjà payée, et c'est justement ce qu'on veut quand la pension
+tourne.
+
 #### Un couple ne se défait plus
 
 **Il se défaisait quand l'œuf tombait, et c'était le geste de trop** : on venait retirer deux
