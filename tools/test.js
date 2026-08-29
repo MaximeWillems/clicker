@@ -1126,6 +1126,43 @@ scenario('pension — le nid se remplit au glisser comme au clic', () => {
   eq('et une bête qui n’existe pas non plus', jeu.poserAuNid(9999, 'a'), false);
 });
 
+scenario('pension — un nid sans place ne se laisse pas remplir', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  const c = bete(jeu, 'cerf', 4, 20000), d = bete(jeu, 'chat', 4, 20000);
+
+  ok('le nid est ouvert', jeu.nidOuvert());
+  jeu.accoupler(a, b);
+  ok('la place prise, il se ferme', !jeu.nidOuvert());
+
+  /* IL ACCEPTAIT TOUT ET NE REFUSAIT QU'AU BOUTON : on composait un couple, on lisait
+     « la place est prise », et il fallait ressortir les deux bêtes une par une. */
+  eq('poser est refusé', jeu.poserAuNid(c.id, 'a'), false);
+  eq('des deux côtés', jeu.poserAuNid(d.id, 'b'), false);
+  eq('et rien n’est entré', jeu.pensionA, null);
+
+  jeu.refresh();
+  const cases = casesNid(jeu);
+  ok('les deux cases sont fermées', cases.every(z => z.classList.contains('fermee')));
+  ok('et désactivées', cases.every(z => z.disabled));
+  ok('elles disent pourquoi',
+     cases.every(z => /occupé/.test(z.children.map(x => x.textContent).join(' '))),
+     cases.map(z => z.children.map(x => x.textContent).join(' ')).join(' | '));
+
+  // la place libérée, tout se rouvre
+  jeu.avancePension(1e6);
+  jeu.refresh();
+  ok('le nid se rouvre', jeu.nidOuvert());
+  ok('et poser remarche', jeu.poserAuNid(c.id, 'a'));
+  jeu.refresh();
+  ok('les cases aussi', casesNid(jeu).every(z => !z.classList.contains('fermee')));
+
+  // sans la prime non plus, le nid ne se remplit pas
+  s.primes = {};
+  eq('pas de bâtiment, pas de nid', jeu.nidOuvert(), false);
+});
+
 scenario('pension — une partie de v14 se relit sans rien perdre', () => {
   const j = neuf(); const s = j.state;
   s.coins = 5e6; s.pens = 4; s.stats.eclos = 12;

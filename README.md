@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.0.1
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.0.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.0.1** | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
+| **beta 1.0.2** | un nid sans place ne se laisse plus remplir |
+| beta 1.0.1 | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
 | beta 1.0.0 | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
 | alpha 3.1.0 | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
 | 3.0.0 | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
@@ -1461,6 +1462,11 @@ première chose qu'un joueur ne comprend pas.
 **Une place, une seule.** C'est ce qui donne du poids au choix du couple : avec deux places, on
 ne choisit plus, on empile. Une seconde place se vendra peut-être en prime, mais elle n'est pas
 une évidence.
+
+**Et le nid se ferme quand la place est prise.** Il acceptait les bêtes en toutes circonstances
+et ne refusait qu'au bouton : on composait tranquillement un couple, on lisait « la place est
+prise », et il fallait ressortir les deux bêtes une par une. Un écran qui laisse faire un geste
+qu'il refusera ensuite ment deux fois — d'abord en acceptant, ensuite en refusant.
 
 #### Ce qui reste à écrire
 

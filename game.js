@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.0.1';
+const VERSION = 'beta 1.0.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -4934,10 +4934,17 @@ let pensionA = null, pensionB = null;
 // La bête d'un côté du nid, ou null : elle doit être encore là, et pas déjà partie couver.
 const auNid = id => state.pen.find(c => c.id === id && !enPension(c)) || null;
 
+/* LE NID NE S'OUVRE QUE S'IL RESTE UNE PLACE. Il acceptait les bêtes en toutes circonstances
+   et ne refusait qu'au bouton : on composait tranquillement un couple, on lisait « la place est
+   prise », et il fallait ressortir les deux bêtes une par une. Un écran qui laisse faire un
+   geste qu'il refusera ensuite ment deux fois — d'abord en acceptant, ensuite en refusant. */
+const nidOuvert = () => prime('pension') && couples().length < placesPension();
+
 /* Poser une bête dans le nid. La même bête des deux côtés n'a pas de sens : on la déplace
    plutôt que de refuser, parce que refuser demanderait au joueur de deviner laquelle des deux
    cases il occupe déjà. */
 function poserAuNid(id, cote) {
+  if (!nidOuvert()) return false;
   const c = auNid(id);
   if (!c) return false;
   if (cote === 'a') { if (pensionB === id) pensionB = null; pensionA = id; }
@@ -4994,13 +5001,17 @@ function renderPension() {
   if (!a) pensionA = null;
   if (!b) pensionB = null;
 
+  const ouvert = nidOuvert();
   const nid = document.createElement('div');
   nid.className = 'nid';
   const case_ = (cote, c) => {
     const z = document.createElement('button');
     z.type = 'button';
-    z.className = 'nid-case' + (c ? ' pleine rar-' + lineOf(c).rarity : ' vide');
+    z.className = 'nid-case' + (c ? ' pleine rar-' + lineOf(c).rarity
+                                  : ouvert ? ' vide' : ' vide fermee');
     z.dataset.cote = cote;
+    // une case qu'on ne peut pas remplir ne se laisse ni cliquer ni survoler
+    z.disabled = !c && !ouvert;
     if (c) {
       const g = document.createElement('span');
       g.className = 'nid-bete';
@@ -5020,10 +5031,11 @@ function renderPension() {
     } else {
       const v = document.createElement('span');
       v.className = 'nid-vide-mot';
-      v.textContent = 'glisse une bête ici';
+      v.textContent = ouvert ? 'glisse une bête ici' : 'le nid est occupé';
       const v2 = document.createElement('i');
       v2.className = 'nid-vide-sous';
-      v2.textContent = 'ou clique pour y mettre celle en scène';
+      v2.textContent = ouvert ? 'ou clique pour y mettre celle en scène'
+                              : 'attends que le couple ait fini';
       z.append(v, v2);
     }
     return z;
@@ -5365,7 +5377,7 @@ function bindTools() {
   const nidHote = $('pension');
   nidHote.addEventListener('dragover', e => {
     const z = e.target.closest && e.target.closest('.nid-case');
-    if (!z) return;
+    if (!z || z.disabled) return;      // une case fermée ne fait pas semblant d'accepter
     e.preventDefault();                       // sans ça, le navigateur refuse le dépôt
     e.dataTransfer.dropEffect = 'copy';
     z.classList.add('survol');

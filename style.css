@@ -1114,7 +1114,10 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .nid-case:hover { border-color: var(--rule-hi); }
 .nid-case.pleine:hover { border-color: var(--red); }
 /* pendant qu'on porte une bête, les cases vides s'allument : le nid dit où déposer */
-body.glisse .nid-case.vide { border-color: var(--jade-dim); background: var(--raised); }
+body.glisse .nid-case.vide:not(.fermee) { border-color: var(--jade-dim); background: var(--raised); }
+/* une case fermée se voit fermée : elle ne réagit ni au survol ni au glisser */
+.nid-case.fermee { opacity: 0.45; cursor: not-allowed; border-style: dotted; }
+.nid-case.fermee:hover { border-color: var(--rule-hi); }
 .nid-case.survol { border-color: var(--jade); background: var(--jade-dim); }
 
 .nid-bete { font-size: 1.6rem; line-height: 1; flex: none; }
