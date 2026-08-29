@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.30.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.30.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -55,7 +55,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.30.1** | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
+| **2.30.2** | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
+| 2.30.1 | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
 | 2.30.0 | un jeton vaut une carte, et sauter les dépense tous |
 | 2.29.1 | un œuf ne récite plus ses statistiques, il dit une phrase |
 | 2.29.0 | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
@@ -1700,10 +1701,20 @@ la partie et en carte au moment du saut.
 
 #### Ce qui n'est pas encore là
 
-**La fusion** — trois capsules d'une même lignée en forgeraient une supérieure, et la carte
-forgée garderait le meilleur des trois spécimens. Elle vient en 2.1, et elle n'a rien à faire
-avant : à la première ascension on n'a aucun doublon. Le champ `palier` existe déjà sur chaque
-capsule et la table `PALIERS` est écrite, si bien que 2.1 sera purement additive.
+**La fusion** se paiera en **poussière de carte**, une monnaie qu'on obtient en désintégrant
+ce qu'on ne garde pas. Une carte porte des **étoiles** — elle naît à une, monte à deux, puis à
+trois, et ça s'arrête là : `ETOILES = [1, 1.8, 3]` est déjà écrite et `puissanceDe` la lit
+déjà, si bien que la fusion sera purement additive. Le détail est dans
+[le plan](PLAN.md#la-fusion-et-la-poussière-de-carte).
+
+Le mot **étoiles** a remplacé « palier » en 2.30.2, et pas seulement pour l'écran : « palier »
+désignait déjà les paliers de fortune qui donnent les jetons et les paliers d'améliorations qui
+se montent en tiers. Trois sens pour un mot, à quelques lignes d'écart dans le même fichier.
+
+Le quatrième cran a disparu avec le renommage. Il valait ×5, mais **les plafonds des familles
+de motifs le mangeaient** : le tigré plafonne à +200 % et l'atteignait déjà, le perlé plafonne
+à trois enclos et les atteignait dès la deuxième étoile. On aurait payé très cher un cran qui,
+selon le motif, ne donnait rien.
 
 **La merveilleuse**, cinquième rareté, ne s'obtiendra qu'en pension : l'album sort donc avec
 quatre plafonds au lieu de cinq.

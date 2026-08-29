@@ -1029,7 +1029,7 @@ scenario('primes — elles ne traversent pas l’ascension, la migration ne perd
 function parfaite(jeu, motif, id) {
   return {
     id, line: 'ouroboros', age: 5, niv: 100, tint: jeu.TINTS.length - 1,
-    rank: jeu.RANKS.length - 1, prodige: true, palier: 1, motif, temper: 0,
+    rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif, temper: 0,
   };
 }
 function equiper(jeu, motif, n) {

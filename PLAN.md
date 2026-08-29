@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.30.1 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.30.2 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -110,8 +110,10 @@ pension.
 
 ### La fusion et la poussière de carte
 
-Le champ `palier` existe déjà sur chaque capsule et `PALIERS = [1, 1.8, 3, 5]` est écrite :
-une carte peut être fusionnée **trois fois**, et chaque cran multiplie toute sa puissance.
+Une carte porte des **étoiles**. Elle naît à **une**, la fusion la monte à **deux**, puis à
+**trois**, et ça s'arrête là — `ETOILES = [1, 1.8, 3]`, deux fusions au plus dans la vie d'une
+carte. Chaque étoile multiplie toute sa puissance.
+
 Ce qui manquait, c'était **ce qu'on paie pour le faire**. La réponse est une monnaie propre aux
 cartes : la **poussière**.
 
@@ -161,16 +163,15 @@ lisible — *une carte vaut sa puissance, ou sa poussière, et les deux ne se re
 
 #### Ce qu'une fusion coûte
 
-    coût = COÛT[palier visé] × rareté
+    coût = COÛT[étoile visée] × rareté
 
-avec `COÛT = [—, 100, 400, 1600]`, soit ×4 par cran.
+avec `COÛT = [—, 100, 400]`, soit ×4 pour la seconde fusion.
 
 **Le facteur de rareté est le même des deux côtés**, et c'est délibéré : il s'annule. Monter
 une commune ou une mythique d'un cran demande **le même nombre de cartes de sa propre
-rareté** — dix pour le premier cran, quarante pour le deuxième, cent soixante pour le
-troisième. Un joueur n'a donc jamais intérêt à fondre ses mythiques pour nourrir ses communes,
-ni l'inverse : chaque rareté se nourrit d'elle-même, et l'arbitrage reste dans la lignée qu'on
-aime.
+rareté** — dix pour la deuxième étoile, quarante pour la troisième, cinquante en tout. Un
+joueur n'a donc jamais intérêt à fondre ses mythiques pour nourrir ses communes, ni l'inverse :
+chaque rareté se nourrit d'elle-même, et l'arbitrage reste dans la lignée qu'on aime.
 
 #### La règle qui protège tout
 
@@ -193,11 +194,12 @@ La première est plus simple et se raconte mieux : **on ne défait pas une fusio
   change le build en silence ; il faudra la retirer d'abord.
 - **Où s'affiche la poussière ?** Dans l'en-tête de l'album, à côté du compte de cartes. Et
   chaque carte doit dire ce qu'elle rendrait — sinon la décision se prend à l'aveugle.
-- **Le palier 4 est-il un cadran ou une règle ?** La question d'origine tient toujours :
-  est-ce que le dernier cran transforme un pourcentage en *règle* — un enclos de plus, un clic
-  automatique — plutôt qu'en plus gros pourcentage ? Une règle se raconte, un pourcentage
-  s'oublie. C'est le seul endroit du système où l'on peut se le permettre, puisqu'il demande
-  cent soixante cartes.
+- **Les plafonds de motifs écrasent encore la troisième étoile, pour certaines familles.**
+  Mesuré : une carte perlée parfaite donne déjà trois enclos à **deux** étoiles — c'est son
+  plafond, la troisième n'ajoute rien. Le tigré, lui, gagne encore (+101 % puis +168 %). Un
+  quatrième cran existait et souffrait bien pire du même mal ; le supprimer a réglé la moitié
+  du problème, mais les familles à plafond bas restent à revoir — soit en relevant leur cap,
+  soit en acceptant qu'une carte perlée se fusionne une fois et pas deux.
 - **Faut-il un plafond de poussière ?** Probablement pas : elle se dépense par centaines et
   s'obtient par dizaines, l'accumulation est lente par construction.
 

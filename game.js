@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 2.30.1';
+const VERSION = 'alpha 2.30.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -362,9 +362,22 @@ const RANKS = [
 
 const SLOTS = 5;
 
-/* Le palier vient de la fusion, qui arrive en 2.1 : une capsule naît au palier 1 et y reste
-   pour l'instant. La table est là dès maintenant parce que la puissance la lit déjà. */
-const PALIERS = [1, 1.8, 3, 5];
+/* LES ÉTOILES D'UNE CARTE. Une capsule naît à UNE étoile ; la fusion la monte à deux, puis à
+   trois, et ça s'arrête là. Deux fusions au plus dans la vie d'une carte.
+
+   Le mot « palier » désignait ça avant, et il désignait déjà deux autres choses dans ce
+   fichier — les paliers de fortune qui donnent les jetons, et les paliers d'améliorations qui
+   se montent en tiers. Trois sens pour un mot, dans un fichier qui parle des trois à quelques
+   lignes d'écart : « étoiles » lève l'ambiguïté et se dit mieux à l'écran.
+
+   La table s'arrête à trois entrées, et c'est ce qui règle une vieille question restée
+   ouverte : un quatrième cran valait ×5, mais les plafonds des familles de motifs le mangeaient
+   presque entièrement — le tigré plafonne à +200 % et l'atteignait déjà, le perlé plafonne à
+   trois enclos et les atteignait dès la deuxième étoile. On payait très cher un cran qui, selon
+   le motif, ne donnait rien. Il n'existe plus.
+
+   La table est là avant la fusion parce que la puissance la lit déjà. */
+const ETOILES = [1, 1.8, 3];
 
 /* LE MOTIF DÉCIDE DE CE QUE LA CARTE ACCÉLÈRE. Il ne servait à rien, il est déjà tiré à
    l'éclosion et gardé à vie : lui confier le bonus ne demande aucune mécanique neuve, et il
@@ -1372,6 +1385,13 @@ function load() {
     merged.asc.n = merged.asc.n || 0;
     merged.asc.paliers = merged.asc.paliers || 0;
     merged.asc.jetons = merged.asc.jetons || 0;
+    /* Les capsules d'avant portaient `palier`. Aucune n'a jamais dépassé 1 — la fusion n'existe
+       pas encore — donc la conversion ne peut rien perdre, et `|| 1` suffirait ; on nettoie
+       quand même pour qu'aucune sauvegarde ne traîne les deux noms. */
+    for (const k of merged.album) {
+      if (k.etoiles === undefined) k.etoiles = k.palier || 1;
+      delete k.palier;
+    }
     merged.slots = (Array.isArray(merged.slots) ? merged.slots : [])
       .filter(id => merged.album.some(k => k.id === id))
       .slice(0, SLOTS);
@@ -1518,7 +1538,7 @@ function qualiteDe(k) {
           + 0.10 * (k.prodige ? 1 : 0);
   return 0.4 + 0.6 * q;      // de 0,40 pour une carte bâclée à 1,00 pour un trophée
 }
-const puissanceDe = k => plafondDe(k) * PALIERS[(k.palier || 1) - 1] * qualiteDe(k);
+const puissanceDe = k => plafondDe(k) * ETOILES[(k.etoiles || 1) - 1] * qualiteDe(k);
 
 /* Ce que l'album ajoute, famille par famille. Recalculé seulement quand les cartes équipées
    changent — c'est-à-dire à l'ascension et au chargement : baseValue l'appelle une fois par
@@ -3105,7 +3125,7 @@ function crediterJetons() {
    aperçus-là sont jetés si le joueur referme sans valider. */
 function capsuleBrute(c) {
   return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, tint: c.tint,
-           temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige, palier: 1 };
+           temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige, etoiles: 1 };
 }
 
 const nomCarte = k => form(k.line, k.age)[0];
