@@ -82,6 +82,37 @@ Les images générées arrivent avec quelques pixels quasi transparents à l'int
 à 8), résidus de compression. Ils percent la bête eux aussi et sont rebouchés avec la couleur
 des voisins.
 
+## Ramener une planche générée sur une grille
+
+`decouper.py` sort des PNG. `tools/pixel.js` sort des **grilles de caractères** — un
+caractère par pixel, les clés de `styles.js`, le format que `--apercu` imprime déjà. C'est le
+pont entre les deux pipelines : une fois la bête sur une grille, corriger une patte est une
+édition de trois caractères, et une animation devient possible.
+
+```bash
+node tools/pixel.js importer art/source-crabe.png crabe   # planche → art/grilles/crabe.txt
+node tools/pixel.js texte crabe --stade 5                 # la grille, à coller dans un chat
+node tools/pixel.js verifier crabe                        # le contrôle de charte
+node tools/pixel.js rendre crabe [style] [--png]          # grilles → art/crabe-N-nom.svg
+node tools/pixel.js planche crabe                         # art/apercu-crabe-grille.png
+node tools/pixel.js diff crabe --de 4 --a 5               # ce qui change d'un stade à l'autre
+node tools/pixel.js anim crabe --stade 5 --images 4       # la planche d'animation
+node tools/pixel.js formes crapaud                        # les formes géométriques → une grille
+```
+
+**Le contour d'origine est jeté, puis reposé par `P.contour()`.** Réduire une illustration
+anti-aliasée à six couleurs détruit le trait : le noir ne survit que dans les zones les plus
+sombres et le reste se fond dans le corps. Sur `crabe-2-crabe.png`, la grille sortait avec
+cent cellules de contour ouvert — la bête n'avait plus de trait du tout.
+
+**La couleur d'une cellule est le mode de son bloc, jamais la moyenne** : une moyenne
+fabrique des couleurs qui n'étaient nulle part sur la planche.
+
+`verifier` échoue sur six défauts : plus de couleurs que déclaré, une clé hors palette, un
+îlot détaché dans le fond, un contour ouvert, **une palette qui change d'un stade à l'autre**
+— la dérive de style, le défaut le plus fréquent des planches générées — et les cellules
+isolées. `anim` refuse une image qui bouge plus de cellules que le fichier n'en déclare.
+
 ## Ajouter un dessin
 
 1. Poser le fichier ici, par exemple `crapaud-tetard.png`.

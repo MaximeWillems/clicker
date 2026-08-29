@@ -1,0 +1,164 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  À LIRE AVANT DE DÉPENSER UN JETON                                           ║
+║  Les cinq stades en français, et la masse de chacun. Si l'un d'eux te déçoit  ║
+║  ici, il te décevra sur la planche : corrige la fiche, pas le résultat.       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  1 · Singe de pierre     Un petit singe accroupi, ramassé, sorti d'un œuf de
+                          pierre dont deux ou trois gros éclats restent autour.
+                          Nu : ni armure, ni bâton, ni coiffe. Le masque pâle aux
+                          yeux rouges est déjà là et déjà grand.
+                          MASSE : basse et compacte.
+
+  2 · Roi des singes      Debout, le poids sur une jambe, une fourrure jetée sur
+                          une épaule, un simple cercle d'or au front. Toujours pas
+                          d'armure ni de bâton. Un roi d'animaux, pas du ciel.
+                          MASSE : verticale et étroite.
+
+  3 · Sun Wukong          EN L'AIR. Il vient d'apprendre le saut du nuage : corps
+                          en diagonale, jambes repliées, un bras tendu devant, la
+                          queue qui traîne derrière, une petite volute de nuage
+                          sous les pieds. Pas d'armure, pas de bâton.
+                          MASSE : diagonale, en vol. Le seul sans appui.
+
+  4 · Sun Wukong          SOUS LA MONTAGNE, et il POUSSE. La montagne remplit le
+      sous la montagne    haut du cadre ; lui occupe la moitié basse, une épaule et
+                          les deux bras dehors, le corps clairement en effort, le
+                          masque haut et calme. L'armure apparaît ICI : une
+                          épaulière et le cimier se voient sous la pierre. Un sceau
+                          d'or plat sur la roche. Coincé, jamais enseveli.
+                          MASSE : un triangle, et lui en bas.
+
+  5 · Sun Wukong,         Debout sur un nuage large et plat, bâton PLANTÉ à la
+      l'égal du Ciel      verticale, armure et cimier complets, les deux plumes
+                          hautes. Immobile, en repos.
+                          MASSE : verticale, posée sur une base large.
+
+  CE QUI LES SÉPARE À 24 PIXELS
+  1 ramassé · 2 fin · 3 en vol · 4 triangle · 5 vertical sur socle.
+  Cinq masses franchement différentes, aucune collision. C'est le seul jury.
+
+────────────────────────────────────────────────────────────────────────────────
+
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 64x64 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+SIXTY-FOUR, NOT THIRTY-TWO, AND THIS IS NOT NEGOTIABLE. This creature has a FACE. At
+32 the outline alone eats a head: one pixel of outline on each side of a twelve-pixel
+skull leaves nothing inside, and the face comes out as one black smear. Draw at 64.
+
+FLAT CARTOON, NEVER AN ILLUSTRATION — read this before anything else:
+this is the SAME drawing technique as every other sheet in this game. Only the
+REGISTER changes — solemn instead of cute. The technique does not change at all.
+- flat blocks of color with one hard outline. Every color is ONE solid tone
+- NO shading, NO soft light, NO airbrush, NO glossy highlight, NO reflection
+- NO drawn fur, NO surface texture, NO engraved detail, NO fine linework
+- hard pixel edges, no anti-aliasing, no blur
+- never a painting, never concept art, never a realistic or photographic object
+
+STRICT: maximum 8 flat colors for the whole sheet including the outline.
+No texture, no dithering, no noise, no gradients. Simple geometric shapes.
+Suggested split, and it is tight on purpose:
+  outline / dark fur / mid fur / PALE FACE / red / gold / stone grey / one pale highlight
+
+THE FACE IS THE WHOLE PROBLEM, AND THE SOLUTION IS ALREADY IN THE MYTH.
+Sun Wukong wears the opera mask: a PALE face with a red marking around the eyes,
+against dark fur. Draw exactly that, and draw it LARGE.
+- the pale mask must be a big flat shape, never a few scattered pixels
+- the eyes are two dark marks ON the pale mask — light against dark, so they survive
+  when every dark tone in the sheet collapses to the same black
+- NEVER draw the face in three close dark tones. They will merge and you will have
+  drawn a black blob. This exact mistake killed the previous sheet in this project
+
+IDOL REGISTER — what the creature IS:
+- adult proportions from stage 2 onward, calm and settled
+- NO blush marks. NO wide smile. NO kawaii. This is NOT a mascot
+- eyes are NARROW, almond or slit-shaped, calm and aware — never huge round eyes
+- mouth closed and neutral
+- expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
+- the pose is ALIVE, never heraldic: the weight sits on one side, the body turns,
+  the head is set off the centre line. Never a flat symmetrical emblem, never a logo
+- ornament is INSIGNIA, not decoration: bands, plates, a cap, a circlet — drawn as a
+  FEW LARGE FLAT SHAPES, never fine engraving, never confetti
+- palette deep and rich, with gold used sparingly
+
+THIS PARAGRAPH OVERRIDES THE LINE ABOVE, FOR THIS CREATURE ONLY:
+every other idol in this game is already complete at stage 1 and never grows.
+SUN WUKONG DOES GROW, and it is the point. He is the only one of his rank born
+rather than revealed — out of a stone egg, which in a game called Éclosion is the
+reason he is here at all. Stage 1 IS a small creature. Stages 2 to 5 are a real life.
+
+NOTHING BEHIND HIM. NO BACKGROUND FIGURES OF ANY KIND.
+An earlier version of this brief asked for crowds of flat silhouettes behind him — soldiers,
+monkeys, ranks of Heaven. It was tried and it failed: they read as clutter at full size and
+as dirt at 24 pixels, and they stole the eye from the only thing that matters, which is him.
+Draw the creature and nothing else. The frame is empty around him.
+
+WHAT MAKES THE FIVE DIFFERENT IS THE SILHOUETTE, NEVER THE DECOR.
+Five creatures that differ only by their props look identical, whatever the drawing
+quality. This is the most expensive lesson in this project. Change the MASS and the
+POSTURE at every stage.
+
+Centered, full body, seen at a slight three-quarter angle — never flat-on.
+Depth comes from parts of the body passing IN FRONT of and BEHIND other parts,
+with a clean outline at every crossing. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
+never a blur, never a gradient, and it still counts toward the 8 colors.
+
+Last instruction, and it overrides every word above: 8 flat colors, hard outline,
+no shading, no texture. Between grandeur and flatness, choose FLATNESS.
+
+The 5 stages, in order:
+
+1. a SMALL monkey, just out of the stone. He is crouched low and compact, and the broken
+   stone egg is still around him — two or three large flat shards, clearly separate from
+   his body. Bare, no armour, no staff, no cap. The pale opera mask is ALREADY there and
+   already large: it is his identity from the first frame. Narrow eyes. Nothing behind him.
+
+2. STANDING, and the mass changes completely: upright, weight on one leg, a plain cape or
+   a fur wrap across one shoulder, a simple flat circlet. No armour yet, no staff. He is a
+   king of animals, not of heaven. Nothing behind him.
+
+3. AIRBORNE, and this is the ONLY stage with no support under him. He has just learned the
+   cloud somersault: the body is on a clear DIAGONAL, legs folded up, one arm extended
+   forward, the tail streaming out behind, and one small flat wisp of cloud under his feet —
+   a wisp, not a base. Still no armour, still no staff, still the plain circlet. The mask
+   stays calm: he is travelling, not straining.
+
+4. UNDER THE MOUNTAIN, AND HE IS PUSHING. The silhouette inverts and this is the only stage
+   where he is not upright. The mountain fills the TOP of the frame — one big flat mass with
+   two or three plane changes, no texture, no drawn rocks. He occupies the LOWER HALF and he
+   is unmistakably present: one shoulder and BOTH arms out from under the stone, the body
+   visibly straining upward, the pale mask high in the frame and perfectly calm. He is
+   trapped, never buried — if a viewer reads this as a rock with something under it, the
+   stage has failed. This is where the ARMOUR first appears: one flat shoulder plate and the
+   phoenix-feather cap show from beneath the mountain. One flat gold seal shape on the stone.
+
+5. AT REST, and it reads as the release of stage 4. Standing on a WIDE flat cloud drawn as
+   one simple shape, the staff planted VERTICALLY beside him, armour and cap complete, the
+   two long plumes sweeping HIGH. Weight settled, perfectly still. Nothing behind him — the
+   cloud alone carries the stage. No roar, no weapon raised, no threat.
+
+
+--- une fois la planche enregistrée dans art/source-wukong.png ---
+
+node tools/pixel.js importer art/source-wukong.png wukong --grille 64 --couleurs 8 --stades 5 --noms pierre,roi,nuage,montagne,egal-du-ciel
+node tools/pixel.js planche wukong
+
+--- juger sur art/apercu-wukong-grille.png, PUIS ---
+
+node tools/pixel.js verifier wukong
+node tools/pixel.js rendre wukong
+
+--- puis dans la table ART, en haut de game.js ---
+
+  wukong: {
+    1: 'wukong-1-pierre.svg',           // Singe de pierre
+    2: 'wukong-2-roi.svg',              // Roi des singes
+    3: 'wukong-3-nuage.svg',            // Sun Wukong
+    4: 'wukong-4-montagne.svg',         // Sun Wukong sous la montagne
+    5: 'wukong-5-egal-du-ciel.svg',     // Sun Wukong, l'égal du Ciel
+  },

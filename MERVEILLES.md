@@ -210,17 +210,16 @@ métamorphoses, vole les pêches d'immortalité, **raye son nom du registre des 
 l'armée entière du Ciel. Il gagne. Il faut le Bouddha en personne pour l'arrêter, sous une
 montagne, pour cinq cents ans.
 
-Aucun primate dans le bestiaire, et la Chine reste le plus gros trou de la carte : 27 lignées,
-zéro.
+Aucun primate dans le bestiaire, et la Chine en reste le plus gros trou.
 
 **Son exception, c'est de grandir pour de vrai.** Il est le seul du rang à avoir une enfance —
 et loin d'affaiblir la charte, c'est une déclaration : parmi cinq dieux qui sont finis d'avance,
 un seul naît, et c'est celui qui finira égal au Ciel.
 
-Il garde en plus le second arc, ce qui n'est permis qu'à une merveille : **ce qui se dresse en
-face.** Au premier âge, rien. Au deuxième, ses singes. Au troisième, les officiers célestes venus
-le chercher. Au quatrième, la montagne et le sceau. Au cinquième, les rangs du Ciel remplissent
-le cadre en petites silhouettes plates — et le singe est assis devant, du même calme.
+Il devait porter un second arc — *ce qui se dresse en face*, des rangs de silhouettes plates
+grandissant derrière lui. **Essayé et abandonné** : à pleine taille c'est de l'encombrement, en
+vignette c'est de la saleté, et ça vole l'œil à la seule chose qui compte. Sa fiche l'interdit
+maintenant en toutes lettres. Il n'a qu'un arc, et c'est lui-même.
 
 | Âge | Forme |
 |---|---|
@@ -235,9 +234,49 @@ Ciel » contient *grand*, qui est un rang de taille : la ligne afficherait « Le
 Ciel · taille normale », et le scénario `noms` de `tools/test.js` le rejetterait. « L'égal du
 Ciel » dit la même chose et passe.
 
-Variante pour le second arc : **les copies.** Il s'arrache des poils et chacun devient un autre
-lui-même. Ce qui grandirait alors est le nombre de Wukong dans la case — unique dans le
-bestiaire, rien d'autre ne se multiplie.
+#### Ce que chaque âge raconte
+
+| | | |
+|---|---|---|
+| 1 | Singe de pierre | il naît de rien, sans parents |
+| 2 | Roi des singes | il règne — sur des singes |
+| 3 | Sun Wukong | il reçoit un nom et apprend à voler |
+| 4 | Sous la montagne | il perd, et il attend cinq cents ans |
+| 5 | L'égal du Ciel | il est enfin ce qu'il prétendait être |
+
+**Le rocher n'est pas un rocher : c'est la main du Bouddha.** Wukong bat l'armée du Ciel au
+complet, et le Bouddha lui propose un pari — saute hors de ma main. Il bondit cinquante-quatre
+mille kilomètres, arrive devant cinq piliers au bout du monde, y écrit son nom pour prouver son
+passage, revient réclamer son dû. Le Bouddha ouvre la main : les cinq piliers étaient ses doigts.
+Il n'était jamais sorti de la paume. La main se referme, devient montagne, et un **sceau de
+papier portant un mantra** la tient fermée cinq cents ans.
+
+Le sceau d'or que la fiche demande sur la pierre est donc ce talisman. Ce n'est pas un ornement,
+c'est la serrure.
+
+#### Pourquoi le quatrième âge est celui-là
+
+Trois raisons, et la troisième est la vraie.
+
+**Le quatrième âge du jeu s'appelle « ancien ».** Sous la montagne est le seul moment de tout son
+mythe où du temps passe en bloc — tout le reste est de l'action. C'est l'épisode de la durée, et
+il n'a pas de second candidat.
+
+**Le cinquième âge n'existe que grâce au quatrième.** Sans la montagne, la légende est un singe
+en armure debout sur un nuage : joli, mais rien ne s'est passé. Avec elle, c'est la libération.
+Il vole le titre par orgueil, le paie cinq cents ans, et en ressort digne — le dernier âge n'est
+pas le moment où il se proclame, c'est celui où c'est devenu vrai.
+
+**Et c'est le seul dessin du bestiaire qui dise la même chose que la règle.** Le quatrième âge
+est le dernier péage : la bête se bloque et ne repart qu'en payant 600 000 × son multiplicateur.
+Le joueur reste devant ce sprite pendant qu'il hésite entre payer et vendre. Une bête coincée
+sous une pierre en train de pousser, affichée au moment exact où l'on décide de la libérer ou
+non — dans trente lignées, c'est la seule case où le dessin et la mécanique racontent la même
+histoire. **Le péage est la montagne**, et le joueur paie pour la soulever.
+
+D'où la seule ligne qui compte dans sa fiche : *« if a viewer reads this as a rock with something
+under it, the stage has failed »*. Enseveli, tout s'effondre — un rocher ne pousse pas, ne dure
+pas cinq cents ans et ne demande rien. **Coincé**, tout tient.
 
 ### Kitsune — les neuf queues
 

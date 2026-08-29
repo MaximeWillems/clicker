@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.4.0';
+const VERSION = 'beta 1.5.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1445,6 +1445,17 @@ const ART = {
     3: 'crabe-3-tourteau.png',
     4: 'crabe-4-crabe-recif.png',
     5: 'crabe-5-karkinos.png',
+  },
+  /* Première lignée en SVG, et la première passée par tools/pixel.js : la planche générée
+     est ramenée sur une grille de 64 en 8 couleurs, puis rendue. Le SVG sort en
+     `shape-rendering: crispEdges`, donc l'anti-aliasing y est impossible par construction —
+     c'est le seul chemin du projet qui produise du vrai pixel art. */
+  wukong: {
+    1: 'wukong-1-pierre.svg',
+    2: 'wukong-2-roi.svg',
+    3: 'wukong-3-nuage.svg',
+    4: 'wukong-4-montagne.svg',
+    5: 'wukong-5-egal-du-ciel.svg',
   },
 };
 

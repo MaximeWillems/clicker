@@ -40,6 +40,22 @@ const STYLES = {
                n:'#fffdf2', p:'#2a3a22', r:'#b06258', t:'#7a7160' },
   },
 
+  /* ── Le registre idole ────────────────────────────────────────────────────
+     Les quatre styles au-dessus habillent des mascottes. La charte en a un second, né
+     en 2.7.1 quand l'Ouroboros mignon a été rejeté : sombre, riche, un seul métal.
+     Il tourne en 64 parce qu'une gueule ouverte ne survit pas à 32 — le contour seul
+     la mange, vérifié sur la planche générée.
+
+     La palette n'est pas inventée : c'est celle de art/source-ouroboros.png, relevée
+     par « pixel.js importer ». Le vert ne sert qu'au monde du dernier âge. */
+  idole: {
+    nom: 'Idole',
+    dit: 'Bleu nuit, ventre crème, un seul or. Pour les mythiques et les merveilles.',
+    taille: 64, contour: 'plein',
+    palette: { o:'#000000', t:'#1f2943', v:'#1a4a5d', r:'#35606f', V:'#5b7e50',
+               c:'#e1aa4d', b:'#d1b687', n:'#eedab0', p:'#000000' },
+  },
+
   // ── Deux couleurs, gros pixels ───────────────────────────────────────────
   retro: {
     nom: 'Rétro 16',
