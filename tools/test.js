@@ -398,6 +398,72 @@ scenario('jetons — un palier de fortune tous les ×1000, à partir du premier 
   eq('un palier ne paie qu’une fois', s.asc.jetons, apres);
 });
 
+/* ────────────────────────── l'album, carte par carte ────────────────────────── */
+
+// une carte au sommet de ce que le jeu peut produire : c'est là que les bornes se testent
+const parfaite = (jeu, motif, id) => ({
+  id, line: 'ouroboros', age: 5, niv: 100, tint: jeu.TINTS.length - 1,
+  rank: jeu.RANKS.length - 1, prodige: true, palier: 1, motif, temper: 0,
+});
+function equiper(jeu, motif, n) {
+  jeu.state.album = []; jeu.state.slots = [];
+  for (let i = 1; i <= n; i++) { jeu.state.album.push(parfaite(jeu, motif, i)); jeu.state.slots.push(i); }
+  jeu.oublierAlbum();
+}
+
+scenario('album — chaque motif porte son effet, et chacun le sien', () => {
+  const jeu = neuf();
+  eq('un effet par motif', jeu.MOTIFS.length, Object.keys(jeu.MOTIF_BONUS).length);
+  const cles = new Set();
+  for (const m of jeu.MOTIFS) {
+    const b = jeu.MOTIF_BONUS[m];
+    ok('le motif « ' + m + ' » a un effet', !!b);
+    ok('« ' + m + ' » explique ce qu’il fait', !!(b && b.dit && b.dit.length > 20), b && b.dit);
+    ok('« ' + m + ' » ne double aucun autre effet', !cles.has(b.key), b.key);
+    cles.add(b.key);
+    // le sac de bonus doit connaître la clé, sinon l'effet se perd en silence
+    ok('bonusAlbum connaît « ' + b.key + ' »', b.key in jeu.bonusAlbum());
+  }
+});
+
+scenario('album — une carte parfaite donne exactement ce qu’elle annonce', () => {
+  const jeu = neuf(); jeu.state.tuto = false; jeu.state.pens = 3;
+  /* qualiteDe additionne 0,5 + 0,2 + 0,2 + 0,1, ce qui vaut 0,9999999999999999 : une carte
+     parfaite pèse 3,999…96 et non 4. Le plancher des enclos tombait donc d'un cran, et la
+     carte annonçait deux enclos pour un seul. */
+  equiper(jeu, jeu.MOTIFS.indexOf('perlé'), 1);
+  eq('l’effet annoncé', Math.round(jeu.bonusAlbum().place * 10) / 10, 2);
+  eq('les enclos réellement ouverts', jeu.pensTotal(), 5);
+  equiper(jeu, jeu.MOTIFS.indexOf('perlé'), 3);
+  eq('le plafond tient', jeu.pensTotal(), 3 + jeu.MOTIF_BONUS['perlé'].cap);
+  eq('et le prix du prochain enclos ne bouge pas', jeu.penCost(),
+     Math.round(jeu.PEN_BASE * Math.pow(jeu.SLOT_MULT, 2)));
+});
+
+scenario('album — l’ocellé clique à ta place, sans compter pour toi', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 4;
+  equiper(jeu, jeu.MOTIFS.indexOf('ocellé'), 1);
+  eq('une carte parfaite', Math.round(jeu.bonusAlbum().clicAuto * 100) / 100, 0.4);
+  equiper(jeu, jeu.MOTIFS.indexOf('ocellé'), 5);
+  eq('cinq cartes plafonnent', jeu.bonusAlbum().clicAuto, jeu.MOTIF_BONUS['ocellé'].cap);
+
+  const c = bete(jeu, 'crapaud', 1, 0);
+  s.stats.clics = 0;
+  const avant = c.p;
+  for (let i = 0; i < 100; i++) jeu.tickOcelle(0.1);      // dix secondes
+  ok('elle a fait avancer la bête', c.p > avant, c.p);
+  eq('sans rien mettre au compte du joueur', s.stats.clics, 0);
+  jeu.tapStage();
+  eq('alors qu’un vrai clic compte', s.stats.clics, 1);
+
+  // sans carte ocellée, rien ne bouge tout seul
+  equiper(jeu, jeu.MOTIFS.indexOf('uni'), 1);
+  const fige = c.p;
+  for (let i = 0; i < 100; i++) jeu.tickOcelle(0.1);
+  eq('sans la carte, aucun clic automatique', c.p, fige);
+});
+
 /* ────────────────────────── la sauvegarde en clair ────────────────────────── */
 
 scenario('sauvegarde — une copie se relit, et dit ce qu’elle contient', () => {

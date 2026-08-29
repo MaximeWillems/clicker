@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.19.0';
+const VERSION = 'alpha 2.20.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -273,7 +273,10 @@ const TEMPERS = [
 /* Le motif était purement descriptif jusqu'à l'album : il n'avait aucun effet, il servait
    seulement à reconnaître une bête entre mille. C'est justement ce qui en fait le bon
    support pour le bonus d'une carte — voir MOTIF_BONUS plus bas. */
-const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé'];
+/* Une bête stocke son motif PAR INDICE : les nouveaux s'ajoutent donc à la fin, comme les
+   teintes. En insérer un au milieu redistribuerait les effets de tout l'album déjà gagné. */
+const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé',
+                'ocellé', 'perlé'];
 
 /* Les rangs de taille qualifient une bête MÛRE qu'on n'a pas fait évoluer : « adulte »,
    puis « adulte grand », « adulte énorme »… Le seuil d'un rang est aussi son multiplicateur
@@ -359,15 +362,43 @@ const PALIERS = [1, 1.8, 3, 5];
 
    La conséquence est qu'un album se CONCENTRE. Trois cartes d'une même famille rendent trois
    fois plus que trois familles différentes : le joueur choisit un build, il ne ramasse pas. */
+/* CE QU'UNE CARTE FAIT, ET CE QUE ÇA VEUT DIRE. `quoi` tient sur la carte, `dit` explique au
+   survol — parce qu'un joueur qui lit « rente +140 % » n'apprend rien s'il ignore ce qu'est
+   une rente, et que c'était le cas de la moitié de cette table.
+
+   DEUX EFFETS NE SONT PAS DES POURCENTAGES, et c'est délibéré. Une carte qui rend une ferme
+   4 % plus rentable ne se sent pas au début du cycle suivant, qui est justement le moment où
+   l'ascension doit donner envie : on repart avec un œuf et zéro pièce, et +40 % sur une vente
+   à 40 pièces font seize pièces. Une règle, elle, se voit tout de suite — l'ocellé clique
+   avant qu'on ait posé le doigt, le perlé donne un enclos qu'on n'a pas payé.
+
+   Les deux comblent aussi les deux trous de la table : RIEN ne touchait au clic, qui est
+   pourtant le verbe du joueur, et rien ne touchait à la place, qui est la vraie limite de la
+   fin de partie. */
 const MOTIF_BONUS = {
-  'uni':       { key: 'valeur',  quoi: 'valeur de vente',       pas: 0.04, cap: 0.60, signe: 1 },
-  'tacheté':   { key: 'couvee',  quoi: 'vitesse de couvaison',  pas: 0.10, cap: 1.50, signe: 1 },
-  'moucheté':  { key: 'pousse',  quoi: 'vitesse de croissance', pas: 0.10, cap: 1.50, signe: 1 },
-  'rayé':      { key: 'gras',    quoi: 'engraissement',         pas: 0.10, cap: 1.50, signe: 1 },
-  'tigré':     { key: 'rente',   quoi: 'rente',                 pas: 0.14, cap: 2.00, signe: 1 },
-  'marbré':    { key: 'peage',   quoi: 'prix des évolutions',   pas: 0.03, cap: 0.40, signe: -1 },
-  'zébré':     { key: 'oeuf',    quoi: 'prix des œufs',         pas: 0.03, cap: 0.40, signe: -1 },
-  'constellé': { key: 'prodige', quoi: 'chance de prodige',     pas: 0.07, cap: 1.00, signe: 1 },
+  'uni':       { key: 'valeur',  quoi: 'prix de vente',         pas: 0.04, cap: 0.60, signe: 1,
+                 dit: 'Tes bêtes se vendent plus cher.' },
+  'tacheté':   { key: 'couvee',  quoi: 'vitesse de couvaison',  pas: 0.10, cap: 1.50, signe: 1,
+                 dit: 'Tes œufs éclosent plus vite.' },
+  'moucheté':  { key: 'pousse',  quoi: 'vitesse de croissance', pas: 0.10, cap: 1.50, signe: 1,
+                 dit: 'Tes bêtes montent de niveau plus vite.' },
+  'rayé':      { key: 'gras',    quoi: 'prise de taille',       pas: 0.10, cap: 1.50, signe: 1,
+                 dit: 'Une fois mûres, tes bêtes grossissent plus vite — et une grosse bête vaut plus cher.' },
+  'tigré':     { key: 'rente',   quoi: 'rente',                 pas: 0.14, cap: 2.00, signe: 1,
+                 dit: 'La rente, c’est ce qu’une bête adulte rapporte par seconde en restant simplement dans son enclos, même quand tu n’es pas là.' },
+  'marbré':    { key: 'peage',   quoi: 'prix des évolutions',   pas: 0.03, cap: 0.40, signe: -1,
+                 dit: 'Faire passer une bête à l’âge suivant coûte moins cher.' },
+  'zébré':     { key: 'oeuf',    quoi: 'prix des œufs',         pas: 0.03, cap: 0.40, signe: -1,
+                 dit: 'Les œufs de la boutique coûtent moins cher.' },
+  'constellé': { key: 'prodige', quoi: 'chance de chromatique', pas: 0.07, cap: 1.00, signe: 1,
+                 dit: 'Une bête chromatique naît une fois sur 8 192. Cette carte améliore ce tirage.' },
+
+  'ocellé':    { key: 'clicAuto', quoi: 'clics automatiques',   pas: 0.10, cap: 1.00, signe: 1,
+                 unite: ' clic / s', dec: 1,
+                 dit: 'Elle clique à ta place sur ce que tu regardes, tant que la page est ouverte. Elle ne clique pas pendant ton absence : ce qui dépend de ta présence ne se rattrape pas.' },
+  'perlé':     { key: 'place',    quoi: 'place',                pas: 0.50, cap: 3.00, signe: 1,
+                 unite: ' enclos', dec: 1,
+                 dit: 'Des enclos que tu n’as pas payés, et qui ne font pas monter le prix des suivants. Les fractions de plusieurs cartes s’additionnent : seul le total entier compte.' },
 };
 
 /* LES JETONS D'ASCENSION. Un jeton s'obtient en franchissant un palier de fortune, et
@@ -1215,7 +1246,8 @@ let bonusCache = null;
 const oublierAlbum = () => { bonusCache = null; };
 function bonusAlbum() {
   if (bonusCache) return bonusCache;
-  const b = { valeur: 0, couvee: 0, pousse: 0, gras: 0, rente: 0, peage: 0, oeuf: 0, prodige: 0 };
+  const b = { valeur: 0, couvee: 0, pousse: 0, gras: 0, rente: 0, peage: 0, oeuf: 0, prodige: 0,
+              clicAuto: 0, place: 0 };
   for (const id of state.slots || []) {
     const k = carteDe(id);
     if (!k) continue;
@@ -1319,7 +1351,15 @@ const evoCost   = c => EVOLVE[c.age - 1] === null ? null
    s'afficherait ailleurs qu'à l'endroit où il se paie finirait par mentir. */
 const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)));
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
-const penFull   = () => state.pen.length >= state.pens;
+/* Les enclos de l'album s'ajoutent au compte, JAMAIS au prix : `penCost` continue de se
+   fonder sur `state.pens`, ce qu'on a réellement acheté. Sinon une carte perlée rendrait le
+   prochain enclos plus cher, ce qui reviendrait à le faire payer deux fois. */
+/* L'epsilon n'est pas de la superstition. `qualiteDe` additionne 0,5 + 0,2 + 0,2 + 0,1, ce qui
+   vaut 0,9999999999999999 en virgule flottante : une carte perlée parfaite pèse donc
+   3,9999…96 au lieu de 4, son effet 1,9999…98 au lieu de 2, et le plancher tombait d'un cran.
+   La carte annonçait « +2,0 enclos » et n'en donnait qu'un. */
+const pensTotal = () => state.pens + Math.floor(bonusAlbum().place + 1e-9);
+const penFull   = () => state.pen.length >= pensTotal();
 
 const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incubators - 1));
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
@@ -1746,7 +1786,7 @@ function tapStage() {
     const dure = hatchTime(s.slot);
     if (s.slot.p >= dure) return;
     s.slot.p = Math.min(dure, s.slot.p + power);
-    state.stats.clics++;
+    if (!mainDeCarte) state.stats.clics++;
     flash(el, 'shake');
     floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
     blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
@@ -1762,7 +1802,7 @@ function tapStage() {
      qu'elle avale part alors dans l'embonpoint, et n'y sera pas perdu. */
   if (avantMur) c.over = (c.over || 0) + power;
   else c.p = Math.min(bandTo(c), c.p + power * growRate(c));
-  state.stats.clics++;
+  if (!mainDeCarte) state.stats.clics++;
   flash(el, 'shake');
   floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
@@ -2089,6 +2129,26 @@ function runAutomations(dt) {
    posé un doigt sur l'écran, et elle est heureuse parce que tu es là, pas parce que le temps
    passe. Le compte à rebours d'une frénésie déjà en cours, lui, tombe dans advance : il
    s'écoule pendant l'absence comme tout le reste. */
+/* L'AUTO-CLIC DE LA CARTE OCELLÉE. Appelé par la boucle seule, comme le bonheur : un clic
+   vaut « une seconde de ce que tes automates produisent », si bien qu'une nuit d'absence à un
+   clic par seconde injecterait vingt-huit mille fois ce débit d'un coup. Ce n'est pas un
+   automate de plus, c'est une main qui reste — et une main ne travaille pas quand on dort.
+
+   Le reste s'accumule entre deux tours : à un clic par seconde et dix tours par seconde, on
+   ne peut pas cliquer à chaque tour, et arrondir ferait rendre zéro ou dix fois trop. */
+let ocelleReste = 0, mainDeCarte = false;
+function tickOcelle(dt) {
+  const par = bonusAlbum().clicAuto;
+  if (!par) { ocelleReste = 0; return; }
+  ocelleReste += par * dt;
+  let garde = 0;
+  /* Le drapeau plutôt qu'un paramètre : `tapStage` est branché directement sur l'écouteur
+     de clic, qui lui passerait l'événement en premier argument — donc toujours vrai. */
+  mainDeCarte = true;
+  try { while (ocelleReste >= 1 && garde++ < 200) { ocelleReste--; tapStage(); } }
+  finally { mainDeCarte = false; }
+}
+
 function tickJoie(dt) {
   const s = current();
   if (!s || s.kind !== 'creature') return;
@@ -2124,6 +2184,7 @@ function loop() {
   advance(dt);
   runAutomations(dt);
   tickJoie(dt);
+  tickOcelle(dt);
   state.stats.temps += dt / state.speed;   // du temps vécu, pas du temps simulé
   if (state.coins > state.stats.fortune) state.stats.fortune = state.coins;
   hatchAll();          // hatchAll rafraîchit déjà l'affichage
@@ -2657,8 +2718,10 @@ const nomCarte = k => form(k.line, k.age)[0];
 // chasse pas : le motif vient donc en premier, et l'effet derrière.
 function effetCarte(k) {
   const m = motifBonus(k), v = Math.min(m.cap, m.pas * puissanceDe(k));
-  return MOTIFS[k.motif] + ' · ' + m.quoi + ' ' +
-         (m.signe < 0 ? '−' : '+') + Math.round(v * 100) + ' %';
+  // les deux effets qui ne sont pas des pourcentages s'annoncent dans leur propre unité
+  const montant = m.unite ? '+' + dec(v, m.dec || 1) + m.unite
+                          : (m.signe < 0 ? '−' : '+') + Math.round(v * 100) + ' %';
+  return MOTIFS[k.motif] + ' · ' + m.quoi + ' ' + montant;
 }
 
 function carteEl(k) {
@@ -2672,8 +2735,10 @@ function carteEl(k) {
   bete.style.filter = k.prodige ? PRODIGE_FILTER : (TINTS[k.tint] || TINTS[0]).filter;
   el.querySelector('.carte-nom').textContent = nomCarte(k);
   el.querySelector('.carte-eff').textContent = effetCarte(k);
+  /* L'INFOBULLE DIT CE QUE L'EFFET FAIT, en mots. « rente +140 % » n'apprend rien à qui
+     ignore ce qu'est une rente, et c'était le cas de la moitié de la table. */
   el.title = nomCarte(k) + ' — niveau ' + k.niv + ', ' + nomAge(k.age, k.rank) +
-             ' · puissance ' + dec(puissanceDe(k), 2);
+             ' · puissance ' + dec(puissanceDe(k), 2) + '\n\n' + motifBonus(k).dit;
   return el;
 }
 
@@ -3384,7 +3449,7 @@ function tickView() {
   }
 
   const stock = totalEggs();
-  setText($('compte-pen'), state.pen.length + ' / ' + state.pens);
+  setText($('compte-pen'), state.pen.length + ' / ' + pensTotal());
   setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
   // La réserve n'existe que si on a acheté des œufs d'avance : pas de ligne vide sinon.
   $('strip-meta').hidden = !stock;

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.19.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.20.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.19.0** | une page de statistiques, et des compteurs qui traversent l'ascension |
+| **2.20.0** | l'album gagne l'auto-clic et la place, et dit enfin ce que ses cartes font |
+| 2.19.0 | une page de statistiques, et des compteurs qui traversent l'ascension |
 | 2.18.0 | un achat de clic vaut une seconde entière, et l'âge enfant ne tombe plus en 45 clics |
 | 2.17.0 | la partie se télécharge, se copie et se restaure |
 | 2.16.1 | le banc d'essai entre dans le dépôt, la scène se découpe en trois |
@@ -104,7 +105,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Vingt scénarios, trois cent quatre-vingt-cinq vérifications. Passer un mot en argument ne joue que
+Vingt-trois scénarios, quatre cent trente-six vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -749,8 +750,9 @@ la **vitesse** de croissance, pas sur les bornes — les seuils de niveau sont l
 tout le monde, et la durée de référence des rangs de taille reste celle de l'âge, sinon un
 tempérament vif cumulerait deux bonus.
 
-**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé — n'a aucun
-effet. C'est de l'identité pure.
+**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé, ocellé, perlé —
+n'a aucun effet sur la bête vivante. C'est de l'identité pure, jusqu'au jour où elle devient
+une carte : là, il décide de tout.
 
 ### Une seule épithète, accolée au nom
 
@@ -1018,18 +1020,59 @@ inintéressante le jour où le sien l'est.
 
 | Motif | Ce que la carte touche | Par point | Plafond |
 |---|---|---|---|
-| uni | valeur de vente | +4 % | +60 % |
+| uni | prix de vente | +4 % | +60 % |
 | tacheté | vitesse de couvaison | +10 % | +150 % |
 | moucheté | vitesse de croissance | +10 % | +150 % |
-| rayé | engraissement | +10 % | +150 % |
+| rayé | prise de taille | +10 % | +150 % |
 | tigré | rente | +14 % | +200 % |
 | marbré | prix des évolutions | −3 % | −40 % |
 | zébré | prix des œufs | −3 % | −40 % |
-| constellé | chance de prodige | ×1,07 | ×2 |
+| constellé | chance de chromatique | ×1,07 | ×2 |
+| **ocellé** | **clics automatiques** | **+0,10 / s** | **1 clic / s** |
+| **perlé** | **enclos en plus** | **+0,50** | **+3 enclos** |
 
 **Deux familles baissent des prix au lieu d'augmenter des vitesses.** C'est ce qui empêche la
 deuxième partie d'être la première en accéléré : une ferme menée au zébré ne se joue pas comme
 une ferme menée au tacheté.
+
+#### Deux effets qui ne sont pas des pourcentages
+
+Les huit premiers motifs multiplient une vitesse ou un prix. C'est utile et c'est invisible :
+une carte qui rend la ferme 4 % plus rentable ne se sent pas au **début du cycle suivant**,
+qui est justement le moment où l'ascension doit donner envie. On repart d'un œuf et de zéro
+pièce, et +40 % sur une vente à 40 pièces font seize pièces.
+
+Une règle, elle, se voit tout de suite. Les deux motifs ajoutés en 2.20.0 comblent aussi les
+deux trous de la table : **rien ne touchait au clic**, qui est pourtant le verbe du joueur, et
+**rien ne touchait à la place**, qui est la vraie limite de la fin de partie.
+
+**L'ocellé clique à ta place**, sur ce que tu regardes, jusqu'à une fois par seconde. Il ne
+clique **pas pendant une absence** : un clic vaut « une seconde de ce que tes automates
+produisent », si bien qu'une nuit à un clic par seconde injecterait vingt-huit mille fois ce
+débit d'un coup. Ce n'est pas un automate de plus, c'est une main qui reste — et une main ne
+travaille pas quand on dort. Ses clics ne comptent pas non plus dans les « clics donnés » de
+la page de statistiques : le joueur ne les a pas donnés.
+
+**Le perlé donne des enclos** qu'on n'a pas payés, et qui **ne font pas monter le prix des
+suivants** — `penCost` reste calé sur ce qui a été acheté, sinon la carte ferait payer deux
+fois ce qu'elle donne. Les fractions de plusieurs cartes s'additionnent, et seul le total
+entier compte.
+
+Un piège s'y cachait, attrapé au banc : `qualiteDe` additionne 0,5 + 0,2 + 0,2 + 0,1, ce qui
+vaut `0.9999999999999999` en virgule flottante. Une carte perlée parfaite pesait donc 3,999…96
+au lieu de 4, son effet 1,999…98 au lieu de 2, et le plancher tombait d'un cran : **la carte
+annonçait deux enclos et n'en donnait qu'un.**
+
+#### Ce qu'une carte dit d'elle-même
+
+Une carte annonçait `tigré · rente +140 %`. Un joueur qui ignore ce qu'est une rente n'apprend
+rien de cette ligne, et c'était le cas de la moitié de la table — « engraissement », « valeur
+de vente », « chance de prodige » quand tout le reste du jeu dit *chromatique*.
+
+Chaque effet porte maintenant **une phrase en clair**, affichée au survol de la carte, en plus
+de son nom raccourci sur la ligne. La rente y est définie plutôt que nommée : *« ce qu'une bête
+adulte rapporte par seconde en restant simplement dans son enclos, même quand tu n'es pas
+là »*.
 
 Le constellé s'exprime **en multiplicateur de la base, jamais en points** : le prodige est à
 1 sur 8 192, soit 0,012 %, et un demi-point le multiplierait par plus de quarante. Le bonus

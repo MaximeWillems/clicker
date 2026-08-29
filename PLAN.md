@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.19.0 · sauvegarde v12 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.20.0 · sauvegarde v12 · 10 lignées illustrées sur 27
 
 ---
 
@@ -48,6 +48,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La sauvegarde** | 2.17 | la partie peut-elle survivre au navigateur ? | oui — fichier ou texte |
 | **Le clic** | 2.18 | un achat de clic se sent-il ? | oui — une seconde entière, et le premier âge ne s'évapore plus |
 | **Les compteurs** | 2.19 | le jeu se souvient-il de quelque chose ? | dix-sept nombres, cumulés sur le fichier |
+| **Les cartes** | 2.20 | l'ascension donne-t-elle envie ? | deux effets qui se voient dès la première seconde du cycle |
 
 ### Ce qui vient ensuite
 
@@ -125,7 +126,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 20 scénarios
+node tools/test.js              les 23 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -301,6 +302,11 @@ l'écran d'ascension, le sélecteur de lots, la boîte de dialogue, les trois co
 ligne du bonheur — tout ce CSS n'a été relu qu'à l'œil, dans le code. Le banc d'essai ne met
 rien en page et ne le dira jamais. Une demi-heure passée à ouvrir la page pour de vrai
 vaudrait plus que dix scénarios de plus.
+
+**L'ascension ne donnait pas envie**, et la 2.20.0 attaque la moitié qu'on savait nommer : ses
+récompenses étaient huit pourcentages, invisibles au moment précis où elles devraient
+convaincre — le début du cycle suivant, avec un œuf et zéro pièce. L'ocellé et le perlé se
+voient à la première seconde. Reste à jouer un cycle entier pour savoir si ça suffit.
 
 **Ce qu'on ne sait toujours pas de l'ascension**, c'est si elle donne envie de recommencer.
 Elle a été jouée plusieurs fois — c'est comme ça que cinq de ses défauts sont sortis, de
