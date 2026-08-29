@@ -673,11 +673,17 @@ scenario('collection — tout se replie, et le pliage tient au rechargement', ()
   jeu.refresh();
   const coll = noeuds.get('collection');
   const grilles = () => coll.children.filter(n => (n.className || '').includes('coll-grille'));
-  const raretes = [...new Set(jeu.LINES.map(l => l.rarity))];
+  const raretes = [...new Set(jeu.LINES.map(l => l.rarity))].filter(jeu.rareteConnue);
 
-  eq('une grille par rareté', grilles().length, raretes.length);
+  /* LE RANG SECRET N'A NI SECTION NI CASES tant qu'on n'en a pas vu une bête. Quatre
+     grilles et cent trente-cinq cases, pas cinq et cent quarante-cinq : dix cases grises
+     annonceraient le rang aussi sûrement qu'une phrase. */
+  eq('les merveilleuses sont invisibles', raretes.length, 4);
+  eq('une grille par rareté connue', grilles().length, raretes.length);
   eq('toutes les cases sont là', grilles().reduce((n, g) => n + g.children.length, 0),
-     jeu.LINES.length * jeu.AGES.length);
+     jeu.LINES.filter(l => jeu.rareteConnue(l.rarity)).length * jeu.AGES.length);
+  ok('et le compteur ne compte pas ce qu’il cache',
+     /\/ 135$/.test(noeuds.get('coll-meta').textContent), noeuds.get('coll-meta').textContent);
   ok('rien n’est replié au départ', grilles().every(g => !g.hidden));
 
   jeu.plier(raretes[0]);
@@ -1173,6 +1179,72 @@ scenario('merveilles — aucun œuf n’en donne, et rien ne la met en vente', (
   jeu.buyEgg('merveille');
   eq('et l’acheter ne fait rien', jeu.eggStock('merveille'), 0);
   eq('sans rien coûter', s.coins, 1e12);
+});
+
+scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true;
+  s.primes.marchand = true; s.primes.evolution = true; s.up.mangeoire = 6;
+  jeu.refresh();
+
+  /* CINQ FUITES, ET AUCUNE N'EST GRAVE PRISE SEULE. Ensemble elles disent tout : qu'il existe
+     un cinquième rang, qu'il compte deux lignées, qu'il ne s'achète pas, et qu'il passe par la
+     pension. Ce scénario les tient toutes les cinq fermées d'un coup. */
+  ok('le rang est marqué secret', jeu.RARITY.merveilleuse.secret === true);
+  eq('et il est inconnu au départ', jeu.rareteConnue('merveilleuse'), false);
+  eq('les quatre autres sont connues', jeu.raretesConnues().length, 4);
+
+  // 1 · la collection
+  const grilles = () => noeuds.get('collection').children
+    .filter(n => (n.className || '').includes('coll-grille'));
+  eq('pas de cinquième section', grilles().length, 4);
+  // 2 · le dénominateur
+  eq('et le compte s’arrête à 135', jeu.formesVisibles(), 135);
+  // 3 · le trophée
+  const t = jeu.TROPHEES.find(x => x.cle === 'merveille');
+  ok('le trophée existe', !!t);
+  ok('mais il ne se montre pas', !t.montre);
+  jeu.renderStats();                       // c’est lui qui peuple la liste des trophées
+  const nomsVus = noeuds.get('trophees').children
+    .map(n => n.children.map(x => x.textContent).join(' ')).join(' ');
+  ok('la liste des trophées est bien peuplée', nomsVus.length > 50, nomsVus.length);
+  ok('et rien n’y dit « merveille »', !/[Mm]erveille/.test(nomsVus), nomsVus);
+  // 4 · les statistiques
+  const rencontres = jeu.STATS.find(g => g[0] === 'Les rencontres')[1]();
+  ok('aucune ligne ne les compte', !rencontres.some(l => /erveille/.test(l[0])),
+     JSON.stringify(rencontres));
+  // 5 · les trois consignes du marchand
+  for (const quoi of ['vente', 'taille', 'evolution']) {
+    eq(quoi + ' caché', noeuds.get(quoi + '-merveilleuse').hidden, true);
+    eq(quoi + ' — son libellé aussi', noeuds.get(quoi + '-merveilleuse-l').hidden, true);
+  }
+
+  /* CE QUI RESTE VISIBLE, ET QUI SUFFIT : la phrase du nid promet quelque chose sans rien
+     nommer. C'est le seul indice du jeu, et il ne se voit qu'en composant le bon couple. */
+  const a = bete(jeu, 'chimere', 4, 20000), b = bete(jeu, 'sphinx', 4, 20000);
+  jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
+  ok('le nid promet', /peut-être autre chose/.test(ditPension(jeu)), ditPension(jeu));
+  ok('sans rien nommer', !/[Kk]itsune|erveille/.test(ditPension(jeu)), ditPension(jeu));
+
+  // et une lignée promise en réserve ne se nomme pas non plus
+  s.pension.dus = { merveille: ['wukong'] };
+  jeu.refresh();
+  ok('la réserve reste muette', !/[Ww]ukong/.test(noeuds.get('pension-intro').textContent),
+     noeuds.get('pension-intro').textContent);
+
+  /* À LA PREMIÈRE ÉCLOSION, TOUT S'OUVRE D'UN COUP. */
+  s.seen['kitsune:1'] = 1;
+  jeu.verifierTrophees();
+  jeu.refresh();
+  eq('le rang est connu', jeu.rareteConnue('merveilleuse'), true);
+  eq('la cinquième section apparaît', grilles().length, 5);
+  eq('le compte monte à 145', jeu.formesVisibles(), 145);
+  ok('le trophée est pris', !!s.trophees.merveille);
+  ok('les statistiques les comptent',
+     jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));
+  eq('et les consignes reviennent', noeuds.get('vente-merveilleuse').hidden, false);
+  ok('la réserve nomme enfin', /[Ww]ukong/.test(noeuds.get('pension-intro').textContent),
+     noeuds.get('pension-intro').textContent);
 });
 
 scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte', () => {

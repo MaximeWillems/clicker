@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.0.0';
+const VERSION = 'beta 1.0.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -127,8 +127,38 @@ const RARITY = {
      le plus haut du jeu se mettrait à peser sur l'équilibrage de tout le reste.
 
      Ce qu'elle a que les autres n'ont pas tient en une phrase : AUCUN ŒUF NE LA DONNE. */
-  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 15000, rank: 4, plafond: 4 },
+  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 15000, rank: 4, plafond: 4,
+                  secret: true },
 };
+
+/* ── UN RANG SECRET N'EXISTE PAS TANT QU'ON N'EN A PAS VU UN ───────────────────
+   La cinquième rareté fuitait par cinq endroits à la fois : une section de collection vide
+   avec dix cases grises, un dénominateur à 145 au lieu de 135, un trophée qui expliquait la
+   recette en toutes lettres, une ligne de statistiques « 0 / 2 », et trois menus du marchand
+   qui parlaient de bêtes que personne n'avait jamais vues.
+
+   Aucun de ces cinq n'est un spoiler grave pris seul. Ensemble ils disent tout : qu'il existe
+   un cinquième rang, qu'il compte deux lignées, qu'il ne s'achète pas, et qu'il passe par la
+   pension. Il ne restait à découvrir que le nom des bêtes.
+
+   ON NE CACHE PAS LA RÉCOMPENSE, ON CACHE LA QUESTION. Un jeu qui affiche dix cases vides
+   transforme une trouvaille en case à cocher : le joueur sait qu'il lui manque quelque chose
+   et cherche comment l'obtenir. Un jeu qui n'affiche rien laisse la première Kitsune arriver
+   sans prévenir — et c'est le seul moment que ce rang a à offrir.
+
+   Ce qui reste visible, et qui suffit : la phrase du nid dit « et peut-être autre chose » sur
+   un couple qui porte une recette. Elle ne nomme rien, ne compte rien, ne promet rien.
+
+   La règle est portée par la TABLE et non par un `if` sur « merveilleuse » : un rang secret
+   futur sera secret sans qu'on ait à retrouver les cinq endroits. */
+const rareteConnue = cle =>
+  !RARITY[cle].secret ||
+  LINES.some(l => l.rarity === cle && AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)]));
+
+const raretesConnues = () => Object.keys(RARITY).filter(rareteConnue);
+// les formes que la collection a le droit de compter : celles des rangs qu'on connaît
+const formesVisibles = () =>
+  LINES.filter(l => rareteConnue(l.rarity)).length * AGES.length;
 
 // du plus rare au plus commun — l'ordre du tirage, et il se refait seul si un rang s'ajoute
 const RARETES_HAUT_EN_BAS = Object.keys(RARITY).sort((a, b) => RARITY[b].rank - RARITY[a].rank);
@@ -3272,7 +3302,8 @@ function renderCollection() {
   /* La signature porte AUSSI le pliage : sans ça, replier un groupe ne redessinerait rien,
      puisque le nombre de formes rencontrées n'a pas bougé. */
   const sig = seenCount() + '|' + LINES.map(l => l.rarity)
-    .filter((r, i, t) => t.indexOf(r) === i).map(r => estPlie(r) ? 1 : 0).join('');
+    .filter((r, i, t) => t.indexOf(r) === i).map(r => estPlie(r) ? 1 : 0).join('') +
+    '|' + raretesConnues().join(',');
   if (sig === collSig) return;
   collSig = sig;
 
@@ -3280,6 +3311,8 @@ function renderCollection() {
   host.textContent = '';
   let rarity = null, grille = null;
   for (const line of LINES) {
+    // un rang secret n'a ni section ni cases tant qu'on n'en a pas rencontré une bête
+    if (!rareteConnue(line.rarity)) continue;
     // un intertitre à chaque changement de rareté : c'est la hiérarchie, rendue lisible
     if (line.rarity !== rarity) {
       rarity = line.rarity;
@@ -3315,7 +3348,7 @@ function renderCollection() {
       dedans.appendChild(cell);
     });
   }
-  $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * AGES.length);
+  $('coll-meta').textContent = seenCount() + ' / ' + formesVisibles();
 }
 
 /* ─────────────────────────────────────────────
@@ -4393,6 +4426,18 @@ function tickView() {
      notion n'a rien à faire à l'écran : la vente doit rester la chose la plus simple du jeu,
      surtout au début, et une condition de taille qu'on ne peut pas remplir engorge l'enclos. */
   $('cond-taille').hidden = !lvl('mangeoire');
+  /* LES CONSIGNES D'UN RANG SECRET SE CACHENT AVEC LUI. Trois menus qui disent « les
+     merveilleuses » à quelqu'un qui n'en a jamais vu, c'est le rang annoncé par la porte de
+     service. Ils reviennent seuls à la première éclosion, réglés sur « jamais » comme le
+     reste — et une consigne cachée ne gouverne rien, puisqu'elle vaut zéro. */
+  for (const cle of Object.keys(RARITY)) {
+    if (!RARITY[cle].secret) continue;
+    const cache = !rareteConnue(cle);
+    for (const quoi of ['vente', 'taille', 'evolution']) {
+      $(quoi + '-' + cle).hidden = cache;
+      $(quoi + '-' + cle + '-l').hidden = cache;
+    }
+  }
   $('cfg-marchand').hidden = !prime('marchand');
   $('cfg-evolution').hidden = !prime('evolution');
   $('cfg-acheteur').hidden = !prime('acheteur');
@@ -4732,6 +4777,12 @@ const TROPHEES = [
   { cle: 'vaisselle', glyphe: '🍽️', nom: 'La plonge',
     dit: 'Laver sa première assiette. Ça arrive à tout le monde, et à personne deux fois.',
     test: () => (state.stats.assiettes || 0) > 0 },
+  /* IL EST DANS LES SURPRISES, ET C'EST TOUT LE PROPOS. Annoncé, il disait la recette
+     entière — « aucun œuf n'en donne, il faut la pension et le bon couple » — à quelqu'un qui
+     n'avait aucune raison de savoir que la cinquième rareté existe. */
+  { cle: 'merveille', glyphe: '✨', nom: 'Une merveille',
+    dit: 'Faire naître une merveilleuse. Aucun œuf n’en donne — il faut la pension, et le bon couple.',
+    test: () => LINES.some(l => l.rarity === 'merveilleuse' && state.seen[l.key + ':1']) },
   { cle: 'chromatique', glyphe: '🌈', nom: 'Coup d’œil',
     dit: 'Voir naître un chromatique. Une chance sur huit mille cent quatre-vingt-douze.',
     test: () => state.stats.prodiges > 0 },
@@ -4744,9 +4795,6 @@ const TROPHEES = [
   { cle: 'complicite', glyphe: '💗', nom: 'Complicité',
     dit: 'Recevoir dix cadeaux d’une bête qu’on garde en scène.',
     test: () => (state.dons || 0) >= 10 },
-  { cle: 'merveille', glyphe: '✨', montre: true, nom: 'Une merveille',
-    dit: 'Faire naître une merveilleuse. Aucun œuf n’en donne — il faut la pension, et le bon couple.',
-    test: () => LINES.some(l => l.rarity === 'merveilleuse' && state.seen[l.key + ':1']) },
   { cle: 'couvee', glyphe: '🪺', montre: true, nom: 'Une première couvée',
     dit: 'Faire naître un œuf en pension. Il faut deux bêtes adultes, un enclos de libre, et du temps.',
     test: () => (state.stats.pension || 0) > 0 },
@@ -4822,10 +4870,11 @@ const STATS = [
   ]],
   ['Les rencontres', () => [
     ['Nés en pension', fmt(state.stats.pension || 0)],
-    ['Merveilles rencontrées', LINES.filter(l => l.rarity === 'merveilleuse' &&
-        state.seen[l.key + ':1']).length + ' / ' +
-        LINES.filter(l => l.rarity === 'merveilleuse').length],
-    ['Formes rencontrées', seenCount() + ' / ' + (LINES.length * AGES.length)],
+    // la ligne n'apparaît qu'une fois le rang connu : un « 0 / 2 » annonce ce qu'il compte
+    ...(rareteConnue('merveilleuse') ? [['Merveilles rencontrées',
+        LINES.filter(l => l.rarity === 'merveilleuse' && state.seen[l.key + ':1']).length +
+        ' / ' + LINES.filter(l => l.rarity === 'merveilleuse').length]] : []),
+    ['Formes rencontrées', seenCount() + ' / ' + formesVisibles()],
     ['Chromatiques', fmt(state.stats.prodiges)],
     ['Cadeaux reçus', fmt(state.dons || 0)],
   ]],
@@ -5037,8 +5086,13 @@ function renderPension() {
      dans la boutique, et la lignée promise n'existe que dans le code. */
   const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
   const nes = state.pension.nes || 0;
+  /* UNE LIGNÉE INCONNUE D'UN RANG SECRET NE SE NOMME PAS ICI. Lire « sun wukong » dans une
+     liste de réserve, c'est apprendre la nouvelle par une note de bas de page une heure et
+     demie avant l'éclosion, qui est le seul moment où elle valait quelque chose. */
+  const nommer = l => rareteConnue(LINE_BY_KEY[l].rarity)
+    ? LINE_BY_KEY[l].name.toLowerCase() : 'quelque chose que tu n’as jamais vu';
   setText($('pension-intro'), promis.length
-    ? 'En réserve : ' + promis.map(l => LINE_BY_KEY[l].name.toLowerCase()).join(', ') + '.'
+    ? 'En réserve : ' + promis.map(nommer).join(', ') + '.'
     : nes
     ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus. ' +
       nes + (nes > 1 ? ' œufs pondus' : ' œuf pondu') + ' depuis le début.'

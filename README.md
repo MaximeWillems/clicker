@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.0.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.0.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.0.0** | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
+| **beta 1.0.1** | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
+| beta 1.0.0 | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
 | alpha 3.1.0 | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
 | 3.0.0 | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
 | 2.32.0 | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
@@ -1525,16 +1526,53 @@ Et la durée s'ensuit : **deux pierres ne couvent pas.** Rien n'est élevé là-
 pierre qui finit par se fendre. C'est la plus courte attente du jeu, et c'est aussi ce qui rend
 le 0,1 % jouable — 29 jours au lieu de 115 si on l'avait laissée à quatre heures.
 
+#### Le rang n'existe pas tant qu'on n'en a pas vu une
+
+**Rien dans le jeu ne mentionne la cinquième rareté avant la première éclosion.** C'est une
+règle sur la table — `RARITY.merveilleuse.secret` — et non un `if` posé à cinq endroits : un
+rang secret futur le sera sans qu'on ait à les retrouver.
+
+Elle fuyait par cinq endroits à la fois, et aucun n'est grave pris seul :
+
+| Ce qui fuyait | Ce que ça disait |
+|---|---|
+| une section de collection vide | qu'il existe un cinquième rang, et qu'il compte dix cases |
+| le dénominateur `/ 145` | qu'il manque dix formes qu'on ne peut pas atteindre |
+| le trophée « Une merveille », annoncé | *« Aucun œuf n'en donne — il faut la pension, et le bon couple »* |
+| la ligne de statistiques `0 / 2` | qu'il y a exactement deux bêtes à trouver |
+| les trois consignes du marchand | « les merveilleuses », à qui n'en a jamais vu |
+
+Ensemble, ils disaient tout : le rang, son compte, son mode d'obtention. Il ne restait à
+découvrir que le nom des bêtes.
+
+**On ne cache pas la récompense, on cache la question.** Un jeu qui affiche dix cases vides
+transforme une trouvaille en case à cocher : le joueur sait qu'il lui manque quelque chose et
+cherche comment l'obtenir. Un jeu qui n'affiche rien laisse la première Kitsune arriver sans
+prévenir — et c'est le seul moment que ce rang a à offrir.
+
+Ce qui reste visible avant, et qui suffit : **la phrase du nid**, ci-dessous. Elle ne nomme
+rien, ne compte rien, ne promet rien. Et un œuf de merveille dans l'incubateur se nomme, lui —
+mais à ce moment-là la pension l'a déjà pondu, et le savoir une heure trente à l'avance fait
+partie de la récompense.
+
+À la première éclosion, **tout s'ouvre d'un coup** : la section apparaît avec ses deux lignées,
+le compteur passe à `/ 145`, le trophée tombe, la ligne de statistiques arrive et les trois
+consignes du marchand reviennent.
+
 #### Ce que la phrase dit, et ce qu'elle tait
 
 Sur un couple qui porte une recette, la ligne du panneau gagne un suffixe :
 
     Elles se ressemblent en tout · 1 h 00 m · un œuf de l'une ou de l'autre · et peut-être autre chose
 
-Elle ne nomme rien. Chercher les couples dans les menus est gratuit, les essayer coûte des
-jours : c'est la fouille qu'on récompense, pas la lecture d'un wiki. **Une fois la bête
-rencontrée**, la phrase la nomme et donne son pourcentage — le mystère a servi une fois, et le
-garder ensuite ne serait plus du mystère mais de la rétention.
+Elle ne nomme rien. Composer des couples au nid est gratuit, les essayer coûte des jours :
+c'est la fouille qu'on récompense, pas la lecture d'un wiki. **Une fois la bête rencontrée**, la
+phrase la nomme et donne son pourcentage — le mystère a servi une fois, et le garder ensuite ne
+serait plus du mystère mais de la rétention.
+
+La même règle vaut pour la réserve : un œuf de pension dont la lignée appartient à un rang
+inconnu s'annonce comme *« quelque chose que tu n'as jamais vu »*. Lire « sun wukong » dans une
+liste, ce serait apprendre la nouvelle par une note de bas de page.
 
 #### La seconde est plus facile que la première
 

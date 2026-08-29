@@ -74,6 +74,12 @@ Elle tient en deux faits, et il n'y en a pas d'autres :
 > Une merveille **ne s'achète pas** — aucun œuf ne la donne, seule une recette de pension.
 > Et **son cinquième âge bouge.**
 
+Un troisième s'y est ajouté à l'usage, et il porte sur ce que le joueur SAIT plutôt que sur ce
+qu'il obtient : **le rang n'existe pas tant qu'on n'en a pas vu une.** Ni section de
+collection, ni compteur, ni trophée annoncé, ni consigne de marchand. On ne cache pas la
+récompense, on cache la question — un jeu qui affiche dix cases vides transforme une trouvaille
+en case à cocher.
+
 Tout le reste est du métier, pas de la règle. Le registre idole n'est pas réservé aux merveilles :
 l'Ouroboros est un mythique et il l'applique déjà. Un mythique peut être aussi grandiose, aussi
 immobile, aussi bien raconté — ce qu'il ne peut pas être, c'est introuvable en boutique.

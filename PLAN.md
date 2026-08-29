@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.0.0 · sauvegarde v16 · 10 lignées illustrées sur 29
+    aujourd'hui : beta 1.0.1 · sauvegarde v16 · 10 lignées illustrées sur 29
 
 ---
 
@@ -62,6 +62,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La pension** | 3.0 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? | oui, et mesuré : jamais le centième de ce qu'elles rapporteraient |
 | **Les merveilleuses** | 3.1 | est-ce qu'une merveilleuse se raconte ? | deux écloses sur huit écrites — la réponse est dans le dessin, pas dans le code |
 | **Le nid et la pause** | beta 1.0 | confier une bête est-il un geste ? | oui — on l'attrape dans la bande et on la pose, et la ferme peut s'arrêter le temps de le faire |
+| **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
 
 ### La ligne d'arrivée de l'alpha
 
