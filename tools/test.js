@@ -1218,6 +1218,71 @@ scenario('merveilles — aucun œuf n’en donne, et rien ne la met en vente', (
   eq('sans rien coûter', s.coins, 1e12);
 });
 
+scenario('pension — les trois primes du bâtiment, et ce qu’elles ne touchent pas', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'crapaud', 'ouroboros');
+
+  /* LES TROIS N'EXISTENT PAS SANS LE BÂTIMENT : trois cases qui parlent d'un panneau qu'on
+     n'a pas encore encombrent la grille pour rien. */
+  const miennes = jeu.PRIMES.filter(p => p.cle.startsWith('pension-'));
+  eq('trois primes de pension', miennes.length, 3);
+  ok('toutes conditionnées au bâtiment', miennes.every(p => !!p.si));
+  s.primes = {};
+  ok('et invisibles sans lui', miennes.every(p => !p.si()));
+  s.primes.pension = true;
+  ok('visibles avec', miennes.every(p => p.si()));
+
+  /* LE NID TIÈDE raccourcit d'un tiers, RECETTES COMPRISES — c'est la seule chose du jeu qui
+     rende une merveille plus rapide, et elle le fait sans jamais la nommer. */
+  const avant = jeu.dureePension(a, b);
+  s.primes['pension-vite'] = true;
+  const apres = jeu.dureePension(a, b);
+  ok('la couvaison raccourcit', apres < avant, avant + ' → ' + apres);
+  eq('d’un tiers exactement', apres, Math.round(avant / 1.5));
+
+  const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
+  eq('la recette raccourcit aussi', jeu.dureePension(g1, g2),
+     Math.round(jeu.recetteDe(g1, g2).duree / 1.5));
+
+  /* MAIS PAS UN COUPLE DÉJÀ PARTI : sinon la prime devient un bouton « finis ma couvaison ». */
+  s.primes['pension-vite'] = false;
+  jeu.accoupler(a, b);
+  const fige = jeu.couples()[0].duree;
+  s.primes['pension-vite'] = true;
+  eq('la durée du couple en cours ne bouge pas', jeu.couples()[0].duree, fige);
+  s.primes['pension-vite'] = false;
+  s.pension.couples = [];
+
+  /* LE SANG double la chance du parent le plus rare, sans passer une fois sur deux. */
+  eq('sans lui', jeu.chancePension(1), 0.2);
+  s.primes['pension-sang'] = true;
+  eq('avec lui', jeu.chancePension(1), 0.4);
+  eq('et le plus petit écart reste à pile ou face', jeu.chancePension(0), 0.5);
+  ok('il se voit dans la lignée tirée', (() => {
+    let hauts = 0;
+    for (let i = 0; i < 4000; i++) if (jeu.ligneeDe(a, b) === 'ouroboros') hauts++;
+    return hauts / 4000 > 0.01;               // 2 % attendu, 1 % sans la prime
+  })());
+  s.primes['pension-sang'] = false;
+
+  /* LE SECOND NID pose une place, il ne la remplace pas. */
+  eq('une place au départ', jeu.placesPension(), 1);
+  s.primes['pension-place'] = true;
+  eq('deux avec le second nid', jeu.placesPension(), 2);
+  jeu.accoupler(a, b);
+  ok('le nid reste ouvert après le premier couple', jeu.nidOuvert());
+  const c = bete(jeu, 'cerf', 4, 20000), d = bete(jeu, 'chat', 4, 20000);
+  ok('et un second couple se forme', jeu.accoupler(c, d));
+  ok('le troisième, non', !jeu.nidOuvert());
+
+  /* AUCUNE NE TOUCHE AUX RECETTES : une prime qui ferait tomber les merveilles plus souvent
+     devrait le dire pour se vendre, et dirait donc qu'elles existent. */
+  for (const p of miennes) ok(p.nom + ' ne parle pas des merveilles', !/erveille/.test(p.dit));
+  s.primes['pension-sang'] = true; s.primes['pension-vite'] = true;
+  eq('et la chance d’une recette ne bouge pas', jeu.recetteDe(g1, g2).chance, 0.001);
+});
+
 scenario('pension — deux chimères donnent n’importe quoi, sauf une chimère', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.1.0 · sauvegarde v16 · 10 lignées illustrées sur 29
+    aujourd'hui : beta 1.2.0 · sauvegarde v16 · 10 lignées illustrées sur 29
 
 ---
 
@@ -118,7 +118,6 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur huit bêtes ? |
 | **L'animation du cinquième âge** — une planche par merveille | les dessins | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
-| **La seconde place de pension** — en prime, très cher | rien | est-ce qu'on choisit encore son couple, ou est-ce qu'on empile ? |
 
 **La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
 la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.1.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.2.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.1.0** | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
+| **beta 1.2.0** | trois primes pour la pension : un nid plus chaud, un sang plus fort, un second nid |
+| beta 1.1.0 | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
 | beta 1.0.2 | un nid sans place ne se laisse plus remplir |
 | beta 1.0.1 | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
 | beta 1.0.0 | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
@@ -1460,9 +1461,34 @@ Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour déc
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
 
-**Une place, une seule.** C'est ce qui donne du poids au choix du couple : avec deux places, on
-ne choisit plus, on empile. Une seconde place se vendra peut-être en prime, mais elle n'est pas
-une évidence.
+#### Trois primes, et une seule change vraiment le jeu
+
+| Prime | Prix | Ce qu'elle fait |
+|---|---|---|
+| **Nid tiède** | 3 M | les couvaisons vont moitié plus vite |
+| **Sang dominant** | 20 M | la lignée du parent le plus rare sort deux fois plus souvent, jamais plus d'une fois sur deux |
+| **Second nid** | 500 M | un couple de plus à la fois — la prime la plus chère du jeu |
+
+Les trois n'apparaissent qu'une fois **le bâtiment acheté** : trois cases qui parlent d'un
+panneau qu'on n'a pas encore encombrent la grille pour rien.
+
+**Le Nid tiède ne raccourcit pas un couple déjà parti.** La durée est écrite au moment où le
+couple se forme ; sans ça la prime deviendrait un bouton « finis ma couvaison », ce qui est
+une autre chose et une moins bonne.
+
+**Le Sang dominant plafonne à une fois sur deux.** Au-delà, le parent le moins rare cesserait
+d'être celui qui sort d'habitude — et c'est sur lui que repose le multiplicateur de durée.
+
+**Aucune ne touche aux recettes**, et c'est une contrainte du [secret](#le-rang-nexiste-pas-tant-quon-nen-a-pas-vu-une) :
+une prime qui ferait tomber les merveilles plus souvent devrait le dire pour se vendre, et
+dirait donc qu'elles existent. Le Nid tiède les sert quand même, par la bande — une couvaison
+plus courte, c'est plus de tirages dans le même temps. Kitsune passe de 34 à 23 jours de
+médiane, Wukong de 29 à 19 ; avec le second nid en plus, on peut faire tourner les deux routes
+à la fois.
+
+**Une place, une seule au départ.** C'est ce qui donne du poids au choix du couple : avec deux
+places, on ne choisit plus, on empile. Le Second nid la double, et il coûte un demi-milliard
+pour cette raison exacte — c'est la seule prime du jeu qui dispense de choisir.
 
 **Et le nid se ferme quand la place est prise.** Il acceptait les bêtes en toutes circonstances
 et ne refusait qu'au bouton : on composait tranquillement un couple, on lisait « la place est

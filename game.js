@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.1.0';
+const VERSION = 'beta 1.2.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -870,16 +870,25 @@ const PRIMES = [
     dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
   { cle: 'negoce-epique', prix: 2000000, glyphe: '🔮', nom: 'Négoce épique',
     dit: 'Les épiques se vendent un quart plus cher.' },
+  { cle: 'pension-vite', prix: 3000000,  glyphe: '🔥', nom: 'Nid tiède',
+    dit: 'Les couvaisons de la pension vont moitié plus vite. Ne raccourcit pas un couple déjà parti.',
+    si: () => prime('pension') },
   { cle: 'intendance2', prix: 5000000, glyphe: '📜', nom: 'Grande intendance',
     dit: 'Encore un quart de moins sur chaque évolution, par-dessus l’Intendance.' },
   { cle: 'couvoir',   prix: 12000000,  glyphe: '🏠', nom: 'Couvoir',
     dit: 'Trois incubateurs de plus, offerts.' },
+  { cle: 'pension-sang', prix: 20000000, glyphe: '🩸', nom: 'Sang dominant',
+    dit: 'À la pension, la lignée du parent le plus rare sort deux fois plus souvent. Jamais plus d’une fois sur deux.',
+    si: () => prime('pension') },
   { cle: 'paturage',  prix: 30000000,  glyphe: '🏞️', nom: 'Pâturage',
     dit: 'Trois enclos de plus, offerts.' },
   { cle: 'negoce-mythique', prix: 80000000, glyphe: '👑', nom: 'Négoce mythique',
     dit: 'Les mythiques se vendent un quart plus cher.' },
   { cle: 'main',      prix: 200000000, glyphe: '🖐️', nom: 'Main preste',
     dit: 'Chacun de tes clics compte double. Le plus cher, et le seul qui touche à ce que tu fais de tes mains.' },
+  { cle: 'pension-place', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
+    dit: 'Un couple de plus à la fois. C’est la prime la plus chère du jeu, et la seule qui te dispense de choisir.',
+    si: () => prime('pension') },
 ];
 // Le jeu n'en a pas besoin — il parcourt PRIMES — mais le banc d'essai désigne les primes
 // par leur clé, et une table de correspondance vaut mieux qu'un find() dans chaque scénario.
@@ -4378,6 +4387,10 @@ function tickView() {
   setText($('primes-meta'), prises + ' / ' + PRIMES.length);
   for (const p of PRIMES) {
     const r = refs.primes[p.cle], pris = prime(p.cle);
+    /* UNE PRIME PEUT ATTENDRE SON BÂTIMENT. « Second nid » n'a aucun sens avant la pension,
+       et trois cases qui parlent d'un panneau qu'on n'a pas encore encombrent la grille pour
+       rien. Une fois prise, elle reste visible quoi qu'il arrive. */
+    r.el.hidden = !pris && !!p.si && !p.si();
     r.el.classList.toggle('prise', pris);
     r.el.classList.toggle('prete', !pris && state.coins >= p.prix);
     r.el.disabled = pris || state.coins < p.prix;
@@ -4640,7 +4653,29 @@ function syncPanneaux() {
 }
 
 const couples    = () => (state.pension && state.pension.couples) || [];
-const placesPension = () => (state.pension && state.pension.places) || 0;
+// le second nid s'ajoute au compte de base : la prime ne remplace pas la place, elle en pose une
+const placesPension = () =>
+  ((state.pension && state.pension.places) || 0) + (prime('pension-place') ? 1 : 0);
+
+/* CE QUE LES PRIMES CHANGENT À LA PENSION.
+
+   La VITESSE s'applique à la durée au moment où le couple se forme, et pas après : un couple
+   déjà parti garde la sienne, écrite dans `duree`. Acheter le Nid tiède ne doit pas rattraper
+   une attente commencée — sinon la prime devient un bouton « finis ma couvaison », ce qui est
+   une autre chose, et une moins bonne.
+
+   Le SANG double la chance que la lignée du parent le plus rare l'emporte, sans jamais
+   dépasser une fois sur deux : au-delà, le parent le moins rare cesserait d'être celui qui
+   sort d'habitude, et c'est sur lui que repose le multiplicateur de durée.
+
+   NI L'UNE NI L'AUTRE NE TOUCHE AUX RECETTES. Une prime qui ferait tomber les merveilles plus
+   souvent devrait le dire pour se vendre, et dirait donc qu'elles existent. Le Nid tiède les
+   sert quand même, par la bande : une couvaison deux fois plus courte, c'est deux fois plus
+   de tirages dans le même temps. */
+const vitessePension = () => prime('pension-vite') ? 1.5 : 1;
+const chancePension = ecart =>
+  Math.min(0.5, PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)] *
+                (prime('pension-sang') ? 2 : 1));
 
 // Une bête parquée : elle est dans un couple, donc dans la pension.
 const enPension  = c => couples().some(k => k.a === c.id || k.b === c.id);
@@ -4664,11 +4699,11 @@ const rareteBasse = (a, b) =>
 // Ce que coûte l'attente. Bornée : au-delà du plafond, le couple est refusé plutôt que subi.
 function dureePension(a, b) {
   const rec = recetteDe(a, b);
-  if (rec) return rec.duree;
+  if (rec) return Math.round(rec.duree / vitessePension());
   const d = distanceDe(a, b);
   if (d === null) return null;
-  return (PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b))
-         * PENSION_MULT[rareteBasse(a, b)];
+  return Math.round((PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b))
+                    * PENSION_MULT[rareteBasse(a, b)] / vitessePension());
 }
 
 /* Pourquoi ce couple ne peut pas se former — une phrase, ou null s'il le peut. Rendre la
@@ -4716,8 +4751,7 @@ function ligneeDe(a, b) {
   if (couple2Jokers(a, b)) return ligneeAuHasard();
   const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
   const bas  = haut === a ? b : a;
-  const chance = PENSION_CHANCE[Math.min(ecartRarete(a, b), PENSION_CHANCE.length - 1)];
-  return (Math.random() < chance ? haut : bas).line;
+  return (Math.random() < chancePension(ecartRarete(a, b)) ? haut : bas).line;
 }
 
 // La sorte d'œuf que cette lignée demande, pour la réserve.
@@ -4833,7 +4867,7 @@ const TROPHEES = [
       return a && b && distanceDe(a, b) === 0;
     }) },
   { cle: 'emplettes', glyphe: '🧾', nom: 'Tout acheté',
-    dit: 'Prendre toutes les primes dans une même partie. Il y en a vingt et une.',
+    dit: 'Prendre toutes les primes dans une même partie, sans en oublier une seule.',
     test: () => PRIMES.every(p => prime(p.cle)) },
 
   // ── l'album, et ce qu'on en fait ──
@@ -5088,7 +5122,7 @@ function renderPension() {
   } else {
     const d = distanceDe(a, b), t = dureePension(a, b);
     const ecart = ecartRarete(a, b);
-    const chance = PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)];
+    const chance = chancePension(ecart);
     const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
     const bas = haut === a ? b : a;
     /* CE QUE LA PHRASE DIT D'UNE RECETTE, ET CE QU'ELLE TAIT. Tant qu'on n'a jamais vu la
