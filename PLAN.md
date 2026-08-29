@@ -296,9 +296,8 @@ exact du coût des créatures, et c'est l'argument principal en faveur de l'idé
 
 #### Ce qu'il faut décider avant d'écrire
 
-- **À quelle fréquence il tombe.** « Rare » reste à chiffrer : quelque part entre la teinte
-  (une bête sur deux en a une) et le chromatique (une sur 8 192). Le bon repère est sans doute
-  le motif — huit possibilités, tirées à l'éclosion.
+- **La fréquence est tranchée : 1 sur 800, et seulement dans les œufs de la boutique.** Le
+  qualificatif compte autant que le chiffre — voir plus bas.
 - **Ce que « un peu plus cher » veut dire.** L'échelle existe déjà : la teinte va de ×1,10 à
   ×1,20. Un fond dans cette fourchette s'intègre sans rien déranger ; au-delà il faudrait
   reprendre l'équilibrage des variantes en entier.
@@ -308,6 +307,40 @@ exact du coût des créatures, et c'est l'argument principal en faveur de l'idé
 - **L'hérédité.** Elle attend la pension, donc les quatre issues de l'hérédité des teintes.
   Le fond suivra la même règle, quelle qu'elle soit : c'est une raison de plus de ne pas
   écrire l'hérédité des teintes à la légère.
+
+#### Un sur huit cents, et seulement à la boutique
+
+**Le tirage se fait sur les œufs achetés, à 1 sur 800.** Les œufs qui viendront de la pension
+ne tirent pas : ils **héritent**. C'est la même frontière que pour les teintes, et elle donne
+sa place à chacune des deux voies — on achète pour tomber dessus, on élève pour en obtenir un
+précis.
+
+**Ce que 1/800 donne vraiment**, mesuré au banc sur le débit d'éclosions à différents moments
+de la partie :
+
+| Moment | Éclosions par heure | Un fond tous les |
+|---|---|---|
+| au tout début, au clic | 120 | 6 h 40 |
+| première demi-heure | 240 | 3 h 20 |
+| ère rare | 1 400 | 33 min |
+| ère épique | 5 800 | 8 min |
+| fin de partie | 19 000 | 3 min |
+| très fin de partie | 43 000 | 1 min |
+
+**Le chiffre est calé là où le joueur regarde encore ses bêtes.** Dans les premières heures —
+celles où l'on ouvre chaque œuf, où l'on lit chaque nom — un fond est un événement de session.
+C'est exactement ce qu'on veut d'une chose prestigieuse.
+
+**Il se dilue ensuite, et c'est la nature de tout tirage par œuf.** Le débit d'éclosions du
+jeu va de 120 à 43 000 par heure, un facteur trois cent soixante : aucune probabilité fixe ne
+peut rester rare aux deux bouts. Le chromatique a exactement le même défaut à 1 sur 8 192 — en
+fin de partie il tombe toutes les dix minutes. Ce n'est donc pas un problème des fonds, c'est
+la forme du système de variantes, et il faudra un jour se demander si la rareté doit se
+mesurer en œufs ou en temps.
+
+En attendant, la dilution est moins grave qu'elle n'en a l'air : en fin de partie tout part au
+marchand automatique sans qu'on le regarde, et les fonds qui comptent sont ceux des bêtes
+qu'on **garde**. La pension, elle, rendra le fond chassable au lieu d'attendu.
 
 #### Le piège de migration, le même que pour les teintes
 
