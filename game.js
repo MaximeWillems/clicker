@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.17.0';
+const VERSION = 'alpha 2.19.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -42,8 +42,16 @@ const VERSION = 'alpha 2.17.0';
 
    `fem` marque le genre du NOM D'ÂGE, pas celui de la bête : « légende » est féminin, donc
    son rang de taille s'accorde — une légende démesurée, un ancien démesuré. */
+/* L'ÂGE ENFANT DURAIT 45 SECONDES, soit trois clics par niveau. Un niveau qui tombe en trois
+   clics n'est pas un palier, c'est une case qu'on traverse : la première vie d'une bête se
+   bouclait avant qu'on ait eu le temps de la regarder, et le premier âge ne voulait rien dire.
+   Il est doublé — six clics par niveau, quatre-vingt-dix pour l'âge entier.
+
+   La suite ne bouge pas : à neuf clics par niveau l'adolescent tenait déjà debout, et l'âge
+   adulte en demande trente. Le coût économique du doublement est petit — l'enfant ne pèse
+   qu'un vingt-cinquième de la croissance d'une commune menée jusqu'à l'âge adulte. */
 const AGES = [
-  { nom: 'enfant',     niv: 15,  grow: 45,    value: 40 },
+  { nom: 'enfant',     niv: 15,  grow: 90,    value: 40 },
   { nom: 'adolescent', niv: 35,  grow: 180,   value: 500 },
   { nom: 'adulte',     niv: 65,  grow: 900,   value: 6000 },
   { nom: 'ancien',     niv: 85,  grow: 3600,  value: 80000 },
@@ -558,9 +566,14 @@ const grainBase = (base, mult) => base * (grainMult(mult) - 1) / (mult - 1);
    meilleur achat du jeu comme il se doit. Restent en 1,9 le clic et la couveuse, l'un marginal
    et l'autre borné, à qui cette pente ne coûte rien. */
 const UPGRADES = [
-  { key: 'clic', name: 'Force du clic', base: 60, mult: 1.6,
+  /* La seule amélioration à puissance qui ne se granule PAS. Un tiers de seconde ne se sent
+     pas : on achetait trois fois pour voir bouger un chiffre, et le premier achat du jeu —
+     celui qui doit apprendre qu'acheter change quelque chose — ne changeait presque rien.
+     Un achat, une seconde. Le prix suit : c'est le palier entier qu'on paie, donc le rapport
+     pièce/seconde est exactement celui d'avant. */
+  { key: 'clic', name: 'Force du clic', base: 30, mult: 1.6, grain: false,
     desc: 'Chaque clic fait gagner une seconde de plus — une seconde de ce que tes automates produisent, pas une seconde de vie brute.',
-    value: n => 1 + n / GRAIN, unit: ' s gagnées par clic' },
+    value: n => 1 + n, unit: ' s gagnées par clic' },
   { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9,
     desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Sur du commun l’incubateur est le meilleur achat ; sur du mythique, qui couve quarante-cinq minutes, c’est elle.',
     value: n => n / GRAIN, unit: '× la vitesse de couvaison' },
@@ -589,7 +602,7 @@ const UPGRADES = [
    puissance : ils ne se granulent pas. Tous les autres passent en tiers ici, et nulle part
    ailleurs — c'est le seul endroit du fichier qui connaisse GRAIN avec les tables. */
 for (const u of UPGRADES) {
-  if (u.mult === 1) continue;
+  if (u.mult === 1 || u.grain === false) continue;
   u.grain = true;
   u.base = grainBase(u.base, u.mult);
   u.mult = grainMult(u.mult);
@@ -852,7 +865,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 11;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 12;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -901,6 +914,20 @@ function freshState() {
     /* Le mode histoire. `tuto` l'allume, `vu` retient ce qui a déjà été dit ET ce qui a déjà
        été dévoilé — les deux se marquent une fois pour toutes, et rien ne revient en arrière.
        Ils traversent l'ascension : on ne réapprend pas le jeu au deuxième cycle. */
+    /* LES COMPTEURS SONT CUMULÉS SUR LA VIE DU FICHIER, PAS SUR LA PARTIE. C'est la seule
+       règle qui compte ici : l'ascension efface la ferme, les pièces et les améliorations,
+       et si elle effaçait aussi les compteurs, le seul endroit qui garde la mémoire du
+       joueur deviendrait le seul qui l'oublie. Ils voyagent donc avec la collection. */
+    stats: {
+      debut: Date.now(),   // la date de la toute première partie, jamais retouchée
+      temps: 0,            // secondes de boucle, absences comprises
+      clics: 0,            // clics qui ont réellement fait avancer quelque chose
+      eclos: 0, vendues: 0, evolutions: 0,
+      gagne: 0,            // toutes les pièces encaissées : ventes et rente
+      prodiges: 0,
+      fortune: 0,          // la plus grosse bourse jamais tenue
+      record: 0,           // la plus grosse vente
+    },
     frenesie: 0,        // secondes de clic double encore en réserve
     dons: 0,            // combien de cadeaux reçus en tout — sert aussi de test au tutoriel
     tuto: true,
@@ -976,7 +1003,11 @@ function load() {
   try {
     const s = JSON.parse(raw);
     const base = freshState();
-    const merged = Object.assign(base, s, { up: Object.assign(base.up, s.up || {}) });
+    const merged = Object.assign(base, s, {
+      up: Object.assign(base.up, s.up || {}),
+      // fusionné et non remplacé : un compteur ajouté après coup doit trouver son zéro
+      stats: Object.assign(base.stats, s.stats || {}),
+    });
     // les améliorations étaient des booléens avant de devenir des niveaux
     for (const k of Object.keys(merged.up)) {
       if (merged.up[k] === true) merged.up[k] = 1;
@@ -1082,6 +1113,13 @@ function load() {
              merged.coins >= JETON_PALIERS[selonBourse]) selonBourse++;
       merged.asc.paliers = Math.min(JETON_PALIERS.length, Math.max(converti, selonBourse));
     }
+    /* v11 → v12 : la force du clic quitte les tiers. Un joueur qui avait neuf achats avait
+       trois secondes ; sans conversion il en aurait neuf, soit trois fois sa puissance. On
+       divise donc par le grain, ce qui est exact et non pénalisant : le palier suivant coûte
+       précisément ce que les trois tiers suivants coûtaient. Le reste de la division est
+       perdu — au plus deux tiers de seconde, jamais entamés. */
+    if ((s.v || 0) < 12) merged.up.clic = Math.floor((merged.up.clic || 0) / GRAIN);
+
     merged.tuto = merged.tuto !== false;
     merged.vu = merged.vu || {};
     if ((s.v || 0) < 10) {
@@ -1291,7 +1329,10 @@ const lvl         = key => state.up[key] || 0;
    améliorations se montent en tiers, les deux ne sont plus le même nombre : tout ce qui
    CALCULE passe par force(), tout ce qui compte des achats reste sur lvl(). Confondre les
    deux ferait annoncer « éleveur ×9 » pour un ×3 réel. */
-const force       = key => (state.up[key] || 0) / GRAIN;
+// Combien de niveaux achetés font une unité de puissance : trois pour presque tout, un pour
+// la force du clic, qui est déclarée sans grain.
+const grainDe     = key => (UP_BY_KEY[key] && UP_BY_KEY[key].grain) ? GRAIN : 1;
+const force       = key => (state.up[key] || 0) / grainDe(key);
 const upCost      = u => Math.round(u.base * Math.pow(u.mult, lvl(u.key)));
 const upMaxed     = u => !!u.max && lvl(u.key) >= u.max;
 
@@ -1705,6 +1746,7 @@ function tapStage() {
     const dure = hatchTime(s.slot);
     if (s.slot.p >= dure) return;
     s.slot.p = Math.min(dure, s.slot.p + power);
+    state.stats.clics++;
     flash(el, 'shake');
     floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
     blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
@@ -1720,6 +1762,7 @@ function tapStage() {
      qu'elle avale part alors dans l'embonpoint, et n'y sera pas perdu. */
   if (avantMur) c.over = (c.over || 0) + power;
   else c.p = Math.min(bandTo(c), c.p + power * growRate(c));
+  state.stats.clics++;
   flash(el, 'shake');
   floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
@@ -1754,10 +1797,11 @@ function hatchAll() {
                            rollVariants());
     // un prodige est protégé d'office : on ne perd pas une bête sur huit mille
     // parce que le marchand l'a vendue avant qu'on l'ait vue
-    if (c.prodige) c.keep = true;
+    if (c.prodige) { c.keep = true; state.stats.prodiges++; }
     state.pen.push(c);
     state.incub[i] = null;
     markSeen(slot.line, 1);
+    state.stats.eclos++;
     lastKey = 'c:' + c.id;
     // on retient la plus rare de la fournée pour la mettre en avant
     const line = LINE_BY_KEY[slot.line];
@@ -1792,8 +1836,16 @@ function hatchAll() {
 // Vendre est possible à tout niveau — au prix du niveau. Aucune condition de taille ne s'y
 // ajoute jamais : c'est la porte de sortie quand un enclos bloque, elle doit rester simple.
 // Le marchand automatique, lui, n'achète que des bêtes mûres.
+// Un seul endroit pour compter une vente : elle part de deux fonctions, la main et le marchand.
+function compterVente(gain) {
+  state.stats.vendues++;
+  state.stats.gagne += gain;
+  if (gain > state.stats.record) state.stats.record = gain;
+}
+
 function sell(c) {
   const gain = sellValue(c);
+  compterVente(gain);
   // la case se relève AVANT le retrait : après, la bête n'est plus dans la bande
   const place = state.sel === 'c:' + c.id ? caseCourante() : -1;
   state.coins += gain;
@@ -1815,6 +1867,7 @@ function evolve(c) {
   if (state.coins < cost) return;
   state.coins -= cost;
   c.age++;
+  state.stats.evolutions++;
   markSeen(c.line, c.age);
   const pt = centerOf($('subject'));
   burst(pt.x, pt.y, c.age === AGES.length ? '✦' : '✧', 14);
@@ -1922,7 +1975,7 @@ function advance(dt) {
      le temps fait tout seul, et non parmi les automates. Elle tombe aussi pendant une
      absence — une bête qu'on garde travaille, présent ou pas. */
   const rente = renteTotale();
-  if (rente) state.coins += rente * dt;
+  if (rente) { state.coins += rente * dt; state.stats.gagne += rente * dt; }
   /* La frénésie s'écoule ICI et non dans tickJoie : advance tourne aussi pendant un
      rattrapage, si bien qu'une frénésie en cours au moment où l'on ferme la page a bien
      brûlé ses trente secondes quand on revient. Trente secondes de clic double ne doivent
@@ -1950,6 +2003,7 @@ function runAutomations(dt) {
       state.coins -= cost;
       bilanAuto.depense += cost;
       c.age++;
+      state.stats.evolutions++;
       bilanAuto.evolues++;
       markSeen(c.line, c.age);
     }
@@ -1984,6 +2038,7 @@ function runAutomations(dt) {
                 ? -1 : caseCourante();
     for (const c of ready) {
       const gain = sellValue(c);
+      compterVente(gain);
       state.coins += gain;
       bilanAuto.vendus++;
       bilanAuto.gagne += gain;
@@ -2069,6 +2124,8 @@ function loop() {
   advance(dt);
   runAutomations(dt);
   tickJoie(dt);
+  state.stats.temps += dt / state.speed;   // du temps vécu, pas du temps simulé
+  if (state.coins > state.stats.fortune) state.stats.fortune = state.coins;
   hatchAll();          // hatchAll rafraîchit déjà l'affichage
   renderTuto();        // les seuils se franchissent aussi entre deux redessins
 }
@@ -2862,6 +2919,8 @@ function ascensionner() {
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
+    // et les compteurs aussi : ils comptent une vie de fichier, pas une partie
+    stats: state.stats, dons: state.dons,
   });
   nextId = 1;
 
@@ -3527,6 +3586,62 @@ function refresh() {
 }
 
 /* ─────────────────────────────────────────────
+   Les statistiques
+   ───────────────────────────────────────────── */
+
+/* Un début : dix-sept nombres en quatre groupes. La table décide de tout — le rendu la
+   parcourt sans rien savoir — donc ajouter un compteur est une ligne ici et une seule.
+
+   Chaque valeur est une fonction, pas un nombre : l'écran se relit à chaque ouverture, et
+   rien n'est calculé tant qu'il est fermé. */
+const dateCourte = t => t ? new Date(t).toLocaleDateString('fr-FR',
+  { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+
+const STATS = [
+  ['Le temps', () => [
+    ['Première partie', dateCourte(state.stats.debut)],
+    ['Temps de jeu', fmtTime(state.stats.temps)],
+    ['Clics donnés', fmt(state.stats.clics)],
+  ]],
+  ['La ferme', () => [
+    ['Œufs éclos', fmt(state.stats.eclos)],
+    ['Bêtes vendues', fmt(state.stats.vendues)],
+    ['Évolutions payées', fmt(state.stats.evolutions)],
+    ['Pièces gagnées', fmt(state.stats.gagne)],
+  ]],
+  ['Les rencontres', () => [
+    ['Formes rencontrées', seenCount() + ' / ' + (LINES.length * AGES.length)],
+    ['Chromatiques', fmt(state.stats.prodiges)],
+    ['Cadeaux reçus', fmt(state.dons || 0)],
+  ]],
+  ['Les records', () => [
+    ['Plus grosse fortune', fmt(state.stats.fortune)],
+    ['Plus grosse vente', fmt(state.stats.record)],
+    ['Paliers de fortune franchis', (state.asc.paliers || 0) + ' / ' + JETON_PALIERS.length],
+    ['Ascensions', fmt(state.asc.n || 0)],
+  ]],
+];
+
+function renderStats() {
+  const hote = $('stats');
+  hote.textContent = '';
+  for (const [titre, lignes] of STATS) {
+    const h = document.createElement('h3');
+    h.className = 'stats-titre';
+    h.textContent = titre;
+    hote.appendChild(h);
+    for (const [nom, valeur] of lignes()) {
+      const l = document.createElement('div');
+      l.className = 'stats-ligne';
+      const g = document.createElement('span'); g.className = 'stats-nom'; g.textContent = nom;
+      const d = document.createElement('span'); d.className = 'stats-val'; d.textContent = valeur;
+      l.append(g, d);
+      hote.appendChild(l);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
    La sauvegarde, en clair
    ───────────────────────────────────────────── */
 
@@ -3731,6 +3846,13 @@ function bindTools() {
     $('sav-colle').value = '';
     jugerSav('');
   };
+  const ouvrirStats = v => { $('statistiques').hidden = !v; if (v) renderStats(); };
+  $('btn-stat').addEventListener('click', () => ouvrirStats(true));
+  $('stat-close').addEventListener('click', () => ouvrirStats(false));
+  $('statistiques').addEventListener('click', e => {
+    if (e.target === $('statistiques')) ouvrirStats(false);
+  });
+
   $('btn-sav').addEventListener('click', () => ouvrirSav(true));
   $('sav-close').addEventListener('click', () => ouvrirSav(false));
   $('sauvegarde').addEventListener('click', e => { if (e.target === $('sauvegarde')) ouvrirSav(false); });

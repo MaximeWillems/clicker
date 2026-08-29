@@ -33,6 +33,7 @@
     <button type="button" id="btn-tuto" class="tool" aria-pressed="true"
             title="Mode histoire — l'éteindre montre tout d'un coup, le rallumer rejoue les notes">📖</button>
     <button type="button" id="btn-sound" class="tool" title="Couper le son" aria-pressed="true">♪</button>
+    <button type="button" id="btn-stat" class="tool" title="Statistiques">📊</button>
     <button type="button" id="btn-sav" class="tool" title="Sauvegarder ou restaurer la partie">💾</button>
     <button type="button" id="btn-reset" class="tool tool-danger" title="Effacer la partie">⟲</button>
   </div>
@@ -294,6 +295,20 @@
     <div class="asc-foot">
       <button type="button" class="asc-go" id="asc-go">Ascensionner</button>
     </div>
+  </div>
+</div>
+
+<!-- LES STATISTIQUES. Le contenu se fabrique en JS depuis une table : ajouter un compteur
+     est une ligne, et la mise en page suit toute seule. -->
+<div id="statistiques" class="asc" hidden>
+  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="stat-title">
+    <div class="asc-head">
+      <h2 id="stat-title">Statistiques</h2>
+      <button type="button" class="asc-close" id="stat-close" title="Fermer">✕</button>
+    </div>
+    <p class="sav-dit">Ces compteurs comptent la vie de ce fichier, pas la partie en cours :
+      l’ascension efface la ferme, jamais la mémoire.</p>
+    <div class="stats" id="stats"></div>
   </div>
 </div>
 

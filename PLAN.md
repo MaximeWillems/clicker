@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.17.0 · sauvegarde v11 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.19.0 · sauvegarde v12 · 10 lignées illustrées sur 27
 
 ---
 
@@ -45,6 +45,9 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le confort de la ferme** | 2.14 | est-ce que l'achat par lots tient sa promesse ? | oui — la réserve se vide seule |
 | **Le vocabulaire** | 2.15 | est-ce qu'un nom peut contredire une colonne ? | plus maintenant, et c'est vérifié |
 | **Le bonheur** | 2.16 | est-ce qu'être présent paie ? | un peu, enfin |
+| **La sauvegarde** | 2.17 | la partie peut-elle survivre au navigateur ? | oui — fichier ou texte |
+| **Le clic** | 2.18 | un achat de clic se sent-il ? | oui — une seconde entière, et le premier âge ne s'évapore plus |
+| **Les compteurs** | 2.19 | le jeu se souvient-il de quelque chose ? | dix-sept nombres, cumulés sur le fichier |
 
 ### Ce qui vient ensuite
 
@@ -153,11 +156,12 @@ est ce qu'il faut avoir en tête pour choisir.
 
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
-| **Compteurs de partie** | le jeu ne garde presque aucune trace de ce qu'on a fait | une soirée |
 | **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
+
+**Les compteurs sont sortis du vivier** : livrés en 2.19.0, sous le bouton `📊`.
 
 **L'export / import est sorti du vivier** : livré en 2.17.0. La partie se télécharge en
 fichier ou se copie en texte, et se relit dans l'autre sens — avec un résumé de ce que le
@@ -171,9 +175,9 @@ pour cent du temps à ×2, mesuré : c'est un cadeau, pas une amélioration.
 
 ### Le diagnostic en trois phrases
 
-**Le jeu ne se souvient presque de rien.** `bilanAuto` est remis à zéro à chaque absence, et
-`state.dons` — le compte des cadeaux — est le seul total cumulé qui existe. Aucun record,
-aucun temps de jeu, alors qu'un idle est fait de ces nombres-là.
+**Le jeu se souvient, depuis la 2.19.0.** Dix-sept compteurs cumulés sur la vie du fichier,
+qui traversent l'ascension. Ce qui manque encore, ce sont des objectifs à leur accrocher : un
+nombre qui monte sans que rien ne l'attende reste un nombre.
 
 **Il n'a plus un seul objectif nommé.** Les douze jalons ont disparu en 2.2.0 quand les jetons
 ont pris leur place. Ils sont écrits, gradués, et inutilisés.

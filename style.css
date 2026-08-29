@@ -900,6 +900,28 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   background: var(--ground); border: 1px solid var(--rule-hi); border-radius: 4px;
   width: min(46rem, 100%); padding: 1.4rem 1.6rem 1.6rem;
 }
+/* ── L'écran de statistiques ──────────────────────────────────────────────────
+   Deux colonnes : le nom à gauche, le nombre à droite, aligné sur ses chiffres. Des filets
+   entre les lignes plutôt qu'un tableau — il n'y a rien à comparer d'une ligne à l'autre,
+   seulement à lire. */
+.stats { display: flex; flex-direction: column; }
+.stats-titre {
+  font-family: var(--f-ui); font-size: 0.62rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--faint); font-weight: 500;
+  margin: 1.1rem 0 0.3rem;
+}
+.stats-titre:first-child { margin-top: 0.2rem; }
+.stats-ligne {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+  padding: 0.4rem 0; border-top: 1px solid var(--rule);
+}
+.stats-nom { font-size: 0.85rem; color: var(--soft); }
+.stats-val {
+  font-family: var(--f-num); font-size: 0.9rem; color: var(--ink);
+  font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
+}
+
 /* ── L'écran de sauvegarde ─────────────────────────────────────────────────── */
 .sav-dit { color: var(--soft); font-size: 0.82rem; line-height: 1.5; margin: 0 0 0.6rem; }
 .sav-resume {

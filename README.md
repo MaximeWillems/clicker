@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.17.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.19.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 11` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 12` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,9 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.17.0** | la partie se télécharge, se copie et se restaure |
+| **2.19.0** | une page de statistiques, et des compteurs qui traversent l'ascension |
+| 2.18.0 | un achat de clic vaut une seconde entière, et l'âge enfant ne tombe plus en 45 clics |
+| 2.17.0 | la partie se télécharge, se copie et se restaure |
 | 2.16.1 | le banc d'essai entre dans le dépôt, la scène se découpe en trois |
 | 2.16.0 | le bonheur d'une bête, et la frénésie de clic qu'elle offre |
 | 2.15.0 | aucun nom de bête ne reprend un mot d'âge ni de taille |
@@ -307,8 +309,24 @@ les a toutes dépassées par construction.
 | `×1` | Cycle ×1 → ×10 → ×100. Accélère toute la simulation pour tester une progression complète en quelques minutes. **Test.** |
 | `📖` | Éteint le mode histoire — tout devient visible. Le rallumer rejoue les notes depuis le début. |
 | `♪` | Coupe le son. |
+| `📊` | Ce que le fichier a compté depuis le premier jour. |
 | `💾` | Garder une copie de la partie, ou en restaurer une. |
 | `⟲` | Efface la partie et repart de zéro. |
+
+### Les statistiques
+
+Dix-sept nombres en quatre groupes — le temps, la ferme, les rencontres, les records.
+
+**Ils comptent la vie du fichier, pas la partie.** C'est la seule règle qui compte : l'ascension
+efface la ferme, les pièces et les améliorations, et si elle effaçait aussi les compteurs, le
+seul endroit qui garde la mémoire du joueur deviendrait le seul qui l'oublie.
+
+La table `STATS` décide de tout et le rendu la parcourt sans rien savoir : ajouter un compteur
+est une ligne, et la mise en page suit. Chaque valeur est une fonction, pas un nombre — l'écran
+se relit à l'ouverture, et rien ne se calcule tant qu'il est fermé.
+
+Un compteur ajouté après coup trouve son zéro : les statistiques sont **fusionnées** à la
+relecture, pas remplacées, comme les améliorations.
 
 ### La sauvegarde en clair
 
@@ -358,7 +376,7 @@ et seul le paiement le débloque.
 
 | Âge | Niveaux | Croissance | Un niveau dure | Valeur par niveau | Péage | Vaut, mûre |
 |---|---|---|---|---|---|---|
-| enfant | 1 → **15** | 45 s | 3 s | +14 % | — | 40 |
+| enfant | 1 → **15** | 1 min 30 | 6 s | +14 % | — | 40 |
 | adolescent | 16 → **35** | 3 min | 9 s | +10,5 % | 200 | 500 |
 | adulte | 36 → **65** | 15 min | 30 s | +6,8 % | 3 000 | 6 000 |
 | ancien | 66 → **85** | 1 h | 3 min | +10,5 % | 40 000 | 80 000 |
@@ -368,10 +386,16 @@ et seul le paiement le débloque.
 la valeur se multiplient ensuite par la rareté (×25 rare, ×600 épique, ×15 000 mythique) ; les
 durées, elles, ne bougent jamais.
 
-**Le temps par niveau triple à chaque âge** — 3 s, 9 s, 30 s, 3 min, 24 min. C'est ce qui fait
-que l'enfance défile (trois clics par niveau au tout début, sans rien avoir acheté) pendant que
-la légende se mérite. Sans aucune automatisation : mûre à 45 s, adulte à 3 min 45, ancienne à
-18 min, légende à 1 h 19, niveau 100 à 7 h 19. C'est exactement le rythme d'avant, redécoupé.
+**Le temps par niveau monte à chaque âge** — 6 s, 9 s, 30 s, 3 min, 24 min. C'est ce qui fait
+que l'enfance défile pendant que la légende se mérite. Sans aucune automatisation : mûre à
+1 min 30, adulte à 4 min 30, ancienne à 19 min, légende à 1 h 20, niveau 100 à 7 h 20.
+
+**L'âge enfant a été doublé en 2.18.0.** Il durait 45 secondes, soit **trois clics par
+niveau** : un niveau qui tombe en trois clics n'est pas un palier, c'est une case qu'on
+traverse, et la première vie d'une bête se bouclait avant qu'on ait eu le temps de la
+regarder. À six clics par niveau, le premier âge veut dire quelque chose. Le coût économique
+est petit — l'enfance ne pèse qu'un dixième de la croissance d'une commune menée jusqu'à
+l'âge adulte.
 
 **Chaque niveau paie.** Le multiplicateur de valeur suit une courbe géométrique de 0,15 à 1,00
 à l'intérieur de chaque tranche : un niveau vaut donc entre +7 % et +14 % de prix de vente. Il
@@ -891,7 +915,7 @@ double presque, donc chaque niveau se mérite et les rendements décroissent d'e
 
 | Amélioration | Base | Mult. | Effet au niveau *n* |
 |---|---|---|---|
-| Force du clic | 60 | ×1,6 | *n*+1 secondes gagnées par clic, à la vitesse des automates |
+| Force du clic | 30 | ×1,6 | *n*+1 secondes gagnées par clic, à la vitesse des automates · **sans tiers** |
 | Couveuse automatique | 120 | ×1,9 | ×*n* sur la vitesse de couvaison |
 | Éleveur automatique | 500 | ×1,9 | ×*n* sur la vitesse de croissance |
 | Acheteur automatique | 2 000 | — | achat unique · il rachète, il ne place pas |
@@ -908,6 +932,21 @@ Aux anciens prix, le marchand tombait à 78 min.
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
+
+#### La force du clic ne se granule pas
+
+C'est la seule amélioration à puissance qui s'achète **par paliers entiers**. Un tiers de
+seconde ne se sent pas : on achetait trois fois pour voir bouger un chiffre, et le premier
+achat du jeu — celui qui doit apprendre qu'acheter change quelque chose — ne changeait presque
+rien. Un achat, une seconde.
+
+Le palier est passé de 60 à 30 pour que le rythme suive : le premier achat tombe alors sur la
+**deuxième bête**, et il divise par deux le travail de la suivante. À 60, il fallait en élever
+trois avant de pouvoir acheter quoi que ce soit.
+
+La migration v11 → v12 divise les achats déjà faits par trois. C'est exact et non pénalisant :
+le palier suivant coûte précisément ce que les trois tiers suivants coûtaient. Au plus deux
+tiers de seconde se perdent, jamais entamés.
 
 #### Acheter par lots
 
