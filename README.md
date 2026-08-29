@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.32.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 3.0.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -41,12 +41,15 @@ part, et l'album donne enfin une raison de garder ce qu'on a en double. Tant qu'
 une, le jeu est un très bon prototype de sa moitié d'avant.
 
 Les nombres continuent — la bêta ne remet rien à zéro. La pension est le **majeur** qui
-ouvrira la série 3.
+ouvre la série 3.
 
-Le squelette de la pension est [déjà posé, porte scellée](#la-pension--squelette-porte-fermée),
-et il n'ouvrira pas avant que les dix-sept lignées manquantes soient dessinées.
+**Deux des trois sont tombés.** La [fusion des cartes](#la-fusion-et-la-poussière) est là
+depuis la 2.32.0, la [pension](#la-pension) depuis la 3.0.0. Il ne manque que les
+merveilleuses — et c'est délibéré : la pension a été ouverte **sans** elles, ce qui en fait un
+outil de collection plutôt qu'une porte vers l'inaccessible. La cinquième rareté reste le
+dernier verrou de la bêta.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 14` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 15` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -55,7 +58,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.32.0** | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
+| **3.0.0** | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
+| 2.32.0 | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
 | 2.31.0 | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
 | 2.30.2 | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
 | 2.30.1 | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
@@ -205,10 +209,12 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - Collection des 135 formes découvertes
 - **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
   du bonus, et tout le reste repart de zéro
+- **La pension** : deux bêtes adultes confiées pondent un œuf dont la lignée est promise — et
+  cessent de rapporter le temps de la couvaison
 
-Absent volontairement : gènes, reproduction, fusion des cartes, lignées cachées, comptes,
-marché entre joueurs. Tout cela demande le serveur, ou attend la pension — dont **le squelette
-est posé mais la porte fermée** : voir plus bas.
+Absent volontairement : gènes, hérédité des teintes, lignées cachées, comptes, marché entre
+joueurs. Tout cela demande le serveur, ou attend une version de la pension qui n'existe pas
+encore : voir [plus bas](#la-pension).
 
 ### Le mode histoire
 
@@ -1300,59 +1306,161 @@ limite existe et se dit : un intendant poussé au-delà du niveau 26 offrait plu
 remise et retombe à 44 %. En échange, le même effet coûte désormais 5,25 M au lieu de quelques
 dizaines de millions.
 
-### La pension — squelette, porte fermée
+### La pension
 
-> **Rien de cette section n'est joignable, et rien ne peut l'ouvrir.** `PENSION_OUVERTE` est
-> une **constante** à `false` : aucune boucle n'appelle `avancePension`, aucun bouton ne mène à
-> `accoupler`, `state.pension.couples` reste vide pour tout le monde, et le banc d'essai lui-même
-> ne peut pas forcer la porte. Une partie jouée aujourd'hui se comporte exactement comme avant
-> la 2.23.0.
+**Deux bêtes désignées, une attente, un œuf dont on connaît déjà la lignée.** La porte s'ouvre
+à la 3.0.0, après être restée scellée deux versions le temps que la compatibilité et le drop
+soient écrits. C'était le bon ordre : ce sont eux qui décident si la pension est un jeu ou une
+imprimante — et la première table de durées en était une (voir plus bas).
 
-**Pourquoi poser des os avant d'avoir un corps.** Le socle de la pension est un *atome* de cinq
-pièces — des emplacements, deux parents, une durée, un œuf, et la rente suspendue. Les cinq
-tombent ensemble ou ne tombent pas : une pension sans rente suspendue est gratuite, une
-pension sans emplacements n'a pas de limite, une pension sans durée n'est pas une attente.
-Écrire la forme des cinq d'un coup, sans les brancher, permet de vérifier qu'elles s'emboîtent
-avant de payer le prix d'une version jouable.
+**Ce qu'elle donne, et ce qu'elle ne donne pas.** Sans les merveilleuses, la pension est un
+**outil de collection** et non une porte vers l'inaccessible : elle ne rend aucune lignée qu'on
+ne pourrait pas acheter. Ce qu'elle rend, c'est de **viser** — un œuf mythique acheté donne une
+mythique au hasard parmi trois, et la collection en demande cent trente-cinq formes. Croiser
+deux loups rend un loup ; c'est tout, et c'est déjà beaucoup quand il manque le dernier âge
+d'une seule lignée.
 
-| Pièce | Ce qui est posé |
+#### Les étiquettes — un milieu, un corps
+
+Deux axes et pas un seul, parce qu'un seul ne donne qu'un oui ou non. Deux donnent **trois
+crans** — tout en commun, la moitié, rien — et la règle reste devinable sans wiki : *deux bêtes
+se reproduisent d'autant plus vite qu'elles se ressemblent*. Loup et ours, c'est évident ;
+oiseau et crabe aussi.
+
+| | terre | eau | ciel |
+|---|---|---|---|
+| **nu** | crapaud, salamandre | méduse, kraken | — |
+| **écaille** | lézard, béhémoth, ouroboros | poisson, crocodile | serpent |
+| **carapace** | insecte, escargot, araignée | crabe, tortue | — |
+| **poil** | rongeur, loup, cerf, ours, chat, sphinx, cheval, chimère | — | chiroptère |
+| **plume** | — | — | oiseau, papillon |
+| **pierre** | golem | — | — |
+
+**La pierre ne se croise avec rien.** Le golem est seul de son corps, et c'est délibéré : une
+règle de stérilité doit se raconter en cinq mots, et « on ne croise pas la pierre » les tient.
+
+L'oiseau et le papillon partagent *plume* — un papillon n'a pas de plumes, mais il a des ailes
+couvertes d'écailles poudreuses, et le rapprochement dit quelque chose de vrai sur ce que ces
+deux-là ont en commun. Le mot compte moins que la paire qu'il autorise.
+
+Mesuré sur les **351 paires possibles** : 11 % à distance 0, 37 % à distance 1, 44 % à
+distance 2, 7 % stériles. La plupart des couples sont donc médiocres, et le dixième qui ne
+l'est pas se mérite — ce qui est exactement ce qu'on veut d'un système de sélection.
+
+#### Ce que coûte une couvaison
+
+    durée = (900 s + 600 s × distance + 1800 s × écart de rareté) × multiplicateur de richesse
+
+| écart de rareté | distance 0 | distance 1 | distance 2 |
+|---|---|---|---|
+| 0 | 15 min | 25 min | 35 min |
+| 1 | 45 min | 55 min | 1 h 05 |
+| 2 | 1 h 15 | 1 h 25 | 1 h 35 |
+| 3 | 1 h 45 | 1 h 55 | 2 h 05 |
+
+…le tout **multiplié par la rareté du parent le moins rare** : ×1 commune, ×4 rare, ×16
+épique, ×64 mythique. Au-delà de **24 h**, le couple est refusé plutôt que subi.
+
+**Pourquoi la richesse et non l'écart.** La première version ne pénalisait que l'écart, et la
+mesure a trouvé le trou tout de suite : deux mythiques de même corps sont à écart **nul**, donc
+à durée minimale, alors que ce qui en sort vaut 180 M. Quinze minutes pour un œuf mythique —
+**720 M l'heure, une imprimante à billets**. Le facteur manquant était la richesse. Le moins
+rare et non le plus, parce que c'est *sa* lignée qui sort dans 99 % des cas quand l'écart est
+grand. Deux mythiques passent ainsi de quinze minutes à **seize heures**.
+
+#### Ce qui sort du couple
+
+L'enfant prend la **lignée** d'un des deux parents — celle du moins rare presque toujours,
+celle du plus rare selon la chance de son écart :
+
+| écart de rareté | chance de prendre la lignée du plus rare |
 |---|---|
-| **emplacements** | `state.pension.places`, un couple à la fois au départ |
-| **deux parents** | `accoupler(a, b)` → `{ a, b, t, duree }`, deux identifiants de bêtes |
-| **une durée** | `dureePension` = 900 s + 600 s par cran de distance, plafonnée à 6 h |
-| **un œuf** | `avancePension` dépose une sorte dans la réserve au terme |
-| **rente suspendue** | `renteOf` rend 0 pour un parent — la seule ligne qui touche au jeu vivant |
+| 0 | 50 % — pile ou face |
+| 1 | 20 % |
+| 2 | 5 % |
+| 3 | 1 % |
 
-**Le sacrifice est dans les enclos.** Les parents ne quittent pas la ferme : ils gardent leur
-case, cessent de rapporter, et n'avancent plus. Parquer deux bêtes doit se sentir, et ça ne se
-sent que si ça coûte la seule chose qui manque vraiment en fin de partie — la place.
+À égalité c'est un tirage à pile ou face ; au-delà, ça devient une loterie et non un robinet.
+Un pour cent sur trois crans : croiser une commune avec une mythique reste un pari, pas une
+stratégie.
 
-**Pourquoi la porte est scellée et non seulement fermée.** Le drapeau a été `let` le temps
-d'une version, pour qu'un scénario puisse faire tourner le cycle entier. C'était une porte de
-trop : la pension ne veut rien dire tant que le bestiaire n'est pas fini — la compatibilité
-demande des étiquettes sur des lignées qui n'existent pas toutes, et l'hérédité vise une
-cinquième rareté qui n'existe pas du tout. **Un cycle qu'on peut faire tourner est un cycle
-qu'on finit par croire réglé**, et on bâtit dessus.
+Il ne prend **rien d'autre** : teinte, tempérament et motif se tirent comme pour n'importe quel
+œuf. C'est l'hérédité, et elle aura sa propre version.
 
-**Ce qui reste vérifié l'est sans rien ouvrir.** Deux scénarios du banc : l'un prouve que la
-porte tient — deux cents tours de boucle, aucun couple, aucune rente suspendue, et forcer le
-drapeau ne change rien puisque c'est une constante ; l'autre exerce les **trois fonctions de
-calcul**, qui ne consultent pas le drapeau : la distance entre deux lignées, la durée qui en
-découle, et la sorte d'œuf qui sortirait. C'est la forme du socle, vérifiée sans le faire
-tourner.
+#### La lignée promise
 
-**Ce qui manque encore, et qui ne sera pas deviné ici :**
+Un œuf de pension entre dans la **réserve ordinaire** — il profite ainsi du placement
+automatique, du plafond, de l'incubateur et de tout le reste sans qu'aucun de ces mécanismes
+ait à le connaître. Ce qu'il emporte en plus, c'est sa lignée, gardée dans une file par sorte
+(`state.pension.dus`) : on la sert avant de tirer au hasard.
 
-- **La compatibilité.** `distanceDe` est un bouchon calé sur ce que le jeu sait déjà dire — la
-  lignée et la rareté. Le vrai système passera par des *étiquettes* posées sur les lignées
-  (aquatique, ailé, minéral…), avec des paires stériles et une durée qui monte avec l'écart.
-  Rien de tout ça n'existe, et l'inventer maintenant figerait le bestiaire avant d'avoir joué.
-- **L'hérédité.** `oeufDe` rend la sorte la plus modeste des deux parents, le comportement le
-  plus prudent qu'on puisse écrire. Les quatre issues, les fusions de teintes et les teintes
-  exclusives viendront avec leur propre version.
-- **Le plafond de la réserve d'œufs.** Il doit tomber **avant** que la pension serve, jamais
-  après : c'est le seul frein du hors-ligne, et une partie qui tourne déjà sans lui rentrerait
-  sur cinquante œufs le jour où on l'ajoute. Tant que la porte est fermée, rien ne presse.
+**Sans cette file, la pension ne viserait rien du tout** — deux loups pondraient un « œuf
+rare », et l'œuf rare rendrait un chat. C'est la seule ligne qui fait la différence entre un
+système de sélection et une machine à œufs gratuits. Le panneau dit d'ailleurs ce qui attend :
+*« En réserve : loup. »*
+
+#### Le sacrifice est dans les enclos
+
+Les parents ne quittent pas la ferme : ils gardent leur case et **cessent de rapporter**. Ils
+n'avancent plus non plus — ni au clic (qui répond *« elle couve »* plutôt que rien), ni à
+l'éleveur, ni à la mangeoire ; l'évolution automatique les saute et le marchand ne les voit
+pas. Parquer deux bêtes doit se sentir, et ça ne se sent que si ça coûte la seule chose qui
+manque vraiment en fin de partie : **la place**.
+
+Le prix est écrasant, et c'est voulu. Mesuré :
+
+| couple | durée | valeur de l'œuf, par heure | rente perdue, par heure |
+|---|---|---|---|
+| crapaud × lézard | 25 min | 43 | ~2 M par bête |
+| loup × ours | 1 h | 300 k | ~38 M par bête |
+| cerf × chimère | 5 h | 1,9 M | ~1 Md par bête |
+| ouroboros × béhémoth | 16 h | 11,3 M | ~27 Md par bête |
+
+**La pension ne sera jamais une stratégie d'argent** — à aucune rareté, elle ne rend le
+centième de ce que les deux mêmes bêtes rapporteraient en restant simplement là. C'est ce qui
+permet de l'ouvrir sans toucher à l'économie : elle n'a qu'un usage, et c'est la collection.
+
+#### Le plafond de la réserve
+
+**Cinquante œufs par sorte.** Le plan le réclamait *avant* la pension et jamais après : c'est
+le seul frein du hors-ligne, et une partie qui tournerait déjà sans lui rentrerait sur des
+centaines d'œufs le jour où on l'ajouterait. Il borne l'achat par lots comme la ponte — et un
+couple dont la sorte est pleine **garde son œuf et attend**. Le jeter punirait une absence, et
+c'est précisément ce que le plafond doit éviter de faire.
+
+#### L'écran
+
+Deux menus déroulants plutôt qu'un glisser-déposer : on désigne des bêtes qui sont dans la
+bande, pas des cartes qu'on manipule, et un menu dit le nom complet — ce dont on a besoin
+quand vingt bêtes se ressemblent.
+
+**La phrase sous les menus est le cœur du panneau.** Elle dit la distance, la durée et ce qui
+peut sortir :
+
+    Elles se ressemblent en tout · 1 h 00 m · un œuf de l'une ou de l'autre, à pile ou face
+    Elles ont une chose en commun · 5 h 40 m · 95 % loup, 5 % ouroboros
+    On ne croise pas la pierre.
+
+Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour découvrir la règle.
+Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
+première chose qu'un joueur ne comprend pas.
+
+**Le panneau n'existe pas avant le second enclos.** Avec une seule case on ne peut pas tenir
+deux bêtes, donc pas former de couple : montrer la pension à ce moment-là, c'est montrer un
+écran dont chaque bouton refuse. Il apparaît à l'achat du second enclos, exactement l'instant
+où il devient jouable.
+
+**Une place, une seule.** C'est ce qui donne du poids au choix du couple : avec deux places, on
+ne choisit plus, on empile. Une seconde place se vendra peut-être en prime, mais elle n'est pas
+une évidence.
+
+#### Ce qui reste à écrire
+
+- **L'hérédité.** Teintes, tempérament et motif se tirent encore au hasard. Les fusions de
+  teintes et les teintes exclusives viendront avec leur propre version.
+- **Les merveilleuses.** La cinquième rareté devait être le prix unique de la pension. On a
+  ouvert sans elle, et il faut le dire à voix haute : c'est ce qui manque pour que la pension
+  ouvre sur autre chose que ce que la boutique vend déjà.
 
 ### Tout se replie
 

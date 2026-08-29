@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 2.32.0';
+const VERSION = 'alpha 3.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -577,57 +577,98 @@ const plongeOuverte = () => enPlonge() && (!state.tuto || !!(state.vu && state.v
 const assiettesRestantes = () =>
   Math.max(0, Math.ceil((oeufPlancher() - state.coins) / ASSIETTE));
 
-/* ── LA PENSION — SQUELETTE, PORTE FERMÉE ──────────────────────────────────────
-   ┌────────────────────────────────────────────────────────────────────────────┐
-   │ RIEN DE CE QUI SUIT N'EST JOIGNABLE. `PENSION_OUVERTE` est à false, aucune  │
-   │ boucle n'appelle `avancePension`, aucun bouton ne mène à `accoupler`, et    │
-   │ `state.pension.couples` reste vide pour tout le monde. Une partie jouée     │
-   │ aujourd'hui se comporte exactement comme avant.                             │
-   └────────────────────────────────────────────────────────────────────────────┘
+/* ── LA PENSION ────────────────────────────────────────────────────────────────
+   Deux bêtes désignées, une attente, un œuf dont on connaît déjà la lignée.
 
-   Pourquoi poser des os avant d'avoir un corps : le socle de la pension est un ATOME de cinq
-   pièces — des emplacements, deux parents, une durée, un œuf, et la rente suspendue. Les cinq
-   tombent ensemble ou ne tombent pas, parce que retirer n'importe laquelle laisse un jeu
-   incohérent : une pension sans rente suspendue est gratuite, une pension sans emplacements
-   n'a pas de limite, une pension sans durée n'est pas une attente. Écrire la forme des cinq
-   d'un coup, sans les brancher, permet de vérifier qu'elles s'emboîtent avant de payer le
-   prix d'une version jouable.
+   La porte est ouverte depuis la 3.0.0. Elle est restée scellée deux versions, le temps que
+   la compatibilité et le drop soient écrits — et c'était le bon ordre : ce sont eux qui
+   décident si la pension est un jeu ou une imprimante. La première table de durées en donnait
+   une, et la mesure l'a trouvée avant le joueur (voir PENSION_MULT plus bas).
 
-   CE QUI MANQUE ENCORE, ET QUI NE SERA PAS DEVINÉ ICI :
+   CE QU'ELLE DONNE, ET CE QU'ELLE NE DONNE PAS. Sans les merveilleuses, la pension est un
+   OUTIL DE COLLECTION et non une porte vers l'inaccessible : elle ne rend aucune lignée
+   qu'on ne pourrait pas acheter. Ce qu'elle rend, c'est de VISER — un œuf mythique acheté
+   donne une mythique au hasard parmi trois, et la collection en demande cent trente-cinq
+   formes. Croiser deux loups rend un loup ; c'est tout, et c'est déjà beaucoup quand il
+   manque le dernier âge d'une seule lignée.
 
-   • LA COMPATIBILITÉ. `distanceDe` est un bouchon calé sur ce que le jeu sait déjà dire — la
-     lignée et la rareté. Le vrai système passera par des ÉTIQUETTES posées sur les lignées
-     (aquatique, ailé, minéral…), avec des paires stériles et une durée qui monte avec
-     l'écart. Rien de tout ça n'existe, et l'inventer maintenant reviendrait à figer le
-     bestiaire avant d'avoir joué.
-   • L'HÉRÉDITÉ. `oeufDe` rend l'œuf le plus modeste des deux parents, ce qui est le
-     comportement le plus prudent qu'on puisse écrire. Les quatre issues, les fusions de
-     teintes et les teintes exclusives viendront avec leur propre version.
-   • LE PLAFOND DE LA RÉSERVE D'ŒUFS. Il doit tomber AVANT que la pension serve, jamais après :
-     c'est le seul frein du hors-ligne, et une partie qui tourne déjà sans lui rentrerait sur
-     cinquante œufs le jour où on l'ajoute. Tant que la porte est fermée, rien ne presse.
+   CE QUI N'Y EST PAS ENCORE. L'HÉRÉDITÉ : une bête née en pension prend la lignée d'un
+   parent, et rien d'autre. Teintes, tempérament et motif se tirent comme pour n'importe quel
+   œuf, et les teintes exclusives viendront avec leur propre version.
 
    LE SACRIFICE EST DANS LES ENCLOS. Les parents ne quittent pas la ferme : ils gardent leur
-   case, cessent de rapporter, et n'avancent plus. Parquer deux bêtes doit se sentir, et ça ne
-   se sent que si ça coûte la seule chose qui manque vraiment en fin de partie — la place. */
-/* `const`, et c'est délibéré : RIEN NE PEUT L'OUVRIR, pas même le banc d'essai. Le drapeau a
-   été `let` le temps d'une version, pour qu'un scénario puisse faire tourner le cycle entier —
-   et c'était une porte de trop. La pension ne veut rien dire tant que le bestiaire n'est pas
-   fini : la compatibilité demande des étiquettes sur des lignées qui n'existent pas toutes, et
-   l'hérédité vise une cinquième rareté qui n'existe pas du tout. Un cycle qu'on peut faire
-   tourner est un cycle qu'on finit par croire réglé.
-
-   Ce qui reste vérifiable l'est sans ouvrir quoi que ce soit : les trois fonctions de calcul
-   — distance, durée, sorte d'œuf — ne consultent pas ce drapeau. */
-const PENSION_OUVERTE = false;
+   case, cessent de rapporter, et n'avancent plus — ni au clic, ni à l'éleveur, ni à la
+   mangeoire, et le marchand ne les voit pas. Parquer deux bêtes doit se sentir, et ça ne se
+   sent que si ça coûte la seule chose qui manque vraiment en fin de partie : la place. */
+const PENSION_OUVERTE = true;
 
 const PENSION = {
   places: 1,           // combien de couples à la fois, au départ
-  base: 900,           // secondes pour deux bêtes de la même lignée
-  parDistance: 600,    // ce que chaque cran d'écart ajoute
-  plafond: 6 * 3600,   // au-delà on refuse le couple : une attente d'un jour n'est pas un choix
+  base: 900,           // secondes pour deux bêtes qui se ressemblent en tout
+  parDistance: 600,    // ce que chaque étiquette non partagée ajoute
+  parRarete: 1800,     // ce que chaque cran d'écart de rareté ajoute
+  plafond: 24 * 3600,  // au-delà on refuse : une attente de deux jours n'est pas un choix
   ageMin: 3,           // il faut être adulte pour être parent
 };
+
+/* LES ÉTIQUETTES — deux axes, un MILIEU et un CORPS, une valeur de chacun par lignée.
+
+   Deux axes et pas un seul, parce qu'un seul ne donne qu'un oui ou non. Deux donnent trois
+   crans — tout en commun, la moitié, rien — et la règle reste devinable sans wiki : DEUX BÊTES
+   SE REPRODUISENT D'AUTANT PLUS VITE QU'ELLES SE RESSEMBLENT. Loup et ours, c'est évident ;
+   oiseau et crabe aussi.
+
+   Mesuré sur les 351 paires possibles : 11 % à distance 0, 37 % à distance 1, 44 % à
+   distance 2, et 7 % stériles. La plupart des couples sont donc médiocres, et le dixième qui
+   ne l'est pas se mérite — ce qui est exactement ce qu'on veut d'un système de sélection.
+
+   LA PIERRE NE SE CROISE AVEC RIEN. Le golem est seul de son corps, et c'est délibéré : une
+   règle de stérilité doit se raconter en cinq mots, et « on ne croise pas la pierre » les tient.
+
+   L'oiseau et le papillon partagent « plume » — un papillon n'a pas de plumes, mais il a des
+   ailes couvertes d'écailles poudreuses, et le rapprochement dit quelque chose de vrai sur ce
+   que ces deux-là ont en commun. Le mot compte moins que la paire qu'il autorise. */
+const ETIQUETTES = {
+  crapaud:    ['terre', 'nu'],       poisson:    ['eau',   'écaille'],
+  lezard:     ['terre', 'écaille'],  oiseau:     ['ciel',  'plume'],
+  crocodile:  ['eau',   'écaille'],  insecte:    ['terre', 'carapace'],
+  rongeur:    ['terre', 'poil'],     chiroptere: ['ciel',  'poil'],
+  escargot:   ['terre', 'carapace'], crabe:      ['eau',   'carapace'],
+  loup:       ['terre', 'poil'],     meduse:     ['eau',   'nu'],
+  salamandre: ['terre', 'nu'],       serpent:    ['ciel',  'écaille'],
+  araignee:   ['terre', 'carapace'], cerf:       ['terre', 'poil'],
+  ours:       ['terre', 'poil'],     papillon:   ['ciel',  'plume'],
+  tortue:     ['eau',   'carapace'], chat:       ['terre', 'poil'],
+  kraken:     ['eau',   'nu'],       golem:      ['terre', 'pierre'],
+  sphinx:     ['terre', 'poil'],     cheval:     ['terre', 'poil'],
+  chimere:    ['terre', 'poil'],     behemoth:   ['terre', 'écaille'],
+  ouroboros:  ['terre', 'écaille'],
+};
+
+/* CE QUI RALENTIT UNE COUVAISON, ET POURQUOI CE FACTEUR-LÀ.
+
+   La première version ne pénalisait que l'écart de rareté, et la mesure a trouvé le trou tout
+   de suite : deux mythiques de même corps sont à écart NUL, donc à durée minimale, alors que
+   ce qui en sort vaut cent quatre-vingts millions. Quinze minutes pour un œuf mythique — sept
+   cent vingt millions l'heure, une imprimante à billets.
+
+   Le facteur manquant est la RICHESSE, pas l'écart. La durée se multiplie donc par la rareté
+   du parent le MOINS rare — le moins rare et non le plus, parce que c'est sa lignée qui sort
+   dans quatre-vingt-dix-neuf pour cent des cas quand l'écart est grand. Deux mythiques passent
+   ainsi de quinze minutes à seize heures. */
+const PENSION_MULT = { commune: 1, rare: 4, epique: 16, mythique: 64 };
+
+/* LA CHANCE QUE L'ENFANT PRENNE LA LIGNÉE DU PARENT LE PLUS RARE, selon l'écart. À égalité
+   c'est un tirage à pile ou face ; au-delà, ça devient une loterie et non un robinet. Un
+   pour cent sur trois crans d'écart : croiser une commune avec une mythique reste un pari, pas
+   une stratégie. */
+const PENSION_CHANCE = [0.5, 0.20, 0.05, 0.01];
+
+/* LE PLAFOND DE LA RÉSERVE D'ŒUFS. Le plan le réclamait AVANT la pension et jamais après :
+   c'est le seul frein du hors-ligne, et une partie qui tournerait déjà sans lui rentrerait sur
+   des centaines d'œufs le jour où on l'ajouterait. Il borne l'achat par lots comme la ponte :
+   un couple dont la sorte est pleine garde son œuf et attend. */
+const PLAFOND_OEUFS = 50;
 
 /* ── LES PRIMES ────────────────────────────────────────────────────────────────
    Des achats UNIQUES, en petites cases, qui s'allument dès qu'on a de quoi. Une amélioration
@@ -1200,7 +1241,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 14;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 15;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1242,11 +1283,12 @@ function freshState() {
        par rareté pour les groupes. Du confort d'affichage, donc ça traverse l'ascension —
        comme l'ordre de la bande et la taille des lots. */
     plie: {},
-    /* LA PENSION, encore fermée. `places` est le nombre de couples simultanés, `couples` la
-       liste de ce qui couve — chacun `{ a, b, t, duree }`, où a et b sont les identifiants de
-       deux bêtes QUI RESTENT DANS L'ENCLOS. Elle repart de zéro à l'ascension, comme la ferme
-       dont elle fait partie. */
-    pension: { places: PENSION.places, couples: [] },
+    /* LA PENSION. `places` est le nombre de couples simultanés, `couples` la liste de ce
+       qui couve — chacun `{ a, b, t, duree }`, où a et b sont les identifiants de deux bêtes
+       QUI RESTENT DANS L'ENCLOS. `dus` est la file des lignées promises, par sorte d'œuf, et
+       `nes` le compte de ce qui est sorti. Tout repart de zéro à l'ascension, comme la ferme
+       dont la pension fait partie. */
+    pension: { places: PENSION.places, couples: [], dus: {}, nes: 0 },
     /* Un âge de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
        d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
        bout : une consigne unique forçait à choisir entre les deux. */
@@ -1268,7 +1310,7 @@ function freshState() {
       temps: 0,            // secondes de boucle, absences comprises
       clics: 0,            // clics qui ont réellement fait avancer quelque chose
       eclos: 0, vendues: 0, evolutions: 0,
-      fondues: 0, fusions: 0,
+      fondues: 0, fusions: 0, pension: 0,
       assiettes: 0,        // le seul aveu de la page de statistiques
       gagne: 0,            // toutes les pièces encaissées : ventes et rente
       prodiges: 0,
@@ -1317,6 +1359,19 @@ function pickLine(rarityKey) {
   const pool = LINES.filter(l => l.rarity === rarityKey);
   return pool[Math.floor(Math.random() * pool.length)].key;
 }
+
+/* LA LIGNÉE PROMISE. Un œuf de pension entre dans la RÉSERVE ORDINAIRE — il profite ainsi du
+   placement automatique, du plafond, de l'incubateur et de tout le reste sans qu'aucun de ces
+   mécanismes ait à le connaître. Ce qu'il emporte en plus, c'est sa lignée, gardée dans une
+   file par sorte : on la sert avant de tirer au hasard.
+
+   Sans cette file la pension ne viserait rien du tout — deux loups pondraient un « œuf
+   commun », et l'œuf commun rendrait un crapaud. C'est la seule ligne qui fait la différence
+   entre un système de sélection et une machine à œufs gratuits. */
+const tireLigne = kind => {
+  const file = (state.pension && state.pension.dus && state.pension.dus[kind]) || [];
+  return file.length ? file.shift() : rollLine(kind);
+};
 
 function rollLine(kindKey) {
   const odds = (EGG_BY_KEY[kindKey] || EGG_BY_KEY.commun).odds;
@@ -1495,11 +1550,15 @@ function load() {
     }
 
     /* v13 → v14 : la pension apparaît, fermée. Une partie d'avant n'a pas de champ `pension` ;
-       on lui en pose un vide plutôt que de la laisser tomber sur `undefined` le jour où la
-       porte s'ouvrira. Rien d'autre ne bouge. */
+       on lui en pose un vide plutôt que de la laisser tomber sur `undefined`.
+       v14 → v15 : la porte s'ouvre, et deux champs arrivent avec elle — la file des lignées
+       promises et le compte des naissances. Une partie de v14 n'a jamais pu pondre, donc les
+       deux partent à vide sans rien perdre. */
     if (!merged.pension || !Array.isArray(merged.pension.couples)) {
       merged.pension = { places: PENSION.places, couples: [] };
     }
+    merged.pension.dus = merged.pension.dus || {};
+    merged.pension.nes = merged.pension.nes || 0;
 
     merged.tuto = merged.tuto !== false;
     merged.vu = merged.vu || {};
@@ -1849,9 +1908,9 @@ const sellValue  = c => Math.max(1, Math.round(baseValue(c) * nivMult(c)));
 /* Ce qu'une bête rapporte par seconde en restant simplement là. La valeur de vente porte
    déjà le niveau, l'âge, la rareté, la teinte et la taille : la rente en découle
    directement, et une bête rapporte à proportion exacte de ce qu'elle vaut. */
-/* LA RENTE EST SUSPENDUE POUR UN PARENT. C'est la seule ligne du socle qui touche au jeu
-   vivant, et elle ne change rien tant que la porte est fermée : `couples()` est vide, donc
-   `enPension` est faux pour tout le monde. */
+/* LA RENTE EST SUSPENDUE POUR UN PARENT. C'est là qu'est tout le prix de la pension : la
+   bête garde sa case et cesse de payer le loyer. Une bête qui couve est gelée partout
+   ailleurs de la même façon — clic, éleveur, mangeoire, évolution et marchand la sautent. */
 const renteOf = c => enPension(c) ? 0
                    : c.age >= AGE_RENTE
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
@@ -2180,6 +2239,13 @@ function tapStage() {
   }
 
   const c = s.c;
+  /* UNE BÊTE QUI COUVE NE GRANDIT PAS. Le dire plutôt que ne rien faire : un clic sans effet
+     et sans explication est la première chose qu'on prend pour un bug. */
+  if (enPension(c)) {
+    floatText(jitter(), pt.y - 20, 'elle couve');
+    flash(el, 'shake');
+    return;
+  }
   const avantNiv = niveau(c), avantMur = estMur(c);
   const avantRang = rankOf(sizeFactor(c)).i, avantValeur = sellValue(c);
   /* Un clic ajoute de la vie avant comme après la maturité : la créature ne cesse jamais de
@@ -2230,7 +2296,7 @@ function placeEgg(i, kind) {
   kind = kind || bestStocked();
   if (state.incub[i] || !kind || !eggStock(kind)) return;
   state.eggs[kind]--;
-  state.incub[i] = { line: rollLine(kind), p: 0, kind };
+  state.incub[i] = { line: tireLigne(kind), p: 0, kind };
   // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
   // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
   if (!state.pen.length) state.sel = 'i:' + i;
@@ -2348,6 +2414,8 @@ function buyEgg(kind) {
   const e = EGG_BY_KEY[kind];
   const prix = prixOeuf(e);
   if (!e || state.coins < prix) return;
+  // le plafond de réserve vaut pour l'achat comme pour la ponte
+  if (eggStock(kind) >= PLAFOND_OEUFS) return;
   state.coins -= prix;
   state.eggs[kind] = eggStock(kind) + 1;
   const free = state.incub.indexOf(null);
@@ -2435,6 +2503,7 @@ function advance(dt) {
      six fois plus rapide, de servir de raccourci vers l'âge suivant. */
   if (eleve) {
     for (const c of state.pen) {
+      if (enPension(c)) continue;
       const fin = bandTo(c);
       if (c.p < fin) c.p = Math.min(fin, c.p + dt * eleve * growRate(c));
     }
@@ -2444,6 +2513,9 @@ function advance(dt) {
      absence — une bête qu'on garde travaille, présent ou pas. */
   const rente = renteTotale();
   if (rente) { state.coins += rente * dt; state.stats.gagne += rente * dt; }
+  /* La pension avance ICI et non dans la boucle : elle tourne aussi pendant une absence. Une
+     couvaison est une attente, pas un geste — c'est la différence avec le bonheur. */
+  avancePension(dt);
   /* La frénésie s'écoule ICI et non dans tickJoie : advance tourne aussi pendant un
      rattrapage, si bien qu'une frénésie en cours au moment où l'on ferme la page a bien
      brûlé ses trente secondes quand on revient. Trente secondes de clic double ne doivent
@@ -2465,7 +2537,7 @@ function runAutomations(dt) {
      muette. C'est le vendeur qui commande le plafond, rareté par rareté. */
   if (prime('evolution') && evolueQuelqueChose()) {
     for (const c of state.pen) {
-      if (c.keep || !estMur(c) || c.age >= plafondEvolution(c)) continue;
+      if (c.keep || enPension(c) || !estMur(c) || c.age >= plafondEvolution(c)) continue;
       const cost = evoCost(c);
       if (state.coins < cost) continue;
       state.coins -= cost;
@@ -2491,7 +2563,7 @@ function runAutomations(dt) {
 
        ☆ Garder est la seule protection, et c'est le bon endroit : elle est explicite, elle se
        voit sur la vignette, et c'est le joueur qui la pose. */
-    const ready = state.pen.filter(c => !c.keep &&
+    const ready = state.pen.filter(c => !c.keep && !enPension(c) &&
                                         estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= tailleExigee(c));
     /* Le marchand ne déplace pas le regard, exactement comme une vente à la main : si on
@@ -2519,7 +2591,7 @@ function runAutomations(dt) {
   if (lvl('mangeoire')) {
     const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras);
     for (const c of state.pen) {
-      if (estMur(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
+      if (estMur(c) && !enPension(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
   }
   /* LA RÉSERVE SE VIDE TOUTE SEULE, ET C'EST GRATUIT. Un œuf en réserve est déjà payé :
@@ -2533,7 +2605,7 @@ function runAutomations(dt) {
     if (state.incub[i]) continue;
     const kind = bestStocked();
     state.eggs[kind]--;
-    state.incub[i] = { line: rollLine(kind), p: 0, kind };
+    state.incub[i] = { line: tireLigne(kind), p: 0, kind };
   }
 
   /* L'acheteur prend le relais quand la réserve est sèche. C'est la seule moitié qui se paie,
@@ -2547,7 +2619,7 @@ function runAutomations(dt) {
       if (state.coins < prix) break;   // incubateur vide plutôt que consigne bradée
       state.coins -= prix;
       bilanAuto.depense += prix;
-      state.incub[i] = { line: rollLine(voulu.key), p: 0, kind: voulu.key };
+      state.incub[i] = { line: rollLine(voulu.key), p: 0, kind: voulu.key };   // acheté, donc tiré
     }
   }
 }
@@ -4285,6 +4357,7 @@ function refresh() {
   renderCollection();
   renderAlbum();
   renderStage();
+  renderPension();
   syncPanneaux();
   tickView();
   if (popNext) { popNext = false; flash($('subject'), 'pop'); }
@@ -4304,7 +4377,7 @@ function refresh() {
 
    Fermer ce qu'on ne regarde pas est la seule réponse qui tienne à toutes les tailles d'écran,
    et elle a un second mérite : c'est le joueur qui décide, pas un point de rupture. */
-const PANNEAUX = ['boutique', 'autos', 'primes', 'reglages', 'collection', 'album'];
+const PANNEAUX = ['boutique', 'autos', 'primes', 'pension', 'reglages', 'collection', 'album'];
 
 function syncPanneaux() {
   for (const cle of PANNEAUX) {
@@ -4324,18 +4397,29 @@ const placesPension = () => (state.pension && state.pension.places) || 0;
 // Une bête parquée : elle est dans un couple, donc dans la pension.
 const enPension  = c => couples().some(k => k.a === c.id || k.b === c.id);
 
-/* LA DISTANCE ENTRE DEUX BÊTES — bouchon. Zéro pour la même lignée, un pour deux lignées de
-   même rareté, et l'écart de rang au-delà. Le vrai système passera par des étiquettes posées
-   sur les lignées ; celui-ci ne sert qu'à donner une durée qui ne soit pas constante, pour
-   que le reste du socle puisse être vérifié. */
+const etiqDe = c => ETIQUETTES[lineOf(c).key] || ['terre', 'nu'];
+
+/* LA DISTANCE : deux moins ce qu'elles ont en commun. Zéro quand tout concorde, deux quand
+   rien ne concorde, et `null` quand la pierre est d'un seul côté — le golem ne se croise pas. */
 function distanceDe(a, b) {
-  if (a.line === b.line) return 0;
-  const ra = RARITY[lineOf(a).rarity].rank, rb = RARITY[lineOf(b).rarity].rank;
-  return 1 + Math.abs(ra - rb);
+  const A = etiqDe(a), B = etiqDe(b);
+  if ((A[1] === 'pierre') !== (B[1] === 'pierre')) return null;
+  return 2 - (A[0] === B[0] ? 1 : 0) - (A[1] === B[1] ? 1 : 0);
 }
 
+const ecartRarete = (a, b) =>
+  Math.abs(RARITY[lineOf(a).rarity].rank - RARITY[lineOf(b).rarity].rank);
+// la rareté du parent le MOINS rare : c'est sa lignée qui sort presque toujours
+const rareteBasse = (a, b) =>
+  RARITY[lineOf(a).rarity].rank <= RARITY[lineOf(b).rarity].rank ? lineOf(a).rarity : lineOf(b).rarity;
+
 // Ce que coûte l'attente. Bornée : au-delà du plafond, le couple est refusé plutôt que subi.
-const dureePension = (a, b) => PENSION.base + PENSION.parDistance * distanceDe(a, b);
+function dureePension(a, b) {
+  const d = distanceDe(a, b);
+  if (d === null) return null;
+  return (PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b))
+         * PENSION_MULT[rareteBasse(a, b)];
+}
 
 /* Pourquoi ce couple ne peut pas se former — une phrase, ou null s'il le peut. Rendre la
    RAISON et non un booléen : un bouton grisé sans explication est la première chose qu'un
@@ -4347,7 +4431,8 @@ function refusPension(a, b) {
   if (enPension(a) || enPension(b)) return 'Une de ces deux bêtes est déjà en pension.';
   if (a.age < PENSION.ageMin || b.age < PENSION.ageMin)
     return 'Il faut deux bêtes d’au moins l’âge ' + AGES[PENSION.ageMin - 1].nom + '.';
-  if (dureePension(a, b) > PENSION.plafond) return 'Ces deux lignées sont trop éloignées.';
+  if (distanceDe(a, b) === null) return 'On ne croise pas la pierre.';
+  if (dureePension(a, b) > PENSION.plafond) return 'Ces deux-là mettraient trop longtemps.';
   return null;
 }
 const peutAccoupler = (a, b) => refusPension(a, b) === null;
@@ -4360,18 +4445,29 @@ function accoupler(a, b) {
   return true;
 }
 
-/* Ce qui sort du couple — bouchon. On rend la sorte d'œuf LA PLUS MODESTE des deux parents :
-   c'est le comportement le plus prudent qu'on puisse écrire, et il ne préempte aucune des
-   quatre issues de l'hérédité à venir. */
-function oeufDe(a, b) {
-  const ra = RARITY[lineOf(a).rarity].rank, rb = RARITY[lineOf(b).rarity].rank;
-  const rarete = ra <= rb ? lineOf(a).rarity : lineOf(b).rarity;
-  const sorte = EGG_KINDS.find(e => e.key === (rarete === 'commune' ? 'commun' : rarete));
-  return (sorte || EGG_BY_KEY.commun).key;
+/* CE QUI SORT DU COUPLE. L'enfant prend la LIGNÉE d'un des deux parents — celle du moins rare
+   presque toujours, celle du plus rare selon la chance de son écart. Il ne prend rien d'autre :
+   teinte, tempérament et motif se tirent comme pour n'importe quel œuf, et c'est ce qui reste
+   à écrire avec l'hérédité.
+
+   On rend la LIGNÉE et non la sorte d'œuf, parce que la pension sert justement à VISER une
+   lignée précise — sans les merveilleuses, c'est tout ce qu'elle a d'unique. */
+function ligneeDe(a, b) {
+  const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
+  const bas  = haut === a ? b : a;
+  const chance = PENSION_CHANCE[Math.min(ecartRarete(a, b), PENSION_CHANCE.length - 1)];
+  return (Math.random() < chance ? haut : bas).line;
 }
 
+// La sorte d'œuf que cette lignée demande, pour la réserve.
+const sorteDe = ligne => {
+  const r = LINE_BY_KEY[ligne].rarity;
+  return (EGG_KINDS.find(e => e.rarity === r) || EGG_BY_KEY.commun).key;
+};
+
 /* Fait avancer les couples. Un couple arrivé au bout dépose son œuf dans la réserve et libère
-   ses parents. Jamais appelée : la boucle ne la connaît pas encore. */
+   ses parents. Appelée par `advance`, donc elle tourne aussi pendant une absence : une
+   couvaison est une attente et non un geste. */
 function avancePension(dt) {
   if (!PENSION_OUVERTE) return 0;
   let nes = 0;
@@ -4380,7 +4476,17 @@ function avancePension(dt) {
     if (k.t < k.duree) return true;
     const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
     // un parent vendu pendant la couvaison annule le couple sans rien rendre
-    if (a && b) { const sorte = oeufDe(a, b); state.eggs[sorte] = eggStock(sorte) + 1; nes++; }
+    if (!a || !b) return false;
+    const ligne = ligneeDe(a, b), sorte = sorteDe(ligne);
+    /* La réserve est pleine : le couple GARDE son œuf et attend. Le jeter punirait une absence,
+       et c'est précisément ce que le plafond doit éviter de faire. */
+    if (eggStock(sorte) >= PLAFOND_OEUFS) { k.t = k.duree; return true; }
+    state.eggs[sorte] = eggStock(sorte) + 1;
+    state.pension.dus = state.pension.dus || {};
+    (state.pension.dus[sorte] = state.pension.dus[sorte] || []).push(ligne);
+    state.pension.nes = (state.pension.nes || 0) + 1;
+    state.stats.pension = (state.stats.pension || 0) + 1;
+    nes++;
     return false;
   });
   return nes;
@@ -4445,6 +4551,15 @@ const TROPHEES = [
   { cle: 'complicite', glyphe: '💗', nom: 'Complicité',
     dit: 'Recevoir dix cadeaux d’une bête qu’on garde en scène.',
     test: () => (state.dons || 0) >= 10 },
+  { cle: 'couvee', glyphe: '🪺', montre: true, nom: 'Une première couvée',
+    dit: 'Faire naître un œuf en pension. Il faut deux bêtes adultes, un enclos de libre, et du temps.',
+    test: () => (state.stats.pension || 0) > 0 },
+  { cle: 'assorti', glyphe: '🪶', nom: 'Bien assortis',
+    dit: 'Confier deux bêtes qui se ressemblent en tout. C’est là que la pension va le plus vite.',
+    test: () => couples().some(k => {
+      const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
+      return a && b && distanceDe(a, b) === 0;
+    }) },
   { cle: 'emplettes', glyphe: '🧾', nom: 'Tout acheté',
     dit: 'Prendre les vingt primes dans une même partie.',
     test: () => PRIMES.every(p => prime(p.cle)) },
@@ -4510,6 +4625,7 @@ const STATS = [
     ['Pièces gagnées', fmt(state.stats.gagne)],
   ]],
   ['Les rencontres', () => [
+    ['Nés en pension', fmt(state.stats.pension || 0)],
     ['Formes rencontrées', seenCount() + ' / ' + (LINES.length * AGES.length)],
     ['Chromatiques', fmt(state.stats.prodiges)],
     ['Cadeaux reçus', fmt(state.dons || 0)],
@@ -4545,6 +4661,108 @@ function renderStats() {
       hote.appendChild(l);
     }
   }
+}
+
+/* LA PENSION À L'ÉCRAN. Deux menus plutôt qu'un glisser-déposer : on désigne des bêtes qui
+   sont dans la bande, pas des cartes qu'on manipule, et un menu dit le nom complet — ce dont
+   on a besoin quand vingt bêtes se ressemblent.
+
+   La phrase sous les menus est le cœur de l'écran : elle dit la distance, la durée, et ce qui
+   peut sortir. Sans elle on confie deux bêtes à l'aveugle et on attend cinq heures pour
+   découvrir la règle. */
+let pensionA = null, pensionB = null;
+
+function renderPension() {
+  const p = $('panel-pension');
+  const libres = state.pen.filter(c => !enPension(c));
+  /* LE PANNEAU N'EXISTE PAS AVANT LE SECOND ENCLOS. Avec une seule case on ne peut pas tenir
+     deux bêtes, donc on ne peut pas former de couple : montrer la pension à ce moment-là,
+     c'est montrer un écran dont chaque bouton refuse. Il apparaît à l'achat du second enclos,
+     qui est exactement l'instant où il devient jouable. */
+  p.hidden = state.pens < 2 && !couples().length;
+
+  setText($('pension-meta'), couples().length + ' / ' + placesPension());
+
+  // les couples en cours
+  const hote = $('pension-couples');
+  hote.textContent = '';
+  for (const k of couples()) {
+    const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
+    const el = document.createElement('div');
+    el.className = 'couple';
+    const qui = document.createElement('span');
+    qui.className = 'couple-qui';
+    qui.textContent = (a ? glyphOf(a) : '—') + ' ' + (b ? glyphOf(b) : '—');
+    const barre = document.createElement('span');
+    barre.className = 'couple-bar';
+    const jauge = document.createElement('i');
+    jauge.style.width = Math.min(100, k.t / k.duree * 100).toFixed(1) + '%';
+    barre.appendChild(jauge);
+    const reste = document.createElement('span');
+    reste.className = 'couple-reste';
+    reste.textContent = !a || !b ? 'couple rompu'
+      : k.t >= k.duree ? 'réserve pleine' : fmtTime(k.duree - k.t);
+    el.append(qui, barre, reste);
+    hote.appendChild(el);
+  }
+
+  // les deux menus
+  const remplir = (sel, garde) => {
+    const dedans = libres.map(c => 'c' + c.id).join(',');
+    if (sel.dataset.dedans !== dedans) {
+      sel.dataset.dedans = dedans;
+      sel.textContent = '';
+      const vide = document.createElement('option');
+      vide.value = ''; vide.textContent = '— choisir —';
+      sel.appendChild(vide);
+      for (const c of libres) {
+        const o = document.createElement('option');
+        o.value = String(c.id);
+        o.textContent = fullName(c) + ' · ' + AGES[c.age - 1].nom;
+        sel.appendChild(o);
+      }
+    }
+    sel.value = garde && libres.some(c => c.id === garde) ? String(garde) : '';
+  };
+  remplir($('pension-a'), pensionA);
+  remplir($('pension-b'), pensionB);
+
+  const a = libres.find(c => c.id === pensionA), b = libres.find(c => c.id === pensionB);
+  const refus = refusPension(a, b);
+  if (!a || !b) {
+    setText($('pension-dit'), couples().length >= placesPension()
+      ? 'La place est prise. Attends que le couple ait fini.'
+      : 'Désigne deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.');
+  } else if (refus) {
+    setText($('pension-dit'), refus);
+  } else {
+    const d = distanceDe(a, b), t = dureePension(a, b);
+    const ecart = ecartRarete(a, b);
+    const chance = PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)];
+    const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
+    const bas = haut === a ? b : a;
+    setText($('pension-dit'),
+      (d === 0 ? 'Elles se ressemblent en tout' : d === 1 ? 'Elles ont une chose en commun'
+                                                          : 'Elles n’ont rien en commun') +
+      ' · ' + fmtTime(t) + ' · ' +
+      (ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
+                   : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
+                     ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()));
+  }
+  $('pension-go').disabled = !!refus || !a || !b;
+  setText($('pension-go'), 'Confier');
+
+  /* CE QUI ATTEND EN RÉSERVE. Un œuf de pension se range parmi les autres et ne se distingue
+     plus de rien : sans cette ligne, on couve cinq heures pour voir un « œuf commun » de plus
+     dans la boutique, et la lignée promise n'existe que dans le code. */
+  const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
+  setText($('pension-intro'), promis.length
+    ? 'En réserve : ' + promis.map(l => LINE_BY_KEY[l].name.toLowerCase()).join(', ') + '.'
+    : couples().length || state.pension.nes
+    ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus. ' +
+      (state.pension.nes || 0) + ' œuf' + ((state.pension.nes || 0) > 1 ? 's' : '') + ' pondus.'
+    : 'Confie deux bêtes adultes : elles pondront un œuf. Plus elles se ressemblent, plus c’est ' +
+      'rapide — et l’œuf prend la lignée de l’une des deux.');
 }
 
 /* Les trophées, sous les compteurs. Un décroché montre son nom et ce qu'il a fallu faire ;
@@ -4782,6 +5000,25 @@ function bindTools() {
   for (const b of document.querySelectorAll('.panel-plier')) {
     b.addEventListener('click', () => plier(b.dataset.plie));
   }
+
+  $('pension-a').addEventListener('change', e => {
+    pensionA = parseInt(e.target.value, 10) || null;
+    if (pensionA && pensionA === pensionB) pensionB = null;
+    refresh();
+  });
+  $('pension-b').addEventListener('change', e => {
+    pensionB = parseInt(e.target.value, 10) || null;
+    if (pensionB && pensionB === pensionA) pensionA = null;
+    refresh();
+  });
+  $('pension-go').addEventListener('click', () => {
+    const a = state.pen.find(c => c.id === pensionA), b = state.pen.find(c => c.id === pensionB);
+    if (!accoupler(a, b)) { blip(300, 0.05, 'sine', 0.03); return; }
+    pensionA = pensionB = null;
+    chord([392, 523, 659], 70);
+    refresh();
+    save();
+  });
 
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
   $('stat-close').addEventListener('click', () => ouvrirStats(false));

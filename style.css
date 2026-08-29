@@ -1052,6 +1052,34 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
 }
 
+/* ── LA PENSION ───────────────────────────────────────────────────────────────
+   Deux menus, une phrase, un bouton. La phrase fait tout le travail : elle dit la distance, la
+   durée et ce qui peut sortir, sans quoi on confie deux bêtes à l'aveugle. */
+.pension-couples { display: flex; flex-direction: column; gap: 4px; margin-bottom: 0.7rem; }
+.couple {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+}
+.couple-qui { font-size: 1rem; line-height: 1; letter-spacing: 0.1em; }
+.couple-bar { flex: 1; height: 4px; background: var(--ground); border-radius: 2px; overflow: hidden; }
+.couple-bar > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 2px; }
+.couple-reste {
+  font-family: var(--f-num); font-size: 0.68rem; color: var(--soft);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pension-choix { display: flex; flex-direction: column; gap: 4px; margin-bottom: 0.5rem; }
+.pension-choix select {
+  font-family: var(--f-ui); font-size: 0.78rem; width: 100%;
+  background: var(--sunken); color: var(--ink);
+  border: 1px solid var(--rule-hi); border-radius: 3px; padding: 0.35rem 0.4rem;
+}
+.pension-dit {
+  font-family: var(--f-num); font-size: 0.72rem; color: var(--soft);
+  line-height: 1.45; margin: 0 0 0.6rem;
+}
+#pension-go { width: 100%; }
+
 /* ── LA CARTE : SES ÉTOILES ET SES DEUX GESTES ────────────────────────────────
    Les deux boutons portent leur PRIX sur eux — ce que la carte rend si on la fond, ce que
    l'étoile suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible, et

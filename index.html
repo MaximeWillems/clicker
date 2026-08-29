@@ -193,6 +193,24 @@
     <div class="primes" id="primes"></div>
   </section>
 
+  <!-- LA PENSION. Deux bêtes désignées, une attente, un œuf. Les parents gardent leur enclos
+       et cessent de rapporter : c'est là qu'est le prix. -->
+  <section class="panel" id="panel-pension" hidden>
+    <div class="panel-head">
+      <button type="button" class="panel-plier" data-plie="pension"><span class="plier">▾</span>
+        <h2>Pension</h2></button>
+      <span class="panel-meta" id="pension-meta"></span>
+    </div>
+    <p class="panel-intro" id="pension-intro"></p>
+    <div class="pension-couples" id="pension-couples"></div>
+    <div class="pension-choix" id="pension-choix">
+      <select id="pension-a" aria-label="Premier parent"></select>
+      <select id="pension-b" aria-label="Second parent"></select>
+    </div>
+    <p class="pension-dit" id="pension-dit"></p>
+    <button type="button" class="asc-go" id="pension-go">Confier</button>
+  </section>
+
   <section class="panel" id="panel-reglages" hidden>
     <div class="panel-head">
       <button type="button" class="panel-plier" data-plie="reglages"><span class="plier">▾</span>

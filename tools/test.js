@@ -861,57 +861,189 @@ scenario('trophées — ils ne donnent rien, et traversent l’ascension', () =>
   eq('les trophées traversent l’ascension', jeu.tropheesPris(), pris);
 });
 
-/* ────────────────────────── la pension, porte fermée ────────────────────────── */
+/* ───────────────────────────────── la pension ───────────────────────────────── */
 
-scenario('pension — la porte est fermée, et rien ne peut l’ouvrir', () => {
+/* Deux bêtes prêtes à être confiées, dans une ferme assez grande pour les tenir. */
+function couple(jeu, ligneA, ligneB) {
+  jeu.state.pens = 8;
+  return [bete(jeu, ligneA, 4, 20000), bete(jeu, ligneB, 4, 20000)];
+}
+
+scenario('pension — la distance, la durée, et ce qui est refusé', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e9; s.pens = 8;
-  eq('le drapeau est à false', jeu.PENSION_OUVERTE, false);
-  eq('aucun couple au départ', jeu.state.pension.couples.length, 0);
-
-  const a = bete(jeu, 'crapaud', 4, 20000);
-  const b = bete(jeu, 'crabe', 4, 20000);
-  ok('accoupler est refusé', !jeu.accoupler(a, b));
-  ok('et la raison le dit', /n’ouvre pas/.test(jeu.refusPension(a, b)), jeu.refusPension(a, b));
-  eq('rien ne s’est mis en pension', jeu.state.pension.couples.length, 0);
-  eq('avancePension ne fait rien', jeu.avancePension(1e6), 0);
-
-  /* LE DRAPEAU EST UNE CONSTANTE : le forcer ne fait rien. C'est ce qui distingue « pas encore
-     branché » de « pas encore ouvrable », et c'est la seconde qu'on veut tant que le bestiaire
-     n'est pas fini — un cycle qu'on peut faire tourner est un cycle qu'on croit réglé. */
-  try { jeu.PENSION_OUVERTE = true; } catch (e) { /* getter sans setter : tant mieux */ }
-  eq('forcer le drapeau ne l’ouvre pas', jeu.PENSION_OUVERTE, false);
-  ok('et accoupler refuse toujours', !jeu.accoupler(a, b));
-
-  // une ferme entière tourne : la pension ne doit toucher à rien
-  const renteAvant = jeu.renteOf(a);
-  ok('la rente coule normalement', renteAvant > 0, renteAvant);
-  s.up.eleveur = 6; s.up.couveuse = 6;
-  for (let i = 0; i < 200; i++) jeu.loop();
-  eq('toujours aucun couple après deux cents tours', jeu.state.pension.couples.length, 0);
-  eq('et la rente n’a pas été suspendue', jeu.renteOf(a), renteAvant);
-});
-
-scenario('pension — les trois calculs tiennent, sans rien ouvrir', () => {
-  const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e9; s.pens = 8;
-  /* Ces trois fonctions ne consultent pas le drapeau : c'est tout ce qu'on peut vérifier d'un
-     squelette scellé, et c'est déjà la forme du socle. */
-  const a = bete(jeu, 'crapaud', 4, 20000);
-  const b = bete(jeu, 'crapaud', 4, 20000);
-  const loin = bete(jeu, 'ouroboros', 4, 20000);
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'crapaud', 'crapaud');
+  const lezard = bete(jeu, 'lezard', 4, 20000);
+  const golem = bete(jeu, 'golem', 4, 20000);
+  const ouro = bete(jeu, 'ouroboros', 4, 20000);
 
   eq('même lignée, distance nulle', jeu.distanceDe(a, b), 0);
   eq('donc la durée de base', jeu.dureePension(a, b), jeu.PENSION.base);
-  ok('deux lignées éloignées coûtent plus', jeu.dureePension(a, loin) > jeu.dureePension(a, b));
-  ok('et jamais plus que le plafond n’autorise',
-     jeu.dureePension(a, loin) <= jeu.PENSION.plafond * 4, jeu.dureePension(a, loin));
+  eq('terre/nu contre terre/écaille : une chose en commun', jeu.distanceDe(a, lezard), 1);
+  eq('et la durée suit', jeu.dureePension(a, lezard),
+     jeu.PENSION.base + jeu.PENSION.parDistance);
 
-  eq('l’œuf suit le parent le plus modeste', jeu.oeufDe(a, loin), 'commun');
-  eq('et deux communes donnent du commun', jeu.oeufDe(a, b), 'commun');
+  /* LA PIERRE NE SE CROISE AVEC RIEN, et c'est la règle qui doit se raconter en cinq mots. */
+  eq('la pierre est stérile', jeu.distanceDe(a, golem), null);
+  eq('donc pas de durée', jeu.dureePension(a, golem), null);
+  ok('et le refus le dit', /pierre/.test(jeu.refusPension(a, golem)), jeu.refusPension(a, golem));
 
-  eq('personne n’est en pension', jeu.enPension(a), false);
-  eq('il y a une place, inutilisée', jeu.placesPension(), jeu.PENSION.places);
+  /* LA RICHESSE RALENTIT, PAS L'ÉCART. Deux mythiques sont à écart nul : sans le
+     multiplicateur de rareté elles pondraient en quinze minutes ce qui vaut cent
+     quatre-vingts millions. C'est l'imprimante à billets qu'on a trouvée à la mesure. */
+  const behe = bete(jeu, 'behemoth', 4, 20000);
+  eq('deux mythiques se ressemblent', jeu.distanceDe(ouro, behe), 0);
+  ok('mais leur couvaison est longue', jeu.dureePension(ouro, behe) >= 12 * 3600,
+     jeu.dureePension(ouro, behe));
+
+  const bebe = bete(jeu, 'crapaud', 1, 0);
+  ok('un jeune ne peut pas être parent', /âge/.test(jeu.refusPension(a, bebe)),
+     jeu.refusPension(a, bebe));
+  ok('ni une bête avec elle-même', /différentes/.test(jeu.refusPension(a, a)));
+});
+
+scenario('pension — un couple pond la lignée promise, et pas une autre', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'loup');
+
+  ok('le couple se forme', jeu.accoupler(a, b));
+  eq('il occupe la place', jeu.couples().length, 1);
+  ok('les deux sont parquées', jeu.enPension(a) && jeu.enPension(b));
+  ok('et la place est prise', /places/.test(jeu.refusPension(a, b)), jeu.refusPension(a, b));
+
+  const avant = jeu.eggStock('rare');
+  eq('rien ne sort avant l’heure', jeu.avancePension(jeu.dureePension(a, b) - 1), 0);
+  eq('la réserve n’a pas bougé', jeu.eggStock('rare'), avant);
+  eq('puis l’œuf tombe', jeu.avancePension(2), 1);
+  eq('la réserve a gagné un œuf', jeu.eggStock('rare'), avant + 1);
+  eq('la place est rendue', jeu.couples().length, 0);
+  ok('les parents sont libres', !jeu.enPension(a) && !jeu.enPension(b));
+  eq('et le compteur monte', s.stats.pension, 1);
+
+  /* LA LIGNÉE PROMISE EST TENUE. C'est tout ce que la pension a d'unique sans les
+     merveilleuses : deux loups rendent un loup, pas « un œuf commun ». */
+  eq('la lignée attend en réserve', (s.pension.dus.rare || []).join(), 'loup');
+  s.incub[0] = null;
+  jeu.placeEgg(0, 'rare');
+  eq('et c’est elle qui part en couveuse', s.incub[0].line, 'loup');
+  eq('la file est vidée', s.pension.dus.rare.length, 0);
+  s.incub[1] = null;
+  s.eggs.rare = 5;
+  jeu.placeEgg(1, 'rare');
+  ok('l’œuf suivant est de nouveau tiré au hasard', typeof s.incub[1].line === 'string');
+});
+
+scenario('pension — un parent est gelé sur toutes ses faces', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  const temoin = bete(jeu, 'loup', 4, 0);
+
+  const rente = jeu.renteOf(a);
+  ok('elle rapporte avant', rente > 0, rente);
+  jeu.accoupler(a, b);
+  eq('et plus rien pendant', jeu.renteOf(a), 0);
+  ok('le témoin, lui, rapporte toujours', jeu.renteOf(temoin) > 0);
+
+  s.up.eleveur = 6; s.up.mangeoire = 6;
+  const pAvant = a.p, oAvant = a.over || 0, tAvant = temoin.p;
+  jeu.advance(60);
+  eq('l’éleveur ne la pousse pas', a.p, pAvant);
+  eq('la mangeoire ne l’engraisse pas', a.over || 0, oAvant);
+  ok('mais le témoin avance', temoin.p > tAvant || (temoin.over || 0) > 0);
+
+  s.sel = 'c:' + a.id;
+  jeu.tapStage();
+  eq('et le clic ne fait rien non plus', a.p, pAvant);
+  eq('rien n’est parti dans l’embonpoint', a.over || 0, oAvant);
+
+  /* LE MARCHAND NE VOIT PAS UN PARENT. Vendre la bête qu'on vient de confier annulerait la
+     couvaison sans rien rendre, et ce serait l'automate qui l'aurait décidé. */
+  temoin.p = 20000;                 // mûre : le marchand a de quoi mordre
+  s.primes.marchand = true;
+  for (const r of ['commune', 'rare', 'epique', 'mythique']) s.sellAt[r] = 1;
+  const combien = s.pen.length;
+  jeu.runAutomations(1);
+  ok('les deux parents restent', s.pen.some(c => c.id === a.id) && s.pen.some(c => c.id === b.id));
+  ok('le témoin, lui, est parti', combien > s.pen.length);
+});
+
+scenario('pension — la réserve pleine fait patienter, elle ne jette rien', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  s.eggs.rare = jeu.PLAFOND_OEUFS;
+
+  eq('rien ne sort', jeu.avancePension(1e6), 0);
+  eq('le couple attend', jeu.couples().length, 1);
+  eq('et la réserve n’a pas débordé', jeu.eggStock('rare'), jeu.PLAFOND_OEUFS);
+
+  s.eggs.rare = 0;
+  eq('la place libérée, l’œuf tombe', jeu.avancePension(1), 1);
+  eq('un seul, pas cent', jeu.eggStock('rare'), 1);
+});
+
+scenario('pension — un parent vendu rompt le couple sans rien rendre', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  s.pen = s.pen.filter(c => c.id !== a.id);
+
+  const avant = jeu.eggStock('rare');
+  eq('aucun œuf', jeu.avancePension(1e6), 0);
+  eq('la réserve est intacte', jeu.eggStock('rare'), avant);
+  eq('et la place est rendue', jeu.couples().length, 0);
+});
+
+scenario('pension — elle tourne pendant une absence, et l’écran suit', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  jeu.advance(jeu.dureePension(a, b) + 1);
+  eq('l’absence a fait éclore le couple', s.stats.pension, 1);
+
+  jeu.refresh();
+  eq('le panneau est ouvert', noeuds.get('panel-pension').hidden, false);
+  ok('et il dit ce qui attend', /loup|ours/.test(noeuds.get('pension-intro').textContent),
+     noeuds.get('pension-intro').textContent);
+});
+
+scenario('pension — le panneau n’existe pas avant le second enclos', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.pens = 1;
+  jeu.refresh();
+  eq('caché avec une seule case', noeuds.get('panel-pension').hidden, true);
+  s.pens = 2;
+  jeu.refresh();
+  eq('visible dès la seconde', noeuds.get('panel-pension').hidden, false);
+});
+
+scenario('pension — une partie de v14 se relit sans rien perdre', () => {
+  const j = neuf(); const s = j.state;
+  s.coins = 5e6; s.pens = 4; s.stats.eclos = 12;
+  const vieux = JSON.parse(JSON.stringify(s));
+  vieux.v = 14;
+  /* Une v14 n a jamais pu pondre : ni file de lignées, ni compteur de naissances. */
+  delete vieux.pension.dus; delete vieux.pension.nes; delete vieux.stats.pension;
+
+  const k = neuf(vieux);
+  eq('le format monte', k.state.v, k.SAVE_V);
+  eq('la file naît vide', JSON.stringify(k.state.pension.dus), '{}');
+  eq('le compteur aussi', k.state.pension.nes, 0);
+  eq('et la ferme est intacte', k.state.coins, 5e6);
+  eq('avec ses enclos', k.state.pens, 4);
+
+  // et une partie plus vieille encore, sans champ pension du tout
+  delete vieux.pension;
+  const m = neuf(vieux);
+  eq('un champ pension est posé', m.state.pension.couples.length, 0);
+  eq('avec sa file', JSON.stringify(m.state.pension.dus), '{}');
+  eq('et la pension tourne à vide sans lever', m.avancePension(1e5), 0);
 });
 
 /* ────────────────────────── la poussière et la fusion ────────────────────────── */

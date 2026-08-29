@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.32.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 3.0.0 · sauvegarde v15 · 10 lignées illustrées sur 27
 
 ---
 
@@ -51,7 +51,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les cartes** | 2.20 | l'ascension donne-t-elle envie ? | deux effets qui se voient dès la première seconde du cycle |
 | **Les primes** | 2.21 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | vingt achats uniques, chacun disant une seule chose |
 | **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
-| **Le socle de la pension** | 2.23–2.24.1 | les cinq pièces s'emboîtent-elles ? | écrites et scellées : on attend le bestiaire |
+| **Le socle de la pension** | 2.23–2.24.1 | les cinq pièces s'emboîtent-elles ? | oui — écrites scellées, puis ouvertes sans une ligne à reprendre |
 | **Les écrans bas** | 2.24 | le jeu tient-il sur un portable ? | tout se replie, et deux ruptures en hauteur |
 | **La plonge** | 2.25, 2.27 | peut-on rendre le jeu injouable ? | non — dix clics l'assiette, et elle se raconte avant de s'ouvrir |
 | **Les trophées** | 2.25 | reste-t-il un objectif nommé ? | douze, dont six qu'on ne voit qu'en les décrochant |
@@ -59,6 +59,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **L'ouverture** | 2.29 | le début est-il trop facile ? | il l'était — trois fois plus long désormais, mesuré |
 | **La fusion et la poussière** | 2.30 → 2.32 | est-ce qu'une carte ratée vaut d'être gardée ? | oui — dix cartes font une étoile |
 | **Les automates par âge** | 1.0 → 1.4 | est-ce que l'ordre des achats suit la vie de la bête ? | oui, depuis les cinq âges — la ligne avait survécu à sa propre livraison |
+| **La pension** | 3.0 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? | oui, et mesuré : jamais le centième de ce qu'elles rapporteraient |
 
 ### La ligne d'arrivée de l'alpha
 
@@ -79,10 +80,18 @@ la pension n'offre qu'un raccourci vers ce qu'on pouvait déjà acheter. Sans la
 merveilleuses n'ont pas de porte. **Le jeu est aujourd'hui un très bon prototype de sa moitié
 d'avant**, et ces trois pièces sont ce qui manque pour qu'il soit un jeu.
 
-Le tableau qui suit est donc, en pratique, **la liste de ce qu'il reste avant la bêta** — plus
-les dix-sept lignées à dessiner, qui conditionnent l'ouverture de la pension.
+**Deux des trois sont tombés.** La fusion en 2.32.0, la pension en 3.0.0. Il ne reste que les
+merveilleuses — et l'ordre a encore changé en route : *la pension a été ouverte sans elles*.
 
-Les nombres continuent : la bêta ne remet rien à zéro, et la pension est le majeur qui ouvrira
+C'était le bon appel, et il faut savoir ce qu'il coûte. La pension était bloquée derrière les
+dix-sept dessins manquants, qui sont eux-mêmes bloqués derrière du travail d'illustration qu'on
+ne peut pas simuler au banc. En l'ouvrant sur les vingt-sept lignées existantes — dessinées ou
+non, le jeu n'en montre que le glyphe — elle devient jouable tout de suite. Le prix : **sans les
+merveilleuses, la pension ne rend aucune lignée qu'on ne pourrait pas acheter**. Elle sert à
+viser, pas à débloquer. C'est un outil de collection, et il faut le dire ainsi plutôt que de
+laisser croire qu'elle ouvre sur autre chose.
+
+Les nombres continuent : la bêta ne remet rien à zéro, et la pension est le majeur qui ouvre
 la série 3.
 
 ### Ce qui vient ensuite
@@ -93,14 +102,18 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **Les dix-sept dessins** | rien | — |
-| **La pension, ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | les dessins | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
-| **La compatibilité** — étiquettes, stérilité, durée par distance | la pension ouverte | est-ce que la règle se devine sans wiki ? |
-| **L'hérédité** — les quatre issues, les fusions, les teintes exclusives | la compatibilité | est-ce qu'on a envie de sélectionner ? |
-| **La rareté de l'enfant** — le tirage entre parents, la montée par âge | l'hérédité | est-ce que la montée reste un cadeau et non une voie ? |
+| **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 | **Les merveilleuses** — la rareté, les recettes, trois lignées dessinées | l'hérédité | est-ce qu'une merveilleuse se raconte ? |
+| **La seconde place de pension** — en prime, très cher | rien | est-ce qu'on choisit encore son couple, ou est-ce qu'on empile ? |
 
-**La fusion est tombée en 2.32.0** : il reste donc deux des trois pièces de la bêta, la pension
-et les merveilleuses — et les deux sont au bout de la même chaîne, qui commence par les dessins.
+**La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
+la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la
+pension, parce qu'aucune d'elles n'avait de sens séparément — une pension sans règle de
+compatibilité, c'est un bouton qui attend.
+
+**La seconde place n'est pas une évidence**, et c'est pour ça qu'elle est dans la table et pas
+dans le code. Une place unique force à choisir *quel* couple confier ; deux places suppriment la
+question. Si elle tombe, ce sera comme prime très chère, et une seule fois.
 
 **Une ligne a disparu sans être faite, parce qu'elle l'était déjà.** « Les automates par âge —
 l'éleveur aux jeunes, la mangeoire aux grandes bêtes » décrivait mot pour mot ce que le jeu
@@ -214,28 +227,27 @@ La première est plus simple et se raconte mieux : **on ne défait pas une fusio
 - **Faut-il un plafond de poussière ?** Probablement pas : elle se dépense par centaines et
   s'obtient par dizaines, l'accumulation est lente par construction.
 
-**Le socle de la pension est l'atome** : emplacements, parents, durée, œuf et rente
-suspendue tombent ensemble ou ne tombent pas. Retirer n'importe lequel des cinq laisse un jeu
-incohérent — une pension sans rente suspendue est gratuite, une pension sans plafond de
-réserve déborde à la première absence.
+**Le socle de la pension était l'atome, et il a tenu.** Emplacements, parents, durée, œuf et
+rente suspendue ont été écrits ensemble en 2.23.0, scellés en 2.24.1, ouverts en 3.0.0 — et
+**pas une des cinq pièces n'a eu à être reprise**. Seuls les deux bouchons annoncés comme tels
+ont été remplacés : `distanceDe` par les étiquettes, `oeufDe` par la lignée promise.
 
-**Les cinq sont écrites depuis la 2.23.0, et la porte est SCELLÉE depuis la 2.24.1** —
-`PENSION_OUVERTE` est une constante que même le banc ne peut pas forcer.
+C'est le seul retour d'expérience qui vaille sur la méthode « écrire scellé » : elle coûte une
+version, et elle rend le jour de l'ouverture entièrement disponible pour les questions
+d'équilibrage — qui sont, elles, celles qu'on ne peut pas trancher sur le papier. La table de
+durées écrite au moment du socle était une imprimante à billets, et la mesure l'a montrée en
+deux minutes le jour où on l'a branchée.
 
-**Elle ne s'ouvrira pas avant le bestiaire.** C'est l'ordre qui compte ici : la compatibilité
-demande des étiquettes posées sur des lignées dont dix-sept n'ont pas encore de dessin, et
-l'hérédité vise les merveilleuses, une cinquième rareté qui n'existe pas du tout. Ouvrir avant
-reviendrait à régler une mécanique sur un bestiaire qui va changer sous elle — et un cycle
-qu'on peut faire tourner est un cycle qu'on finit par croire réglé.
-
-Ce qu'il restera à faire le jour venu tient en quatre choses : finir les dessins, poser le
-plafond de la réserve d'œufs, écrire l'écran qui désigne deux bêtes, et remplacer les deux
-bouchons `distanceDe` et `oeufDe` par la compatibilité et l'hérédité.
+Ce qui a changé dans l'ordre : **on n'a pas attendu le bestiaire.** Le raisonnement d'origine
+tenait — régler une mécanique sur un bestiaire qui va changer sous elle est un piège — mais il
+supposait que la pension ait besoin des merveilleuses pour valoir quelque chose. Elle vaut sans
+elles, à condition de dire ce qu'elle est : un outil pour **viser** une lignée, pas une porte.
+Les dessins manquants ne la gênent pas ; le jeu affiche un glyphe et joue pareil.
 
 ### Le chantier qui barre la route : les dessins
 
-Ce n'était qu'une voie de fond ; depuis que la pension attend le bestiaire pour ouvrir, c'est
-**le premier verrou de la bêta**.
+C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
+affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
 **17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
 serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
@@ -266,11 +278,11 @@ Deux leçons payées cher, à ne pas réapprendre :
 Les nouvelles teintes s'ajoutent **à la fin** de `TINTS`. Une bête stocke sa teinte par
 indice ; en insérer une au milieu repeindrait tout le bestiaire déjà éclos.
 
-La réserve d'œufs doit prendre son plafond **avant** la pension, pas après. C'est le seul
-frein du hors-ligne, et une partie qui tourne déjà sans lui rentrera sur cinquante œufs le
-jour où on l'ajoutera. La 2.14.0 a rendu ce piège plus pressant : la réserve se vide
-maintenant toute seule dans les incubateurs libres, donc un stock énorme se convertit sans
-qu'on ait à cliquer.
+La réserve d'œufs devait prendre son plafond **avant** la pension, et elle l'a pris : cinquante
+par sorte, posés dans la même version. C'était le seul frein du hors-ligne, et une partie qui
+aurait déjà tourné sans lui serait rentrée sur des centaines d'œufs le jour de l'ajout. Le
+piège reste écrit ici parce qu'il vaut pour tout robinet futur : **le plafond se pose avec le
+robinet, jamais après.**
 
 ---
 
@@ -371,9 +383,9 @@ exact du coût des créatures, et c'est l'argument principal en faveur de l'idé
 - **Le fond et le motif ne font pas le même métier.** Le motif décide de l'EFFET d'une carte,
   le fond de sa VALEUR. Les deux peuvent coexister sur la même bête sans se marcher dessus,
   mais la carte d'album devra montrer les deux sans devenir illisible.
-- **L'hérédité.** Elle attend la pension, donc les quatre issues de l'hérédité des teintes.
-  Le fond suivra la même règle, quelle qu'elle soit : c'est une raison de plus de ne pas
-  écrire l'hérédité des teintes à la légère.
+- **L'hérédité.** La pension existe depuis la 3.0.0, mais elle ne transmet que la LIGNÉE :
+  teinte, tempérament et motif se tirent encore au hasard. Le fond suivra la règle des teintes,
+  quelle qu'elle soit — une raison de plus de ne pas écrire cette règle à la légère.
 
 #### Un sur huit cents, et seulement à la boutique
 
@@ -449,8 +461,9 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
 
 ### Ce qu'on a décidé de ne pas faire
 
-- **Une cinquième rareté avant la pension.** La merveilleuse tient sa valeur du fait qu'elle
-  ne s'achète pas ; la mettre en boutique la viderait de son sens.
+- **Mettre la merveilleuse en boutique.** Elle tient toute sa valeur du fait qu'elle ne
+  s'achète pas. La pension a ouvert sans elle, ce qui la laisse sans porte pour l'instant —
+  et c'est un manque assumé, pas une invitation à la vendre.
 - **De nouvelles lignées au-delà des vingt-sept.** L'ère rare a été portée à dix en 2.3.0
   parce qu'elle se répétait ; les épiques et les mythiques, elles, se traversent trop vite
   pour que le compte se voie. Au-delà, le contenu qui manque n'est pas le nombre de lignées,
@@ -536,6 +549,8 @@ Quatre écarts avec le plan d'origine, tous volontaires :
   au lieu d'une.
 - **Rien ne se nourrit contre des pièces.** Une bête grandit au clic et au temps.
 - **L'album et l'ascension sont arrivés avant la pension**, alors qu'ils étaient prévus après.
+  La pension a suivi en 3.0.0, mais sans les merveilleuses : elle sert à viser une lignée, pas
+  encore à débloquer une rareté.
 - **Un mode histoire est apparu**, qui n'était nulle part au plan. Le jeu ouvrait sur quatorze
   boutons dont treize inachetables ; il ouvre maintenant sur un œuf et quelqu'un qui parle.
 
@@ -551,13 +566,16 @@ on vend sa première bête pour 40 pièces, la professeure annonce qu'« il y a 
 acheter qui ne sont pas des œufs », la Force du clic en coûte 30 — et il en reste 10 pour un
 œuf qui en vaut 12. Cinq minutes de boucle plus tard, toujours 10.
 
-La sortie est choisie et reste à écrire : c'est
-[la plonge](#sortir-de-limpasse--la-plonge), une pièce par assiette lavée. Un idle ne doit
-jamais pouvoir se rendre injouable — c'est la seule faute dont un joueur ne revient pas.
+**Elle est bouchée depuis la 2.25.0** : c'est [la plonge](#sortir-de-limpasse--la-plonge), une
+pièce par assiette, dix clics l'assiette, aucun multiplicateur. Un idle ne doit jamais pouvoir
+se rendre injouable — c'est la seule faute dont un joueur ne revient pas. La dette reste écrite
+ici parce que la règle vaut pour tout ce qu'on ajoutera : **chaque nouvelle façon de dépenser
+doit être relue en se demandant si elle peut assécher la partie.**
 
 **Rien de visuel n'a jamais été vérifié.** C'est la dette qui grossit le plus vite : l'album,
 l'écran d'ascension, le sélecteur de lots, la boîte de dialogue, les trois colonnes d'axes, la
-ligne du bonheur — tout ce CSS n'a été relu qu'à l'œil, dans le code. Le banc d'essai ne met
+ligne du bonheur, et maintenant le panneau de pension avec ses deux menus et sa barre de
+couvaison — tout ce CSS n'a été relu qu'à l'œil, dans le code. Le banc d'essai ne met
 rien en page et ne le dira jamais. Une demi-heure passée à ouvrir la page pour de vrai
 vaudrait plus que dix scénarios de plus.
 
