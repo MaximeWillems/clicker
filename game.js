@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 2.30.0';
+const VERSION = 'alpha 2.30.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3238,13 +3238,18 @@ let ascChoix = [];
    trois en emporte trois — et c'est ce qui empêche une réserve de jetons de rendre les
    ascensions suivantes gratuites.
 
-   Le plafond reste SLOTS : l'album n'a que cinq emplacements, et un sixième jeton ne fabrique
-   pas un sixième cadran. */
+   ⚠ L'ALBUM ET LES CARTES ACTIVES SONT DEUX CHOSES. L'ALBUM N'A PAS DE LIMITE : il garde tout
+   ce qu'on possède, ascension après ascension. SLOTS ne borne que les CARTES ACTIVES — les
+   cinq qui agissent, qu'on échange avec le reste de l'album au glisser-déposer.
+
+   Le jeton borne donc ce qui ENTRE DANS L'ALBUM, et rien d'autre. Neuf jetons emportent neuf
+   cartes ; cinq d'entre elles s'équipent, les quatre autres attendent leur tour. Plafonner à
+   SLOTS revenait à jeter quatre cartes gagnées, et confondait la vitrine avec la collection. */
 function apercuAscension() {
   const jetons = state.asc.jetons || 0;
   const neuves = subjects().filter(s => s.kind === 'creature')
     .map(s => Object.assign(capsuleBrute(s.c), { id: -s.c.id }));
-  return { jetons, neuves, max: Math.min(jetons, SLOTS) };
+  return { jetons, neuves, max: jetons };
 }
 
 function ouvrirAscension() {
@@ -3265,7 +3270,8 @@ function renderAscension() {
   const suivant = prochainPalier();
   setText($('asc-jalon'),
     ap.jetons + ' jeton' + (ap.jetons > 1 ? 's' : '') + ' d’ascension, donc ' +
-    ap.max + ' carte' + (ap.max > 1 ? 's' : '') + ' à emporter. ' +
+    ap.max + ' carte' + (ap.max > 1 ? 's' : '') + ' à emporter dans ton album' +
+    (ap.max > SLOTS ? ' — cinq s’équipent, le reste attend en réserve' : '') + '. ' +
     'Sauter les dépense tous, employés ou non — rien ne t’oblige à sauter, ni maintenant ni jamais.' +
     (suivant ? ' Le prochain se gagne à ' + fmt(suivant) + ' pièces.'
              : ' C’était le dernier palier de l’échelle.'));
@@ -3349,6 +3355,9 @@ function ascensionner() {
      le glisser-déposer de l'album en dépend. Elle n'a jamais eu à recueillir tout un enclos :
      une ferme de vingt bêtes y versait vingt cartes d'un coup, et le choix qu'on venait de
      faire ne coûtait rien. */
+  /* On borne par les JETONS, pas par SLOTS. L'écrêtage à cinq datait d'avant que l'album et
+     les cartes actives soient deux choses : il jetait les cartes gagnées au-delà de la
+     cinquième, alors que l'album n'a pas de limite et que c'est justement lui qui les garde. */
   const vrai = {};
   const neuves = ap.neuves
     .filter(k => ascChoix.indexOf(k.id) !== -1)
@@ -3357,7 +3366,7 @@ function ascensionner() {
       vrai[k.id] = c.id;
       return c;
     })
-    .slice(0, SLOTS);
+    .slice(0, ap.max);
   /* Ce qui entre dans l'album, ce sont les bêtes RETENUES, et rien d'autre : le filtre juste
      au-dessus a déjà écarté les autres. Ce commentaire disait l'inverse — « rien ne se perd,
      les capsules qu'on n'équipe pas rejoignent la réserve » — et décrivait l'ascension d'avant

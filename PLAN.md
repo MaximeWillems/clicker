@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.30.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.30.1 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -241,7 +241,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 42 scénarios
+node tools/test.js              les 43 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 

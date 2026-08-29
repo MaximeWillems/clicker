@@ -583,12 +583,15 @@ scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
   /* DEUX DÉFAUTS SE CACHAIENT ICI, et le second masquait le premier. `max` valait SLOTS : le
      nombre de jetons n'entrait nulle part, un seul jeton laissait choisir cinq cartes. Et
      l'ascension n'en consommait qu'un — on sautait avec cinq et on en retrouvait quatre. */
-  for (const [n, attendu] of [[1, 1], [2, 2], [3, 3], [5, 5], [9, 5]]) {
+  /* ⚠ L'ALBUM ET LES CARTES ACTIVES SONT DEUX CHOSES. L'album n'a pas de limite ; SLOTS ne
+     borne que les cinq cartes qui agissent. Le jeton borne donc ce qui ENTRE DANS L'ALBUM, et
+     neuf jetons emportent bien neuf cartes. */
+  for (const n of [1, 2, 3, 5, 9, 14]) {
     const jeu = neuf(); const s = jeu.state;
-    s.tuto = false; s.coins = 5e6; s.pens = 10;
-    for (let i = 0; i < 8; i++) bete2(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
+    s.tuto = false; s.coins = 5e6; s.pens = 20;
+    for (let i = 0; i < 16; i++) bete2(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
     s.asc.jetons = n; s.asc.paliers = jeu.RANG_PREMIER;
-    eq(n + ' jeton(s) → ' + attendu + ' carte(s)', jeu.apercuAscension().max, attendu);
+    eq(n + ' jeton(s) → ' + n + ' carte(s), sans plafond', jeu.apercuAscension().max, n);
   }
 
   const jeu = neuf(); const s = jeu.state;
@@ -602,6 +605,44 @@ scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
   eq('deux cartes emportées', jeu.state.album.length, 2);
   ok('et l’ascension se referme', !jeu.peutAscensionner());
   eq('les paliers déjà franchis restent franchis', jeu.state.asc.paliers, jeu.RANG_PREMIER);
+});
+
+scenario('album — sans limite, et cinq cartes actives qui s’échangent', () => {
+  const bete3 = (j, ligne, age, p) => {
+    const st = j.state;
+    st.incub[0] = { line: ligne, p: 9999, kind: 'commun' };
+    j.hatchAll();
+    const c = st.pen[st.pen.length - 1];
+    c.age = age; c.p = p;
+    return c;
+  };
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 5e6; s.pens = 20;
+  for (let i = 0; i < 12; i++) bete3(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
+  s.asc.jetons = 9; s.asc.paliers = jeu.RANG_PREMIER;
+
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = ap.neuves.slice(0, 9).map(k => k.id);
+  jeu.ascensionner();
+  const t = jeu.state;
+
+  /* L'écrêtage à cinq datait d'avant que l'album et les cartes actives soient deux choses :
+     il JETAIT les quatre cartes gagnées au-delà de la cinquième. */
+  eq('neuf jetons emportent neuf cartes dans l’album', t.album.length, 9);
+  eq('cinq seulement s’équipent', t.slots.length, jeu.SLOTS);
+  eq('les quatre autres attendent en réserve',
+     t.album.filter(k => t.slots.indexOf(k.id) === -1).length, 4);
+
+  // et l'on échange à volonté, sans jamais dépasser cinq actives
+  const sortante = t.slots[0];
+  const entrante = t.album.find(k => t.slots.indexOf(k.id) === -1).id;
+  ok('on sort une active', jeu.deplacerCarte(sortante, false));
+  eq('il en reste quatre', t.slots.length, jeu.SLOTS - 1);
+  ok('on en pose une autre', jeu.deplacerCarte(entrante, true));
+  eq('de nouveau cinq', t.slots.length, jeu.SLOTS);
+  eq('l’album n’a pas bougé', t.album.length, 9);
+  const encore = t.album.find(k => t.slots.indexOf(k.id) === -1).id;
+  ok('une sixième active est refusée', !jeu.deplacerCarte(encore, true));
 });
 
 scenario('jetons — un palier de fortune tous les ×1000, à partir du premier million', () => {

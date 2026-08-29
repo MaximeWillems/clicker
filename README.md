@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.30.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.30.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -55,7 +55,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.30.0** | un jeton vaut une carte, et sauter les dépense tous |
+| **2.30.1** | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
+| 2.30.0 | un jeton vaut une carte, et sauter les dépense tous |
 | 2.29.1 | un œuf ne récite plus ses statistiques, il dit une phrase |
 | 2.29.0 | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
 | 2.28.0 | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
@@ -146,7 +147,7 @@ le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est
 voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
 rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
-Quarante-deux scénarios, sept cent une vérifications. Passer un mot en argument ne joue que
+Quarante-trois scénarios, sept cent onze vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -1600,10 +1601,26 @@ gardait ses jetons, on ne remarquait pas qu'ils ne servaient à rien.
 
 La règle est maintenant celle qu'on voulait depuis le début :
 
-- **chaque jeton vaut une carte** qu'on emporte — `max = min(jetons, 5)` ;
+- **chaque jeton vaut une carte** qu'on emporte dans l'album ;
 - **sauter les dépense tous**, y compris ceux qu'on n'a pas employés ;
-- le plafond reste **cinq**, parce que l'album n'a que cinq emplacements et qu'un sixième jeton
-  ne fabrique pas un sixième cadran.
+- **aucun plafond** — neuf jetons emportent neuf cartes.
+
+#### L'album et les cartes actives sont deux choses
+
+Ma première correction plafonnait à cinq ce qui entre dans l'album, et c'était **la même
+confusion sous un autre nom**. Les deux ne sont pas la même chose :
+
+| | |
+|---|---|
+| **l'album** | tout ce qu'on possède, **sans aucune limite**, gardé d'une ascension à l'autre |
+| **les cartes actives** | **cinq**, et elles seules agissent — on les échange avec le reste de l'album au glisser-déposer |
+
+`SLOTS` ne borne donc **que les actives**. Le jeton, lui, borne ce qui **entre dans l'album**.
+Neuf jetons emportent neuf cartes : cinq s'équipent, les quatre autres attendent en réserve.
+
+L'écrêtage `.slice(0, SLOTS)` de `ascensionner` datait d'avant que les deux soient distinctes,
+et il **jetait purement et simplement** les cartes gagnées au-delà de la cinquième. Il porte
+maintenant sur les jetons.
 
 C'est ce qui donne enfin un sens à l'attente : **sauter au premier jeton n'emporte qu'une
 carte, en attendre trois en emporte trois.** Et c'est ce qui empêche une réserve de jetons de
