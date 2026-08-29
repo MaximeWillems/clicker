@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 3.1.0';
+const VERSION = 'beta 1.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -632,8 +632,11 @@ const assiettesRestantes = () =>
    case, cessent de rapporter, et n'avancent plus — ni au clic, ni à l'éleveur, ni à la
    mangeoire, et le marchand ne les voit pas. Parquer deux bêtes doit se sentir, et ça ne se
    sent que si ça coûte la seule chose qui manque vraiment en fin de partie : la place. */
-const PENSION_OUVERTE = true;
-
+/* ELLE S'ACHÈTE. La pension était offerte au deuxième enclos, ce qui la posait au milieu de
+   la colonne à un moment où l'on n'a ni bêtes adultes ni enclos à immobiliser : un panneau
+   dont chaque bouton refuse. C'est une prime comme les autres désormais — un achat unique, qui
+   ne traverse pas l'ascension, et qui tombe dans l'ère rare, là où l'on commence à garder des
+   bêtes plutôt que les vendre. */
 const PENSION = {
   places: 1,           // combien de couples à la fois, au départ
   base: 900,           // secondes pour deux bêtes qui se ressemblent en tout
@@ -815,6 +818,8 @@ const PRIMES = [
     dit: 'Les bêtes que tu gardes ☆ ne comptent plus dans la limite d’enclos. Une ménagerie cesse de coûter du débit.' },
   { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
     dit: 'Chaque évolution coûte un quart de moins. Passé l’ère commune, ce n’est plus la vitesse qui freine mais la mise de fonds.' },
+  { cle: 'pension',   prix: 400000,    glyphe: '🛖', nom: 'La pension',
+    dit: 'Un bâtiment où confier deux bêtes adultes. Elles gardent leur enclos, cessent de rapporter, et pondent un œuf dont tu connais déjà la lignée.' },
   { cle: 'oeil',      prix: 500000,    glyphe: '👁️', nom: 'Œil exercé',
     dit: 'Une chance sur deux de plus de voir naître un chromatique — de 1 sur 8 192 à 1 sur 5 461.' },
   { cle: 'generosite', prix: 1000000,  glyphe: '🎁', nom: 'Générosité',
@@ -2349,6 +2354,8 @@ function monteeNiveau(c, valueBefore, pt) {
    ───────────────────────────────────────────── */
 
 function tapStage() {
+  // une ferme arrêtée l'est pour tout le monde, la main du joueur comprise
+  if (enPause) { blip(300, 0.05, 'sine', 0.03); return; }
   // tant qu'elle n'a pas ouvert la porte, il n'y a rien à laver
   if (enPlonge()) { if (plongeOuverte()) laverAssiette(); return; }
   const s = current();
@@ -2808,8 +2815,40 @@ function offrirFrenesie(palier) {
   chord([523, 659, 784, 1046], 70);
 }
 
+/* ── LA PAUSE ──────────────────────────────────────────────────────────────────
+   Un bouton qui arrête la ferme. Il existe pour une raison précise : la pension se remplit au
+   glisser-déposer, et arranger deux parents pendant que le marchand vend, que l'évolution
+   monte et que les bêtes grandissent, c'est arranger une bande qui bouge sous la main.
+
+   ELLE NE SE SAUVEGARDE PAS, et c'est délibéré. Une pause est un moment, pas un réglage :
+   fermer l'onglet en pause puis revenir le lendemain sur une ferme gelée serait une partie
+   cassée, sans rien pour dire pourquoi. Au rechargement, la ferme tourne.
+
+   Elle ne gèle pas non plus le temps hors ligne : `save` continue de poser `state.t`, donc
+   une pause de deux heures ne se rattrape pas au retour. Mettre en pause n'est pas mettre de
+   côté — c'est arrêter, et le temps arrêté est perdu. C'est ce qui l'empêche de devenir une
+   façon de jouer. */
+let enPause = false;
+
+function basculerPause(v) {
+  enPause = v === undefined ? !enPause : !!v;
+  lastFrame = Date.now();          // le temps de la pause ne se rattrape pas
+  const b = $('btn-pause');
+  b.setAttribute('aria-pressed', String(enPause));
+  b.textContent = enPause ? '▶' : '⏸';
+  b.title = enPause ? 'Reprendre la ferme' : 'Mettre la ferme en pause — rien ne pousse, rien ne se vend';
+  const note = $('pause-note');
+  note.hidden = !enPause;
+  setText(note, 'La ferme est arrêtée. Rien ne pousse, rien ne se vend, rien ne couve — ' +
+                'le moment de composer un couple à la pension.');
+  document.body.classList.toggle('en-pause', enPause);
+  refresh();
+}
+
 function loop() {
   const now = Date.now();
+  // la ferme s'arrête aussi quand on le demande, et pour les mêmes raisons que l'ascension
+  if (enPause) { lastFrame = now; return; }
   /* LA FERME S'ARRÊTE PENDANT L'ÉCRAN D'ASCENSION. On y décide du sort de bêtes précises ;
      les laisser vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le
      panneau menteur au moment même où il demande une décision irréversible. On recale
@@ -3170,6 +3209,10 @@ function creerVignette(key) {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'thumb';
+  /* LA VIGNETTE EST UNE POIGNÉE. C'est elle qu'on attrape pour la déposer dans le nid de la
+     pension — la clé du sujet suffit à la retrouver, et le clic continue de sélectionner. Le
+     navigateur distingue seul les deux gestes : un glisser demande du mouvement. */
+  b.dataset.cle = key;
   b.addEventListener('click', () => select(key));
 
   const glyph = document.createElement('span');
@@ -3193,6 +3236,8 @@ function peindreVignette(t, s) {
   b.className = 'thumb';
   if (garder) b.classList.add('done');
 
+  // seules les bêtes se confient : un œuf n'a pas d'âge, et la pension en demande deux
+  b.draggable = s.kind === 'creature';
   if (s.kind === 'egg') {
     const k = s.slot ? EGG_BY_KEY[s.slot.kind] || EGG_BY_KEY.commun : null;
     t.glyph.textContent = s.slot ? k.glyph : '◌';
@@ -4512,7 +4557,7 @@ function refresh() {
    par le jeu. Elles décrivent la forme du socle, pas encore son comportement. */
 
 /* LES PANNEAUX SE REPLIENT TOUS. Sur un portable — 768 pixels de haut — la colonne latérale
-   fait trois écrans à elle seule : boutique, améliorations, vingt primes, réglages, 135 cases
+   fait trois écrans à elle seule : boutique, améliorations, les primes, réglages, 145 cases
    de collection, album. Aucune compaction ne rattrape ça, parce que le problème n'est pas la
    densité mais le NOMBRE de choses affichées en même temps.
 
@@ -4568,7 +4613,7 @@ function dureePension(a, b) {
    RAISON et non un booléen : un bouton grisé sans explication est la première chose qu'un
    joueur ne comprend pas, et cette fonction est ce que l'écran affichera. */
 function refusPension(a, b) {
-  if (!PENSION_OUVERTE) return 'La pension n’ouvre pas encore.';
+  if (!prime('pension')) return 'La pension n’est pas encore construite.';
   if (!a || !b || a.id === b.id) return 'Il faut deux bêtes différentes.';
   if (couples().length >= placesPension()) return 'Toutes les places sont prises.';
   if (enPension(a) || enPension(b)) return 'Une de ces deux bêtes est déjà en pension.';
@@ -4612,7 +4657,7 @@ const sorteDe = ligne => {
    ses parents. Appelée par `advance`, donc elle tourne aussi pendant une absence : une
    couvaison est une attente et non un geste. */
 function avancePension(dt) {
-  if (!PENSION_OUVERTE) return 0;
+  if (!prime('pension')) return 0;
   let nes = 0;
   state.pension.couples = couples().filter(k => {
     k.t += dt;
@@ -4712,7 +4757,7 @@ const TROPHEES = [
       return a && b && distanceDe(a, b) === 0;
     }) },
   { cle: 'emplettes', glyphe: '🧾', nom: 'Tout acheté',
-    dit: 'Prendre les vingt primes dans une même partie.',
+    dit: 'Prendre toutes les primes dans une même partie. Il y en a vingt et une.',
     test: () => PRIMES.every(p => prime(p.cle)) },
 
   // ── l'album, et ce qu'on en fait ──
@@ -4817,29 +4862,55 @@ function renderStats() {
   }
 }
 
-/* LA PENSION À L'ÉCRAN. Deux menus plutôt qu'un glisser-déposer : on désigne des bêtes qui
-   sont dans la bande, pas des cartes qu'on manipule, et un menu dit le nom complet — ce dont
-   on a besoin quand vingt bêtes se ressemblent.
+/* LA PENSION À L'ÉCRAN — UN NID OÙ L'ON DÉPOSE DEUX BÊTES.
 
-   La phrase sous les menus est le cœur de l'écran : elle dit la distance, la durée, et ce qui
-   peut sortir. Sans elle on confie deux bêtes à l'aveugle et on attend cinq heures pour
-   découvrir la règle. */
+   La première version désignait les parents dans deux menus déroulants. Ça marchait et ça
+   n'allait pas : on ne CONFIE pas une bête en la choisissant dans une liste, et le nom complet
+   d'une bête — « Châtaigne marbrée · adulte » — ne dit rien de ce qu'elle a l'air. Le geste
+   juste est celui de l'album : on attrape ce qu'on voit, on le pose là où ça va.
+
+   ELLE EMPRUNTE TOUT À L'ALBUM, et ce n'est pas de la parure : les deux écrans font la même
+   chose — déplacer une pièce d'un endroit vers un autre — et les apprendre deux fois serait un
+   coût inutile. Mêmes zones en pointillés, même surlignage au survol, même vignette, et surtout
+   la même règle : LE CLIC FAIT CE QUE FAIT LE GLISSER. Un geste qui n'a qu'une seule façon de
+   s'exécuter est un geste que la moitié des joueurs ne peut pas faire — ni au doigt, ni au
+   clavier. Ici le clic sur une case vide y met la bête EN SCÈNE, et le clic sur une case pleine
+   la retire.
+
+   LA PHRASE SOUS LE NID est le cœur de l'écran : elle dit la distance, la durée et ce qui peut
+   sortir. Sans elle on confie deux bêtes à l'aveugle et on attend cinq heures pour découvrir la
+   règle. */
 let pensionA = null, pensionB = null;
+
+// La bête d'un côté du nid, ou null : elle doit être encore là, et pas déjà partie couver.
+const auNid = id => state.pen.find(c => c.id === id && !enPension(c)) || null;
+
+/* Poser une bête dans le nid. La même bête des deux côtés n'a pas de sens : on la déplace
+   plutôt que de refuser, parce que refuser demanderait au joueur de deviner laquelle des deux
+   cases il occupe déjà. */
+function poserAuNid(id, cote) {
+  const c = auNid(id);
+  if (!c) return false;
+  if (cote === 'a') { if (pensionB === id) pensionB = null; pensionA = id; }
+  else              { if (pensionA === id) pensionA = null; pensionB = id; }
+  return true;
+}
 
 function renderPension() {
   const p = $('panel-pension');
-  const libres = state.pen.filter(c => !enPension(c));
-  /* LE PANNEAU N'EXISTE PAS AVANT LE SECOND ENCLOS. Avec une seule case on ne peut pas tenir
-     deux bêtes, donc on ne peut pas former de couple : montrer la pension à ce moment-là,
-     c'est montrer un écran dont chaque bouton refuse. Il apparaît à l'achat du second enclos,
-     qui est exactement l'instant où il devient jouable. */
-  p.hidden = state.pens < 2 && !couples().length;
+  /* LE PANNEAU EST UN BÂTIMENT : il n'existe pas tant qu'on ne l'a pas acheté. Un couple en
+     cours le garde à l'écran même après une ascension, le temps qu'il se vide — sans quoi deux
+     bêtes resteraient parquées derrière un panneau disparu. */
+  p.hidden = !prime('pension') && !couples().length;
+  if (p.hidden) return;
 
   setText($('pension-meta'), couples().length + ' / ' + placesPension());
 
-  // les couples en cours
-  const hote = $('pension-couples');
+  const hote = $('pension');
   hote.textContent = '';
+
+  /* ── LES COUPLES EN COURS ──
+     En haut, comme les cartes équipées de l'album : c'est le seul bloc qui agit déjà. */
   for (const k of couples()) {
     const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
     const el = document.createElement('div');
@@ -4847,48 +4918,84 @@ function renderPension() {
     const qui = document.createElement('span');
     qui.className = 'couple-qui';
     qui.textContent = (a ? glyphOf(a) : '—') + ' ' + (b ? glyphOf(b) : '—');
+    const txt = document.createElement('span');
+    txt.className = 'couple-txt';
+    const nom = document.createElement('b');
+    nom.className = 'couple-nom';
+    nom.textContent = !a || !b ? 'Couple rompu'
+      : LINE_BY_KEY[a.line].name + ' × ' + LINE_BY_KEY[b.line].name;
     const barre = document.createElement('span');
     barre.className = 'couple-bar';
     const jauge = document.createElement('i');
     jauge.style.width = Math.min(100, k.t / k.duree * 100).toFixed(1) + '%';
     barre.appendChild(jauge);
+    txt.append(nom, barre);
     const reste = document.createElement('span');
     reste.className = 'couple-reste';
-    reste.textContent = !a || !b ? 'couple rompu'
+    reste.textContent = !a || !b ? 'perdu'
       : k.t >= k.duree ? 'réserve pleine' : fmtTime(k.duree - k.t);
-    el.append(qui, barre, reste);
+    el.append(qui, txt, reste);
     hote.appendChild(el);
   }
 
-  // les deux menus
-  const remplir = (sel, garde) => {
-    const dedans = libres.map(c => 'c' + c.id).join(',');
-    if (sel.dataset.dedans !== dedans) {
-      sel.dataset.dedans = dedans;
-      sel.textContent = '';
-      const vide = document.createElement('option');
-      vide.value = ''; vide.textContent = '— choisir —';
-      sel.appendChild(vide);
-      for (const c of libres) {
-        const o = document.createElement('option');
-        o.value = String(c.id);
-        o.textContent = fullName(c) + ' · ' + AGES[c.age - 1].nom;
-        sel.appendChild(o);
-      }
-    }
-    sel.value = garde && libres.some(c => c.id === garde) ? String(garde) : '';
-  };
-  remplir($('pension-a'), pensionA);
-  remplir($('pension-b'), pensionB);
+  /* ── LE NID ──
+     Deux cases côte à côte, et un signe entre les deux. Chacune est à la fois une zone de
+     dépôt et un bouton : c'est ce qui donne les deux gestes sans dupliquer l'élément. */
+  const a = auNid(pensionA), b = auNid(pensionB);
+  if (!a) pensionA = null;
+  if (!b) pensionB = null;
 
-  const a = libres.find(c => c.id === pensionA), b = libres.find(c => c.id === pensionB);
+  const nid = document.createElement('div');
+  nid.className = 'nid';
+  const case_ = (cote, c) => {
+    const z = document.createElement('button');
+    z.type = 'button';
+    z.className = 'nid-case' + (c ? ' pleine rar-' + lineOf(c).rarity : ' vide');
+    z.dataset.cote = cote;
+    if (c) {
+      const g = document.createElement('span');
+      g.className = 'nid-bete';
+      setCreature(g, artFor(c), glyphOf(c));
+      g.style.filter = c.prodige ? PRODIGE_FILTER : tintOf(c).filter;
+      const t = document.createElement('span');
+      t.className = 'nid-txt';
+      const n = document.createElement('b');
+      n.className = 'nid-nom';
+      n.textContent = fullName(c);
+      const d = document.createElement('i');
+      d.className = 'nid-dit';
+      d.textContent = AGES[c.age - 1].nom + ' · ' + etiqDe(c).join(', ');
+      t.append(n, d);
+      z.append(g, t);
+      z.title = 'Retirer ' + fullName(c) + ' du nid';
+    } else {
+      const v = document.createElement('span');
+      v.className = 'nid-vide-mot';
+      v.textContent = 'glisse une bête ici';
+      const v2 = document.createElement('i');
+      v2.className = 'nid-vide-sous';
+      v2.textContent = 'ou clique pour y mettre celle en scène';
+      z.append(v, v2);
+    }
+    return z;
+  };
+  const signe = document.createElement('span');
+  signe.className = 'nid-signe';
+  signe.textContent = '×';
+  nid.append(case_('a', a), signe, case_('b', b));
+  hote.appendChild(nid);
+
+  /* ── CE QUE LE COUPLE DONNERAIT ── */
+  const dit = document.createElement('p');
+  dit.className = 'pension-dit';
   const refus = refusPension(a, b);
   if (!a || !b) {
-    setText($('pension-dit'), couples().length >= placesPension()
+    dit.textContent = couples().length >= placesPension()
       ? 'La place est prise. Attends que le couple ait fini.'
-      : 'Désigne deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.');
+      : 'Deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.';
   } else if (refus) {
-    setText($('pension-dit'), refus);
+    dit.textContent = refus;
+    dit.classList.add('refus');
   } else {
     const d = distanceDe(a, b), t = dureePension(a, b);
     const ecart = ecartRarete(a, b);
@@ -4897,14 +5004,14 @@ function renderPension() {
     const bas = haut === a ? b : a;
     /* CE QUE LA PHRASE DIT D'UNE RECETTE, ET CE QU'ELLE TAIT. Tant qu'on n'a jamais vu la
        merveille, elle ne la nomme pas : « et peut-être autre chose » suffit à dire qu'il y a
-       quelque chose ici, et rien de plus. Chercher les couples dans les menus est gratuit ;
-       les essayer coûte des jours. C'est la fouille qu'on récompense, pas la lecture d'un wiki.
+       quelque chose ici, et rien de plus. Composer des couples au nid est gratuit ; les
+       essayer coûte des jours. C'est la fouille qu'on récompense, pas la lecture d'un wiki.
 
        Une fois la bête rencontrée, la phrase la nomme et donne son pourcentage : le mystère a
        servi une fois, et le garder ensuite ne serait plus du mystère mais de la rétention. */
     const rec = recetteDe(a, b);
     const su = rec && state.seen[rec.donne + ':1'];
-    setText($('pension-dit'),
+    dit.textContent =
       (d === 0 ? 'Elles se ressemblent en tout' : d === 1 ? 'Elles ont une chose en commun'
                                                           : 'Elles n’ont rien en commun') +
       ' · ' + fmtTime(t) + ' · ' +
@@ -4912,22 +5019,33 @@ function renderPension() {
                    : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
                      ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +
       (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name
-                      : ' · et peut-être autre chose'));
+                      : ' · et peut-être autre chose');
+    if (rec) dit.classList.add('recette');
   }
-  $('pension-go').disabled = !!refus || !a || !b;
-  setText($('pension-go'), 'Confier');
+  hote.appendChild(dit);
+
+  const go = document.createElement('button');
+  go.type = 'button';
+  go.className = 'asc-go';
+  go.id = 'pension-go';
+  go.textContent = 'Confier';
+  go.disabled = !!refus || !a || !b;
+  hote.appendChild(go);
 
   /* CE QUI ATTEND EN RÉSERVE. Un œuf de pension se range parmi les autres et ne se distingue
      plus de rien : sans cette ligne, on couve cinq heures pour voir un « œuf commun » de plus
      dans la boutique, et la lignée promise n'existe que dans le code. */
   const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
+  const nes = state.pension.nes || 0;
   setText($('pension-intro'), promis.length
     ? 'En réserve : ' + promis.map(l => LINE_BY_KEY[l].name.toLowerCase()).join(', ') + '.'
-    : couples().length || state.pension.nes
+    : nes
     ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus. ' +
-      (state.pension.nes || 0) + ' œuf' + ((state.pension.nes || 0) > 1 ? 's' : '') + ' pondus.'
-    : 'Confie deux bêtes adultes : elles pondront un œuf. Plus elles se ressemblent, plus c’est ' +
-      'rapide — et l’œuf prend la lignée de l’une des deux.');
+      nes + (nes > 1 ? ' œufs pondus' : ' œuf pondu') + ' depuis le début.'
+    : couples().length
+    ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus.'
+    : 'Glisse deux bêtes adultes dans le nid : elles pondront un œuf. Plus elles se ressemblent, ' +
+      'plus c’est rapide — et l’œuf prend la lignée de l’une des deux.');
 }
 
 /* Les trophées, sous les compteurs. Un décroché montre son nom et ce qu'il a fallu faire ;
@@ -5166,24 +5284,90 @@ function bindTools() {
     b.addEventListener('click', () => plier(b.dataset.plie));
   }
 
-  $('pension-a').addEventListener('change', e => {
-    pensionA = parseInt(e.target.value, 10) || null;
-    if (pensionA && pensionA === pensionB) pensionB = null;
+  /* ── LA PENSION : glisser une bête de la bande jusqu'au nid ──────────────────
+     Mêmes écouteurs que l'album, et pour la même raison : renderPension reconstruit tout à
+     chaque changement, donc les écouteurs vivent sur le panneau et jamais sur les cases.
+
+     La SOURCE est la bande, la CIBLE est le nid : c'est le seul glisser du jeu qui traverse
+     deux panneaux, et c'est ce qui le rend lisible — on prend la bête où elle vit. */
+  const bandes = [$('strip-pen'), $('strip-incub')];
+  for (const bande of bandes) {
+    bande.addEventListener('dragstart', e => {
+      const t = e.target.closest && e.target.closest('.thumb');
+      if (!t || !t.draggable) return;
+      e.dataTransfer.setData('text/plain', t.dataset.cle);
+      e.dataTransfer.effectAllowed = 'copy';
+      t.classList.add('porte');
+      document.body.classList.add('glisse');   // le nid s'allume pendant qu'on porte
+    });
+    bande.addEventListener('dragend', e => {
+      const t = e.target.closest && e.target.closest('.thumb');
+      if (t) t.classList.remove('porte');
+      document.body.classList.remove('glisse');
+      for (const z of $('pension').querySelectorAll('.nid-case')) z.classList.remove('survol');
+    });
+  }
+
+  const nidHote = $('pension');
+  nidHote.addEventListener('dragover', e => {
+    const z = e.target.closest && e.target.closest('.nid-case');
+    if (!z) return;
+    e.preventDefault();                       // sans ça, le navigateur refuse le dépôt
+    e.dataTransfer.dropEffect = 'copy';
+    z.classList.add('survol');
+  });
+  nidHote.addEventListener('dragleave', e => {
+    const z = e.target.closest && e.target.closest('.nid-case');
+    if (z && !z.contains(e.relatedTarget)) z.classList.remove('survol');
+  });
+  nidHote.addEventListener('drop', e => {
+    const z = e.target.closest && e.target.closest('.nid-case');
+    if (!z) return;
+    e.preventDefault();
+    z.classList.remove('survol');
+    // la clé d'un sujet, « c:12 » : seules les bêtes sont attrapables, mais on revérifie
+    const cle = e.dataTransfer.getData('text/plain') || '';
+    if (!poserAuNid(parseInt(cle.slice(2), 10), z.dataset.cote)) {
+      blip(300, 0.05, 'sine', 0.03);
+      return;
+    }
+    chord([523, 659], 55);
     refresh();
   });
-  $('pension-b').addEventListener('change', e => {
-    pensionB = parseInt(e.target.value, 10) || null;
-    if (pensionB && pensionB === pensionA) pensionA = null;
+
+  /* LE CLIC FAIT CE QUE FAIT LE GLISSER, comme dans l'album. Sur une case pleine il retire ;
+     sur une case vide il y met la bête EN SCÈNE — celle qu'on regarde, donc celle à laquelle
+     on pense. C'est le chemin de ceux qui jouent au doigt ou au clavier, et il n'ajoute aucun
+     bouton à l'écran. */
+  nidHote.addEventListener('click', e => {
+    if (e.target.closest && e.target.closest('#pension-go')) {
+      const a = auNid(pensionA), b = auNid(pensionB);
+      if (!accoupler(a, b)) { blip(300, 0.05, 'sine', 0.03); return; }
+      pensionA = pensionB = null;
+      chord([392, 523, 659], 70);
+      refresh();
+      save();
+      return;
+    }
+    const z = e.target.closest && e.target.closest('.nid-case');
+    if (!z) return;
+    const cote = z.dataset.cote;
+    if (z.classList.contains('pleine')) {
+      if (cote === 'a') pensionA = null; else pensionB = null;
+      blip(330, 0.05, 'sine', 0.03);
+      refresh();
+      return;
+    }
+    const s = current();
+    if (!s || s.kind !== 'creature' || !poserAuNid(s.c.id, cote)) {
+      blip(300, 0.05, 'sine', 0.03);
+      return;
+    }
+    chord([523, 659], 55);
     refresh();
   });
-  $('pension-go').addEventListener('click', () => {
-    const a = state.pen.find(c => c.id === pensionA), b = state.pen.find(c => c.id === pensionB);
-    if (!accoupler(a, b)) { blip(300, 0.05, 'sine', 0.03); return; }
-    pensionA = pensionB = null;
-    chord([392, 523, 659], 70);
-    refresh();
-    save();
-  });
+
+  $('btn-pause').addEventListener('click', () => basculerPause());
 
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
   $('stat-close').addEventListener('click', () => ouvrirStats(false));

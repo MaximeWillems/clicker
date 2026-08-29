@@ -182,7 +182,7 @@ body {
   padding: 0.35rem 0.6rem; cursor: pointer; min-width: 2.2rem;
 }
 .tool:hover { border-color: var(--rule-hi); color: var(--ink); }
-.tool[aria-pressed="false"] { color: var(--faint); text-decoration: line-through; }
+.tool[aria-pressed="false"]:not(#btn-pause) { color: var(--faint); text-decoration: line-through; }
 .tool-danger:hover { border-color: var(--red); color: var(--red); }
 
 /* ── bandeau retour ──────────────────────────── */
@@ -1067,33 +1067,98 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
 }
 
-/* ── LA PENSION ───────────────────────────────────────────────────────────────
-   Deux menus, une phrase, un bouton. La phrase fait tout le travail : elle dit la distance, la
-   durée et ce qui peut sortir, sans quoi on confie deux bêtes à l'aveugle. */
-.pension-couples { display: flex; flex-direction: column; gap: 4px; margin-bottom: 0.7rem; }
+/* ── LA PENSION ──────────────────────────────────────────────────
+   Elle emprunte tout à l'album, et délibérément : les deux écrans font le même geste — prendre
+   une pièce et la poser ailleurs — et les apprendre deux fois serait un coût pour rien. Mêmes
+   zones en pointillés, même jade au survol, même vignette à gauche et texte à droite. */
+.pension { display: flex; flex-direction: column; gap: 6px; }
+
+/* les couples en cours passent devant : c'est le seul bloc qui agit déjà */
 .couple {
-  display: flex; align-items: center; gap: 0.5rem;
-  background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px;
-  padding: 0.4rem 0.5rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--raised); border: 1px solid var(--rule);
+  border-left: 2px solid var(--jade);
+  padding: 0.4rem 0.6rem; border-radius: 3px;
 }
-.couple-qui { font-size: 1rem; line-height: 1; letter-spacing: 0.1em; }
-.couple-bar { flex: 1; height: 4px; background: var(--ground); border-radius: 2px; overflow: hidden; }
-.couple-bar > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 2px; }
+.couple-qui { font-size: 1.15rem; line-height: 1; letter-spacing: 0.08em; flex: none; }
+.couple-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.couple-nom {
+  font-family: var(--f-name); font-weight: 400; font-size: 0.8rem; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.couple-bar { height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+.couple-bar > i { display: block; height: 100%; width: 0; background: var(--jade); border-radius: 2px; }
 .couple-reste {
   font-family: var(--f-num); font-size: 0.68rem; color: var(--soft);
-  font-variant-numeric: tabular-nums; white-space: nowrap;
+  font-variant-numeric: tabular-nums; white-space: nowrap; flex: none;
 }
-.pension-choix { display: flex; flex-direction: column; gap: 4px; margin-bottom: 0.5rem; }
-.pension-choix select {
-  font-family: var(--f-ui); font-size: 0.78rem; width: 100%;
-  background: var(--sunken); color: var(--ink);
-  border: 1px solid var(--rule-hi); border-radius: 3px; padding: 0.35rem 0.4rem;
+
+/* LE NID : deux cases et un signe. Chacune est à la fois zone de dépôt et bouton. */
+.nid { display: flex; align-items: stretch; gap: 4px; margin-top: 0.2rem; }
+.nid-signe {
+  display: flex; align-items: center; flex: none;
+  font-family: var(--f-num); font-size: 0.9rem; color: var(--faint);
 }
+.nid-case {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 0.55rem; text-align: left;
+  background: var(--surface); color: inherit;
+  border: 1px dashed var(--rule-hi); border-radius: 4px;
+  padding: 0.45rem 0.55rem; min-height: 3.2rem;
+  font: inherit; cursor: pointer;
+}
+.nid-case.pleine {
+  background: var(--raised); border-style: solid; border-color: var(--rule);
+  border-left: 2px solid var(--rar, var(--rule-hi));
+}
+.nid-case:hover { border-color: var(--rule-hi); }
+.nid-case.pleine:hover { border-color: var(--red); }
+/* pendant qu'on porte une bête, les cases vides s'allument : le nid dit où déposer */
+body.glisse .nid-case.vide { border-color: var(--jade-dim); background: var(--raised); }
+.nid-case.survol { border-color: var(--jade); background: var(--jade-dim); }
+
+.nid-bete { font-size: 1.6rem; line-height: 1; flex: none; }
+.nid-bete img { width: 1em; height: 1em; display: block; object-fit: contain; }
+.nid-txt { display: flex; flex-direction: column; min-width: 0; }
+.nid-nom {
+  font-family: var(--f-name); font-weight: 400; font-size: 0.82rem;
+  color: var(--ink); line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.nid-dit { font-family: var(--f-num); font-style: normal; font-size: 0.68rem; color: var(--soft); }
+.nid-vide-mot { font-family: var(--f-ui); font-size: 0.76rem; color: var(--soft); }
+.nid-vide-sous {
+  font-family: var(--f-num); font-style: normal; font-size: 0.64rem; color: var(--faint);
+  margin-left: auto; text-align: right;
+}
+
 .pension-dit {
   font-family: var(--f-num); font-size: 0.72rem; color: var(--soft);
-  line-height: 1.45; margin: 0 0 0.6rem;
+  line-height: 1.45; margin: 0.15rem 0 0.2rem;
 }
+.pension-dit.refus { color: var(--faint); }
+/* une recette ne se nomme pas, mais elle se voit : c'est le seul indice avant l'éclosion */
+.pension-dit.recette { color: var(--coin); }
 #pension-go { width: 100%; }
+
+/* LA BANDE DEVIENT UNE RÉSERVE DE POIGNÉES dès qu'on tire une bête. */
+.thumb[draggable="true"] { cursor: grab; }
+.thumb.porte { opacity: 0.4; cursor: grabbing; }
+
+/* ── LA PAUSE ────────────────────────────────────────────────────
+   Une ferme arrêtée doit se VOIR, sinon on la croit cassée. Le bandeau le dit en toutes
+   lettres, et la scène se désature — assez pour qu'on le remarque, pas assez pour qu'on ne
+   voie plus ses bêtes, puisque c'est justement le moment où on les arrange. */
+.pause-note {
+  margin: 0 auto 0.6rem; max-width: 62rem; padding: 0.5rem 0.8rem;
+  background: var(--jade-dim); border: 1px solid var(--jade);
+  border-radius: 4px; font-size: 0.78rem; color: var(--ink);
+}
+body.en-pause .stage { filter: saturate(0.45); }
+body.en-pause .subject { cursor: default; }
+#btn-pause[aria-pressed="true"] {
+  color: var(--jade); border-color: var(--jade); text-decoration: none;
+}
 
 /* ── LA CARTE : SES ÉTOILES ET SES DEUX GESTES ────────────────────────────────
    Les deux boutons portent leur PRIX sur eux — ce que la carte rend si on la fond, ce que

@@ -50,7 +50,7 @@ function bete(jeu, ligne, age, p) {
 scenario('démarrage — chaque id demandé existe dans index.html', () => {
   const jeu = neuf();
   ok('aucun id manquant', inconnus.length === 0, inconnus.join(', '));
-  ok('version au format alpha X.Y.Z', /^alpha \d+\.\d+\.\d+$/.test(jeu.VERSION), jeu.VERSION);
+  ok('version au format « mot X.Y.Z »', /^(alpha|beta) \d+\.\d+\.\d+$/.test(jeu.VERSION), jeu.VERSION);
   ok('numéro de sauvegarde entier', Number.isInteger(jeu.SAVE_V));
 });
 
@@ -863,10 +863,24 @@ scenario('trophées — ils ne donnent rien, et traversent l’ascension', () =>
 
 /* ───────────────────────────────── la pension ───────────────────────────────── */
 
-/* Deux bêtes prêtes à être confiées, dans une ferme assez grande pour les tenir. */
+/* Deux bêtes prêtes à être confiées, dans une ferme assez grande pour les tenir — et la
+   pension achetée, puisque c'est un bâtiment depuis la beta 1.0.0. */
 function couple(jeu, ligneA, ligneB) {
   jeu.state.pens = 8;
+  jeu.state.primes.pension = true;
   return [bete(jeu, ligneA, 4, 20000), bete(jeu, ligneB, 4, 20000)];
+}
+
+// ce que dit la phrase sous le nid, quel que soit le nombre de couples affichés au-dessus
+function ditPension(jeu) {
+  const p = noeuds.get('pension').children.find(c => c.classList.contains('pension-dit'));
+  return p ? p.textContent : '';
+}
+
+// les deux cases du nid, dans l'ordre
+function casesNid(jeu) {
+  const nid = noeuds.get('pension').children.find(c => c.classList.contains('nid'));
+  return nid ? nid.children.filter(c => c.classList.contains('nid-case')) : [];
 }
 
 scenario('pension — la distance, la durée, et ce qui est refusé', () => {
@@ -1012,15 +1026,98 @@ scenario('pension — elle tourne pendant une absence, et l’écran suit', () =
      noeuds.get('pension-intro').textContent);
 });
 
-scenario('pension — le panneau n’existe pas avant le second enclos', () => {
+scenario('pension — c’est un bâtiment : il faut l’acheter', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false;
-  s.pens = 1;
+  s.tuto = false; s.pens = 8;
+  const a = bete(jeu, 'loup', 4, 20000), b = bete(jeu, 'ours', 4, 20000);
+
   jeu.refresh();
-  eq('caché avec une seule case', noeuds.get('panel-pension').hidden, true);
-  s.pens = 2;
+  eq('le panneau n’existe pas', noeuds.get('panel-pension').hidden, true);
+  ok('et le refus dit pourquoi', /construite/.test(jeu.refusPension(a, b)), jeu.refusPension(a, b));
+  ok('accoupler est refusé', !jeu.accoupler(a, b));
+  eq('la pension n’avance pas', jeu.avancePension(1e6), 0);
+
+  /* ELLE S'ACHÈTE COMME UNE PRIME, donc au prix de la table — pas d'un chemin à part. */
+  const p = jeu.PRIMES.find(x => x.cle === 'pension');
+  ok('elle est dans la table des primes', !!p);
+  s.coins = p.prix;
+  jeu.buyPrime(p);
+  ok('achetée', jeu.prime('pension'));
+  eq('et payée', s.coins, 0);
+
   jeu.refresh();
-  eq('visible dès la seconde', noeuds.get('panel-pension').hidden, false);
+  eq('le panneau apparaît', noeuds.get('panel-pension').hidden, false);
+  ok('et le couple se forme', jeu.accoupler(a, b));
+
+  /* UN COUPLE EN COURS GARDE LE PANNEAU À L'ÉCRAN même sans la prime : sinon deux bêtes
+     resteraient parquées derrière un panneau disparu après une ascension. */
+  s.primes = {};
+  jeu.refresh();
+  eq('le couple retient le panneau', noeuds.get('panel-pension').hidden, false);
+});
+
+scenario('pause — la ferme s’arrête, et le temps arrêté est perdu', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  s.up.eleveur = 6; s.up.couveuse = 6;
+  a.p = 0;
+  jeu.accoupler(a, b);
+
+  const pAvant = a.p, coinsAvant = s.coins, tAvant = jeu.couples()[0].t;
+  jeu.basculerPause(true);
+  ok('le drapeau est levé', jeu.enPause);
+  eq('le bouton le dit', noeuds.get('btn-pause').getAttribute('aria-pressed'), 'true');
+  eq('et le bandeau apparaît', noeuds.get('pause-note').hidden, false);
+
+  for (let i = 0; i < 50; i++) jeu.loop();
+  eq('rien n’a poussé', a.p, pAvant);
+  eq('rien n’est rentré', s.coins, coinsAvant);
+  eq('rien n’a couvé', jeu.couples()[0].t, tAvant);
+
+  /* LE CLIC EST ARRÊTÉ LUI AUSSI : une ferme arrêtée l'est pour tout le monde. */
+  const temoin = bete(jeu, 'loup', 2, 0);
+  const clics = s.stats.clics;
+  jeu.tapStage();
+  eq('le clic ne compte pas', s.stats.clics, clics);
+  eq('et ne fait rien pousser', temoin.p, 0);
+
+  jeu.basculerPause(false);
+  ok('le drapeau retombe', !jeu.enPause);
+  eq('le bandeau disparaît', noeuds.get('pause-note').hidden, true);
+  // la boucle mesure du temps réel : sans reculer l’horloge, deux tours dans la même
+  // milliseconde ne font rien avancer, et le scénario dépendrait de la vitesse de la machine
+  jeu.lastFrame = Date.now() - 1000;
+  jeu.loop();
+  ok('et la ferme repart', jeu.couples()[0].t > tAvant, jeu.couples()[0].t);
+});
+
+scenario('pension — le nid se remplit au glisser comme au clic', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.refresh();
+
+  eq('deux cases au départ', casesNid(jeu).length, 2);
+  ok('vides', casesNid(jeu).every(z => z.classList.contains('vide')));
+
+  ok('on pose à gauche', jeu.poserAuNid(a.id, 'a'));
+  ok('et à droite', jeu.poserAuNid(b.id, 'b'));
+  jeu.refresh();
+  ok('les deux cases sont pleines', casesNid(jeu).every(z => z.classList.contains('pleine')));
+  ok('et la phrase chiffre le couple', /1 h/.test(ditPension(jeu)), ditPension(jeu));
+
+  /* LA MÊME BÊTE DES DEUX CÔTÉS N'A PAS DE SENS : on la déplace plutôt que de refuser. */
+  ok('reposer à gauche celle de droite', jeu.poserAuNid(b.id, 'a'));
+  eq('elle a changé de côté', jeu.pensionA, b.id);
+  eq('et libéré la sienne', jeu.pensionB, null);
+
+  // une bête déjà en pension ne se repose pas
+  jeu.pensionA = a.id; jeu.pensionB = b.id;
+  jeu.accoupler(a, b);
+  jeu.pensionA = jeu.pensionB = null;
+  ok('elle est prise', !jeu.poserAuNid(a.id, 'a'));
+  eq('et une bête qui n’existe pas non plus', jeu.poserAuNid(9999, 'a'), false);
 });
 
 scenario('pension — une partie de v14 se relit sans rien perdre', () => {
@@ -1080,8 +1177,8 @@ scenario('merveilles — aucun œuf n’en donne, et rien ne la met en vente', (
 
 scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8;
-  const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
+  s.tuto = false; s.coins = 1e12;
+  const [g1, g2] = couple(jeu, 'golem', 'golem');
 
   const rec = jeu.recetteDe(g1, g2);
   ok('le couple porte une recette', !!rec);
@@ -1115,8 +1212,8 @@ scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte
 
 scenario('merveilles — sans la recette, le couple pond comme les autres', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8;
-  const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
+  s.tuto = false; s.coins = 1e12;
+  const [g1, g2] = couple(jeu, 'golem', 'golem');
 
   const vrai = Math.random;
   try {
@@ -1132,10 +1229,10 @@ scenario('merveilles — sans la recette, le couple pond comme les autres', () =
 
 scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la bête', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8;
-  const a = bete(jeu, 'chimere', 4, 20000), b = bete(jeu, 'sphinx', 4, 20000);
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'chimere', 'sphinx');
   const loup = bete(jeu, 'loup', 4, 20000);
-  const dit = () => noeuds.get('pension-dit').textContent;
+  const dit = () => ditPension(jeu);
 
   jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
   ok('elle annonce autre chose', /peut-être autre chose/.test(dit()), dit());
@@ -1152,7 +1249,7 @@ scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la b�
 
 scenario('merveilles — un cran de rareté, jamais un cran de puissance', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8;
+  s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true;
 
   /* SI UNE MERVEILLE VALAIT PLUS QU'UNE MYTHIQUE, la pension redeviendrait une stratégie
      d'argent et tout le travail de la 3.0.0 tomberait sur la première éclose. */

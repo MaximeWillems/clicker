@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 3.1.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.0.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -27,8 +27,8 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 
 ### Quand le mot change
 
-Le mot **alpha** n'est pas un quatrième nombre : `alpha 2.0.0` est toujours une alpha. Il
-tombe le jour où **trois choses sont en place ensemble** :
+Le mot **alpha** n'était pas un quatrième nombre : `alpha 2.0.0` était toujours une alpha. Il
+devait tomber le jour où **trois choses seraient en place ensemble** :
 
 1. **la pension** — deux bêtes parquées, une durée, un œuf ;
 2. **la fusion des cartes** — les paliers de l'album, qui donnent une raison de garder les
@@ -43,25 +43,32 @@ une, le jeu est un très bon prototype de sa moitié d'avant.
 Les nombres continuent — la bêta ne remet rien à zéro. La pension est le **majeur** qui
 ouvre la série 3.
 
-**Les trois sont tombés.** La [fusion des cartes](#la-fusion-et-la-poussière) en 2.32.0, la
-[pension](#la-pension) en 3.0.0, les [merveilleuses](#les-merveilleuses) en 3.1.0. La boucle
-est fermée : on élève pour reproduire, on reproduit pour obtenir ce qui ne s'achète nulle part,
-et l'album donne une raison de garder les doublons.
+**Les trois sont tombés**, et le mot a changé. La
+[fusion des cartes](#la-fusion-et-la-poussière) en 2.32.0, la [pension](#la-pension) en 3.0.0,
+les [merveilleuses](#les-merveilleuses) en 3.1.0 — puis **`beta 1.0.0`**. La boucle est fermée :
+on élève pour reproduire, on reproduit pour obtenir ce qui ne s'achète nulle part, et l'album
+donne une raison de garder les doublons.
+
+**Les nombres sont repartis de 1**, contrairement à ce qui était prévu ici. Le document disait
+« la bêta ne remet rien à zéro » et il avait tort sur un point de fait : la série `alpha 3.x`
+racontait l'histoire de l'alpha, pas celle de la bêta. `beta 1.0.0` dit ce qu'elle est — une
+première version d'un jeu complet — là où `beta 3.2.0` aurait continué à compter les
+corrections d'un prototype. Le mot et le nombre repartent ensemble, une seule fois.
 
 Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
-([MERVEILLES.md](MERVEILLES.md)). **Le mot reste donc à changer, et c'est une décision, pas un
-calcul** — la définition demandait « les premières merveilleuses », elle ne disait pas combien.
+([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
+ne disait pas combien.
 
 À ne pas confondre avec le `v` de la sauvegarde (`v: 16` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
-avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
-de 4 à 5.
+avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 ### Ce qui est sorti
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **3.1.0** | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
+| **beta 1.0.0** | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
+| alpha 3.1.0 | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
 | 3.0.0 | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
 | 2.32.0 | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
 | 2.31.0 | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
@@ -1436,12 +1443,11 @@ c'est précisément ce que le plafond doit éviter de faire.
 
 #### L'écran
 
-Deux menus déroulants plutôt qu'un glisser-déposer : on désigne des bêtes qui sont dans la
-bande, pas des cartes qu'on manipule, et un menu dit le nom complet — ce dont on a besoin
-quand vingt bêtes se ressemblent.
+Un **nid** de deux cases, qu'on remplit en y glissant des bêtes prises dans la bande. Le détail
+du geste et de ce qu'il a remplacé est [plus bas](#le-nid-et-le-geste-qui-le-remplit).
 
-**La phrase sous les menus est le cœur du panneau.** Elle dit la distance, la durée et ce qui
-peut sortir :
+**La phrase sous le nid est le cœur du panneau.** Elle dit la distance, la durée et ce qui peut
+sortir :
 
     Elles se ressemblent en tout · 1 h 00 m · un œuf de l'une ou de l'autre, à pile ou face
     Elles ont une chose en commun · 5 h 40 m · 95 % loup, 5 % ouroboros
@@ -1450,11 +1456,6 @@ peut sortir :
 Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour découvrir la règle.
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
-
-**Le panneau n'existe pas avant le second enclos.** Avec une seule case on ne peut pas tenir
-deux bêtes, donc pas former de couple : montrer la pension à ce moment-là, c'est montrer un
-écran dont chaque bouton refuse. Il apparaît à l'achat du second enclos, exactement l'instant
-où il devient jouable.
 
 **Une place, une seule.** C'est ce qui donne du poids au choix du couple : avec deux places, on
 ne choisit plus, on empile. Une seconde place se vendra peut-être en prime, mais elle n'est pas
@@ -1570,6 +1571,61 @@ dit la même chose et passe.
 Les six autres merveilles sont écrites et attendent leurs dessins : voir
 [MERVEILLES.md](MERVEILLES.md).
 
+### Le nid, et le geste qui le remplit
+
+La pension se remplissait dans **deux menus déroulants**. Ça marchait et ça n'allait pas : on
+ne *confie* pas une bête en la choisissant dans une liste, et le nom complet d'une bête —
+« Châtaigne marbrée · adulte » — ne dit rien de ce qu'elle a l'air. Le geste juste est celui
+de l'album : **on attrape ce qu'on voit, on le pose là où ça va.**
+
+**Elle emprunte tout à l'album, et ce n'est pas de la parure.** Les deux écrans font la même
+chose — déplacer une pièce d'un endroit vers un autre — et les apprendre deux fois serait un
+coût pour rien. Mêmes zones en pointillés, même jade au survol, même vignette à gauche et texte
+à droite, et surtout la même règle :
+
+> **Le clic fait ce que fait le glisser.**
+
+Un geste qui n'a qu'une seule façon de s'exécuter est un geste que la moitié des joueurs ne
+peut pas faire — ni au doigt, ni au clavier. Dans le nid, un clic sur une case vide y met **la
+bête en scène**, celle qu'on regarde donc celle à laquelle on pense ; un clic sur une case
+pleine la retire. Aucun bouton de plus à l'écran.
+
+La source du glisser est **la bande**, pas un inventaire à part : c'est le seul glisser du jeu
+qui traverse deux panneaux, et c'est ce qui le rend lisible — on prend la bête là où elle vit.
+Pendant qu'on en porte une, les cases vides s'allument.
+
+### La pension s'achète
+
+C'était un panneau offert au deuxième enclos, ce qui la posait au milieu de la colonne à un
+moment où l'on n'a ni bêtes adultes ni enclos à immobiliser : **un écran dont chaque bouton
+refuse.** C'est une [prime](#les-primes) désormais — 400 000, entre l'Intendance et l'Œil
+exercé, c'est-à-dire dans l'ère rare, là où l'on commence à garder des bêtes plutôt qu'à les
+vendre.
+
+Comme toutes les primes, **elle ne traverse pas l'ascension**. Un couple en cours garde
+toutefois le panneau à l'écran même sans la prime : sinon deux bêtes resteraient parquées
+derrière un panneau disparu.
+
+### Le bouton pause
+
+Une ferme qu'on peut **arrêter**. Il existe pour une raison précise : arranger deux parents
+pendant que le marchand vend, que l'évolution monte et que les bêtes grandissent, c'est
+arranger une bande qui bouge sous la main.
+
+En pause, rien ne pousse, rien ne rentre, rien ne couve — **et le clic ne fait rien non plus.**
+Une ferme arrêtée l'est pour tout le monde, la main du joueur comprise. La scène se désature :
+assez pour qu'on le remarque, pas assez pour qu'on ne voie plus ses bêtes, puisque c'est
+justement le moment où on les arrange.
+
+**Elle ne se sauvegarde pas**, et c'est délibéré. Une pause est un moment, pas un réglage :
+fermer l'onglet en pause puis revenir le lendemain sur une ferme gelée serait une partie
+cassée, sans rien pour dire pourquoi. Au rechargement, la ferme tourne.
+
+**Elle ne gèle pas non plus le temps hors ligne.** La sauvegarde continue de poser son horodatage,
+donc une pause de deux heures ne se rattrape pas au retour. Mettre en pause n'est pas mettre de
+côté — c'est arrêter, et le temps arrêté est perdu. C'est ce qui l'empêche de devenir une façon
+de jouer.
+
 ### Tout se replie
 
 **Les six panneaux de la colonne latérale se replient par leur titre** : boutique,
@@ -1582,7 +1638,7 @@ temps**, et aucune compaction ne rattrape six panneaux dont un porte 145 cases. 
 qu'on ne regarde pas laisse la décision au joueur plutôt qu'à un point de rupture.
 
 Replié, il ne reste que la barre de titre — **et son compteur**, qui est justement ce qu'on
-vient lire du coin de l'œil sans ouvrir : `6 / 145` pour la collection, `5 / 20` pour les
+vient lire du coin de l'œil sans ouvrir : `6 / 145` pour la collection, `5 / 21` pour les
 primes.
 
 Deux détails d'implémentation qui se voient dans le code : le bouton n'enveloppe **que le

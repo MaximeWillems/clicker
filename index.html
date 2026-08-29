@@ -29,6 +29,8 @@
   <button type="button" id="btn-asc" class="asc-call" hidden>Ascension</button>
 
   <div class="tools">
+    <button type="button" id="btn-pause" class="tool" aria-pressed="false"
+            title="Mettre la ferme en pause — rien ne pousse, rien ne se vend">⏸</button>
     <button type="button" id="btn-speed" class="tool" title="Accélérer le temps (test)">×1</button>
     <button type="button" id="btn-tuto" class="tool" aria-pressed="true"
             title="Mode histoire — l'éteindre montre tout d'un coup, le rallumer rejoue les notes">📖</button>
@@ -40,6 +42,7 @@
 </header>
 
 <div id="offline-note" class="offline-note" hidden></div>
+<div id="pause-note" class="pause-note" hidden></div>
 
 <!-- La boîte de dialogue de la professeure. En bas de l'écran, comme il se doit, et
      JAMAIS bloquante : le jeu continue derrière, on peut cliquer son œuf pendant qu'elle
@@ -202,13 +205,7 @@
       <span class="panel-meta" id="pension-meta"></span>
     </div>
     <p class="panel-intro" id="pension-intro"></p>
-    <div class="pension-couples" id="pension-couples"></div>
-    <div class="pension-choix" id="pension-choix">
-      <select id="pension-a" aria-label="Premier parent"></select>
-      <select id="pension-b" aria-label="Second parent"></select>
-    </div>
-    <p class="pension-dit" id="pension-dit"></p>
-    <button type="button" class="asc-go" id="pension-go">Confier</button>
+    <div class="pension" id="pension"></div>
   </section>
 
   <section class="panel" id="panel-reglages" hidden>
