@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.8.0';
+const VERSION = 'beta 1.8.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -5061,6 +5061,26 @@ function pondre(ligne) {
    un couple de deux minutes, c'est sept cents tours pour rien. */
 const PONTES_MAX = 200;
 
+/* UN COUPLE DONT UNE SORTIE EST PLEINE EST BLOQUÉ, et il l'est AVANT de tirer.
+
+   C'est le correctif d'un défaut qui a rendu Sun Wukong trivial. Le test de plafond vivait
+   après le tirage de recette : un couple bloqué relançait donc sa recette À CHAQUE TOUR DE
+   BOUCLE — dix fois par seconde — et comme la merveille a sa PROPRE réserve, jamais pleine,
+   elle était la seule chose que le couple pouvait encore pondre. Une réserve d'œufs épiques
+   pleine transformait deux golems en machine à sous tournant à dix hertz : mesuré, huit
+   Wukong en une minute là où la médiane est de dix-neuf heures.
+
+   La leçon générale, et elle vaut pour tout ce qui viendra : **un tirage ne doit jamais avoir
+   lieu dans une branche qui ne peut pas aboutir.** Le hasard consommé pour rien n'est pas
+   neutre quand une seule de ses issues, elle, aboutit.
+
+   ON BLOQUE SUR L'UNE DES DEUX SORTIES, pas sur les deux. Un couple de raretés différentes a
+   deux sorties possibles ; s'arrêter dès que l'une déborde est plus simple à raconter — « un
+   couple attend que sa réserve se vide » — et c'est le seul choix qui garantisse qu'un couple
+   bloqué reste bloqué. */
+const sortesDe = (a, b) => [sorteDe(a.line), sorteDe(b.line)];
+const reservePleine = (a, b) => sortesDe(a, b).some(s => eggStock(s) >= PLAFOND_OEUFS);
+
 /* Fait avancer les couples.
 
    LE COUPLE NE SE DÉFAIT PAS QUAND L'ŒUF TOMBE. Il se défaisait, et c'était le geste de trop :
@@ -5084,21 +5104,20 @@ function avancePension(dt) {
 
     let tours = 0;
     while (k.t >= k.duree && tours++ < PONTES_MAX) {
+      /* LE PLAFOND SE TESTE AVANT LE TIRAGE. Le couple GARDE sa ponte et attend : la jeter
+         punirait une absence, et c'est précisément ce que le plafond doit éviter de faire. */
+      if (reservePleine(a, b)) { k.t = k.duree; break; }
+
       /* LA RECETTE SE TIRE UNE FOIS PAR PONTE, ET NON PAR ŒUF. Une nichée est un événement,
          pas cinq — sans cette règle, la dernière prime du jeu multiplierait par cinq la chance
          de toutes les merveilles d'un coup. */
       const rec = recetteDe(a, b);
       const rare = rec && Math.random() < rec.chance ? rec.donne : null;
 
-      let pondus = 0;
       for (let i = 0; i < portee; i++) {
         // la merveille occupe UNE place de la nichée, les autres se tirent normalement
-        if (pondre(i === 0 && rare ? rare : ligneeDe(a, b))) pondus++;
+        if (pondre(i === 0 && rare ? rare : ligneeDe(a, b))) nes++;
       }
-      /* La réserve est pleine : le couple GARDE sa ponte et attend. Le jeter punirait une
-         absence, et c'est précisément ce que le plafond doit éviter de faire. */
-      if (!pondus) { k.t = k.duree; return true; }
-      nes += pondus;
       k.t -= k.duree;
     }
     return true;

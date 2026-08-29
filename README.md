@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.8.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.8.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.8.0** | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
+| **beta 1.8.1** | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
+| beta 1.8.0 | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
 | beta 1.7.1 | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
 | beta 1.7.0 | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
 | beta 1.6.0 | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
@@ -1611,6 +1612,29 @@ en place. Ce qu'elle offre, c'est de produire au lieu d'acheter, et de **choisir
 
 Le [plafond de la réserve](#le-plafond-de-la-réserve) borne les deux de la même façon : au-delà
 de cinquante œufs par sorte, ce qui compte est le nombre d'incubateurs qui la vident.
+
+#### Un couple bloqué ne tire pas
+
+**Le défaut qui a rendu Sun Wukong trivial**, et il vaut d'être écrit parce que la leçon dépasse
+la pension.
+
+Le test du plafond de réserve vivait **après** le tirage de recette. Un couple bloqué relançait
+donc sa recette à chaque tour de boucle — dix fois par seconde — et comme la merveille a sa
+**propre** réserve, jamais pleine, elle était la seule chose que le couple pouvait encore
+pondre. Une réserve d'œufs épiques pleine transformait deux golems en machine à sous tournant
+à dix hertz : mesuré, **huit Wukong en une minute** de jeu accéléré, là où la médiane est de
+dix-neuf heures.
+
+> Un tirage ne doit jamais avoir lieu dans une branche qui ne peut pas aboutir.
+
+Le hasard consommé pour rien n'est pas neutre quand une seule de ses issues, elle, aboutit.
+
+**On bloque sur l'une des deux sorties, pas sur les deux.** Un couple de raretés différentes a
+deux sorties possibles ; s'arrêter dès que l'une déborde est plus simple à raconter — *un
+couple attend que sa réserve se vide* — et c'est le seul choix qui garantisse qu'un couple
+bloqué reste bloqué.
+
+Vérifié après coup sur près de dix mille pontes : 0,110 % de merveilles mesurées pour 0,100 % annoncé.
 
 #### Ce que les primes ne touchent pas
 

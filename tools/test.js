@@ -1438,6 +1438,42 @@ scenario('pension — la portée multiplie les œufs, jamais les merveilles', ()
   eq('et elle ne contient qu’une merveille', dus.filter(l => l === 'wukong').length, 1);
 });
 
+scenario('pension — un couple bloqué ne tire pas sa recette', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15;
+  const [g1, g2] = couple(jeu, 'golem', 'golem');
+  jeu.accoupler(g1, g2);
+  const duree = jeu.couples()[0].duree;
+
+  /* LE DÉFAUT QUI A RENDU SUN WUKONG TRIVIAL. Le test de plafond vivait APRÈS le tirage de
+     recette : un couple bloqué relançait donc sa recette à chaque tour de boucle — dix fois
+     par seconde — et comme la merveille a sa PROPRE réserve, jamais pleine, elle était la
+     seule chose que le couple pouvait encore pondre. Mesuré avant correctif : huit Wukong en
+     une minute de jeu accéléré, là où la médiane est de dix-neuf heures.
+
+     La leçon vaut pour tout ce qui viendra : un tirage ne doit jamais avoir lieu dans une
+     branche qui ne peut pas aboutir. */
+  s.eggs.epique = jeu.PLAFOND_OEUFS;
+  ok('le couple est bloqué', jeu.reservePleine(g1, g2));
+
+  const vrai = Math.random;
+  let tirages = 0;
+  try {
+    Math.random = () => { tirages++; return 0; };   // la recette tomberait à tous les coups
+    for (let i = 0; i < 500; i++) jeu.avancePension(duree);
+  } finally { Math.random = vrai; }
+
+  eq('aucun tirage n’a eu lieu', tirages, 0);
+  eq('aucune merveille n’est sortie', jeu.eggStock('merveille'), 0);
+  eq('rien n’est né', s.stats.pension, 0);
+  eq('et le couple attend toujours', jeu.couples().length, 1);
+  eq('son compteur ne déborde pas', jeu.couples()[0].t, duree);
+
+  // la réserve vidée, il repart normalement
+  s.eggs.epique = 0;
+  eq('la ponte reprend', jeu.avancePension(1), jeu.porteePension());
+});
+
 scenario('pension — une absence rattrape plusieurs pontes, sans boucler sans fin', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e15;
