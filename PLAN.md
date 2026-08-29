@@ -77,11 +77,15 @@ pension.
 
 **Décidé.** Quand il ne reste plus rien — pas de bête, pas d'œuf, et moins que le prix d'un
 œuf commun — on va faire la plonge. **Une assiette lavée, une pièce.** Douze assiettes pour un
-œuf commun, soit une poignée de secondes : c'est un ralentisseur, pas une punition. Le jeu ne
-doit jamais pouvoir se rendre injouable, et il ne doit pas non plus se venger d'une erreur.
+œuf commun.
 
-C'est la seule sortie qui rende l'état vide **jouable** au lieu de le rendre impossible, et
-elle raconte quelque chose : on repart de rien, à la main, comme au premier jour.
+**C'est une punition, et elle est assumée comme telle.** Une punition pour avoir mal géré, mais
+rattrapable : on ne perd pas sa partie, on perd du temps. C'est exactement le bon dosage pour
+un idle — le jeu ne doit jamais pouvoir se rendre injouable, mais il n'a aucune raison de
+faire semblant qu'une erreur n'en était pas une.
+
+C'est aussi la seule sortie qui rende l'état vide **jouable** au lieu de le rendre impossible,
+et elle raconte quelque chose : on repart de rien, à la main, comme au premier jour.
 
 #### La règle qui la borne
 
@@ -95,6 +99,20 @@ construction pas devenir un revenu alternatif, ni une stratégie de début de pa
 doser, rien à surveiller. Une plonge disponible en permanence aurait demandé un débit
 soigneusement mauvais, ce qui est toujours un mauvais signe.
 
+#### Ni frénésie, ni auto-clic — tranché
+
+**Un clic de frénésie ne lave qu'une assiette, et une carte ocellée ne fait pas la plonge.**
+Rien de ce qui multiplie la ferme ne s'applique à l'évier.
+
+C'est la conséquence directe de ce qu'est la plonge : une punition rattrapable. Laisser la
+frénésie doubler les assiettes reviendrait à récompenser l'erreur chez le joueur le mieux
+équipé, et laisser l'ocellé les laver reviendrait à ce que l'erreur ne coûte rien du tout à
+qui a déjà un album. La punition doit être la même pour tout le monde, sinon elle n'en est
+plus une pour personne.
+
+Elle porte aussi une règle plus large, à retenir pour la suite : **la plonge est un geste, pas
+une production.** Tout ce qui multiplie la ferme s'arrête à la porte de la cuisine.
+
 #### Ce qui reste à trancher
 
 - **Le seuil exact.** « Moins que l'œuf le moins cher » vaut toujours l'œuf commun, quel que
@@ -103,9 +121,6 @@ soigneusement mauvais, ce qui est toujours un mauvais signe.
   descend. C'est le seul écran du jeu où le clic ne fait pas grandir quelque chose.
 - **Ce que la professeure en dit.** C'est un moment de tutoriel évident, et elle n'a pas
   encore de scène pour les mauvais jours.
-- **La frénésie et l'ocellé.** Un clic de frénésie lave-t-il deux assiettes ? Une carte
-  ocellée fait-elle la plonge à ta place ? Le plus simple est **non aux deux** — la plonge est
-  un geste, pas une production, et rien de ce qui multiplie la ferme ne doit s'y appliquer.
 - **Les compteurs.** Une assiette est un clic du joueur : elle compte dans « clics donnés ».
   Un compteur d'assiettes lavées serait un joli aveu à laisser dans les statistiques.
 - **Hors ligne : non.** Même raison que le bonheur — c'est une main qui travaille, et une main
@@ -257,6 +272,19 @@ Une bête pourrait naître avec un **fond** : un décor derrière elle, tiré à
 à vie. Il se voit sur la scène et **sur la carte d'album**, et il fait monter un peu le prix
 de vente. Il **s'hérite**, comme les teintes, le jour où la pension existera.
 
+**Il est visuel, collectionnable et prestigieux — et il n'entre pas dans le nom.** C'est
+tranché. Un fond SE VOIT : le dire en plus serait une redite, et le jeu n'affiche qu'une seule
+épithète exprès, pour qu'une bête reste une bête et pas une fiche technique. `Têtard farouche`
+garde son nom, et son décor par-dessus le marché.
+
+Deux conséquences à ne pas perdre :
+
+- **Un objet de collection a besoin d'un endroit où être collectionné.** La collection suit
+  aujourd'hui 135 formes ; les fonds y ajouteraient un second axe, avec son propre compteur.
+  Sans ça, « collectionnable » n'est qu'un mot.
+- **Prestigieux veut dire rare.** La plupart des bêtes n'en ont aucun. Un fond fréquent
+  devient un décor et cesse d'être une rencontre — c'est la même règle que le chromatique.
+
 Rien n'est écrit ; ce qui suit est ce qu'il faut avoir en tête avant de commencer.
 
 #### Pourquoi c'est le meilleur rapport dessin / variété du jeu
@@ -268,13 +296,9 @@ exact du coût des créatures, et c'est l'argument principal en faveur de l'idé
 
 #### Ce qu'il faut décider avant d'écrire
 
-- **Un quatrième axe de variante**, après la teinte, le tempérament et le motif. Trois posent
-  déjà la question « combien d'identité une bête peut-elle porter avant de devenir une fiche
-  technique ? » — le jeu n'affiche qu'**une seule épithète** exprès. Le fond doit-il entrer
-  dans le nom (`Têtard farouche des cendres`) ou rester purement visuel ? Le second est plus
-  sûr : le fond SE VOIT, il n'a pas besoin d'être dit.
-- **Combien de bêtes n'ont pas de fond.** La plupart, sûrement. Un fond doit rester une
-  rencontre — s'il est fréquent, il devient un décor et cesse d'être une variante.
+- **À quelle fréquence il tombe.** « Rare » reste à chiffrer : quelque part entre la teinte
+  (une bête sur deux en a une) et le chromatique (une sur 8 192). Le bon repère est sans doute
+  le motif — huit possibilités, tirées à l'éclosion.
 - **Ce que « un peu plus cher » veut dire.** L'échelle existe déjà : la teinte va de ×1,10 à
   ×1,20. Un fond dans cette fourchette s'intègre sans rien déranger ; au-delà il faudrait
   reprendre l'équilibrage des variantes en entier.
