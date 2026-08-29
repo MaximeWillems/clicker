@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.29.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.30.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -55,7 +55,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.29.1** | un œuf ne récite plus ses statistiques, il dit une phrase |
+| **2.30.0** | un jeton vaut une carte, et sauter les dépense tous |
+| 2.29.1 | un œuf ne récite plus ses statistiques, il dit une phrase |
 | 2.29.0 | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
 | 2.28.0 | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
 | 2.27.0 | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
@@ -145,7 +146,7 @@ le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est
 voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
 rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
-Quarante-et-un scénarios, six cent quatre-vingt-douze vérifications. Passer un mot en argument ne joue que
+Quarante-deux scénarios, sept cent une vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -1556,8 +1557,8 @@ fait toutes les cartes, et la limite ne limiterait rien.
 
 #### Les jetons d'ascension
 
-**Un jeton s'obtient en franchissant un palier de fortune, et l'ascension en dépense un.** Les
-paliers montent d'un million à chaque cran :
+**Un jeton s'obtient en franchissant un palier de fortune. Un jeton vaut une carte à emporter,
+et sauter les dépense TOUS.** Les paliers montent d'un facteur mille à chaque cran :
 
 | # | Palier | # | Palier |
 |---|---|---|---|
@@ -1587,7 +1588,30 @@ Le pas était de ×1 000 000 : l'économie s'arrêtait alors avant l'échelle, e
 contenait que deux ou trois ascensions. À ×1 000, elle en contient une dizaine — assez pour que
 l'album se construise vraiment.
 
-**Les emplacements ne dépendent plus des jetons** : ils sont cinq dès la première ascension.
+#### Un jeton, une carte — et le saut les prend tous
+
+**Corrigé en 2.30.0, et deux défauts s'y cachaient — le second masquait le premier.**
+
+`apercuAscension` rendait `max: SLOTS` : le nombre de jetons n'entrait nulle part, si bien
+qu'**un seul jeton laissait choisir cinq cartes**. Et l'ascension n'en consommait qu'un
+(`jetons - 1`), donc les autres restaient en poche : on sautait avec cinq jetons et on en
+retrouvait quatre de l'autre côté. Le second défaut rendait le premier invisible — puisqu'on
+gardait ses jetons, on ne remarquait pas qu'ils ne servaient à rien.
+
+La règle est maintenant celle qu'on voulait depuis le début :
+
+- **chaque jeton vaut une carte** qu'on emporte — `max = min(jetons, 5)` ;
+- **sauter les dépense tous**, y compris ceux qu'on n'a pas employés ;
+- le plafond reste **cinq**, parce que l'album n'a que cinq emplacements et qu'un sixième jeton
+  ne fabrique pas un sixième cadran.
+
+C'est ce qui donne enfin un sens à l'attente : **sauter au premier jeton n'emporte qu'une
+carte, en attendre trois en emporte trois.** Et c'est ce qui empêche une réserve de jetons de
+rendre les ascensions suivantes gratuites — sans quoi on accumulait dix paliers et on
+enchaînait dix sauts sans rien mériter.
+
+La confirmation prévient de ce qu'on laisse : *« ⚠ 3 jetons que tu n'emploies pas partent
+avec. »*
 
 **Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
 entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et n'expire

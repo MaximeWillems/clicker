@@ -554,7 +554,7 @@ scenario('ascension — un jeton, des cartes, et tout le reste repart de zéro',
   ok('l’écran s’ouvre', !noeuds.get('ascension').hidden);
   const ap = jeu.apercuAscension();
   eq('les trois bêtes sont proposées', ap.neuves.length, 3);
-  eq('l’album a toujours le même nombre d’emplacements', ap.max, jeu.SLOTS);
+  eq('un jeton n’emporte qu’une carte', ap.max, 1);
 
   jeu.state.vu.oeuf = true;                 // une scène jouée, pour vérifier qu'elle traverse
   jeu.ascChoix = [ap.neuves.find(k => k.id === -gardee.id).id];
@@ -568,6 +568,40 @@ scenario('ascension — un jeton, des cartes, et tout le reste repart de zéro',
   eq('les consignes de ferme sont remises à plat', jeu.state.sellAt.commune, 0);
   ok('la collection traverse', Object.keys(jeu.state.seen).length > 0);
   ok('les scènes déjà jouées traversent', Object.keys(jeu.state.vu).length > 0);
+});
+
+scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
+  const bete2 = (jeu, ligne, age, p) => {
+    const s = jeu.state;
+    s.incub[0] = { line: ligne, p: 9999, kind: 'commun' };
+    jeu.hatchAll();
+    const c = s.pen[s.pen.length - 1];
+    c.age = age; c.p = p;
+    return c;
+  };
+
+  /* DEUX DÉFAUTS SE CACHAIENT ICI, et le second masquait le premier. `max` valait SLOTS : le
+     nombre de jetons n'entrait nulle part, un seul jeton laissait choisir cinq cartes. Et
+     l'ascension n'en consommait qu'un — on sautait avec cinq et on en retrouvait quatre. */
+  for (const [n, attendu] of [[1, 1], [2, 2], [3, 3], [5, 5], [9, 5]]) {
+    const jeu = neuf(); const s = jeu.state;
+    s.tuto = false; s.coins = 5e6; s.pens = 10;
+    for (let i = 0; i < 8; i++) bete2(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
+    s.asc.jetons = n; s.asc.paliers = jeu.RANG_PREMIER;
+    eq(n + ' jeton(s) → ' + attendu + ' carte(s)', jeu.apercuAscension().max, attendu);
+  }
+
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 5e6; s.pens = 10;
+  for (let i = 0; i < 6; i++) bete2(jeu, 'crapaud', 3, 3000);
+  s.asc.jetons = 5; s.asc.paliers = jeu.RANG_PREMIER;
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = [ap.neuves[0].id, ap.neuves[1].id];   // il n'en emploie que deux
+  jeu.ascensionner();
+  eq('les cinq jetons partent, employés ou non', jeu.state.asc.jetons, 0);
+  eq('deux cartes emportées', jeu.state.album.length, 2);
+  ok('et l’ascension se referme', !jeu.peutAscensionner());
+  eq('les paliers déjà franchis restent franchis', jeu.state.asc.paliers, jeu.RANG_PREMIER);
 });
 
 scenario('jetons — un palier de fortune tous les ×1000, à partir du premier million', () => {

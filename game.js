@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 2.29.1';
+const VERSION = 'alpha 2.30.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3225,11 +3225,26 @@ let ascChoix = [];
 /* Ce que le saut produira. L'ordre est CELUI DE LA BANDE, pas celui du tableau interne :
    `subjects()` porte déjà le tri choisi par le joueur — arrivée, rareté ou âge — et une liste
    qui contredirait la bande obligerait à chercher deux fois la même bête. */
+/* UN JETON, UNE CARTE — et le saut les prend TOUS.
+
+   Deux défauts se cachaient ici, et le second masquait le premier. `max` valait SLOTS : le
+   nombre de jetons n'entrait nulle part, si bien qu'un seul jeton laissait choisir cinq
+   cartes. Et l'ascension n'en consommait qu'un, donc les autres restaient en poche — on
+   sautait avec cinq jetons et on en retrouvait quatre de l'autre côté.
+
+   La règle est maintenant celle qu'on voulait depuis le début : chaque jeton vaut une carte
+   qu'on emporte, et SAUTER LES DÉPENSE TOUS, y compris ceux qu'on n'a pas employés. C'est ce
+   qui donne un sens à l'attente — sauter au premier jeton n'emporte qu'une carte, en attendre
+   trois en emporte trois — et c'est ce qui empêche une réserve de jetons de rendre les
+   ascensions suivantes gratuites.
+
+   Le plafond reste SLOTS : l'album n'a que cinq emplacements, et un sixième jeton ne fabrique
+   pas un sixième cadran. */
 function apercuAscension() {
   const jetons = state.asc.jetons || 0;
   const neuves = subjects().filter(s => s.kind === 'creature')
     .map(s => Object.assign(capsuleBrute(s.c), { id: -s.c.id }));
-  return { jetons, neuves, max: SLOTS };
+  return { jetons, neuves, max: Math.min(jetons, SLOTS) };
 }
 
 function ouvrirAscension() {
@@ -3249,8 +3264,9 @@ function renderAscension() {
 
   const suivant = prochainPalier();
   setText($('asc-jalon'),
-    ap.jetons + ' jeton' + (ap.jetons > 1 ? 's' : '') + ' d’ascension. Ce saut en dépenserait ' +
-    'un — mais rien ne t’oblige à sauter, ni maintenant ni jamais.' +
+    ap.jetons + ' jeton' + (ap.jetons > 1 ? 's' : '') + ' d’ascension, donc ' +
+    ap.max + ' carte' + (ap.max > 1 ? 's' : '') + ' à emporter. ' +
+    'Sauter les dépense tous, employés ou non — rien ne t’oblige à sauter, ni maintenant ni jamais.' +
     (suivant ? ' Le prochain se gagne à ' + fmt(suivant) + ' pièces.'
              : ' C’était le dernier palier de l’échelle.'));
 
@@ -3376,7 +3392,8 @@ function ascensionner() {
     album, slots,
     /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
-    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: state.asc.jetons - 1 },
+    // tous les jetons partent, employés ou non : c'est le prix de sauter trop tôt
+    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: 0 },
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
@@ -4484,9 +4501,12 @@ function bindTools() {
     const ap = apercuAscension();
     const prises = Math.min(ascChoix.length, ap.max);
     const perdues = n - prises;
+    const dorment = Math.max(0, (state.asc.jetons || 0) - prises);
     if (!confirm('Ascensionner ?\n\n' + prises + ' bête' + (prises > 1 ? 's deviennent' : ' devient') +
         ' une carte.' +
         (perdues ? '\nLes ' + perdues + ' autre' + (perdues > 1 ? 's sont perdues' : ' est perdue') + '.' : '') +
+        (dorment ? '\n⚠ ' + dorment + ' jeton' + (dorment > 1 ? 's' : '') +
+                   ' que tu n’emploies pas ' + (dorment > 1 ? 'partent' : 'part') + ' avec.' : '') +
         '\nTout le reste repart de zéro. C’est irréversible.')) return;
     ascensionner();
   });

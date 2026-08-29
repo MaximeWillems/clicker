@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.29.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.30.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -35,7 +35,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les prix de moitié** | 1.5 | est-ce que la partie compressée se joue mieux ? | à mesurer encore |
 | **L'album et l'ascension** | 2.0 → 2.5 | est-ce qu'on veut recommencer ? | jouée plusieurs fois ; la question de fond reste ouverte |
 | **Les achats par lots** | 2.1 | est-ce que la fin de partie cesse d'être une paperasse ? | oui |
-| **Les jetons de fortune** | 2.2, 2.9 | est-ce que l'ascension se mérite ? | le pas de mille tient |
+| **Les jetons de fortune** | 2.2, 2.9, 2.30 | est-ce que l'ascension se mérite ? | oui — un jeton une carte, et sauter les dépense tous |
 | **Dix lignées rares** | 2.3 | est-ce que l'ère rare cesse de se répéter ? | oui sur le papier — six lignées sans dessin |
 | **Le glisser-déposer des cartes** | 2.7 | est-ce que l'album se manipule ? | non vérifié : rien de visuel ne l'est |
 | **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
@@ -241,7 +241,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 41 scénarios
+node tools/test.js              les 42 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
