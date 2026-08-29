@@ -305,6 +305,102 @@ scenario('dialogue — faire ce qu’elle dit fait avancer, et « tient » bloqu
   if (tient()) { jeu.replique(true); ok('la croix lève ce qui tient', !tient() || noeuds.get('dial').hidden); }
 });
 
+// ouvre une scène et une seule : toutes les autres sont marquées lues d'avance
+function seule(cle, prep) {
+  const jeu = neuf(); const s = jeu.state;
+  s.vu = {};
+  for (const n of jeu.NOTES) if (n.cle !== cle) s.vu[n.cle] = true;
+  s.dial = null;
+  if (prep) prep(jeu, s);
+  jeu.refresh();
+  return jeu;
+}
+const ditDial = () => (noeuds.get('dial-dit').textContent || '');
+const dialOuvert = () => !noeuds.get('dial').hidden;
+
+scenario('dialogue — une scène se ferme quand ce dont elle parle disparaît', () => {
+  const jeu0 = neuf();
+  /* L'INVARIANT QUI COMPTE : `perime` est la négation exacte du `test`. Si les deux pouvaient
+     être vrais ensemble, une scène naîtrait et mourrait dans la même image — un éclair de
+     texte que personne ne lit. */
+  for (const n of jeu0.NOTES) {
+    if (!n.perime) continue;
+    const j = neuf(); const s = j.state;
+    // on fabrique la situation qui ouvre la scène, puis on vérifie qu'elle ne la ferme pas
+    s.incub[0] = { line: 'crapaud', p: j.hatchTime({ kind: 'commun', line: 'crapaud' }) * 0.9, kind: 'commun' };
+    j.hatchAll();
+    let ouvre = false;
+    try { ouvre = !!n.test(); } catch (e) { ouvre = false; }
+    if (!ouvre) continue;
+    let mort = false;
+    try { mort = !!n.perime(); } catch (e) { mort = false; }
+    ok('« ' + n.cle + ' » ne peut pas naître et mourir d’un coup', !mort);
+  }
+
+  let jeu = seule('craque', (j, s) => {
+    s.incub[0] = { line: 'crapaud', p: j.hatchTime({ kind: 'commun', line: 'crapaud' }) * 0.8, kind: 'commun' };
+  });
+  ok('« craque » s’ouvre', dialOuvert());
+  jeu.state.incub[0].p = 9999; jeu.hatchAll(); jeu.refresh();
+  ok('et se ferme quand l’œuf a éclos', !dialOuvert(), ditDial());
+  ok('elle est marquée jouée', jeu.state.vu.craque === true);
+
+  jeu = seule('plonge', (j, s) => {
+    s.coins = 5; s.pen = []; s.incub = [null];
+    s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  });
+  ok('« plonge » s’ouvre dans l’impasse', dialOuvert());
+  jeu.state.coins = 999; jeu.refresh();
+  ok('et se tait dès qu’on en sort', !dialOuvert(), ditDial());
+});
+
+scenario('dialogue — agir fait avancer, jamais rater la leçon', () => {
+  // acheter ce qu'elle conseille fait passer à ce que l'achat veut dire
+  const achats = [
+    ['clic', (j, s) => { s.coins = 1e4; }, j => j.buyUpgrade(j.UP_BY_KEY.clic)],
+    ['incubateur', (j, s) => { s.coins = 1e4; }, j => j.buyIncubator()],
+    ['enclos', (j, s) => { s.coins = 1e4; }, j => j.buyPen()],
+  ];
+  for (const [cle, prep, geste] of achats) {
+    const jeu = seule(cle, prep);
+    const avant = ditDial();
+    ok('« ' + cle + ' » s’ouvre', dialOuvert());
+    geste(jeu); jeu.refresh();
+    ok('« ' + cle + ' » avance à l’achat', ditDial() !== avant, avant);
+    ok('et ne se ferme pas : la leçon suit', dialOuvert());
+  }
+
+  /* Ni « mure » ni « peage » ne se périment, et c'est un arbitrage : vendre ou évoluer fait
+     disparaître la bête mûre, mais les répliques suivantes sont la leçon. Fermer sur l'action
+     ferait rater l'explication à qui joue vite. */
+  let jeu = seule('mure', (j, s) => {
+    s.incub[0].p = 9999; j.hatchAll(); s.pen[0].p = j.bandTo(s.pen[0]);
+  });
+  jeu.replique(false);
+  const avantVente = ditDial();
+  jeu.sell(jeu.state.pen[0]); jeu.refresh();
+  ok('vendre fait avancer « mure »', ditDial() !== avantVente);
+  ok('sans fermer la scène', dialOuvert(), 'la leçon a été perdue');
+
+  jeu = seule('peage', (j, s) => {
+    s.coins = 1e5; s.incub[0].p = 9999; j.hatchAll(); s.pen[0].p = j.bandTo(s.pen[0]);
+  });
+  const avantEvo = ditDial();
+  jeu.evolve(jeu.state.pen[0]); jeu.refresh();
+  ok('évoluer fait avancer « peage »', ditDial() !== avantEvo);
+  ok('sans fermer la scène', dialOuvert(), 'la leçon a été perdue');
+
+  // et la plonge : laver une assiette passe à la réplique suivante
+  jeu = seule('plonge', (j, s) => {
+    s.coins = 5; s.pen = []; s.incub = [null];
+    s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  });
+  jeu.replique(false); jeu.replique(false);
+  const avantLavage = ditDial();
+  jeu.tapStage(); jeu.refresh();
+  ok('laver fait avancer « plonge »', ditDial() !== avantLavage, avantLavage);
+});
+
 scenario('dévoilement — l’escalier suit les prix, pas l’ordre des tables', () => {
   const jeu = neuf();
   const prix = jeu.CLES_VOIR.map(jeu.prixVoir);

@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.25.0';
+const VERSION = 'alpha 2.26.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -640,6 +640,17 @@ const PROF = {
    peut pas contourner — cliquer l'œuf, cliquer la bête. Tenir sur un achat facultatif
    bloquerait la file des scènes suivantes pour un joueur qui décide autre chose.
 
+   ET UNE SCÈNE PEUT SE PÉRIMER. `perime` dit quand ce dont elle parle n'existe plus : l'œuf
+   dont elle annonçait le craquement a éclos, la bête mûre dont elle expliquait le choix est
+   vendue, l'évier devant lequel elle plaisantait est vide. La scène se ferme alors où qu'elle
+   en soit, et se marque jouée.
+
+   C'est la moitié qui manquait à `fait`. Une réplique qui sait qu'on l'a écoutée, c'est bien ;
+   une scène qui continue d'expliquer un choix qu'on vient de faire est simplement fausse, et
+   c'est ce que le joueur remarque en premier. `perime` est toujours la négation exacte du
+   `test` qui a ouvert la scène — jamais une condition inventée, sinon une scène pourrait
+   naître et mourir dans la même image.
+
    La croix « passer » lève tout, y compris un `tient` : personne ne doit rester coincé.
 
    Elles s'arrêtent à l'enclos. La suite s'écrira en jouant, quand on saura ce qui manque. */
@@ -652,20 +663,27 @@ const NOTES = [
       fait: () => state.incub.some(o => o && o.p > 0) },
     'Voilà. Encore, et encore — il n’avancera pas sans toi.',
   ] },
-  { cle: 'craque', test: () => state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3), repliques: [
+  { cle: 'craque', test: () => state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3),
+    perime: () => !state.incub.some(o => o && o.p >= hatchTime(o) * 2 / 3), repliques: [
     'Tu entends ? Elle pousse contre la coquille.',
     'Ne t’arrête pas maintenant. Ici, rien n’avance sans toi — pas encore.',
   ] },
-  { cle: 'bete', test: () => state.pen.length > 0, repliques: [
+  { cle: 'bete', test: () => state.pen.length > 0, perime: () => !state.pen.length, repliques: [
     'La voilà. Regarde-la bien : c’est la seule fois où tu la verras si petite.',
     { dit: 'Elle grandit comme l’œuf a éclos : au clic. Essaie.', tient: 1,
       fait: () => state.pen.some(c => c.p > 0) },
     'Son niveau montera jusqu’à cent, et il ne redescendra jamais — quoi qu’il lui arrive.',
     'Je te laisse faire connaissance.',
   ] },
+  /* Pas de `perime` ici, ni sur le péage, et c'est un arbitrage : vendre ou évoluer fait
+     disparaître la bête mûre dont elle parle, mais les répliques qui suivent sont la LEÇON —
+     ce que le péage garde, pourquoi la question n'a pas de bonne réponse. Fermer sur l'action
+     ferait rater l'explication à qui a agi vite, c'est-à-dire à qui joue bien. `fait` suffit :
+     on avance, on n'efface pas. */
   { cle: 'mure', test: () => state.pen.some(estMur), repliques: [
     'Son niveau s’est bloqué. On dit qu’elle est mûre : elle a fini l’âge où elle était.',
-    'C’est ici que le métier commence. Tu peux la vendre, ou payer son péage pour qu’elle passe à l’âge suivant.',
+    { dit: 'C’est ici que le métier commence. Tu peux la vendre, ou payer son péage pour qu’elle passe à l’âge suivant.',
+      fait: () => state.stats.vendues > 0 || state.stats.evolutions > 0 },
     'Il n’y a pas de bonne réponse à cette question. Il y en a une pour aujourd’hui.',
   ] },
   { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR, repliques: [
@@ -675,12 +693,14 @@ const NOTES = [
     'Vends, rachète, recommence. C’est la boucle qui te nourrira longtemps.',
   ] },
   { cle: 'peage', test: () => state.coins >= EVOLVE[0] && state.pen.some(estMur), repliques: [
-    'Tu as de quoi payer un péage, maintenant.',
+    { dit: 'Tu as de quoi payer un péage, maintenant.',
+      fait: () => state.stats.evolutions > 0 },
     'Une bête qui le franchit garde tout — son niveau, sa taille, son nom — et vaudra douze fois plus. Mais elle t’immobilise un enclos pendant ce temps.',
     'Vendre tout de suite, ou attendre davantage. Toute la partie tient dans cette hésitation-là.',
   ] },
   { cle: 'clic', test: () => state.coins >= UP_BY_KEY.clic.base * SEUIL_VOIR, repliques: [
-    'Il y a des choses à acheter qui ne sont pas des œufs.',
+    { dit: 'Il y a des choses à acheter qui ne sont pas des œufs.',
+      fait: () => lvl('clic') > 0 },
     'Aucune ne jouera à ta place. Elles changent la façon dont le temps passe, c’est tout — mais c’est beaucoup.',
   ] },
   { cle: 'couveuse', test: () => state.coins >= UP_BY_KEY.couveuse.base * SEUIL_VOIR, repliques: [
@@ -690,18 +710,21 @@ const NOTES = [
     'C’est le moment où ce jeu cesse de dépendre de tes doigts. Tu me diras si ça te manque.',
   ] },
   { cle: 'incubateur', test: () => state.coins >= INCUB_BASE * SEUIL_VOIR, repliques: [
-    'Un incubateur de plus, c’est un œuf de plus à couver en même temps.',
+    { dit: 'Un incubateur de plus, c’est un œuf de plus à couver en même temps.',
+      fait: () => state.incubators > 1 },
     'Ils ne coûtent pas cher au début. Ils doublent presque de prix à chaque fois — profite-en tant qu’ils sont donnés.',
   ] },
   { cle: 'enclos', test: () => state.coins >= PEN_BASE * SEUIL_VOIR, repliques: [
-    'Et un enclos de plus, c’est une bête de plus à la fois.',
+    { dit: 'Et un enclos de plus, c’est une bête de plus à la fois.',
+      fait: () => state.pens > 1 },
     'Retiens ceci : bientôt, ce ne sera plus l’argent qui te limitera, mais la place. Une bête que tu gardes est un enclos qui ne tourne pas.',
     'Voilà. Tu sais tout ce que je sais. Le reste, tu vas me l’apprendre.',
   ] },
-  { cle: 'plonge', test: () => enPlonge(), repliques: [
+  { cle: 'plonge', test: () => enPlonge(), perime: () => !enPlonge(), repliques: [
     'Ah. Tu n’as plus rien.',
     'Ça arrive, et ce n’est pas grave — on n’a pas encore vu d’éleveur qui ne se soit jamais retrouvé sans un sou.',
-    'Il y a de la vaisselle derrière. Une assiette, une pièce. Douze et tu repars avec un œuf.',
+    { dit: 'Il y a de la vaisselle derrière. Une assiette, une pièce. Douze et tu repars avec un œuf.',
+      fait: () => (state.stats.assiettes || 0) > 0 },
     'Je ne la ferai pas à ta place. Tu as pris la décision, tu prends les assiettes avec.',
   ] },
   { cle: 'cadeau', test: () => (state.dons || 0) > 0, repliques: [
@@ -3873,6 +3896,10 @@ function avanceSeule() {
   while (state.dial && garde++ < 40) {
     const n = scene();
     if (!n) { state.dial = null; return; }
+    // ce dont elle parlait n'existe plus : on ferme, où qu'on en soit
+    let mort = false;
+    try { mort = !!(n.perime && n.perime()); } catch (e) { mort = false; }
+    if (mort) { state.vu[n.cle] = true; state.dial = null; return; }
     const l = ligne(n, state.dial.i);
     let ok = false;
     try { ok = !!(l.fait && l.fait()); } catch (e) { ok = false; }

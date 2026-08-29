@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.25.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.26.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.25.0** | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
+| **2.26.0** | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
+| 2.25.0 | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
 | 2.24.1 | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
 | 2.24.0 | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
 | 2.23.0 | le squelette de la pension, porte fermée — rien ne change pour le joueur |
@@ -111,7 +112,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Trente-six scénarios, six cent trente-sept vérifications. Passer un mot en argument ne joue que
+Trente-huit scénarios, six cent cinquante-six vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -260,6 +261,32 @@ parle. C'est la différence entre être accompagné et être retenu.
 disparaît au moment où l'on clique l'œuf, sans qu'on ait à cliquer une deuxième fois pour elle.
 C'est la règle générale — obéir à la professeure vaut mieux qu'un clic sur son texte, et
 demander les deux gestes pour le même conseil est une taxe qu'on paie à chaque phrase.
+
+**Toute réplique qui demande quelque chose le sait maintenant.** Six l'ignoraient encore : elle
+conseillait un incubateur, un enclos, la force du clic ou un péage, on l'achetait sous ses yeux
+et elle continuait de le conseiller. Acheter fait désormais passer à ce que l'achat *veut
+dire* — « un incubateur de plus » devient « ils doublent presque de prix à chaque fois », et
+« tu as de quoi payer un péage » devient « une bête qui le franchit garde tout ». La consigne
+laisse la place à la leçon au moment exact où la leçon devient vraie.
+
+**Une scène peut se périmer.** `perime` dit quand ce dont elle parle n'existe plus : l'œuf
+dont elle annonçait le craquement a éclos, la bête qu'elle présentait est vendue, l'évier
+devant lequel elle plaisantait est vide. La scène se ferme alors où qu'elle en soit, et se
+marque jouée.
+
+C'est la moitié qui manquait à `fait`. Une réplique qui sait qu'on l'a écoutée, c'est bien ;
+une scène qui continue de commenter une situation disparue est simplement **fausse**, et c'est
+ce qu'un joueur remarque en premier.
+
+`perime` est toujours **la négation exacte du `test`** qui a ouvert la scène — jamais une
+condition inventée, sinon une scène pourrait naître et mourir dans la même image, un éclair de
+texte que personne ne lit. Un scénario du banc vérifie l'invariant sur toutes les scènes.
+
+**Deux scènes n'en ont délibérément pas.** Vendre ou évoluer fait disparaître la bête mûre dont
+parlent `mure` et `peage` — mais les répliques qui suivent sont **la leçon** : ce que le péage
+garde, pourquoi la question n'a pas de bonne réponse. Fermer sur l'action ferait rater
+l'explication à qui a agi vite, c'est-à-dire à qui joue bien. `fait` y suffit : on avance, on
+n'efface pas.
 
 Une réplique peut en plus **tenir** : la boîte cesse d'être cliquable et attend le geste. On le
 réserve aux **deux actions que la partie ne peut pas contourner** — cliquer l'œuf, cliquer la
