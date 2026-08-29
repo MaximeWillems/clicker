@@ -485,8 +485,8 @@ pour l'élevage. Une merveille n'est pas de l'élevage.
 
 | Merveille | Couple | Durée | Chance | Médiane |
 |---|---|---|---|---|
-| **Kitsune** | Chimère × Sphinx | 12 h | 1 % | 34 j |
-| | Chimère × Chat | 5 h | 0,1 % | 144 j |
+| **Kitsune** | Ouroboros × Sphinx | 12 h | 1 % | 34 j |
+| | Ouroboros × Chat | 5 h | 0,1 % | 144 j |
 | **Sun Wukong** | Golem × Golem | 1 h | 0,1 % | 29 j |
 
 **Une recette n'est pas une porte, c'est un tirage.** Le couple pond normalement, et la
@@ -506,21 +506,28 @@ Ce qui compte est `chance ÷ durée`, et c'est ce qui a dicté l'heure unique de
 heures, 0,1 % faisait 115 jours de médiane. La justification n'est pas arithmétique — **deux
 pierres ne couvent pas.** Rien n'est élevé là-dedans, il y a une pierre qui finit par se fendre.
 
-### Un mythique par famille
+### Un mythique par famille, et la Chimère n'en est pas une
 
-**La Chimère est un carrefour**, et c'est structurel : c'est la seule bête du jeu qui soit faite
-d'autres bêtes. Tout ce qui est composite passe par elle.
+La Chimère a été le carrefour de la moitié des recettes pendant une version, au motif qu'elle
+est faite d'autres bêtes. **C'était lui prêter le rôle inverse du sien** : une chimère ne
+concentre pas, elle disperse. Depuis la `beta 1.1.0` elle est le **joker** — deux chimères
+donnent n'importe quelle lignée, sauf une chimère et sauf une merveilleuse — et elle ne porte
+plus aucune recette.
 
-| Chimère × | donne | pourquoi |
+Le carrefour d'une merveille doit dire **de quoi elle est faite**, pas seulement qu'elle est
+composite :
+
+| Mythique | Son axe | Ses merveilles |
 |---|---|---|
-| Sphinx | **Kitsune** | deux menteurs composites — ce qui sort cache sa nature |
-| Cheval | **Nuckelavee** | le cheval et le cavalier d'*une seule chair* |
-| Cerf | **Catoblépas** | Cernunnos, la tête cornue — mais trop lourde à lever |
-| Salamandre | **Surtr** | l'Ifrit, mais qui attend au lieu de brûler |
+| **Ouroboros** | ce qui gagne avec le temps | Kitsune |
+| **Golem** | ce qui naît de la pierre | Sun Wukong |
+| **Béhémoth** | ce qui sort de la terre | l'Olgoï-Khorkhoï, Typhon |
+| **Kraken** | ce qui contient la mer | Tiamat |
+| **Chimère** | — | aucune : elle est le joker |
 
-Les autres auront le leur — le Kraken pour ce qui contient la mer (Tiamat), le Golem pour ce qui
-naît de la pierre. Un mythique par famille donne au joueur **une carte mentale au lieu d'une
-liste**, et c'est ce qui permet de deviner une recette qu'on n'a pas encore vue.
+Restent le Catoblépas, le Nuckelavee et Surtr, qui n'ont pas encore d'axe. Un mythique par
+famille donne au joueur **une carte mentale au lieu d'une liste**, et c'est ce qui permet de
+deviner une recette qu'on n'a pas encore vue.
 
 ### Le plancher économique, et son exception
 

@@ -1218,6 +1218,79 @@ scenario('merveilles — aucun œuf n’en donne, et rien ne la met en vente', (
   eq('sans rien coûter', s.coins, 1e12);
 });
 
+scenario('pension — deux chimères donnent n’importe quoi, sauf une chimère', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [c1, c2] = couple(jeu, 'chimere', 'chimere');
+  const loup = bete(jeu, 'loup', 4, 20000);
+
+  ok('la chimère porte le drapeau', jeu.LINE_BY_KEY.chimere.joker === true);
+  ok('elle est la seule', jeu.LINES.filter(l => l.joker).length === 1);
+  ok('le couple est reconnu', jeu.couple2Jokers(c1, c2));
+  ok('mais pas avec autre chose', !jeu.couple2Jokers(c1, loup));
+
+  /* DEUX CHIMÈRES NE FONT JAMAIS UNE CHIMÈRE, et jamais une merveille non plus : une
+     merveilleuse tirée par un couple générique viderait les recettes de leur sens. */
+  const tire = {};
+  for (let i = 0; i < 20000; i++) { const l = jeu.ligneeDe(c1, c2); tire[l] = (tire[l] || 0) + 1; }
+  eq('jamais de chimère', tire.chimere, undefined);
+  eq('jamais de merveilleuse',
+     Object.keys(tire).filter(k => jeu.LINE_BY_KEY[k].rarity === 'merveilleuse').length, 0);
+  eq('tout le reste sort', Object.keys(tire).length, jeu.LINES.length - 3);
+  eq('et le sac le dit', jeu.poolJoker.length, jeu.LINES.length - 3);
+
+  // hors joker, l enfant reste l un des deux parents
+  const vus = new Set();
+  for (let i = 0; i < 400; i++) vus.add(jeu.ligneeDe(c1, loup));
+  ok('un couple ordinaire ne tire que ses deux lignées',
+     [...vus].every(l => l === 'chimere' || l === 'loup'), [...vus].join(', '));
+
+  jeu.pensionA = c1.id; jeu.pensionB = c2.id; jeu.refresh();
+  ok('et l’écran l’annonce', /n’importe quelle lignée/.test(ditPension(jeu)), ditPension(jeu));
+  ok('sans prétendre à une recette', !/autre chose/.test(ditPension(jeu)), ditPension(jeu));
+});
+
+scenario('recettes — un mythique par famille, et la chimère n’en est pas une', () => {
+  const jeu = neuf();
+  /* La chimère était le carrefour de la moitié des recettes, au motif qu'elle est faite
+     d'autres bêtes — c'était lui prêter le rôle inverse du sien. Elle disperse, elle ne
+     concentre pas. */
+  ok('aucune recette ne passe par la chimère',
+     !jeu.RECETTES.some(r => r.a === 'chimere' || r.b === 'chimere'),
+     JSON.stringify(jeu.RECETTES));
+
+  const kitsune = jeu.RECETTES.filter(r => r.donne === 'kitsune');
+  eq('la kitsune a deux routes', kitsune.length, 2);
+  ok('toutes deux par l’ouroboros — son axe est le temps',
+     kitsune.every(r => r.a === 'ouroboros' || r.b === 'ouroboros'));
+  ok('la recette est plus généreuse que l’accident',
+     Math.max(...kitsune.map(r => r.chance)) === 0.01 &&
+     Math.min(...kitsune.map(r => r.chance)) === 0.001);
+
+  /* L'EXACT DOIT TOUJOURS ÉCRASER L'ACCIDENT EN RENDEMENT, sinon il ne sert à rien. */
+  for (const donne of [...new Set(jeu.RECETTES.map(r => r.donne))]) {
+    const routes = jeu.RECETTES.filter(r => r.donne === donne)
+      .map(r => ({ r, rendement: r.chance / r.duree }))
+      .sort((x, y) => y.rendement - x.rendement);
+    if (routes.length < 2) continue;
+    ok(donne + ' : la meilleure route est bien la plus généreuse',
+       routes[0].r.chance >= routes[1].r.chance);
+    ok(donne + ' : et elle écrase l’autre',
+       routes[0].rendement >= routes[1].rendement * 3,
+       (routes[0].rendement / routes[1].rendement).toFixed(1) + '×');
+  }
+
+  // chaque recette désigne des lignées qui existent, et un couple fécond
+  for (const r of jeu.RECETTES) {
+    ok('parents connus : ' + r.a + ' × ' + r.b,
+       !!jeu.LINE_BY_KEY[r.a] && !!jeu.LINE_BY_KEY[r.b]);
+    ok('donne une lignée connue : ' + r.donne, !!jeu.LINE_BY_KEY[r.donne]);
+    ok(r.a + ' × ' + r.b + ' n’est pas stérile',
+       jeu.distanceDe({ line: r.a }, { line: r.b }) !== null);
+    ok(r.a + ' × ' + r.b + ' tient sous le plafond', r.duree <= jeu.PENSION.plafond);
+  }
+});
+
 scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true;
@@ -1258,7 +1331,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
 
   /* CE QUI RESTE VISIBLE, ET QUI SUFFIT : la phrase du nid promet quelque chose sans rien
      nommer. C'est le seul indice du jeu, et il ne se voit qu'en composant le bon couple. */
-  const a = bete(jeu, 'chimere', 4, 20000), b = bete(jeu, 'sphinx', 4, 20000);
+  const a = bete(jeu, 'ouroboros', 4, 20000), b = bete(jeu, 'sphinx', 4, 20000);
   jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
   ok('le nid promet', /peut-être autre chose/.test(ditPension(jeu)), ditPension(jeu));
   ok('sans rien nommer', !/[Kk]itsune|erveille/.test(ditPension(jeu)), ditPension(jeu));
@@ -1339,7 +1412,7 @@ scenario('merveilles — sans la recette, le couple pond comme les autres', () =
 scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la bête', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
-  const [a, b] = couple(jeu, 'chimere', 'sphinx');
+  const [a, b] = couple(jeu, 'ouroboros', 'sphinx');
   const loup = bete(jeu, 'loup', 4, 20000);
   const dit = () => ditPension(jeu);
 

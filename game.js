@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.0.2';
+const VERSION = 'beta 1.1.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -762,16 +762,30 @@ const PENSION_CHANCE = [0.5, 0.20, 0.05, 0.01];
    trente-quatre jours de médiane pour la Kitsune par sa recette, vingt-neuf pour Wukong. Un
    mois chacune, par deux chemins qui n'ont rien à voir — l'une se trouve, l'autre se cherche.
 
-   LA CHIMÈRE EST UN CARREFOUR, et c'est structurel : c'est la seule bête du jeu qui soit faite
-   d'autres bêtes. Tout ce qui est composite passera par elle — le Nuckelavee par le cheval, le
-   Catoblépas par le cerf. Un mythique par famille de merveilles, ce qui donne au joueur une
-   carte mentale au lieu d'une liste. */
+   UN MYTHIQUE PAR FAMILLE, ET LA CHIMÈRE N'EN EST PAS UNE. Elle était le carrefour de la
+   moitié des recettes, au motif qu'elle est faite d'autres bêtes — mais c'était lui prêter le
+   rôle inverse du sien. Une chimère ne CONCENTRE pas, elle DISPERSE : deux chimères donnent
+   n'importe quoi, et c'est tout ce qu'elles font. Le carrefour d'une merveille doit dire de
+   quoi elle est faite, pas seulement qu'elle est composite.
+
+   Chaque mythique porte donc un axe, et ses merveilles s'y rattachent :
+
+     Ouroboros   ce qui gagne avec le temps        Kitsune
+     Golem       ce qui naît de la pierre          Sun Wukong
+     Béhémoth    ce qui sort de la terre           l'Olgoï-Khorkhoï, Typhon
+     Chimère     rien — elle est le joker
+
+   Ça donne au joueur une carte mentale au lieu d'une liste, et ça laisse la Chimère faire la
+   seule chose qu'elle sache faire. */
 const RECETTES = [
-  /* KITSUNE. La recette : deux menteurs composites — celui qui pose une question pour dévorer,
-     et celui dont le corps est fait de plusieurs bêtes. Ce qui en sort cache neuf queues.
-     L'accident : Bastet et le corps composite. La silhouette, sans l'esprit. */
-  { a: 'chimere', b: 'sphinx', donne: 'kitsune', duree: 12 * 3600, chance: 0.01 },
-  { a: 'chimere', b: 'chat',   donne: 'kitsune', duree:  5 * 3600, chance: 0.001 },
+  /* KITSUNE. Elle n'a pas neuf queues parce qu'elle est composite : elle en a neuf DEPUIS
+     TOUJOURS et les montre une par siècle. Son axe est le temps, donc l'Ouroboros.
+
+     La recette : celui qui pose une énigme pour dévorer, et celui qui ne finit jamais. Ce qui
+     en sort cache neuf queues et mille ans. L'accident : Bastet et le temps — le félin donne
+     la silhouette, l'anneau donne les siècles, et il manque l'énigme. */
+  { a: 'ouroboros', b: 'sphinx', donne: 'kitsune', duree: 12 * 3600, chance: 0.01 },
+  { a: 'ouroboros', b: 'chat',   donne: 'kitsune', duree:  5 * 3600, chance: 0.001 },
 
   /* SUN WUKONG. Il naît d'un œuf de pierre, sur une montagne, sans parents : le mythe ne
      demande pas de singe, il demande une pierre qui s'ouvre. Or « on ne croise pas la pierre »
@@ -1236,7 +1250,10 @@ const LINES = [
     ['Licorne', '🦄', 'f'], ['Pégase', '🌠'] ] },
 
   // ── mythiques ───────────────────────────────────────────────────────────
-  { key: 'chimere', name: 'Chimère', rarity: 'mythique', forms: [
+  /* LA SEULE LIGNÉE JOKER. Une chimère est faite de morceaux d'autres bêtes : deux chimères
+     ne donnent donc pas une chimère, elles donnent N'IMPORTE QUOI. Le drapeau est posé sur la
+     table plutôt que dans le moteur, pour que la règle se lise là où vit la bête. */
+  { key: 'chimere', name: 'Chimère', rarity: 'mythique', joker: true, forms: [
     ['Avorton', '🐁'], ['Chimèreau', '🐐'], ['Chimère', '🦁', 'f'],
     ['Chimère royale', '🦁', 'f'], ['Chimère primordiale', '👹', 'f'] ] },
   { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
@@ -4685,7 +4702,18 @@ function accoupler(a, b) {
 
    On rend la LIGNÉE et non la sorte d'œuf, parce que la pension sert justement à VISER une
    lignée précise — sans les merveilleuses, c'est tout ce qu'elle a d'unique. */
+/* CE QUE DEUX JOKERS DONNENT : n'importe quoi, SAUF un joker. « Deux chimères ne font jamais
+   une chimère » est une règle qui tient en six mots, et c'est la chose la plus chimérique
+   qu'elles puissent faire.
+
+   LES RANGS SECRETS SONT HORS DU SAC. Une merveille tirée au hasard par un couple générique
+   viderait les recettes de leur sens : le rang tient parce qu'il n'y a qu'une porte. */
+const poolJoker = LINES.filter(l => !RARITY[l.rarity].secret && !l.joker);
+const ligneeAuHasard = () => poolJoker[Math.floor(Math.random() * poolJoker.length)].key;
+const couple2Jokers = (a, b) => !!(a && b && lineOf(a).joker && lineOf(b).joker);
+
 function ligneeDe(a, b) {
+  if (couple2Jokers(a, b)) return ligneeAuHasard();
   const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
   const bas  = haut === a ? b : a;
   const chance = PENSION_CHANCE[Math.min(ecartRarete(a, b), PENSION_CHANCE.length - 1)];
@@ -5076,7 +5104,9 @@ function renderPension() {
       (d === 0 ? 'Elles se ressemblent en tout' : d === 1 ? 'Elles ont une chose en commun'
                                                           : 'Elles n’ont rien en commun') +
       ' · ' + fmtTime(t) + ' · ' +
-      (ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
+      (couple2Jokers(a, b)
+        ? 'n’importe quelle lignée du bestiaire, sauf la leur'
+        : ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
                    : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
                      ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +
       (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name

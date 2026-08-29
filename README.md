@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.0.2
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.1.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.0.2** | un nid sans place ne se laisse plus remplir |
+| **beta 1.1.0** | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
+| beta 1.0.2 | un nid sans place ne se laisse plus remplir |
 | beta 1.0.1 | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
 | beta 1.0.0 | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
 | alpha 3.1.0 | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
@@ -1497,8 +1498,8 @@ formule ordinaire, qui est calibrée pour l'élevage.
 
 | Merveille | Couple | Durée | Chance | Médiane |
 |---|---|---|---|---|
-| **Kitsune** | Chimère × Sphinx | 12 h | 1 % | 34 j |
-| | Chimère × Chat | 5 h | 0,1 % | 144 j |
+| **Kitsune** | Ouroboros × Sphinx | 12 h | 1 % | 34 j |
+| | Ouroboros × Chat | 5 h | 0,1 % | 144 j |
 | **Sun Wukong** | Golem × Golem | 1 h | 0,1 % | 29 j |
 
 **Une recette n'est pas une porte, c'est un tirage.** Le couple pond normalement — la lignée
@@ -1517,11 +1518,13 @@ seulement une histoire.
 
 #### Pourquoi ces couples-là
 
-**Kitsune.** Elle n'est pas un renard, elle est **ce qui se fait passer pour autre chose** — et
-il n'y a donc pas de renard à ajouter au bestiaire. La **Chimère** est le corps fait de
-plusieurs bêtes, le **Sphinx** est le seul du jeu qui parle pour tromper. Ce qui sort de deux
-menteurs composites cache neuf queues. Le **Chat** tient l'autre bout : Bastet donne la
-silhouette, pas l'esprit.
+**Kitsune.** Elle n'est pas un renard, et il n'y a donc pas de renard à ajouter au bestiaire.
+Surtout, elle n'a pas neuf queues parce qu'elle serait composite : **elle en a neuf depuis
+toujours et les montre une par siècle.** Son axe est le temps, c'est-à-dire l'**Ouroboros**.
+
+Le **Sphinx** est le seul du jeu qui parle pour tromper : ce qui sort de l'énigme et de ce qui
+ne finit jamais cache neuf queues et mille ans. Le **Chat** tient l'autre bout — Bastet donne
+la silhouette, l'anneau donne les siècles, et il manque l'énigme.
 
 **Sun Wukong.** Il naît d'un **œuf de pierre**, sur une montagne, sans parents : le mythe ne
 demande pas de singe, il demande une pierre qui s'ouvre. Or *« on ne croise pas la pierre »*
@@ -1531,6 +1534,45 @@ l'essayer. **Une interdiction devient un secret.**
 Et la durée s'ensuit : **deux pierres ne couvent pas.** Rien n'est élevé là-dedans, il y a une
 pierre qui finit par se fendre. C'est la plus courte attente du jeu, et c'est aussi ce qui rend
 le 0,1 % jouable — 29 jours au lieu de 115 si on l'avait laissée à quatre heures.
+
+#### La Chimère est un joker
+
+**Deux chimères ne donnent pas une chimère : elles donnent n'importe quoi.** C'est le seul
+couple du jeu dont l'enfant n'est ni l'un ni l'autre des parents, et c'est la chose la plus
+chimérique qu'elles puissent faire — une chimère est faite de morceaux d'autres bêtes.
+
+Deux exclusions, et elles disent chacune quelque chose :
+
+- **jamais une chimère.** « Deux chimères ne font jamais une chimère » tient en six mots, et
+  c'est la règle qu'on retient ;
+- **jamais une merveilleuse.** Une merveille tirée au hasard par un couple générique viderait
+  les recettes de leur sens : le rang tient parce qu'il n'y a qu'une porte.
+
+Reste vingt-six lignées à parts égales, seize heures d'attente, et deux mythiques immobilisées
+pendant ce temps. **C'est une loterie, pas un placement** : la valeur moyenne de ce qui sort
+est de l'ordre de vingt millions, contre plus de huit cents milliards de rente abandonnée. La
+Chimère ne se croise pas pour gagner de l'argent, elle se croise pour voir ce qui sort.
+
+L'écran l'annonce, contrairement aux recettes : *« n'importe quelle lignée du bestiaire, sauf
+la leur »*. Ce n'est pas un secret, c'est la bête.
+
+#### Un mythique par famille, et la Chimère n'en est pas une
+
+La Chimère était le carrefour de la moitié des recettes, au motif qu'elle est faite d'autres
+bêtes. **C'était lui prêter le rôle inverse du sien** : une chimère ne concentre pas, elle
+disperse. Le carrefour d'une merveille doit dire *de quoi elle est faite*, pas seulement
+qu'elle est composite.
+
+| Mythique | Son axe | Ses merveilles |
+|---|---|---|
+| **Ouroboros** | ce qui gagne avec le temps | Kitsune |
+| **Golem** | ce qui naît de la pierre | Sun Wukong |
+| **Béhémoth** | ce qui sort de la terre | l'Olgoï-Khorkhoï, Typhon *(à venir)* |
+| **Chimère** | — | aucune : elle est le joker |
+
+Ça donne au joueur une carte mentale au lieu d'une liste — c'est ce qui permet de deviner une
+recette qu'on n'a pas encore vue — et ça laisse la Chimère faire la seule chose qu'elle sache
+faire.
 
 #### Le rang n'existe pas tant qu'on n'en a pas vu une
 
