@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 2.30.2';
+const VERSION = 'alpha 2.31.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -308,7 +308,7 @@ const TEMPERS = [
 /* Une bête stocke son motif PAR INDICE : les nouveaux s'ajoutent donc à la fin, comme les
    teintes. En insérer un au milieu redistribuerait les effets de tout l'album déjà gagné. */
 const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé',
-                'ocellé', 'perlé'];
+                'ocellé', 'martelé'];
 
 /* Les rangs de taille qualifient une bête MÛRE qu'on n'a pas fait évoluer : « adulte »,
    puis « adulte grand », « adulte énorme »… Le seuil d'un rang est aussi son multiplicateur
@@ -441,9 +441,21 @@ const MOTIF_BONUS = {
   'ocellé':    { key: 'clicAuto', quoi: 'clics automatiques',   pas: 0.10, cap: 1.00, signe: 1,
                  unite: ' clic / s', dec: 1,
                  dit: 'Elle clique à ta place sur ce que tu regardes, tant que la page est ouverte. Elle ne clique pas pendant ton absence : ce qui dépend de ta présence ne se rattrape pas.' },
-  'perlé':     { key: 'place',    quoi: 'place',                pas: 0.50, cap: 3.00, signe: 1,
-                 unite: ' enclos', dec: 1,
-                 dit: 'Des enclos que tu n’as pas payés, et qui ne font pas monter le prix des suivants. Les fractions de plusieurs cartes s’additionnent : seul le total entier compte.' },
+  /* LE PERLÉ DONNAIT DES ENCLOS, et c'était une mauvaise idée pour trois raisons. Il
+     plafonnait dès la DEUXIÈME étoile — la fusion n'avait plus rien à lui offrir. La place
+     était déjà servie trois fois par les primes (Paille fraîche, Pâturage, Étable). Et surtout
+     il dissolvait la seule tension de la fin de partie, celle que la professeure annonce
+     elle-même : « bientôt ce ne sera plus l'argent qui te limitera, mais la place ».
+
+     Le martelé prend l'axe que personne ne touchait : CE QUE VAUT UN CLIC. Deux primes et une
+     amélioration s'en occupent, aucune carte. Et il ne double pas l'ocellé — celui-là dit
+     combien de clics tombent, celui-ci ce que chacun rapporte. Les deux se multiplient, ce qui
+     en fait le premier vrai duo de l'album.
+
+     Le pas est calé pour que la troisième étoile compte : 0,08 × 12 fait 0,96, juste sous le
+     plafond. C'est exactement ce qui manquait au perlé. */
+  'martelé':   { key: 'clic',     quoi: 'force du clic',        pas: 0.08, cap: 1.00, signe: 1,
+                 dit: 'Chacun de tes clics porte plus loin. Elle ne fait pas cliquer à ta place — ça, c’est l’ocellé — elle rend chaque coup plus lourd, y compris ceux qu’une carte ocellée donne pour toi.' },
 };
 
 /* LES JETONS D'ASCENSION. Un jeton s'obtient en franchissant un palier de fortune, et
@@ -1548,7 +1560,7 @@ const oublierAlbum = () => { bonusCache = null; };
 function bonusAlbum() {
   if (bonusCache) return bonusCache;
   const b = { valeur: 0, couvee: 0, pousse: 0, gras: 0, rente: 0, peage: 0, oeuf: 0, prodige: 0,
-              clicAuto: 0, place: 0 };
+              clicAuto: 0, clic: 0 };
   for (const id of state.slots || []) {
     const k = carteDe(id);
     if (!k) continue;
@@ -1656,14 +1668,13 @@ const evoCost   = c => EVOLVE[c.age - 1] === null ? null
 const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)
                                               * (prime('grossiste') ? 0.8 : 1)));
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
-/* Les enclos de l'album s'ajoutent au compte, JAMAIS au prix : `penCost` continue de se
-   fonder sur `state.pens`, ce qu'on a réellement acheté. Sinon une carte perlée rendrait le
-   prochain enclos plus cher, ce qui reviendrait à le faire payer deux fois. */
-/* L'epsilon n'est pas de la superstition. `qualiteDe` additionne 0,5 + 0,2 + 0,2 + 0,1, ce qui
-   vaut 0,9999999999999999 en virgule flottante : une carte perlée parfaite pèse donc
-   3,9999…96 au lieu de 4, son effet 1,9999…98 au lieu de 2, et le plancher tombait d'un cran.
-   La carte annonçait « +2,0 enclos » et n'en donnait qu'un. */
-const pensTotal = () => state.pens + Math.floor(bonusAlbum().place + 1e-9)
+/* Les enclos des primes s'ajoutent au compte, JAMAIS au prix : `penCost` continue de se
+   fonder sur `state.pens`, ce qu'on a réellement acheté. Sinon une prime rendrait le prochain
+   enclos plus cher, ce qui reviendrait à le faire payer deux fois.
+
+   L'album n'entre plus ici : la carte perlée qui donnait des enclos a laissé la place au
+   martelé. Trois sources pour un même axe, c'était deux de trop. */
+const pensTotal = () => state.pens
                       + (prime('paille') ? 2 : 0) + (prime('paturage') ? 3 : 0);
 /* L'étable sort les bêtes gardées du compte. Garder coûtait un enclos, donc du débit : c'est
    ce qui rendait toute collection payante. Après elle, une ménagerie ne ralentit plus rien. */
@@ -1752,7 +1763,8 @@ const enFrenesie = () => (state.frenesie || 0) > 0;
    déjà en clics à partir de la même fonction — la frénésie annonce donc toute seule qu'il
    reste deux fois moins de clics à donner, sans une ligne de plus. */
 const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
-                          (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1);
+                          (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1) *
+                          (1 + bonusAlbum().clic);
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */

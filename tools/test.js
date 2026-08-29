@@ -1053,18 +1053,57 @@ scenario('album — chaque motif porte son effet, et chacun le sien', () => {
   }
 });
 
-scenario('album — une carte parfaite donne exactement ce qu’elle annonce', () => {
-  const jeu = neuf(); jeu.state.tuto = false; jeu.state.pens = 3;
-  /* qualiteDe additionne 0,5 + 0,2 + 0,2 + 0,1, ce qui vaut 0,9999999999999999 : une carte
-     parfaite pèse 3,999…96 et non 4. Le plancher des enclos tombait donc d'un cran, et la
-     carte annonçait deux enclos pour un seul. */
-  equiper(jeu, jeu.MOTIFS.indexOf('perlé'), 1);
-  eq('l’effet annoncé', Math.round(jeu.bonusAlbum().place * 10) / 10, 2);
-  eq('les enclos réellement ouverts', jeu.pensTotal(), 5);
-  equiper(jeu, jeu.MOTIFS.indexOf('perlé'), 3);
-  eq('le plafond tient', jeu.pensTotal(), 3 + jeu.MOTIF_BONUS['perlé'].cap);
-  eq('et le prix du prochain enclos ne bouge pas', jeu.penCost(),
-     Math.round(jeu.PEN_BASE * Math.pow(jeu.SLOT_MULT, 2)));
+scenario('album — la troisième étoile compte encore, pour toutes les familles', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  /* LE DÉFAUT DU PERLÉ, QU'ON NE VEUT PLUS. Il donnait des enclos et plafonnait dès la
+     DEUXIÈME étoile : la fusion n'avait plus rien à lui offrir, et on aurait payé quarante
+     cartes pour un cran qui ne donnait rien. Ce scénario garde l'invariant sur toute la table
+     — une famille dont la deuxième étoile plafonne déjà est une famille à revoir. */
+  for (const m of jeu.MOTIFS) {
+    const b = jeu.MOTIF_BONUS[m];
+    const val = e => {
+      equiper(jeu, jeu.MOTIFS.indexOf(m), 0);
+      const k = parfaite(jeu, jeu.MOTIFS.indexOf(m), 1);
+      k.etoiles = e;
+      return Math.min(b.cap, b.pas * jeu.puissanceDe(k));
+    };
+    ok('« ' + m + ' » : la deuxième étoile ne plafonne pas', val(2) < b.cap - 1e-9,
+       m + ' plafonne à ' + b.cap + ' dès ★★☆');
+    ok('« ' + m + ' » : la troisième ajoute encore quelque chose', val(3) > val(2) + 1e-9);
+  }
+});
+
+scenario('album — le martelé frappe plus fort, l’ocellé frappe plus souvent', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const iMartele = jeu.MOTIFS.indexOf('martelé');
+  const iOcelle = jeu.MOTIFS.indexOf('ocellé');
+
+  const nu = jeu.clickPower();
+  equiper(jeu, iMartele, 1);
+  const un = jeu.clickPower();
+  ok('une carte martelée alourdit le clic', un > nu, un);
+  equiper(jeu, iMartele, 5);
+  ok('cinq en donnent davantage', jeu.clickPower() > un, jeu.clickPower());
+  eq('sans dépasser le plafond de la famille',
+     Math.round(jeu.bonusAlbum().clic * 100) / 100, jeu.MOTIF_BONUS['martelé'].cap);
+
+  /* Les deux ne font pas le même métier : l'ocellé dit COMBIEN de clics tombent, le martelé
+     ce que chacun rapporte. Ils se multiplient — c'est le premier vrai duo de l'album. */
+  equiper(jeu, iOcelle, 3);
+  const cadence = jeu.bonusAlbum().clicAuto, force = jeu.clickPower();
+  ok('l’ocellé donne une cadence', cadence > 0);
+  eq('mais ne touche pas à la force du clic', force, nu);
+
+  // et la plonge reste plate, quoi qu'on ait en album
+  equiper(jeu, iMartele, 5);
+  s.coins = 0; s.pen = []; s.incub = [null];
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  jeu.refresh();
+  for (let i = 0; i < jeu.ASSIETTE_CLICS; i++) jeu.tapStage();
+  eq('dix clics font toujours une assiette', s.stats.assiettes, 1);
+  eq('et une seule pièce', s.coins, 1);
 });
 
 scenario('album — l’ocellé clique à ta place, sans compter pour toi', () => {
