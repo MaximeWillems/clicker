@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.6.0';
+const VERSION = 'beta 1.7.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -880,8 +880,8 @@ const PRIMES = [
   { cle: 'rente-1', prix: 2500000, glyphe: '🛏️', nom: 'Litière profonde',
     dit: 'Cinq pour cent de rente en plus. Ne touche pas au prix de vente : ça ne paie que si tu gardes.',
     bonus: { rente: 0.05 } },
-  { cle: 'pension-vite', prix: 3000000,  glyphe: '🔥', nom: 'Nid tiède',
-    dit: 'Les couvaisons de la pension vont moitié plus vite. Ne raccourcit pas un couple déjà parti.',
+  { cle: 'pension-vite-1', prix: 3000000,  glyphe: '🔥', nom: 'Nid tiède',
+    dit: 'Les couvaisons vont moitié plus vite. Ne raccourcit pas un couple déjà parti.',
     si: () => prime('pension') },
   { cle: 'intendance2', prix: 5000000, glyphe: '📜', nom: 'Grande intendance',
     dit: 'Encore un quart de moins sur chaque évolution, par-dessus l’Intendance.' },
@@ -911,8 +911,8 @@ const PRIMES = [
   { cle: 'vitesse-3', prix: 300000000, glyphe: '👟', nom: 'Bon pied',
     dit: 'Quinze pour cent de vitesse en plus. Le temps ne se rattrape pas, mais il se serre.',
     bonus: { vitesse: 0.15 } },
-  { cle: 'pension-place', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
-    dit: 'Un couple de plus à la fois. C’est la prime la plus chère du jeu, et la seule qui te dispense de choisir.',
+  { cle: 'pension-place-1', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
+    dit: 'Un couple de plus à la fois. La première prime qui te dispense de choisir.',
     si: () => prime('pension') },
 
   { cle: 'rente-3', prix: 800000000, glyphe: '🛋️', nom: 'Patience',
@@ -924,9 +924,38 @@ const PRIMES = [
   { cle: 'vitesse-4', prix: 5000000000, glyphe: '🌪️', nom: 'Sans relâche',
     dit: 'Vingt pour cent de vitesse en plus. La dernière du lot, et la quatrième qui compte.',
     bonus: { vitesse: 0.20 } },
+  { cle: 'pension-portee-1', prix: 6000000000, glyphe: '🐣', nom: 'Ponte double',
+    dit: 'Chaque ponte rend deux œufs au lieu d’un. La pension cesse d’être un outil pour devenir une production.',
+    si: () => prime('pension') },
+  { cle: 'pension-vite-2', prix: 10000000000, glyphe: '🌡️', nom: 'Nid chauffé',
+    dit: 'Les couvaisons vont quatre fois plus vite qu’à l’origine. Remplace le Nid tiède, elle ne s’y ajoute pas.',
+    si: () => prime('pension-vite-1') },
   { cle: 'rente-4', prix: 15000000000, glyphe: '🌝', nom: 'Rien ne presse',
     dit: 'Vingt pour cent de rente en plus. La prime la plus chère du jeu, pour la façon de jouer la plus lente.',
     bonus: { rente: 0.20 } },
+
+  { cle: 'pension-place-2', prix: 30000000000, glyphe: '🏘️', nom: 'Rangée de nids',
+    dit: 'Quatre couples à la fois. Huit enclos immobilisés en permanence : c’est là qu’est le prix.',
+    si: () => prime('pension-place-1') },
+  { cle: 'pension-portee-2', prix: 80000000000, glyphe: '🍳', nom: 'Ponte triple',
+    dit: 'Trois œufs par ponte. La chance de tirer autre chose, elle, reste attachée à la ponte et non à l’œuf.',
+    si: () => prime('pension-portee-1') },
+  { cle: 'pension-vite-3', prix: 150000000000, glyphe: '🌋', nom: 'Nid ardent',
+    dit: 'Douze fois plus vite qu’à l’origine. Une couvaison de seize heures tombe à quatre-vingts minutes.',
+    si: () => prime('pension-vite-2') },
+  { cle: 'pension-riche-1', prix: 250000000000, glyphe: '🍅', nom: 'Lignées fécondes',
+    dit: 'La richesse d’un couple pèse quatre fois moins sur sa durée. C’est ce qui rend les hautes raretés produisibles au lieu d’attendables.',
+    si: () => prime('pension-vite-2') },
+  { cle: 'pension-place-3', prix: 600000000000, glyphe: '🏙️', nom: 'Le bâtiment entier',
+    dit: 'Huit couples à la fois, seize enclos qui ne rapportent plus rien. À ce stade tu n’élèves plus, tu produis.',
+    si: () => prime('pension-place-2') },
+  { cle: 'pension-portee-3', prix: 1000000000000, glyphe: '🧺', nom: 'Ponte pleine',
+    dit: 'Cinq œufs par ponte, et c’est le bout. La prime la plus chère du jeu.',
+    si: () => prime('pension-portee-2') },
+
+  { cle: 'pension-riche-2', prix: 2000000000000, glyphe: '🧬', nom: 'Le sang ne pèse plus',
+    dit: 'Huit fois moins. Deux mythiques couvent alors en dix minutes, et la pension cesse d’être plus lente que la boutique.',
+    si: () => prime('pension-riche-1') },
 ];
 /* COMBIEN DE PRIMES LA GRILLE MONTRE À LA FOIS. Cinq : c'est ce qu'on peut comparer d'un
    coup d'œil sans faire d'arbitrage, et ça tient sur une ligne de grille aux tailles usuelles.
@@ -4803,25 +4832,56 @@ function syncPanneaux() {
 
 const couples    = () => (state.pension && state.pension.couples) || [];
 // le second nid s'ajoute au compte de base : la prime ne remplace pas la place, elle en pose une
-const placesPension = () =>
-  ((state.pension && state.pension.places) || 0) + (prime('pension-place') ? 1 : 0);
+/* CE QUE LA PENSION DEVIENT QUAND ON Y MET TOUT. Trois échelles, et chacune se lit comme
+   un palier remplaçant le précédent — jamais comme une somme : « quatre fois plus vite »
+   veut dire quatre fois plus vite qu'à l'origine, pas quatre fois plus que le cran d'avant.
+   C'est la seule façon d'annoncer un multiplicateur sans que le joueur ait à multiplier.
+
+   L'ÉCHELLE EST CE QUI PERMET À LA PENSION DE CONCURRENCER L'ACHETEUR. Nue, elle rend un œuf
+   toutes les seize heures ; complète, huit couples pondent cinq œufs toutes les quatre-vingts
+   minutes. Sur du commun elle dépasse largement ce qu'une boutique peut servir, et elle le
+   fait GRATUITEMENT — ce qu'elle coûte, ce sont seize enclos qui ne rapportent plus rien, et
+   c'est la seule monnaie qui manque vraiment à ce stade.
+
+   Sur du mythique elle reste loin derrière, et c'est voulu : la durée se multiplie par la
+   richesse du couple, et c'est ce multiplicateur qui empêche la pension de redevenir
+   l'imprimante à billets qu'elle était sur le papier avant la 3.0.0. */
+const echelle = (paliers, prefixe) => {
+  let v = paliers[0];
+  for (let i = 1; i < paliers.length; i++) if (prime(prefixe + i)) v = paliers[i];
+  return v;
+};
+const placesPension  = () => echelle([1, 2, 4, 8], 'pension-place-');
+const vitessePension = () => echelle([1, 1.5, 4, 12], 'pension-vite-');
+const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-');
+/* LA RICHESSE, ET POURQUOI ELLE SE DESSERRE SANS SE LEVER. Le multiplicateur de rareté — ×64
+   pour deux mythiques — est ce qui empêche la pension d'être une imprimante à billets, et
+   c'était mesuré avant de l'ouvrir. Mais c'est aussi ce qui la laissait à trente œufs
+   mythiques l'heure quand la boutique en sert des milliers.
+
+   On le divise, on ne le supprime pas. À huit, deux mythiques couvent en dix minutes : la
+   pension rend alors 240 œufs mythiques l'heure, contre 480 pour un acheteur de douze
+   incubateurs. Elle devient un vrai choix. Le compte reste perdant — 43 Md/h de valeur
+   produite contre 396 Md/h de rente abandonnée par seize enclos — et c'est ce qui tient. */
+const richessePension = () => echelle([1, 4, 8], 'pension-riche-');
 
 /* CE QUE LES PRIMES CHANGENT À LA PENSION.
 
    La VITESSE s'applique à la durée au moment où le couple se forme, et pas après : un couple
-   déjà parti garde la sienne, écrite dans `duree`. Acheter le Nid tiède ne doit pas rattraper
-   une attente commencée — sinon la prime devient un bouton « finis ma couvaison », ce qui est
-   une autre chose, et une moins bonne.
+   déjà parti garde la sienne, écrite dans `duree`. Acheter un nid plus chaud ne doit pas
+   rattraper une attente commencée — sinon la prime devient un bouton « finis ma couvaison »,
+   ce qui est une autre chose, et une moins bonne.
 
    Le SANG double la chance que la lignée du parent le plus rare l'emporte, sans jamais
    dépasser une fois sur deux : au-delà, le parent le moins rare cesserait d'être celui qui
    sort d'habitude, et c'est sur lui que repose le multiplicateur de durée.
 
-   NI L'UNE NI L'AUTRE NE TOUCHE AUX RECETTES. Une prime qui ferait tomber les merveilles plus
-   souvent devrait le dire pour se vendre, et dirait donc qu'elles existent. Le Nid tiède les
-   sert quand même, par la bande : une couvaison deux fois plus courte, c'est deux fois plus
-   de tirages dans le même temps. */
-const vitessePension = () => prime('pension-vite') ? 1.5 : 1;
+   AUCUNE NE TOUCHE AUX RECETTES. Une prime qui ferait tomber les merveilles plus souvent
+   devrait le dire pour se vendre, et dirait donc qu'elles existent. La vitesse et les places
+   les servent quand même, par la bande — plus de pontes dans le même temps. LA PORTÉE, ELLE,
+   NE LES SERT PAS : le tirage se fait par PONTE et non par œuf, parce qu'une nichée est un
+   événement et non cinq. Sans cette règle, la dernière prime du jeu multiplierait par cinq la
+   chance de toutes les merveilles d'un coup. */
 const chancePension = ecart =>
   Math.min(0.5, PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)] *
                 (prime('pension-sang') ? 2 : 1));
@@ -4851,8 +4911,11 @@ function dureePension(a, b) {
   if (rec) return Math.round(rec.duree / vitessePension());
   const d = distanceDe(a, b);
   if (d === null) return null;
+  // la richesse se desserre mais ne descend jamais sous un : sinon les communes iraient plus
+  // vite que la boucle de jeu, et le plafond de réserve serait le seul reste du système
+  const riche = Math.max(1, PENSION_MULT[rareteBasse(a, b)] / richessePension());
   return Math.round((PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b))
-                    * PENSION_MULT[rareteBasse(a, b)] / vitessePension());
+                    * riche / vitessePension());
 }
 
 /* Pourquoi ce couple ne peut pas se former — une phrase, ou null s'il le peut. Rendre la
@@ -4934,33 +4997,76 @@ const sorteDe = ligne => {
 /* Fait avancer les couples. Un couple arrivé au bout dépose son œuf dans la réserve et libère
    ses parents. Appelée par `advance`, donc elle tourne aussi pendant une absence : une
    couvaison est une attente et non un geste. */
+/* Un œuf dans la réserve, avec sa lignée promise. Rend false si le plafond est atteint —
+   c'est le seul frein de la pension, et il tient parce que la réserve se vide toute seule
+   dans les incubateurs libres. */
+function pondre(ligne) {
+  const sorte = sorteDe(ligne);
+  if (eggStock(sorte) >= PLAFOND_OEUFS) return false;
+  state.eggs[sorte] = eggStock(sorte) + 1;
+  state.pension.dus = state.pension.dus || {};
+  (state.pension.dus[sorte] = state.pension.dus[sorte] || []).push(ligne);
+  state.pension.nes = (state.pension.nes || 0) + 1;
+  state.stats.pension = (state.stats.pension || 0) + 1;
+  return true;
+}
+
+/* Combien de pontes une absence peut rattraper d'un coup. Le plafond de la réserve borne déjà
+   ce qui rentre, mais la boucle, elle, doit se terminer : vingt-quatre heures hors ligne sur
+   un couple de deux minutes, c'est sept cents tours pour rien. */
+const PONTES_MAX = 200;
+
+/* Fait avancer les couples.
+
+   LE COUPLE NE SE DÉFAIT PAS QUAND L'ŒUF TOMBE. Il se défaisait, et c'était le geste de trop :
+   on venait retirer deux bêtes d'un nid vide, les reposer, revalider — toutes les seize heures,
+   pour rien. Un couple confié RESTE confié jusqu'à ce qu'on le rompe soi-même, et la pension
+   devient une ligne de production plutôt qu'une commande à repasser.
+
+   Ce que ça change au prix : rien, et c'est ce qui le rend juste. Les deux parents continuent
+   de ne pas rapporter, indéfiniment. On ne paie pas la ponte, on paie l'OCCUPATION.
+
+   Appelée par `advance`, donc elle tourne aussi pendant une absence — d'où la boucle. */
 function avancePension(dt) {
   if (!prime('pension')) return 0;
   let nes = 0;
+  const portee = porteePension();
   state.pension.couples = couples().filter(k => {
     k.t += dt;
-    if (k.t < k.duree) return true;
     const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
     // un parent vendu pendant la couvaison annule le couple sans rien rendre
     if (!a || !b) return false;
-    /* LA RECETTE PASSE AVANT. Elle ne remplace pas la ponte ordinaire, elle se pose
-       dessus : le couple pond sa lignée habituelle dans quatre-vingt-dix-neuf cas sur cent,
-       et la merveille dans le centième. */
-    const rec = recetteDe(a, b);
-    const ligne = rec && Math.random() < rec.chance ? rec.donne : ligneeDe(a, b);
-    const sorte = sorteDe(ligne);
-    /* La réserve est pleine : le couple GARDE son œuf et attend. Le jeter punirait une absence,
-       et c'est précisément ce que le plafond doit éviter de faire. */
-    if (eggStock(sorte) >= PLAFOND_OEUFS) { k.t = k.duree; return true; }
-    state.eggs[sorte] = eggStock(sorte) + 1;
-    state.pension.dus = state.pension.dus || {};
-    (state.pension.dus[sorte] = state.pension.dus[sorte] || []).push(ligne);
-    state.pension.nes = (state.pension.nes || 0) + 1;
-    state.stats.pension = (state.stats.pension || 0) + 1;
-    nes++;
-    return false;
+
+    let tours = 0;
+    while (k.t >= k.duree && tours++ < PONTES_MAX) {
+      /* LA RECETTE SE TIRE UNE FOIS PAR PONTE, ET NON PAR ŒUF. Une nichée est un événement,
+         pas cinq — sans cette règle, la dernière prime du jeu multiplierait par cinq la chance
+         de toutes les merveilles d'un coup. */
+      const rec = recetteDe(a, b);
+      const rare = rec && Math.random() < rec.chance ? rec.donne : null;
+
+      let pondus = 0;
+      for (let i = 0; i < portee; i++) {
+        // la merveille occupe UNE place de la nichée, les autres se tirent normalement
+        if (pondre(i === 0 && rare ? rare : ligneeDe(a, b))) pondus++;
+      }
+      /* La réserve est pleine : le couple GARDE sa ponte et attend. Le jeter punirait une
+         absence, et c'est précisément ce que le plafond doit éviter de faire. */
+      if (!pondus) { k.t = k.duree; return true; }
+      nes += pondus;
+      k.t -= k.duree;
+    }
+    return true;
   });
   return nes;
+}
+
+/* Rompre un couple. Le seul moyen de récupérer deux parents, et il est délibérément manuel :
+   une ferme qui rendrait les bêtes toute seule redemanderait le geste à chaque ponte. */
+function romprePension(id) {
+  const avant = couples().length;
+  state.pension.couples = couples().filter(k => k.a !== id && k.b !== id);
+  return couples().length < avant;
 }
 
 /* ── LES TROPHÉES ──────────────────────────────────────────────────────────────
@@ -5200,10 +5306,18 @@ function renderPension() {
 
   /* ── LES COUPLES EN COURS ──
      En haut, comme les cartes équipées de l'album : c'est le seul bloc qui agit déjà. */
+  const portee = porteePension();
   for (const k of couples()) {
     const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
-    const el = document.createElement('div');
+    /* LA LIGNE EST UN BOUTON : c'est le seul moyen de récupérer deux parents, puisqu'un couple
+       ne se défait plus tout seul. Manuel par principe — une ferme qui rendrait les bêtes à
+       chaque ponte redemanderait le geste indéfiniment. */
+    const el = document.createElement('button');
+    el.type = 'button';
     el.className = 'couple';
+    el.dataset.rompre = String(k.a);
+    el.title = !a || !b ? 'Rompre ce couple'
+      : 'Rompre le couple — ' + fullName(a) + ' et ' + fullName(b) + ' retrouvent leur rente';
     const qui = document.createElement('span');
     qui.className = 'couple-qui';
     qui.textContent = (a ? glyphOf(a) : '—') + ' ' + (b ? glyphOf(b) : '—');
@@ -5221,8 +5335,11 @@ function renderPension() {
     txt.append(nom, barre);
     const reste = document.createElement('span');
     reste.className = 'couple-reste';
+    /* CE QU'UN COUPLE PRODUIT, et non seulement quand il finit. Un couple qui ne se défait plus
+       est un débit, pas une commande : c'est ce chiffre-là qu'on compare à la boutique. */
     reste.textContent = !a || !b ? 'perdu'
-      : k.t >= k.duree ? 'réserve pleine' : fmtTime(k.duree - k.t);
+      : k.t >= k.duree ? 'réserve pleine'
+      : fmtTime(k.duree - k.t) + (portee > 1 ? ' · ×' + portee : '');
     el.append(qui, txt, reste);
     hote.appendChild(el);
   }
@@ -5333,6 +5450,10 @@ function renderPension() {
   /* CE QUI ATTEND EN RÉSERVE. Un œuf de pension se range parmi les autres et ne se distingue
      plus de rien : sans cette ligne, on couve cinq heures pour voir un « œuf commun » de plus
      dans la boutique, et la lignée promise n'existe que dans le code. */
+  /* LE DÉBIT DE LA PENSION ENTIÈRE, en œufs par heure. C'est le seul chiffre qui se compare à
+     l'acheteur automatique, et c'est la question que la pension pose en fin de partie :
+     acheter ses œufs, ou les produire. */
+  const debit = couples().reduce((n, k) => n + porteePension() / (k.duree / 3600), 0);
   const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
   const nes = state.pension.nes || 0;
   /* UNE LIGNÉE INCONNUE D'UN RANG SECRET NE SE NOMME PAS ICI. Lire « sun wukong » dans une
@@ -5340,13 +5461,21 @@ function renderPension() {
      demie avant l'éclosion, qui est le seul moment où elle valait quelque chose. */
   const nommer = l => rareteConnue(LINE_BY_KEY[l].rarity)
     ? LINE_BY_KEY[l].name.toLowerCase() : 'quelque chose que tu n’as jamais vu';
+  /* GROUPÉ ET COMPTÉ, jamais énuméré. Une pension nue rendait un œuf toutes les seize heures
+     et la liste tenait ; une pension complète en rend cinquante, et « loup, ours, ours, loup,
+     ours… » cinquante fois de suite n'est plus une phrase. */
+  const parLignee = new Map();
+  for (const l of promis) parLignee.set(l, (parLignee.get(l) || 0) + 1);
+  const resume = [...parLignee].map(([l, n]) => (n > 1 ? n + ' ' : '') + nommer(l));
   setText($('pension-intro'), promis.length
-    ? 'En réserve : ' + promis.map(nommer).join(', ') + '.'
+    ? 'En réserve : ' + liste(resume.slice(0, 6)) +
+      (resume.length > 6 ? ', et ' + (resume.length - 6) + ' de plus' : '') + '.'
     : nes
     ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus. ' +
       nes + (nes > 1 ? ' œufs pondus' : ' œuf pondu') + ' depuis le début.'
     : couples().length
-    ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus.'
+    ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus — indéfiniment : ' +
+      'un couple ne se défait que si tu le romps. ' + dec(debit, debit < 10 ? 2 : 0) + ' œufs à l’heure.'
     : 'Glisse deux bêtes adultes dans le nid : elles pondront un œuf. Plus elles se ressemblent, ' +
       'plus c’est rapide — et l’œuf prend la lignée de l’une des deux.');
 }
@@ -5650,6 +5779,15 @@ function bindTools() {
       chord([392, 523, 659], 70);
       refresh();
       save();
+      return;
+    }
+    const ligne = e.target.closest && e.target.closest('.couple');
+    if (ligne) {
+      if (romprePension(parseInt(ligne.dataset.rompre, 10))) {
+        chord([392, 330], 70);
+        refresh();
+        save();
+      }
       return;
     }
     const z = e.target.closest && e.target.closest('.nid-case');

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.6.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.7.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.6.0** | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
+| **beta 1.7.0** | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
+| beta 1.6.0 | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
 | beta 1.5.0 | `tools/pixel.js` : une planche de sprites devient une grille de caractères, corrigeable à la main |
 | beta 1.4.0 | la Tarasque : une merveille sans recette, que seules deux chimères peuvent donner |
 | beta 1.3.0 | trois améliorations globales : le Renom, la Patience et l'Ardeur |
@@ -222,7 +223,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
   l'argent. Une bête mûre continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
 - Quatre améliorations à niveaux : force du clic, couveuse, éleveur, mangeoire
-- Trente-six primes, achats uniques répartis de 250 pièces à 15 milliards
+- Quarante-cinq primes, achats uniques répartis de 250 pièces à 2 000 milliards
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
@@ -1510,110 +1511,81 @@ Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour déc
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
 
-#### Trois primes, et une seule change vraiment le jeu
+#### Un couple ne se défait plus
 
-| Prime | Prix | Ce qu'elle fait |
+**Il se défaisait quand l'œuf tombait, et c'était le geste de trop** : on venait retirer deux
+bêtes d'un nid vide, les reposer, revalider — toutes les seize heures, pour rien. Un couple
+confié reste confié jusqu'à ce qu'on le rompe soi-même, en cliquant sa ligne.
+
+Ce que ça change au prix : **rien**, et c'est ce qui le rend juste. Les deux parents continuent
+de ne pas rapporter, indéfiniment. *On ne paie pas la ponte, on paie l'occupation.*
+
+C'est aussi ce qui fait de la pension une **ligne de production** plutôt qu'une commande à
+repasser — et donc ce qui la rend comparable à l'acheteur automatique.
+
+#### Les quatre échelles
+
+| Échelle | Crans | Prix |
 |---|---|---|
-| **Nid tiède** | 3 M | les couvaisons vont moitié plus vite |
-| **Sang dominant** | 20 M | la lignée du parent le plus rare sort deux fois plus souvent, jamais plus d'une fois sur deux |
-| **Second nid** | 500 M | un couple de plus à la fois — la prime la plus chère du jeu |
+| **les places** | 1 → 2 → 4 → 8 couples | 500 M · 30 Md · 600 Md |
+| **la vitesse** | ×1,5 → ×4 → ×12 | 3 M · 10 Md · 150 Md |
+| **la portée** | 2 → 3 → 5 œufs par ponte | 6 Md · 80 Md · 1 000 Md |
+| **la richesse** | pèse ÷4 → ÷8 | 250 Md · 2 000 Md |
 
-Les trois n'apparaissent qu'une fois **le bâtiment acheté** : trois cases qui parlent d'un
-panneau qu'on n'a pas encore encombrent la grille pour rien — et elles n'entrent pas non
-plus dans le compte des [cinq prochaines](#la-grille-ne-montre-que-les-cinq-prochaines).
+Chaque cran **remplace** le précédent, il ne s'y ajoute pas : « quatre fois plus vite » veut
+dire quatre fois plus vite qu'à l'origine. C'est la seule façon d'annoncer un multiplicateur
+sans que le joueur ait à multiplier. Et chaque échelle s'ouvre un cran à la fois, ce qui garde
+la [grille des cinq prochaines](#la-grille-ne-montre-que-les-cinq-prochaines) lisible.
 
-**Le Nid tiède ne raccourcit pas un couple déjà parti.** La durée est écrite au moment où le
-couple se forme ; sans ça la prime deviendrait un bouton « finis ma couvaison », ce qui est
-une autre chose et une moins bonne.
+**La richesse se desserre sans se lever.** Le multiplicateur de rareté — ×64 pour deux
+mythiques — est ce qui empêche la pension d'être une imprimante à billets, et c'était mesuré
+avant de l'ouvrir. Mais c'est aussi ce qui la laissait à trente œufs mythiques l'heure quand la
+boutique en sert des milliers. On le **divise**, on ne le supprime pas, et il ne descend jamais
+sous un.
 
-**Le Sang dominant plafonne à une fois sur deux.** Au-delà, le parent le moins rare cesserait
-d'être celui qui sort d'habitude — et c'est sur lui que repose le multiplicateur de durée.
+#### Ce que ça donne, mesuré
 
-**Aucune ne touche aux recettes**, et c'est une contrainte du [secret](#le-rang-nexiste-pas-tant-quon-nen-a-pas-vu-une) :
-une prime qui ferait tomber les merveilles plus souvent devrait le dire pour se vendre, et
-dirait donc qu'elles existent. Le Nid tiède les sert quand même, par la bande — une couvaison
-plus courte, c'est plus de tirages dans le même temps. Kitsune passe de 34 à 23 jours de
-médiane, Wukong de 29 à 19 ; avec le second nid en plus, on peut faire tourner les deux routes
-à la fois.
+En œufs par heure, toutes les places sur le même couple :
 
-**Une place, une seule au départ.** C'est ce qui donne du poids au choix du couple : avec deux
-places, on ne choisit plus, on empile. Le Second nid la double, et il coûte un demi-milliard
-pour cette raison exacte — c'est la seule prime du jeu qui dispense de choisir.
-
-**Et le nid se ferme quand la place est prise.** Il acceptait les bêtes en toutes circonstances
-et ne refusait qu'au bouton : on composait tranquillement un couple, on lisait « la place est
-prise », et il fallait ressortir les deux bêtes une par une. Un écran qui laisse faire un geste
-qu'il refusera ensuite ment deux fois — d'abord en acceptant, ensuite en refusant.
-
-#### Ce qui reste à écrire
-
-- **L'hérédité.** Teintes, tempérament et motif se tirent encore au hasard. Les fusions de
-  teintes et les teintes exclusives viendront avec leur propre version.
-- **Les six autres merveilles.** Surtr, Catoblépas, Nuckelavee, Olgoï-Khorkhoï, Tiamat et
-  Typhon sont écrits dans [MERVEILLES.md](MERVEILLES.md) et attendent leurs dessins. Leurs
-  recettes suivront le même schéma : un mythique par famille, deux routes, des durées propres.
-
-### Les merveilleuses
-
-**La cinquième rareté.** Deux lignées pour l'instant — la **Kitsune** et **Sun Wukong** — et
-une seule règle qui les définit :
-
-> Aucun œuf n'en donne. On ne les obtient qu'en pension, par un couple précis, et le couple ne
-> les rend qu'une fois de temps en temps.
-
-**Elle ne vaut pas plus qu'une mythique.** Même multiplicateur de prix, même plafond de carte,
-même rente. C'est la décision la plus importante du rang : si une merveille rapportait
-davantage, la pension redeviendrait une stratégie d'argent et tout le travail de la 3.0.0 pour
-qu'elle n'en soit pas une tomberait sur la première éclose. Un cran de **rareté**, jamais un
-cran de **puissance**.
-
-#### Les recettes
-
-Une recette porte **son couple, sa durée et son pourcentage** — elle n'emprunte rien à la
-formule ordinaire, qui est calibrée pour l'élevage.
-
-| Merveille | Couple | Durée | Chance | Médiane |
+| Couple | Pension nue | 1er cran | 2e cran | Complète |
 |---|---|---|---|---|
-| **Kitsune** | Ouroboros × Sphinx | 12 h | 1 % | 34 j |
-| | Ouroboros × Chat | 5 h | 0,1 % | 144 j |
-| **Sun Wukong** | Golem × Golem | 1 h | 0,1 % | 29 j |
-| **Tarasque** | Chimère × Chimère | 16 h | 1 % | 46 j |
+| crapaud × lézard | 2,4 | 14 | 115 | **1 152** |
+| loup × ours | 1,0 | 6 | 48 | **1 920** |
+| kraken × sphinx | 0,1 | 0,6 | 5 | **411** |
+| ouroboros × béhémoth | 0,1 | 0,4 | 3 | **240** |
 
-La Tarasque n'a pas de recette : elle sort du [joker](#la-chimère-est-un-joker), et de rien
-d'autre.
+Contre l'acheteur automatique, sur du mythique : 80 œufs/h à six incubateurs, **480 à douze**,
+4 000 à trente. La pension complète est donc **du même ordre qu'un acheteur de milieu de
+partie**, et elle dépasse tout le reste sur les raretés basses.
 
-**Une recette n'est pas une porte, c'est un tirage.** Le couple pond normalement — la lignée
-d'un des deux parents, comme n'importe quel couple — et la merveille sort par-dessus. Rien à
-débloquer, rien à cocher : on peut tomber dessus sans savoir, ce qui fait qu'une merveille
-**existe dans le monde avant que quiconque sache la fabriquer**.
+**Ce que chacun coûte, et c'est là qu'est le choix :**
 
-D'où les **deux routes** par merveille, qui ne disent pas la même chose :
+- l'acheteur paie **180 M par œuf mythique**, indéfiniment — 86 Md/h à douze incubateurs ;
+- la pension paie **4 000 Md une fois**, puis seize enclos qui ne rapportent plus rien —
+  432 Md/h de rente abandonnée.
 
-- **l'accident** — des parents qu'on a déjà, un pour mille. Personne ne le vise ;
-- **la recette** — le couple exact, un pour cent. C'est la route.
+Le compte reste perdant : 240 œufs mythiques l'heure valent 43 Md, contre 432 Md abandonnés.
+**La pension n'est toujours pas une stratégie d'argent**, et c'est ce qui tient tout le reste
+en place. Ce qu'elle offre, c'est de produire au lieu d'acheter, et de **choisir la lignée**.
 
-L'exact doit toujours écraser l'accident en rendement, sinon il ne sert à rien : 0,083 %/h
-contre 0,020 pour la Kitsune, un facteur quatre. L'accident n'est jamais une stratégie,
-seulement une histoire.
+Le [plafond de la réserve](#le-plafond-de-la-réserve) borne les deux de la même façon : au-delà
+de cinquante œufs par sorte, ce qui compte est le nombre d'incubateurs qui la vident.
 
-#### Pourquoi ces couples-là
+#### Ce que les primes ne touchent pas
 
-**Kitsune.** Elle n'est pas un renard, et il n'y a donc pas de renard à ajouter au bestiaire.
-Surtout, elle n'a pas neuf queues parce qu'elle serait composite : **elle en a neuf depuis
-toujours et les montre une par siècle.** Son axe est le temps, c'est-à-dire l'**Ouroboros**.
+**Aucune ne touche aux recettes**, et c'est une contrainte du
+[secret](#le-rang-nexiste-pas-tant-quon-nen-a-pas-vu-une) : une prime qui ferait tomber les
+merveilles plus souvent devrait le dire pour se vendre, et dirait donc qu'elles existent.
 
-Le **Sphinx** est le seul du jeu qui parle pour tromper : ce qui sort de l'énigme et de ce qui
-ne finit jamais cache neuf queues et mille ans. Le **Chat** tient l'autre bout — Bastet donne
-la silhouette, l'anneau donne les siècles, et il manque l'énigme.
+La vitesse et les places les servent par la bande — plus de pontes dans le même temps. **La
+portée, elle, ne les sert pas** : le tirage se fait par *ponte* et non par œuf, parce qu'une
+nichée est un événement et non cinq. Sans cette règle, la dernière prime du jeu multiplierait
+par cinq la chance de toutes les merveilles d'un coup.
 
-**Sun Wukong.** Il naît d'un **œuf de pierre**, sur une montagne, sans parents : le mythe ne
-demande pas de singe, il demande une pierre qui s'ouvre. Or *« on ne croise pas la pierre »*
-laisse passer exactement un couple — le golem avec lui-même — et personne n'a de raison de
-l'essayer. **Une interdiction devient un secret.**
-
-Et la durée s'ensuit : **deux pierres ne couvent pas.** Rien n'est élevé là-dedans, il y a une
-pierre qui finit par se fendre. C'est la plus courte attente du jeu, et c'est aussi ce qui rend
-le 0,1 % jouable — 29 jours au lieu de 115 si on l'avait laissée à quatre heures.
+Le **Sang dominant** (20 M) reste à part : il double la chance que la lignée du parent le plus
+rare l'emporte, sans jamais passer une fois sur deux — au-delà, le parent le moins rare
+cesserait d'être celui qui sort d'habitude, et c'est sur lui que repose le multiplicateur de
+durée.
 
 #### La Chimère est un joker
 

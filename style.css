@@ -1085,11 +1085,15 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 
 /* les couples en cours passent devant : c'est le seul bloc qui agit déjà */
 .couple {
-  display: flex; align-items: center; gap: 0.6rem;
-  background: var(--raised); border: 1px solid var(--rule);
+  display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left;
+  background: var(--raised); color: inherit; font: inherit;
+  border: 1px solid var(--rule);
   border-left: 2px solid var(--jade);
-  padding: 0.4rem 0.6rem; border-radius: 3px;
+  padding: 0.4rem 0.6rem; border-radius: 3px; cursor: pointer;
 }
+/* un couple ne se défait plus tout seul : la ligne est le geste qui le rompt */
+.couple:hover { border-color: var(--red); }
+.couple:hover .couple-bar > i { background: var(--red); }
 .couple-qui { font-size: 1.15rem; line-height: 1; letter-spacing: 0.08em; flex: none; }
 .couple-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .couple-nom {

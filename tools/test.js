@@ -937,17 +937,30 @@ scenario('pension — un couple pond la lignée promise, et pas une autre', () =
   eq('la réserve n’a pas bougé', jeu.eggStock('rare'), avant);
   eq('puis l’œuf tombe', jeu.avancePension(2), 1);
   eq('la réserve a gagné un œuf', jeu.eggStock('rare'), avant + 1);
+  eq('et le compteur monte', s.stats.pension, 1);
+
+  /* LE COUPLE NE SE DÉFAIT PAS QUAND L'ŒUF TOMBE. Il se défaisait, et c'était le geste de
+     trop : on venait retirer deux bêtes d'un nid vide et les reposer, toutes les seize heures.
+     Un couple confié reste confié jusqu'à ce qu'on le rompe soi-même. */
+  eq('la place reste prise', jeu.couples().length, 1);
+  ok('les parents restent parqués', jeu.enPension(a) && jeu.enPension(b));
+  eq('et le compteur du couple repart', jeu.couples()[0].t < jeu.couples()[0].duree, true);
+  eq('un second tour repond', jeu.avancePension(jeu.dureePension(a, b)), 1);
+  eq('deux œufs en tout', s.stats.pension, 2);
+
+  /* ROMPRE EST LE SEUL MOYEN DE LES RÉCUPÉRER, et il est manuel par principe. */
+  ok('rompre marche', jeu.romprePension(a.id));
   eq('la place est rendue', jeu.couples().length, 0);
   ok('les parents sont libres', !jeu.enPension(a) && !jeu.enPension(b));
-  eq('et le compteur monte', s.stats.pension, 1);
+  ok('et rompre un couple qui n’existe pas ne fait rien', !jeu.romprePension(a.id));
 
   /* LA LIGNÉE PROMISE EST TENUE. C'est tout ce que la pension a d'unique sans les
      merveilleuses : deux loups rendent un loup, pas « un œuf commun ». */
-  eq('la lignée attend en réserve', (s.pension.dus.rare || []).join(), 'loup');
+  eq('la lignée attend en réserve', (s.pension.dus.rare || []).join(), 'loup,loup');
   s.incub[0] = null;
   jeu.placeEgg(0, 'rare');
   eq('et c’est elle qui part en couveuse', s.incub[0].line, 'loup');
-  eq('la file est vidée', s.pension.dus.rare.length, 0);
+  eq('la file a servi', s.pension.dus.rare.length, 1);
   s.incub[1] = null;
   s.eggs.rare = 5;
   jeu.placeEgg(1, 'rare');
@@ -1150,8 +1163,10 @@ scenario('pension — un nid sans place ne se laisse pas remplir', () => {
      cases.every(z => /occupé/.test(z.children.map(x => x.textContent).join(' '))),
      cases.map(z => z.children.map(x => x.textContent).join(' ')).join(' | '));
 
-  // la place libérée, tout se rouvre
+  // la place ne se libère plus toute seule : il faut rompre le couple
   jeu.avancePension(1e6);
+  eq('le couple tient bon', jeu.couples().length, 1);
+  ok('on le rompt', jeu.romprePension(a.id));
   jeu.refresh();
   ok('le nid se rouvre', jeu.nidOuvert());
   ok('et poser remarche', jeu.poserAuNid(c.id, 'a'));
@@ -1218,7 +1233,7 @@ scenario('merveilles — aucun œuf n’en donne, et rien ne la met en vente', (
   eq('sans rien coûter', s.coins, 1e12);
 });
 
-scenario('pension — les trois primes du bâtiment, et ce qu’elles ne touchent pas', () => {
+scenario('pension — les échelles du bâtiment, et ce qu’elles ne touchent pas', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
   const [a, b] = couple(jeu, 'crapaud', 'ouroboros');
@@ -1226,32 +1241,45 @@ scenario('pension — les trois primes du bâtiment, et ce qu’elles ne touchen
   /* LES TROIS N'EXISTENT PAS SANS LE BÂTIMENT : trois cases qui parlent d'un panneau qu'on
      n'a pas encore encombrent la grille pour rien. */
   const miennes = jeu.PRIMES.filter(p => p.cle.startsWith('pension-'));
-  eq('trois primes de pension', miennes.length, 3);
-  ok('toutes conditionnées au bâtiment', miennes.every(p => !!p.si));
+  eq('douze primes de pension', miennes.length, 12);
+  ok('toutes conditionnées', miennes.every(p => !!p.si));
   s.primes = {};
-  ok('et invisibles sans lui', miennes.every(p => !p.si()));
+  ok('et aucune n’apparaît sans le bâtiment', miennes.every(p => !p.si()));
   s.primes.pension = true;
-  ok('visibles avec', miennes.every(p => p.si()));
+  /* CHAQUE ÉCHELLE S'OUVRE UN CRAN À LA FOIS : le second nid ne se propose pas avant le
+     premier. C'est ce qui rend la grille des cinq prochaines lisible en fin de partie. */
+  const premiers = miennes.filter(p => p.si());
+  eq('quatre crans ouverts d’emblée', premiers.length, 4);
+  for (const pref of ['pension-place-', 'pension-vite-', 'pension-portee-']) {
+    eq(pref + '1 s’ouvre', !!jeu.PRIME_BY_CLE[pref + '1'].si(), true);
+    eq(pref + '2 attend', !!jeu.PRIME_BY_CLE[pref + '2'].si(), false);
+    s.primes[pref + '1'] = true;
+    eq(pref + '2 s’ouvre alors', !!jeu.PRIME_BY_CLE[pref + '2'].si(), true);
+    delete s.primes[pref + '1'];
+  }
 
   /* LE NID TIÈDE raccourcit d'un tiers, RECETTES COMPRISES — c'est la seule chose du jeu qui
      rende une merveille plus rapide, et elle le fait sans jamais la nommer. */
   const avant = jeu.dureePension(a, b);
-  s.primes['pension-vite'] = true;
-  const apres = jeu.dureePension(a, b);
-  ok('la couvaison raccourcit', apres < avant, avant + ' → ' + apres);
-  eq('d’un tiers exactement', apres, Math.round(avant / 1.5));
+  /* L'ÉCHELLE SE LIT COMME UN PALIER QUI REMPLACE LE PRÉCÉDENT, jamais comme une somme :
+     « quatre fois plus vite » veut dire quatre fois plus vite QU'À L'ORIGINE. */
+  for (const [n, x] of [[1, 1.5], [2, 4], [3, 12]]) {
+    s.primes['pension-vite-' + n] = true;
+    eq('cran ' + n + ' : ×' + x, jeu.dureePension(a, b), Math.round(avant / x));
+  }
+  eq('l’échelle plafonne à douze', jeu.vitessePension(), 12);
 
   const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
   eq('la recette raccourcit aussi', jeu.dureePension(g1, g2),
-     Math.round(jeu.recetteDe(g1, g2).duree / 1.5));
+     Math.round(jeu.recetteDe(g1, g2).duree / 12));
 
   /* MAIS PAS UN COUPLE DÉJÀ PARTI : sinon la prime devient un bouton « finis ma couvaison ». */
-  s.primes['pension-vite'] = false;
+  for (let n = 1; n <= 3; n++) delete s.primes['pension-vite-' + n];
   jeu.accoupler(a, b);
   const fige = jeu.couples()[0].duree;
-  s.primes['pension-vite'] = true;
+  s.primes['pension-vite-1'] = true;
   eq('la durée du couple en cours ne bouge pas', jeu.couples()[0].duree, fige);
-  s.primes['pension-vite'] = false;
+  delete s.primes['pension-vite-1'];
   s.pension.couples = [];
 
   /* LE SANG double la chance du parent le plus rare, sans passer une fois sur deux. */
@@ -1266,10 +1294,15 @@ scenario('pension — les trois primes du bâtiment, et ce qu’elles ne touchen
   })());
   s.primes['pension-sang'] = false;
 
-  /* LE SECOND NID pose une place, il ne la remplace pas. */
+  /* LES PLACES MONTENT PAR CRANS : 1, 2, 4, 8. */
   eq('une place au départ', jeu.placesPension(), 1);
-  s.primes['pension-place'] = true;
+  s.primes['pension-place-1'] = true;
   eq('deux avec le second nid', jeu.placesPension(), 2);
+  s.primes['pension-place-2'] = true;
+  eq('quatre avec la rangée', jeu.placesPension(), 4);
+  s.primes['pension-place-3'] = true;
+  eq('huit avec le bâtiment entier', jeu.placesPension(), 8);
+  delete s.primes['pension-place-2']; delete s.primes['pension-place-3'];
   jeu.accoupler(a, b);
   ok('le nid reste ouvert après le premier couple', jeu.nidOuvert());
   const c = bete(jeu, 'cerf', 4, 20000), d = bete(jeu, 'chat', 4, 20000);
@@ -1279,8 +1312,88 @@ scenario('pension — les trois primes du bâtiment, et ce qu’elles ne touchen
   /* AUCUNE NE TOUCHE AUX RECETTES : une prime qui ferait tomber les merveilles plus souvent
      devrait le dire pour se vendre, et dirait donc qu'elles existent. */
   for (const p of miennes) ok(p.nom + ' ne parle pas des merveilles', !/erveille/.test(p.dit));
-  s.primes['pension-sang'] = true; s.primes['pension-vite'] = true;
+  s.primes['pension-sang'] = true; s.primes['pension-vite-1'] = true;
   eq('et la chance d’une recette ne bouge pas', jeu.recetteDe(g1, g2).chance, 0.001);
+
+  /* LA RICHESSE SE DESSERRE MAIS NE SE LÈVE PAS. Le multiplicateur de rareté est ce qui
+     empêche la pension d'être une imprimante à billets ; on le divise, on ne le supprime pas. */
+  s.primes = { pension: true };
+  const myth1 = bete(jeu, 'ouroboros', 4, 20000), myth2 = bete(jeu, 'behemoth', 4, 20000);
+  const plein = jeu.dureePension(myth1, myth2);
+  eq('la richesse vaut un au départ', jeu.richessePension(), 1);
+  s.primes['pension-riche-1'] = true;
+  eq('quatre fois moins', jeu.dureePension(myth1, myth2), Math.round(plein / 4));
+  s.primes['pension-riche-2'] = true;
+  eq('huit fois moins', jeu.dureePension(myth1, myth2), Math.round(plein / 8));
+  ok('mais deux mythiques restent plus lentes que deux communes',
+     jeu.dureePension(myth1, myth2) > jeu.dureePension(a, b), jeu.dureePension(myth1, myth2));
+  /* Elle ne descend jamais sous un : sinon une commune irait plus vite que la boucle de jeu,
+     et le plafond de réserve serait le seul reste du système. */
+  s.pens = 40;
+  const com1 = bete(jeu, 'crapaud', 4, 20000), com2 = bete(jeu, 'crapaud', 4, 20000);
+  s.primes = { pension: true };
+  const nue = jeu.dureePension(com1, com2);
+  s.primes['pension-riche-1'] = true; s.primes['pension-riche-2'] = true;
+  eq('deux communes ne gagnent rien à desserrer la richesse',
+     jeu.dureePension(com1, com2), nue);
+});
+
+scenario('pension — la portée multiplie les œufs, jamais les merveilles', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15;
+  const [g1, g2] = couple(jeu, 'golem', 'golem');
+
+  eq('une portée d’un au départ', jeu.porteePension(), 1);
+  for (const [n, x] of [[1, 2], [2, 3], [3, 5]]) {
+    s.primes['pension-portee-' + n] = true;
+    eq('cran ' + n + ' : ' + x + ' œufs', jeu.porteePension(), x);
+  }
+
+  jeu.accoupler(g1, g2);
+  const vrai = Math.random;
+  try {
+    Math.random = () => 0.99;                    // la recette ne tombe pas
+    eq('cinq œufs d’un coup', jeu.avancePension(jeu.dureePension(g1, g2) + 1), 5);
+  } finally { Math.random = vrai; }
+  eq('cinq dans la réserve', jeu.eggStock('epique'), 5);
+  eq('et cinq lignées promises', (s.pension.dus.epique || []).length, 5);
+
+  /* LA RECETTE SE TIRE UNE FOIS PAR PONTE, ET NON PAR ŒUF. Une nichée est un événement, pas
+     cinq — sans cette règle la dernière prime du jeu multiplierait par cinq la chance de
+     toutes les merveilles d'un coup. */
+  s.eggs.epique = 0; s.pension.dus = {};
+  try {
+    Math.random = () => 0;                       // la recette tombe
+    jeu.avancePension(jeu.dureePension(g1, g2) + 1);
+  } finally { Math.random = vrai; }
+  const dus = [].concat(...Object.values(s.pension.dus));
+  eq('la nichée fait toujours cinq', dus.length, 5);
+  eq('et elle ne contient qu’une merveille', dus.filter(l => l === 'wukong').length, 1);
+});
+
+scenario('pension — une absence rattrape plusieurs pontes, sans boucler sans fin', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  const duree = jeu.couples()[0].duree;
+
+  eq('dix couvaisons rattrapées', jeu.avancePension(duree * 10 + 1), 10);
+  eq('le couple est toujours là', jeu.couples().length, 1);
+
+  /* LE PLAFOND DE LA RÉSERVE EST LE SEUL FREIN, et il tient parce qu'elle se vide toute
+     seule dans les incubateurs libres. */
+  s.eggs.rare = jeu.PLAFOND_OEUFS - 2;
+  eq('elle ne déborde pas', jeu.avancePension(duree * 50), 2);
+  eq('la réserve est pleine, pas au-delà', jeu.eggStock('rare'), jeu.PLAFOND_OEUFS);
+  eq('et le couple attend', jeu.couples().length, 1);
+
+  // la boucle est bornée : une absence démesurée ne coûte pas une seconde de calcul
+  s.eggs.rare = 0;
+  const t0 = Date.now();
+  jeu.avancePension(duree * 1e6);
+  ok('le rattrapage se termine', Date.now() - t0 < 1000, Date.now() - t0);
+  ok('borné par PONTES_MAX', jeu.eggStock('rare') <= jeu.PLAFOND_OEUFS);
 });
 
 scenario('pension — deux chimères donnent n’importe quoi, sauf une chimère', () => {

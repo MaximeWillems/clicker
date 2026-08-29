@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.6.0 · sauvegarde v17 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.7.0 · sauvegarde v17 · 10 lignées illustrées sur 30
 
 ---
 
@@ -63,6 +63,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les merveilleuses** | 3.1 | est-ce qu'une merveilleuse se raconte ? | deux écloses sur huit écrites — la réponse est dans le dessin, pas dans le code |
 | **Le nid et la pause** | beta 1.0 | confier une bête est-il un geste ? | oui — on l'attrape dans la bande et on la pose, et la ferme peut s'arrêter le temps de le faire |
 | **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
+| **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
 
 ### La ligne d'arrivée de l'alpha
 
@@ -116,8 +117,25 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 |---|---|---|
 | **Les dix-sept dessins** | rien | — |
 | **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
-| **L'animation du cinquième âge** — une planche par merveille | les dessins | est-ce qu'une bête qui bouge se raconte toute seule ? |
+| **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
+| **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
+| **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
+| **Les fonds** — 1 sur 800, héréditaires, visibles sur les cartes | l'hérédité | est-ce qu'un fond se chasse ? |
+
+### Ce que la 1.7 laisse derrière elle
+
+Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n'est réglée :
+
+- **Huit couples se composent à la main, un par un.** Le nid marche pour un couple et pour deux ;
+  à huit, désigner seize bêtes dans une bande de quarante devient la corvée que le glisser-déposer
+  devait supprimer. C'est la première chose à reprendre si la pension complète se joue vraiment.
+- **Le plafond de la réserve devient le vrai frein.** Cinquante œufs par sorte se remplissent en
+  trois minutes quand la pension tourne à mille œufs l'heure ; au-delà, tout dépend du nombre
+  d'incubateurs qui la vident. Ce n'est pas un défaut — c'est un couplage qu'il faut avoir vu.
+- **La pension ne dit pas ce qu'elle a produit.** `nes` compte un total, et la réserve montre ce
+  qui attend, mais rien ne dit « tu as sorti quarante loups cette nuit ». À mille œufs l'heure,
+  c'est l'information qui manque le plus.
 
 **La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
 la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la
@@ -129,9 +147,12 @@ d'œuf qui ne s'achète pas, la table `RECETTES` et la phrase qui les annonce sa
 Ajouter Surtr, c'est cinq PNG et une ligne de recette. C'est le meilleur endroit où la dette du
 projet pouvait se déplacer : elle est entièrement dans le dessin.
 
-**La seconde place n'est pas une évidence**, et c'est pour ça qu'elle est dans la table et pas
-dans le code. Une place unique force à choisir *quel* couple confier ; deux places suppriment la
-question. Si elle tombe, ce sera comme prime très chère, et une seule fois.
+**La place unique n'a pas tenu, et c'était le bon abandon.** Elle était là pour forcer à choisir
+*quel* couple confier, et l'argument valait tant que la pension était un outil de collection.
+Du jour où elle a dû concurrencer l'acheteur, une place unique ne posait plus une question mais
+un plafond : on ne choisissait pas mieux, on produisait moins. Les huit places se paient
+maintenant six cent milliards, et seize enclos qui ne rapportent plus rien — le choix a
+simplement changé de monnaie.
 
 **Une ligne a disparu sans être faite, parce qu'elle l'était déjà.** « Les automates par âge —
 l'éleveur aux jeunes, la mangeoire aux grandes bêtes » décrivait mot pour mot ce que le jeu
