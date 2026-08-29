@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.29.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.29.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.29.0** | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
+| **2.29.1** | un œuf ne récite plus ses statistiques, il dit une phrase |
+| 2.29.0 | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
 | 2.28.0 | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
 | 2.27.0 | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
 | 2.26.0 | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
@@ -545,6 +546,35 @@ durées, elles, ne bougent jamais.
 **Le temps par niveau monte à chaque âge** — 6 s, 9 s, 30 s, 3 min, 24 min. C'est ce qui fait
 que l'enfance défile pendant que la légende se mérite. Sans aucune automatisation : mûre à
 1 min 30, adulte à 4 min 30, ancienne à 19 min, légende à 1 h 20, niveau 100 à 7 h 20.
+
+#### Ce que dit un œuf
+
+Un bouton de la boutique récitait trois chiffres : la durée de couvaison, la rareté garantie,
+et la chance de monter d'un cran.
+
+> Couve en 45 s. Commune. Au-dessus : 1 sur 1 000 de rare.
+
+Le troisième était le pire. **Annoncer « 1 sur 1 000 de rare » transforme la seule vraie
+surprise de l'éclosion en statistique qu'on regarde tomber** — et une chose qu'on chasse ne
+s'affiche pas. C'est la même règle que pour les fonds à venir, et que pour la plonge, dont la
+professeure ne nomme jamais la vaisselle.
+
+Il en reste une phrase, qui ne donne pas un chiffre mais une raison :
+
+| | |
+|---|---|
+| Œuf commun | C'est par là que tout le monde commence. |
+| Œuf rare | Le premier qui se réfléchit avant de l'acheter. |
+| Œuf épique | On n'en achète pas par distraction. |
+| Œuf mythique | Il en sort des dieux. Prends ton après-midi. |
+
+**Rien n'est perdu.** La rareté est dans le nom du bouton, la durée se lit sur la scène dès
+qu'un œuf couve et dans la ligne des boosts — et celle du mythique se devine dans sa phrase
+sans y être écrite.
+
+Cinq fonctions sont mortes avec ce changement et ont été retirées : `pourcent` et `de` ne
+servaient qu'à composer ces statistiques, et `EVO_RABAIS`, `primeCout` et `primePrise`
+traînaient depuis le passage de l'intendant en prime.
 
 #### L'ouverture, resserrée trois fois
 

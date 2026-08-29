@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.29.0';
+const VERSION = 'alpha 2.29.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -76,7 +76,6 @@ const NIV_MAX = AGES[AGES.length - 1].niv;
 const GROW       = AGES.map(a => a.grow);                     // croissance d'une tranche entière
 const VALUE      = AGES.map(a => a.value);                    // ce que vaut une bête mûre de cet âge
 const EVOLVE     = [200, 3000, 40000, 600000, null];          // le péage vers l'âge suivant
-const EVO_RABAIS = 0.10;                                      // remise d'évolution par niveau d'intendant
 
 // Croissance cumulée au bout de chaque âge : c'est la borne où le niveau se bloque.
 const CUM = GROW.reduce((a, g) => a.concat([(a[a.length - 1] || 0) + g]), []);
@@ -146,13 +145,17 @@ const EGG_KINDS = [
      passe à quarante-cinq secondes pour la même raison — quarante-cinq clics avant de voir
      ce qui sort, au lieu de trente. */
   { key: 'commun', name: 'Œuf commun', price: 18, glyph: '🥚', rarity: 'commune',
-    hatch: 45, odds: { commune: 0.999, rare: 0.001 } },
+    hatch: 45, odds: { commune: 0.999, rare: 0.001 },
+    dit: 'C’est par là que tout le monde commence.' },
   { key: 'rare', name: 'Œuf rare', price: 300000, glyph: '🥚', rarity: 'rare',
-    hatch: 180, odds: { rare: 0.999, epique: 0.001 } },
+    hatch: 180, odds: { rare: 0.999, epique: 0.001 },
+    dit: 'Le premier qui se réfléchit avant de l’acheter.' },
   { key: 'epique', name: 'Œuf épique', price: 7500000, glyph: '🥚', rarity: 'epique',
-    hatch: 720, odds: { epique: 0.999, mythique: 0.001 } },
+    hatch: 720, odds: { epique: 0.999, mythique: 0.001 },
+    dit: 'On n’en achète pas par distraction.' },
   { key: 'mythique', name: 'Œuf mythique', price: 180000000, glyph: '🥚', rarity: 'mythique',
-    hatch: 2700, odds: { mythique: 1 } },
+    hatch: 2700, odds: { mythique: 1 },
+    dit: 'Il en sort des dieux. Prends ton après-midi.' },
 ];
 
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
@@ -614,6 +617,8 @@ const PRIMES = [
   { cle: 'main',      prix: 200000000, glyphe: '🖐️', nom: 'Main preste',
     dit: 'Chacun de tes clics compte double. Le plus cher, et le seul qui touche à ce que tu fais de tes mains.' },
 ];
+// Le jeu n'en a pas besoin — il parcourt PRIMES — mais le banc d'essai désigne les primes
+// par leur clé, et une table de correspondance vaut mieux qu'un find() dans chaque scénario.
 const PRIME_BY_CLE = Object.fromEntries(PRIMES.map(p => [p.cle, p]));
 
 /* ── LE DÉVOILEMENT ────────────────────────────────────────────────────────────
@@ -1254,24 +1259,20 @@ function rollLine(kindKey) {
 }
 
 // Le libellé d'un œuf en boutique : sa rareté de base, puis ce qu'il peut donner au-dessus.
-function eggDesc(e) {
-  const dessus = ['rare', 'epique', 'mythique']
-    .filter(k => k !== e.rarity && e.odds[k])
-    .map(k => pourcent(e.odds[k]) + ' ' + de(RARITY[k].name));
-  const base = RARITY[e.rarity].name.replace(/^./, m => m.toUpperCase());
-  const duree = 'Couve en ' + fmtTime(e.hatch) + '. ';
-  return duree + (dessus.length ? base + '. Au-dessus : ' + dessus.join(', ') + '.' : base + ' garantie.');
-}
+/* CE QUE DIT UN ŒUF DANS LA BOUTIQUE — une phrase, et rien d'autre.
+
+   Il en récitait trois : la durée de couvaison, la rareté garantie, et la chance de monter
+   d'un cran. Trois chiffres pour un bouton dont le nom dit déjà l'essentiel, et le troisième
+   était le pire — annoncer « 1 sur 1 000 de rare » transforme la seule vraie surprise de
+   l'éclosion en statistique qu'on regarde tomber. Une chose qu'on chasse ne s'affiche pas.
+
+   Ce qui a été retiré n'est perdu nulle part : la durée se lit sur la scène dès qu'un œuf
+   couve, et la rareté est dans le nom du bouton. La phrase qui reste ne donne pas un chiffre,
+   elle donne une raison — et la durée d'un mythique s'y devine sans être écrite. */
+function eggDesc(e) { return e.dit; }
 
 // « de rare » mais « d'épique »
-function de(mot) { return /^[aeiouéèêà]/i.test(mot) ? 'd’' + mot : 'de ' + mot; }
 
-function pourcent(p) {
-  const v = p * 100;
-  if (v >= 1) return v.toFixed(v % 1 ? 1 : 0).replace('.', ',') + ' %';
-  // sous le pour cent, « 1 sur 1 000 » se lit ; « 0,1 % » se survole
-  return '1 sur ' + fmt(Math.round(1 / p));
-}
 
 function load() {
   let raw = null;
@@ -1651,8 +1652,6 @@ const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens -
 
 // Une prime achetée, ou non. Toute la table passe par ici.
 const prime       = cle => !!(state.primes && state.primes[cle]);
-const primeCout   = p => p.prix;
-const primePrise  = p => prime(p.cle);
 
 const lvl         = key => state.up[key] || 0;
 /* Le NIVEAU est ce qui s'achète, la PUISSANCE est ce que ce niveau produit. Depuis que les
