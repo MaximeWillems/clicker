@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.22.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.23.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -28,7 +28,7 @@ laissée ouverte, si elle est à jour ou s'il faut la recharger.
 Le mot **alpha** reste devant tant que le jeu n'est pas sorti. Ce n'est pas un quatrième
 nombre : `alpha 2.0.0` est toujours une alpha.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 13` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 14` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.22.0** | la collection se replie, section par section |
+| **2.23.0** | le squelette de la pension, porte fermée — rien ne change pour le joueur |
+| 2.22.0 | la collection se replie, section par section |
 | 2.21.0 | vingt primes en petites cases, et quatre améliorations qui les rejoignent |
 | 2.20.0 | l'album gagne l'auto-clic et la place, et dit enfin ce que ses cartes font |
 | 2.19.0 | une page de statistiques, et des compteurs qui traversent l'ascension |
@@ -107,7 +108,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Vingt-huit scénarios, cinq cent trente-huit vérifications. Passer un mot en argument ne joue que
+Trente scénarios, cinq cent soixante-sept vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -163,8 +164,9 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
   du bonus, et tout le reste repart de zéro
 
-Absent volontairement : gènes, reproduction, pension, fusion des cartes, lignées cachées,
-comptes, marché entre joueurs. Tout cela demande le serveur, ou attend la pension.
+Absent volontairement : gènes, reproduction, fusion des cartes, lignées cachées, comptes,
+marché entre joueurs. Tout cela demande le serveur, ou attend la pension — dont **le squelette
+est posé mais la porte fermée** : voir plus bas.
 
 ### Le mode histoire
 
@@ -996,6 +998,52 @@ tels quels, et le premier achat d'intendant donne l'Intendance, le quinzième la
 limite existe et se dit : un intendant poussé au-delà du niveau 26 offrait plus de 44 % de
 remise et retombe à 44 %. En échange, le même effet coûte désormais 5,25 M au lieu de quelques
 dizaines de millions.
+
+### La pension — squelette, porte fermée
+
+> **Rien de cette section n'est joignable.** `PENSION_OUVERTE` est à `false`, aucune boucle
+> n'appelle `avancePension`, aucun bouton ne mène à `accoupler`, et `state.pension.couples`
+> reste vide pour tout le monde. Une partie jouée aujourd'hui se comporte exactement comme
+> avant la 2.23.0.
+
+**Pourquoi poser des os avant d'avoir un corps.** Le socle de la pension est un *atome* de cinq
+pièces — des emplacements, deux parents, une durée, un œuf, et la rente suspendue. Les cinq
+tombent ensemble ou ne tombent pas : une pension sans rente suspendue est gratuite, une
+pension sans emplacements n'a pas de limite, une pension sans durée n'est pas une attente.
+Écrire la forme des cinq d'un coup, sans les brancher, permet de vérifier qu'elles s'emboîtent
+avant de payer le prix d'une version jouable.
+
+| Pièce | Ce qui est posé |
+|---|---|
+| **emplacements** | `state.pension.places`, un couple à la fois au départ |
+| **deux parents** | `accoupler(a, b)` → `{ a, b, t, duree }`, deux identifiants de bêtes |
+| **une durée** | `dureePension` = 900 s + 600 s par cran de distance, plafonnée à 6 h |
+| **un œuf** | `avancePension` dépose une sorte dans la réserve au terme |
+| **rente suspendue** | `renteOf` rend 0 pour un parent — la seule ligne qui touche au jeu vivant |
+
+**Le sacrifice est dans les enclos.** Les parents ne quittent pas la ferme : ils gardent leur
+case, cessent de rapporter, et n'avancent plus. Parquer deux bêtes doit se sentir, et ça ne se
+sent que si ça coûte la seule chose qui manque vraiment en fin de partie — la place.
+
+**Le squelette est vérifié, pas seulement écrit.** Deux scénarios du banc l'exercent : l'un
+prouve que la porte reste close (deux cents tours de boucle, aucun couple, aucune rente
+suspendue), l'autre l'ouvre le temps du test et fait tourner le cycle entier — la durée qui
+suit la distance, les refus qui disent pourquoi, la rente qui s'arrête puis revient, l'œuf qui
+tombe au terme, et le couple qui se dissout sans rien rendre si un parent est vendu en route.
+C'est toute la raison d'écrire un squelette avant un corps.
+
+**Ce qui manque encore, et qui ne sera pas deviné ici :**
+
+- **La compatibilité.** `distanceDe` est un bouchon calé sur ce que le jeu sait déjà dire — la
+  lignée et la rareté. Le vrai système passera par des *étiquettes* posées sur les lignées
+  (aquatique, ailé, minéral…), avec des paires stériles et une durée qui monte avec l'écart.
+  Rien de tout ça n'existe, et l'inventer maintenant figerait le bestiaire avant d'avoir joué.
+- **L'hérédité.** `oeufDe` rend la sorte la plus modeste des deux parents, le comportement le
+  plus prudent qu'on puisse écrire. Les quatre issues, les fusions de teintes et les teintes
+  exclusives viendront avec leur propre version.
+- **Le plafond de la réserve d'œufs.** Il doit tomber **avant** que la pension serve, jamais
+  après : c'est le seul frein du hors-ligne, et une partie qui tourne déjà sans lui rentrerait
+  sur cinquante œufs le jour où on l'ajoute. Tant que la porte est fermée, rien ne presse.
 
 ### La collection se replie
 

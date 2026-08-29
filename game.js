@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.22.0';
+const VERSION = 'alpha 2.23.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -425,6 +425,52 @@ const MOTIF_BONUS = {
    mythique chromatique vaut environ 5,6·10^11, donc le troisième palier demanderait d'en
    vendre un million. C'est voulu : l'échelle ne s'arrête pas avant l'économie, c'est
    l'économie qui s'arrête avant l'échelle. */
+/* ── LA PENSION — SQUELETTE, PORTE FERMÉE ──────────────────────────────────────
+   ┌────────────────────────────────────────────────────────────────────────────┐
+   │ RIEN DE CE QUI SUIT N'EST JOIGNABLE. `PENSION_OUVERTE` est à false, aucune  │
+   │ boucle n'appelle `avancePension`, aucun bouton ne mène à `accoupler`, et    │
+   │ `state.pension.couples` reste vide pour tout le monde. Une partie jouée     │
+   │ aujourd'hui se comporte exactement comme avant.                             │
+   └────────────────────────────────────────────────────────────────────────────┘
+
+   Pourquoi poser des os avant d'avoir un corps : le socle de la pension est un ATOME de cinq
+   pièces — des emplacements, deux parents, une durée, un œuf, et la rente suspendue. Les cinq
+   tombent ensemble ou ne tombent pas, parce que retirer n'importe laquelle laisse un jeu
+   incohérent : une pension sans rente suspendue est gratuite, une pension sans emplacements
+   n'a pas de limite, une pension sans durée n'est pas une attente. Écrire la forme des cinq
+   d'un coup, sans les brancher, permet de vérifier qu'elles s'emboîtent avant de payer le
+   prix d'une version jouable.
+
+   CE QUI MANQUE ENCORE, ET QUI NE SERA PAS DEVINÉ ICI :
+
+   • LA COMPATIBILITÉ. `distanceDe` est un bouchon calé sur ce que le jeu sait déjà dire — la
+     lignée et la rareté. Le vrai système passera par des ÉTIQUETTES posées sur les lignées
+     (aquatique, ailé, minéral…), avec des paires stériles et une durée qui monte avec
+     l'écart. Rien de tout ça n'existe, et l'inventer maintenant reviendrait à figer le
+     bestiaire avant d'avoir joué.
+   • L'HÉRÉDITÉ. `oeufDe` rend l'œuf le plus modeste des deux parents, ce qui est le
+     comportement le plus prudent qu'on puisse écrire. Les quatre issues, les fusions de
+     teintes et les teintes exclusives viendront avec leur propre version.
+   • LE PLAFOND DE LA RÉSERVE D'ŒUFS. Il doit tomber AVANT que la pension serve, jamais après :
+     c'est le seul frein du hors-ligne, et une partie qui tourne déjà sans lui rentrerait sur
+     cinquante œufs le jour où on l'ajoute. Tant que la porte est fermée, rien ne presse.
+
+   LE SACRIFICE EST DANS LES ENCLOS. Les parents ne quittent pas la ferme : ils gardent leur
+   case, cessent de rapporter, et n'avancent plus. Parquer deux bêtes doit se sentir, et ça ne
+   se sent que si ça coûte la seule chose qui manque vraiment en fin de partie — la place. */
+/* `let` et non `const` pour une seule raison : le banc d'essai doit pouvoir ouvrir la porte
+   le temps d'un scénario. RIEN DANS LE JEU N'ÉCRIT CETTE VARIABLE — si un jour quelque chose
+   le fait, c'est un bug, et le scénario « la porte reste fermée » le dira. */
+let PENSION_OUVERTE = false;
+
+const PENSION = {
+  places: 1,           // combien de couples à la fois, au départ
+  base: 900,           // secondes pour deux bêtes de la même lignée
+  parDistance: 600,    // ce que chaque cran d'écart ajoute
+  plafond: 6 * 3600,   // au-delà on refuse le couple : une attente d'un jour n'est pas un choix
+  ageMin: 3,           // il faut être adulte pour être parent
+};
+
 /* ── LES PRIMES ────────────────────────────────────────────────────────────────
    Des achats UNIQUES, en petites cases, qui s'allument dès qu'on a de quoi. Une amélioration
    à niveaux dit toujours la même chose — « couveuse niv. 5 → niv. 6 » — et cinquante achats
@@ -942,7 +988,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 13;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 14;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -984,6 +1030,11 @@ function freshState() {
        par rareté pour les groupes. Du confort d'affichage, donc ça traverse l'ascension —
        comme l'ordre de la bande et la taille des lots. */
     plie: {},
+    /* LA PENSION, encore fermée. `places` est le nombre de couples simultanés, `couples` la
+       liste de ce qui couve — chacun `{ a, b, t, duree }`, où a et b sont les identifiants de
+       deux bêtes QUI RESTENT DANS L'ENCLOS. Elle repart de zéro à l'ascension, comme la ferme
+       dont elle fait partie. */
+    pension: { places: PENSION.places, couples: [] },
     /* Un âge de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
        d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
        bout : une consigne unique forçait à choisir entre les deux. */
@@ -1216,6 +1267,13 @@ function load() {
       if (vieux.intendant >= 1) merged.primes.intendance = true;
       if (vieux.intendant >= 15) merged.primes.intendance2 = true;
       for (const cle of ['acheteur', 'marchand', 'evolution', 'intendant']) delete merged.up[cle];
+    }
+
+    /* v13 → v14 : la pension apparaît, fermée. Une partie d'avant n'a pas de champ `pension` ;
+       on lui en pose un vide plutôt que de la laisser tomber sur `undefined` le jour où la
+       porte s'ouvrira. Rien d'autre ne bouge. */
+    if (!merged.pension || !Array.isArray(merged.pension.couples)) {
+      merged.pension = { places: PENSION.places, couples: [] };
     }
 
     merged.tuto = merged.tuto !== false;
@@ -1559,7 +1617,11 @@ const sellValue  = c => Math.max(1, Math.round(baseValue(c) * nivMult(c)));
 /* Ce qu'une bête rapporte par seconde en restant simplement là. La valeur de vente porte
    déjà le niveau, l'âge, la rareté, la teinte et la taille : la rente en découle
    directement, et une bête rapporte à proportion exacte de ce qu'elle vaut. */
-const renteOf = c => c.age >= AGE_RENTE
+/* LA RENTE EST SUSPENDUE POUR UN PARENT. C'est la seule ligne du socle qui touche au jeu
+   vivant, et elle ne change rien tant que la porte est fermée : `couples()` est vide, donc
+   `enPension` est faux pour tout le monde. */
+const renteOf = c => enPension(c) ? 0
+                   : c.age >= AGE_RENTE
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
                      * (1 + bonusAlbum().rente)
                    : 0;
@@ -3812,6 +3874,81 @@ function refresh() {
   renderStage();
   tickView();
   if (popNext) { popNext = false; flash($('subject'), 'pop'); }
+}
+
+/* ─────────────────────────────────────────────
+   La pension — squelette
+   ───────────────────────────────────────────── */
+
+/* Toutes les fonctions de cette section sont écrites et vérifiées, et AUCUNE n'est appelée
+   par le jeu. Elles décrivent la forme du socle, pas encore son comportement. */
+
+const couples    = () => (state.pension && state.pension.couples) || [];
+const placesPension = () => (state.pension && state.pension.places) || 0;
+
+// Une bête parquée : elle est dans un couple, donc dans la pension.
+const enPension  = c => couples().some(k => k.a === c.id || k.b === c.id);
+
+/* LA DISTANCE ENTRE DEUX BÊTES — bouchon. Zéro pour la même lignée, un pour deux lignées de
+   même rareté, et l'écart de rang au-delà. Le vrai système passera par des étiquettes posées
+   sur les lignées ; celui-ci ne sert qu'à donner une durée qui ne soit pas constante, pour
+   que le reste du socle puisse être vérifié. */
+function distanceDe(a, b) {
+  if (a.line === b.line) return 0;
+  const ra = RARITY[lineOf(a).rarity].rank, rb = RARITY[lineOf(b).rarity].rank;
+  return 1 + Math.abs(ra - rb);
+}
+
+// Ce que coûte l'attente. Bornée : au-delà du plafond, le couple est refusé plutôt que subi.
+const dureePension = (a, b) => PENSION.base + PENSION.parDistance * distanceDe(a, b);
+
+/* Pourquoi ce couple ne peut pas se former — une phrase, ou null s'il le peut. Rendre la
+   RAISON et non un booléen : un bouton grisé sans explication est la première chose qu'un
+   joueur ne comprend pas, et cette fonction est ce que l'écran affichera. */
+function refusPension(a, b) {
+  if (!PENSION_OUVERTE) return 'La pension n’ouvre pas encore.';
+  if (!a || !b || a.id === b.id) return 'Il faut deux bêtes différentes.';
+  if (couples().length >= placesPension()) return 'Toutes les places sont prises.';
+  if (enPension(a) || enPension(b)) return 'Une de ces deux bêtes est déjà en pension.';
+  if (a.age < PENSION.ageMin || b.age < PENSION.ageMin)
+    return 'Il faut deux bêtes d’au moins l’âge ' + AGES[PENSION.ageMin - 1].nom + '.';
+  if (dureePension(a, b) > PENSION.plafond) return 'Ces deux lignées sont trop éloignées.';
+  return null;
+}
+const peutAccoupler = (a, b) => refusPension(a, b) === null;
+
+/* Parque deux bêtes. Elles NE QUITTENT PAS L'ENCLOS : elles gardent leur case et cessent de
+   rapporter, ce qui est tout le prix de l'opération. */
+function accoupler(a, b) {
+  if (!peutAccoupler(a, b)) return false;
+  state.pension.couples.push({ a: a.id, b: b.id, t: 0, duree: dureePension(a, b) });
+  return true;
+}
+
+/* Ce qui sort du couple — bouchon. On rend la sorte d'œuf LA PLUS MODESTE des deux parents :
+   c'est le comportement le plus prudent qu'on puisse écrire, et il ne préempte aucune des
+   quatre issues de l'hérédité à venir. */
+function oeufDe(a, b) {
+  const ra = RARITY[lineOf(a).rarity].rank, rb = RARITY[lineOf(b).rarity].rank;
+  const rarete = ra <= rb ? lineOf(a).rarity : lineOf(b).rarity;
+  const sorte = EGG_KINDS.find(e => e.key === (rarete === 'commune' ? 'commun' : rarete));
+  return (sorte || EGG_BY_KEY.commun).key;
+}
+
+/* Fait avancer les couples. Un couple arrivé au bout dépose son œuf dans la réserve et libère
+   ses parents. Jamais appelée : la boucle ne la connaît pas encore. */
+function avancePension(dt) {
+  if (!PENSION_OUVERTE) return 0;
+  let nes = 0;
+  state.pension.couples = couples().filter(k => {
+    k.t += dt;
+    if (k.t < k.duree) return true;
+    const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
+    // un parent vendu pendant la couvaison annule le couple sans rien rendre
+    if (a && b) { const sorte = oeufDe(a, b); state.eggs[sorte] = eggStock(sorte) + 1; nes++; }
+    return false;
+  });
+  return nes;
 }
 
 /* ─────────────────────────────────────────────

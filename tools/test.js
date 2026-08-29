@@ -429,6 +429,79 @@ scenario('collection — tout se replie, et le pliage tient au rechargement', ()
   ok('le pliage traverse un rechargement', jeu.state.plie[raretes[0]] === true);
 });
 
+/* ────────────────────────── la pension, porte fermée ────────────────────────── */
+
+scenario('pension — la porte est fermée, et rien ne la pousse', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9; s.pens = 8;
+  eq('le drapeau est à false', jeu.PENSION_OUVERTE, false);
+  eq('aucun couple au départ', jeu.state.pension.couples.length, 0);
+
+  const a = bete(jeu, 'crapaud', 4, 20000);
+  const b = bete(jeu, 'crabe', 4, 20000);
+  ok('accoupler est refusé', !jeu.accoupler(a, b));
+  ok('et la raison le dit', /n’ouvre pas/.test(jeu.refusPension(a, b)), jeu.refusPension(a, b));
+  eq('rien ne s’est mis en pension', jeu.state.pension.couples.length, 0);
+  eq('avancePension ne fait rien', jeu.avancePension(1e6), 0);
+
+  // une ferme entière tourne : la pension ne doit toucher à rien
+  const renteAvant = jeu.renteOf(a);
+  ok('la rente coule normalement', renteAvant > 0, renteAvant);
+  s.up.eleveur = 6; s.up.couveuse = 6;
+  for (let i = 0; i < 200; i++) jeu.loop();
+  eq('toujours aucun couple après deux cents tours', jeu.state.pension.couples.length, 0);
+  eq('et la rente n’a pas été suspendue', jeu.renteOf(a), renteAvant);
+});
+
+scenario('pension — le socle tient debout quand on ouvre la porte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9; s.pens = 8;
+  jeu.PENSION_OUVERTE = true;
+  try {
+    const a = bete(jeu, 'crapaud', 4, 20000);
+    const b = bete(jeu, 'crapaud', 4, 20000);
+    const loin = bete(jeu, 'ouroboros', 4, 20000);
+    const jeune = bete(jeu, 'crabe', 1, 5);
+
+    // ── la durée suit la distance ──
+    eq('même lignée, distance nulle', jeu.distanceDe(a, b), 0);
+    eq('donc la durée de base', jeu.dureePension(a, b), jeu.PENSION.base);
+    ok('deux lignées éloignées coûtent plus', jeu.dureePension(a, loin) > jeu.dureePension(a, b));
+
+    // ── les refus disent pourquoi ──
+    ok('une bête avec elle-même', /deux bêtes différentes/.test(jeu.refusPension(a, a)));
+    ok('une bête trop jeune', /âge/.test(jeu.refusPension(a, jeune)), jeu.refusPension(a, jeune));
+
+    // ── parquer ──
+    ok('le couple se forme', jeu.accoupler(a, b));
+    eq('il occupe la place', jeu.state.pension.couples.length, 1);
+    ok('les deux parents sont en pension', jeu.enPension(a) && jeu.enPension(b));
+    ok('les parents restent dans l’enclos', s.pen.indexOf(a) !== -1 && s.pen.indexOf(b) !== -1);
+    eq('et leur rente est suspendue', jeu.renteOf(a) + jeu.renteOf(b), 0);
+    ok('une autre paire est refusée, la place est prise',
+       /places sont prises/.test(jeu.refusPension(loin, jeune) || ''));
+
+    // ── l'attente, puis l'œuf ──
+    const stock = jeu.state.eggs.commun;
+    eq('rien ne sort avant la fin', jeu.avancePension(jeu.PENSION.base - 1), 0);
+    eq('la réserve n’a pas bougé', jeu.state.eggs.commun, stock);
+    eq('un œuf au terme', jeu.avancePension(2), 1);
+    eq('il est dans la réserve', jeu.state.eggs.commun, stock + 1);
+    eq('la place se libère', jeu.state.pension.couples.length, 0);
+    ok('et la rente revient', jeu.renteOf(a) > 0);
+
+    // ── un parent vendu pendant la couvaison annule le couple ──
+    jeu.accoupler(a, b);
+    s.pen = s.pen.filter(c => c.id !== b.id);
+    const avant = jeu.state.eggs.commun;
+    eq('le couple se dissout sans rien rendre', jeu.avancePension(jeu.PENSION.base + 1), 0);
+    eq('aucun œuf', jeu.state.eggs.commun, avant);
+    eq('la place est rendue', jeu.state.pension.couples.length, 0);
+  } finally {
+    jeu.PENSION_OUVERTE = false;
+  }
+});
+
 /* ────────────────────────── les primes ────────────────────────── */
 
 scenario('primes — la table tient debout et s’allume par paliers', () => {

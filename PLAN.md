@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.22.0 · sauvegarde v13 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.23.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -51,6 +51,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les cartes** | 2.20 | l'ascension donne-t-elle envie ? | deux effets qui se voient dès la première seconde du cycle |
 | **Les primes** | 2.21 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | vingt achats uniques, chacun disant une seule chose |
 | **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
+| **Le socle de la pension** | 2.23 | les cinq pièces s'emboîtent-elles ? | oui — écrit, vérifié, porte fermée |
 
 ### Ce qui vient ensuite
 
@@ -58,7 +59,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 |---|---|---|
 | La fusion — les paliers, et le repère sur les capsules | 11 | est-ce que les doublons valent d'être gardés ? |
 | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 11 | est-ce que l'ordre des achats suit la vie de la bête ? |
-| La pension, socle — emplacements, deux parents, une durée, un œuf, rente suspendue | 12 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
+| La pension, **ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | 14 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
 | La compatibilité — étiquettes, stérilité, durée par distance | 12 | est-ce que la règle se devine sans wiki ? |
 | L'hérédité — les quatre issues, les fusions, les teintes exclusives | 12 | est-ce qu'on a envie de sélectionner ? |
 | La rareté de l'enfant — le tirage entre parents, la montée par âge | 12 | est-ce que la montée reste un cadeau et non une voie ? |
@@ -81,6 +82,13 @@ pourcentage ? Une règle se raconte, un pourcentage s'oublie.
 suspendue tombent ensemble ou ne tombent pas. Retirer n'importe lequel des cinq laisse un jeu
 incohérent — une pension sans rente suspendue est gratuite, une pension sans plafond de
 réserve déborde à la première absence.
+
+**Les cinq sont écrites depuis la 2.23.0, et la porte est fermée.** Le banc les exerce dans
+les deux sens : un scénario prouve que rien ne bouge porte close, l'autre l'ouvre le temps du
+test et fait tourner le cycle entier. Ce qu'il reste à faire pour ouvrir tient en trois
+choses — un écran pour désigner deux bêtes, le plafond de la réserve d'œufs, et passer
+`PENSION_OUVERTE` à `true`. Les deux versions suivantes (compatibilité, hérédité) remplacent
+alors les deux bouchons : `distanceDe` et `oeufDe`.
 
 ### Le chantier parallèle : les dessins
 
@@ -128,7 +136,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 28 scénarios
+node tools/test.js              les 30 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
