@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.2.0';
+const VERSION = 'beta 1.3.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1135,7 +1135,40 @@ const UPGRADES = [
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
     desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
     value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
+
+  /* ── LES TROIS GLOBALES ──────────────────────────────────────────────────────
+     Un pour cent par niveau, sur tout, sans jamais désigner une rareté ni un automate. Les
+     quatre premières améliorations achètent une CAPACITÉ — cliquer plus fort, couver, faire
+     grandir, engraisser — et une fois qu'on les a, il ne reste qu'à les monter. Celles-ci
+     achètent un COEFFICIENT : elles ne font rien de neuf, elles rendent meilleur ce qu'on
+     fait déjà.
+
+     C'est ce qui manquait en fin de partie, où l'argent n'avait plus qu'un seul emploi, les
+     enclos. Un pour cent est volontairement petit : ce sont des puits, pas des raccourcis, et
+     leur intérêt vient du fait qu'ils se cumulent avec absolument tout — teinte, taille,
+     négoce, cartes de l'album.
+
+     ELLES MEURENT PLUS LENTEMENT QUE LES AUTRES (1,35 contre 1,65) parce qu'elles produisent
+     moins par niveau. Une amélioration calée trop cher pour ce qu'elle rend n'est pas un choix
+     difficile, c'est une case qu'on n'achète jamais.
+
+     LES TROIS AXES NE SE RECOUVRENT PAS, et c'est la seule chose à ne pas perdre en chemin :
+     le Renom porte la VALEUR (donc la vente, et la rente qui en découle), la Patience porte la
+     RENTE seule (donc garder plutôt que vendre), l'Ardeur porte le TEMPS (tout ce qui pousse).
+     Trois façons de gagner, trois façons de jouer. */
+  { key: 'renom', name: 'Renom', base: 25000, mult: 1.35,
+    desc: 'Ta ferme se sait. Chaque niveau ajoute un pour cent à la valeur de tout ce que tu élèves — ce qu’une bête se vend, et donc ce qu’elle rapporte en restant là.',
+    value: n => n / GRAIN, unit: ' % de valeur en plus' },
+  { key: 'patience', name: 'Patience', base: 60000, mult: 1.35,
+    desc: 'Un pour cent de rente en plus par niveau. Ne touche pas au prix de vente : c’est la seule amélioration qui paie uniquement pour ne rien faire.',
+    value: n => n / GRAIN, unit: ' % de rente en plus' },
+  { key: 'ardeur', name: 'Ardeur', base: 150000, mult: 1.35,
+    desc: 'Un pour cent de plus par niveau à tout ce qui pousse tout seul : la couvaison, la croissance, l’engraissement. Elle ne remplace aucun automate, elle les multiplie.',
+    value: n => n / GRAIN, unit: ' % de vitesse en plus' },
 ];
+
+// Un coefficient global, en pour-cent par unité de puissance. Zéro tant que rien n'est acheté.
+const coef = key => 1 + force(key) / 100;
 
 /* Les trois déblocages à un seul niveau (acheteur, marchand, évolution) n'ont pas de
    puissance : ils ne se granulent pas. Tous les autres passent en tiers ici, et nulle part
@@ -1466,7 +1499,7 @@ function freshState() {
     incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
     pen: [],
     sel: 'i:0',
-    up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 },
+    up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0, renom: 0, patience: 0, ardeur: 0 },
     // les primes achetées, par clé. Elles ne traversent pas l'ascension.
     primes: {},
     /* Ce qui est replié dans la collection : la clé `tout` pour la section entière, une clé
@@ -1875,7 +1908,7 @@ const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
 // partie du bestiaire, et c'est ce qui lui donne un sens de choix plutôt que de cumul.
 const negoce    = c => prime('negoce-' + lineOf(c).rarity) ? 1.25 : 1;
 const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c)
-                     * (1 + bonusAlbum().valeur) * negoce(c);
+                     * (1 + bonusAlbum().valeur) * negoce(c) * coef('renom');
 
 function pickWeighted(list) {
   let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
@@ -2109,7 +2142,7 @@ const sellValue  = c => Math.max(1, Math.round(baseValue(c) * nivMult(c)));
 const renteOf = c => enPension(c) ? 0
                    : c.age >= AGE_RENTE
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
-                     * (1 + bonusAlbum().rente)
+                     * (1 + bonusAlbum().rente) * coef('patience')
                    : 0;
 const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 
@@ -2689,7 +2722,9 @@ function upLabel(u, lot) {
 // seuls le clic et la nourriture font bouger quoi que ce soit.
 function advance(dt) {
   const b = bonusAlbum();
-  const couve = force('couveuse') * (1 + b.couvee), eleve = force('eleveur') * (1 + b.pousse);
+  const ardeur = coef('ardeur');
+  const couve = force('couveuse') * (1 + b.couvee) * ardeur;
+  const eleve = force('eleveur') * (1 + b.pousse) * ardeur;
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -2788,7 +2823,7 @@ function runAutomations(dt) {
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
-    const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras);
+    const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras) * coef('ardeur');
     for (const c of state.pen) {
       if (estMur(c) && !enPension(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }

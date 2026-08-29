@@ -1538,6 +1538,88 @@ scenario('merveilles — une partie de v15 reçoit ses clés sans rien perdre', 
   eq('avec ses enclos', k.state.pens, 4);
 });
 
+/* ───────────────────────────── les trois globales ───────────────────────────── */
+
+scenario('globales — trois axes qui ne se recouvrent pas', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15; s.pens = 8;
+  const c = bete(jeu, 'loup', 4, 20000);
+  const GRAIN = jeu.GRAIN;
+
+  const cles = ['renom', 'patience', 'ardeur'];
+  for (const k of cles) {
+    ok(k + ' est une amélioration à niveaux', !!jeu.UP_BY_KEY[k]);
+    eq(k + ' part de zéro', jeu.force(k), 0);
+    eq(k + ' — un coefficient neutre au départ', jeu.coef(k), 1);
+  }
+
+  const v0 = jeu.sellValue(c), r0 = jeu.renteOf(c);
+  ok('la bête vaut et rapporte', v0 > 0 && r0 > 0);
+
+  /* LE RENOM PORTE LA VALEUR, donc la vente ET la rente qui en découle. */
+  s.up.renom = 10 * GRAIN;
+  ok('la vente monte de dix pour cent',
+     Math.abs(jeu.sellValue(c) / v0 - 1.1) < 0.001, jeu.sellValue(c) / v0);
+  ok('et la rente suit toute seule',
+     Math.abs(jeu.renteOf(c) / r0 - 1.1) < 0.001, jeu.renteOf(c) / r0);
+  s.up.renom = 0;
+
+  /* LA PATIENCE NE PORTE QUE LA RENTE : c'est la seule amélioration qui paie uniquement
+     pour ne rien faire, et elle ne doit rien changer au prix de vente. */
+  s.up.patience = 10 * GRAIN;
+  eq('la vente ne bouge pas', jeu.sellValue(c), v0);
+  ok('la rente monte seule',
+     Math.abs(jeu.renteOf(c) / r0 - 1.1) < 0.001, jeu.renteOf(c) / r0);
+  s.up.patience = 0;
+
+  /* L'ARDEUR PORTE LE TEMPS : couvaison, croissance, engraissement. */
+  s.up.couveuse = 3 * GRAIN; s.up.eleveur = 3 * GRAIN; s.up.mangeoire = 3 * GRAIN;
+  // une bête à part : on la remet à zéro entre deux mesures, et `c` ne doit pas bouger
+  const jeune = bete(jeu, 'loup', 1, 0);
+  const pousse = () => {
+    s.incub[0] = { line: 'ouroboros', p: 0, kind: 'mythique' };
+    jeune.p = 0; jeune.age = 1; jeune.over = 0;
+    jeu.advance(10);
+    return { oeuf: s.incub[0].p, bete: jeune.p };
+  };
+  const sans = pousse();
+  s.up.ardeur = 50 * GRAIN;
+  const avec = pousse();
+  ok('la couvaison accélère de moitié',
+     Math.abs(avec.oeuf / sans.oeuf - 1.5) < 0.001, avec.oeuf / sans.oeuf);
+  ok('la croissance aussi',
+     Math.abs(avec.bete / sans.bete - 1.5) < 0.001, avec.bete / sans.bete);
+  eq('mais pas la valeur', jeu.sellValue(c), v0);
+  s.up.ardeur = 0;
+
+  /* ELLES MEURENT PLUS LENTEMENT que les quatre capacités, parce qu'elles rendent moins par
+     niveau : une amélioration calée trop cher pour ce qu'elle rend n'est pas un choix
+     difficile, c'est une case qu'on n'achète jamais. */
+  const capacite = jeu.UP_BY_KEY.eleveur.mult;
+  for (const k of cles) {
+    ok(k + ' monte moins vite que l’éleveur', jeu.UP_BY_KEY[k].mult < capacite,
+       jeu.UP_BY_KEY[k].mult + ' vs ' + capacite);
+    ok(k + ' coûte plus cher que la mangeoire',
+       jeu.UP_BY_KEY[k].base > jeu.UP_BY_KEY.mangeoire.base);
+  }
+});
+
+scenario('globales — une partie d’avant les reçoit à zéro', () => {
+  const j0 = neuf(); const s0 = j0.state;
+  s0.coins = 5e6; s0.pens = 4;
+  const vieux = JSON.parse(JSON.stringify(s0));
+  delete vieux.up.renom; delete vieux.up.patience; delete vieux.up.ardeur;
+
+  const k = neuf(vieux);
+  /* Aucune migration à écrire : `load` fusionne `up` sur l'état neuf, donc une clé ajoutée
+     trouve son zéro. C'est ce qui permet d'ajouter une amélioration sans toucher à SAVE_V. */
+  for (const cle of ['renom', 'patience', 'ardeur']) {
+    eq(cle + ' naît à zéro', k.state.up[cle], 0);
+    eq(cle + ' — coefficient neutre', k.coef(cle), 1);
+  }
+  eq('et la ferme est intacte', k.state.coins, 5e6);
+});
+
 /* ────────────────────────── la poussière et la fusion ────────────────────────── */
 
 // une carte quelconque, pour peupler un album

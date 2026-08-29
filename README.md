@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.2.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.3.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.2.0** | trois primes pour la pension : un nid plus chaud, un sang plus fort, un second nid |
+| **beta 1.3.0** | trois améliorations globales : le Renom, la Patience et l'Ardeur |
+| beta 1.2.0 | trois primes pour la pension : un nid plus chaud, un sang plus fort, un second nid |
 | beta 1.1.0 | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
 | beta 1.0.2 | un nid sans place ne se laisse plus remplir |
 | beta 1.0.1 | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
@@ -217,7 +218,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rien ne se nourrit contre des pièces** : une bête grandit au clic et au temps, jamais à
   l'argent. Une bête mûre continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
-- Huit améliorations : force du clic, couveuse, éleveur, acheteur, mangeoire, marchand, évolution, intendant
+- Sept améliorations à niveaux : force du clic, couveuse, éleveur, mangeoire, puis Renom, Patience et Ardeur
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
@@ -550,6 +551,40 @@ arbitrage que l'album propose.
 Un défaut a été trouvé en câblant tout ça : la signature de `renderAlbum` lisait encore
 `k.palier`, laissé derrière par le renommage de la 2.30.2. Elle valait donc `undefined` pour
 toutes les cartes, et **l'album ne se serait jamais repeint après une fusion**.
+
+### Les trois globales
+
+Quatre améliorations achètent une **capacité** — cliquer plus fort, couver, faire grandir,
+engraisser — et une fois qu'on les a, il ne reste qu'à les monter. Trois autres achètent un
+**coefficient** : elles ne font rien de neuf, elles rendent meilleur ce qu'on fait déjà.
+
+| Amélioration | Premier niveau | Ce qu'elle porte |
+|---|---|---|
+| **Renom** | 7 515 | la **valeur** — ce qu'une bête se vend, et donc ce qu'elle rapporte |
+| **Patience** | 18 036 | la **rente** seule — la seule amélioration qui paie pour ne rien faire |
+| **Ardeur** | 45 090 | le **temps** — couvaison, croissance, engraissement |
+
+**Un pour cent par niveau, sur tout**, sans jamais désigner une rareté ni un automate. C'est
+ce qui manquait en fin de partie, où l'argent n'avait plus qu'un seul emploi : les enclos.
+
+**Un pour cent est volontairement petit.** Ce sont des puits, pas des raccourcis, et leur
+intérêt vient du fait qu'ils se cumulent avec absolument tout — teinte, taille, négoce, cartes
+de l'album. Ce que ça coûte, mesuré sur le Renom :
+
+| Ce qu'on veut | Ce que ça coûte |
+|---|---|
+| +10 % | 1,36 M |
+| +30 % | 580 M cumulés |
+| +50 % | 234 Md cumulés |
+
+**Elles meurent plus lentement que les quatre capacités** (×1,35 par palier contre ×1,65)
+parce qu'elles produisent moins par niveau. Une amélioration calée trop cher pour ce qu'elle
+rend n'est pas un choix difficile, c'est une case qu'on n'achète jamais.
+
+**Les trois axes ne se recouvrent pas**, et c'est la seule chose à ne pas perdre en chemin :
+le Renom porte la valeur, la Patience la rente seule, l'Ardeur le temps. Trois façons de
+gagner, trois façons de jouer — vendre vite, garder longtemps, ou tout faire pousser plus
+vite.
 
 ### Les trophées
 
