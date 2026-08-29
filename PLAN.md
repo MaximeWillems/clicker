@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.23.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.24.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -52,6 +52,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les primes** | 2.21 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | vingt achats uniques, chacun disant une seule chose |
 | **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
 | **Le socle de la pension** | 2.23 | les cinq pièces s'emboîtent-elles ? | oui — écrit, vérifié, porte fermée |
+| **Les écrans bas** | 2.24 | le jeu tient-il sur un portable ? | tout se replie, et deux ruptures en hauteur |
 
 ### Ce qui vient ensuite
 
@@ -136,7 +137,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 30 scénarios
+node tools/test.js              les 31 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -171,6 +172,10 @@ est ce qu'il faut avoir en tête pour choisir.
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
+
+La 2.24.0 a réglé la moitié « écran bas » du problème — pliage des panneaux et deux ruptures en
+hauteur — mais **rien de ce qui touche au doigt** : c'est le sujet de `REFONTE.md`, écrit en
+parallèle. Les deux se rejoignent sur `style.css`.
 
 **Les compteurs sont sortis du vivier** : livrés en 2.19.0, sous le bouton `📊`.
 

@@ -144,7 +144,8 @@
        ferme — ce que les bêtes deviennent — et non un réglage qu'on consulte une fois. -->
   <section class="panel panel-album" id="panel-album" hidden>
     <div class="panel-head">
-      <h2>Album</h2>
+      <button type="button" class="panel-plier" data-plie="album"><span class="plier">▾</span>
+        <h2>Album</h2></button>
       <span class="panel-meta" id="album-meta"></span>
     </div>
     <p class="panel-intro" id="album-intro"></p>
@@ -159,14 +160,18 @@
 
 <aside class="side">
 
-  <section class="panel">
-    <div class="panel-head"><h2>Boutique</h2></div>
+  <section class="panel" id="panel-boutique">
+    <div class="panel-head">
+      <button type="button" class="panel-plier" data-plie="boutique"><span class="plier">▾</span>
+        <h2>Boutique</h2></button>
+    </div>
     <ul class="shop" id="shop"></ul>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="panel-autos">
     <div class="panel-head">
-      <h2>Améliorations</h2>
+      <button type="button" class="panel-plier" data-plie="autos"><span class="plier">▾</span>
+        <h2>Améliorations</h2></button>
       <div class="tri" id="achat" role="group" aria-label="Combien de niveaux acheter d’un coup">
         <button type="button" class="tri-opt" data-achat="1">×1</button>
         <button type="button" class="tri-opt" data-achat="10">×10</button>
@@ -181,14 +186,18 @@
        quoi, et ne disent jamais deux fois la même chose. -->
   <section class="panel" id="panel-primes" hidden>
     <div class="panel-head">
-      <h2>Primes</h2>
+      <button type="button" class="panel-plier" data-plie="primes"><span class="plier">▾</span>
+        <h2>Primes</h2></button>
       <span id="primes-meta"></span>
     </div>
     <div class="primes" id="primes"></div>
   </section>
 
   <section class="panel" id="panel-reglages" hidden>
-    <div class="panel-head"><h2>Réglages de la ferme</h2></div>
+    <div class="panel-head">
+      <button type="button" class="panel-plier" data-plie="reglages"><span class="plier">▾</span>
+        <h2>Réglages de la ferme</h2></button>
+    </div>
     <p class="panel-intro">Tes automates travaillent en boucle, toujours dans cet ordre.
       Chacun ne fait rien tant que tu ne lui as pas dit quoi.</p>
 
@@ -274,12 +283,11 @@
        de la colonne, et celui qu'on consulte le moins souvent. Tout s'y replie — la section
        entière par son titre, et chaque rareté par le sien. -->
   <section class="panel" id="panel-collection">
-    <button type="button" class="panel-head panel-pliable" id="coll-tete"
-            aria-expanded="true" aria-controls="collection">
-      <span class="plier" id="coll-fleche" aria-hidden="true">▾</span>
-      <h2>Collection</h2>
+    <div class="panel-head">
+      <button type="button" class="panel-plier" data-plie="collection"><span class="plier">▾</span>
+        <h2>Collection</h2></button>
       <span class="panel-meta" id="coll-meta"></span>
-    </button>
+    </div>
     <div class="collection" id="collection"></div>
   </section>
 

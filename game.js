@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.23.0';
+const VERSION = 'alpha 2.24.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2794,10 +2794,6 @@ function renderCollection() {
     });
   }
   $('coll-meta').textContent = seenCount() + ' / ' + (LINES.length * AGES.length);
-  // la section entière se replie par son titre, et le compteur reste lisible
-  $('collection').hidden = estPlie('tout');
-  setText($('coll-fleche'), estPlie('tout') ? '▸' : '▾');
-  $('coll-tete').setAttribute('aria-expanded', String(!estPlie('tout')));
 }
 
 /* ─────────────────────────────────────────────
@@ -3872,6 +3868,7 @@ function refresh() {
   renderCollection();
   renderAlbum();
   renderStage();
+  syncPanneaux();
   tickView();
   if (popNext) { popNext = false; flash($('subject'), 'pop'); }
 }
@@ -3882,6 +3879,27 @@ function refresh() {
 
 /* Toutes les fonctions de cette section sont écrites et vérifiées, et AUCUNE n'est appelée
    par le jeu. Elles décrivent la forme du socle, pas encore son comportement. */
+
+/* LES PANNEAUX SE REPLIENT TOUS. Sur un portable — 768 pixels de haut — la colonne latérale
+   fait trois écrans à elle seule : boutique, améliorations, vingt primes, réglages, 135 cases
+   de collection, album. Aucune compaction ne rattrape ça, parce que le problème n'est pas la
+   densité mais le NOMBRE de choses affichées en même temps.
+
+   Fermer ce qu'on ne regarde pas est la seule réponse qui tienne à toutes les tailles d'écran,
+   et elle a un second mérite : c'est le joueur qui décide, pas un point de rupture. */
+const PANNEAUX = ['boutique', 'autos', 'primes', 'reglages', 'collection', 'album'];
+
+function syncPanneaux() {
+  for (const cle of PANNEAUX) {
+    const p = $('panel-' + cle);
+    p.classList.toggle('plie', estPlie(cle));
+    const b = p.querySelector('.panel-plier');
+    if (b) {
+      setText(b.querySelector('.plier'), estPlie(cle) ? '▸' : '▾');
+      b.setAttribute('aria-expanded', String(!estPlie(cle)));
+    }
+  }
+}
 
 const couples    = () => (state.pension && state.pension.couples) || [];
 const placesPension = () => (state.pension && state.pension.places) || 0;
@@ -4213,7 +4231,11 @@ function bindTools() {
     jugerSav('');
   };
   const ouvrirStats = v => { $('statistiques').hidden = !v; if (v) renderStats(); };
-  $('coll-tete').addEventListener('click', () => plier('tout'));
+  /* Un seul écouteur pour les six : le bouton porte sa clé, ce qui évite six lignes qui
+     disent la même chose et une septième oubliée le jour où un panneau s'ajoute. */
+  for (const b of document.querySelectorAll('.panel-plier')) {
+    b.addEventListener('click', () => plier(b.dataset.plie));
+  }
 
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
   $('stat-close').addEventListener('click', () => ouvrirStats(false));

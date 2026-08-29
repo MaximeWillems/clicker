@@ -416,17 +416,37 @@ scenario('collection — tout se replie, et le pliage tient au rechargement', ()
   eq('le premier groupe se replie', grilles().filter(g => g.hidden).length, 1);
   ok('mais ses cases existent toujours', grilles()[0].children.length > 0);
 
-  jeu.plier('tout');
-  ok('la section entière se replie', coll.hidden);
-  eq('la flèche du titre suit', (noeuds.get('coll-fleche').textContent || '').trim(), '▸');
+  jeu.plier('collection');
+  ok('le panneau entier se replie', noeuds.get('panel-collection').classList.contains('plie'));
   ok('le compteur reste lisible', (noeuds.get('coll-meta').textContent || '').includes('/'));
 
-  jeu.plier('tout');
-  ok('elle se rouvre', !coll.hidden);
+  jeu.plier('collection');
+  ok('il se rouvre', !noeuds.get('panel-collection').classList.contains('plie'));
   eq('et le pliage du groupe a tenu', grilles().filter(g => g.hidden).length, 1);
 
   jeu.save(); jeu.load(); jeu.refresh();
   ok('le pliage traverse un rechargement', jeu.state.plie[raretes[0]] === true);
+});
+
+scenario('écran — les six panneaux se replient, et ça tient au rechargement', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  jeu.refresh();
+  const plie = cle => noeuds.get('panel-' + cle).classList.contains('plie');
+
+  ok('rien n’est replié au départ', jeu.PANNEAUX.every(c => !plie(c)));
+  for (const cle of jeu.PANNEAUX) {
+    jeu.plier(cle);
+    ok('« ' + cle + ' » se replie', plie(cle));
+  }
+  ok('les six sont repliés', jeu.PANNEAUX.every(plie));
+
+  jeu.save(); jeu.load(); jeu.refresh();
+  ok('et ça tient au rechargement', jeu.PANNEAUX.every(plie));
+
+  jeu.plier('boutique');
+  ok('on en rouvre un seul', !plie('boutique'));
+  ok('les cinq autres restent fermés', jeu.PANNEAUX.filter(c => c !== 'boutique').every(plie));
 });
 
 /* ────────────────────────── la pension, porte fermée ────────────────────────── */

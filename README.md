@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.23.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.24.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.23.0** | le squelette de la pension, porte fermée — rien ne change pour le joueur |
+| **2.24.0** | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
+| 2.23.0 | le squelette de la pension, porte fermée — rien ne change pour le joueur |
 | 2.22.0 | la collection se replie, section par section |
 | 2.21.0 | vingt primes en petites cases, et quatre améliorations qui les rejoignent |
 | 2.20.0 | l'album gagne l'auto-clic et la place, et dit enfin ce que ses cartes font |
@@ -108,7 +109,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Trente scénarios, cinq cent soixante-sept vérifications. Passer un mot en argument ne joue que
+Trente-et-un scénarios, cinq cent soixante-dix-sept vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -1045,17 +1046,50 @@ C'est toute la raison d'écrire un squelette avant un corps.
   après : c'est le seul frein du hors-ligne, et une partie qui tourne déjà sans lui rentrerait
   sur cinquante œufs le jour où on l'ajoute. Tant que la porte est fermée, rien ne presse.
 
-### La collection se replie
+### Tout se replie
 
-135 cases dont trois remplies au début, en haut de la colonne, pour un panneau qu'on consulte
-rarement. Tout s'y replie maintenant : **la section entière par son titre**, et **chaque
-rareté par le sien**. Le compteur `6 / 135` reste visible même repliée — c'est la seule chose
-qu'on vient y lire du coin de l'œil.
+**Les six panneaux de la colonne latérale se replient par leur titre** : boutique,
+améliorations, primes, réglages, collection, album. Et **dans la collection, chaque rareté se
+replie séparément**.
 
-Chaque rareté a désormais sa propre grille plutôt qu'une grille unique traversée d'intertitres :
-replier devient un `hidden` sur un conteneur au lieu de cacher vingt cases une à une. Le
-pliage vit dans la sauvegarde, avec l'ordre de la bande et la taille des lots — du confort
+C'est la réponse principale au défilement sur un petit écran, et la seule qui tienne à toutes
+les tailles : le problème n'est pas la densité mais le **nombre de choses affichées en même
+temps**, et aucune compaction ne rattrape six panneaux dont un porte 135 cases. Fermer ce
+qu'on ne regarde pas laisse la décision au joueur plutôt qu'à un point de rupture.
+
+Replié, il ne reste que la barre de titre — **et son compteur**, qui est justement ce qu'on
+vient lire du coin de l'œil sans ouvrir : `6 / 135` pour la collection, `5 / 20` pour les
+primes.
+
+Deux détails d'implémentation qui se voient dans le code : le bouton n'enveloppe **que le
+titre**, parce que le sélecteur de lots vit dans le même en-tête et qu'un bouton dans un
+bouton n'est pas du HTML valide ; et replier est une classe sur le panneau
+(`.panel.plie > :not(.panel-head) { display: none }`) plutôt qu'un `hidden` posé sur chaque
+enfant. Dans la collection, chaque rareté a sa propre grille pour la même raison — replier
+devient un `hidden` sur un conteneur au lieu de cacher vingt cases une à une.
+
+Le pliage vit dans la sauvegarde, avec l'ordre de la bande et la taille des lots : du confort
 d'affichage, donc il traverse l'ascension.
+
+### Les écrans bas
+
+La seule rupture qui existait regardait la **largeur**, alors qu'un portable est large et
+bas : 1366 × 768 tient les deux colonnes sans peine et manque de deux cents pixels en hauteur.
+
+Ce qui déborde n'est donc pas la grille — elle est en `height: 100vh` et ne défile pas — mais
+**la scène**, dont l'œuf seul prend un quart de l'écran, et la colonne latérale.
+
+| Rupture | Ce qui se resserre |
+|---|---|
+| `max-height: 52rem` (832 px) | marges, barre du haut, sujet à `20vh` au lieu de `32vmin`, bande à 9 rem, pied de page retiré |
+| `max-height: 40rem` (640 px) | sujet à `16vh`, texte des boosts et du conseil, bande à 6,5 rem |
+
+**Rien ne disparaît sans raison.** On resserre les marges et on rétrécit le sujet, qui est le
+seul élément dont la taille est arbitraire — le texte ne bouge qu'au second cran, et la seule
+chose retirée est le pied de page, qui parle du prototype et pas du jeu.
+
+Sur un écran de 768 pixels, la scène passe d'environ 630 à 480 pixels de haut : la bande des
+enclos rentre sous elle au lieu de demander un défilement.
 
 #### La force du clic ne se granule pas
 

@@ -97,6 +97,42 @@ body {
   .stage-col, .side { overflow: visible; }
 }
 
+/* ── LES ÉCRANS BAS ────────────────────────────────────────────────────────────
+   La seule rupture existante regardait la LARGEUR, alors qu'un portable est large et bas :
+   1366 × 768 tient les deux colonnes sans peine et manque de deux cents pixels en hauteur.
+   Ce qui déborde n'est donc pas la grille, c'est la scène — l'œuf seul y prend un quart de
+   l'écran — et la colonne latérale, qui empile six panneaux.
+
+   Deux crans, et rien qui disparaisse sans raison : on resserre les marges et on rétrécit le
+   sujet, qui est le seul élément dont la taille est arbitraire. Le texte, lui, ne bouge
+   qu'au second cran. */
+@media (max-height: 52rem) {
+  body { padding: 0 1rem 0.6rem; }
+  .topbar { padding: 0.5rem 0; gap: 0.9rem; }
+  .purse-value { font-size: 1.25rem; }
+  .stage-col, .side { padding-top: 0.75rem; gap: 0.75rem; }
+  .stage { padding: 1.1rem 1.25rem 0.9rem; gap: 0.45rem; }
+  .subject { min-height: clamp(6.5rem, 20vh, 11rem); }
+  .subject-glow { width: clamp(7rem, 22vh, 12rem); }
+  .subject-name { font-size: clamp(1.15rem, 3vw, 1.5rem); }
+  .strip-wrap { padding: 0.65rem 0.8rem 0.55rem; gap: 0.6rem; }
+  .strip { max-height: 9rem; }
+  .panel { padding: 0.7rem 0.85rem 0.8rem; }
+  .panel-head { padding-bottom: 0.45rem; margin-bottom: 0.6rem; }
+  .foot { display: none; }        /* du texte sur le prototype, pas sur le jeu */
+}
+
+@media (max-height: 40rem) {
+  .stage { padding: 0.7rem 1rem 0.6rem; gap: 0.35rem; }
+  .subject { min-height: clamp(5rem, 16vh, 8rem); }
+  .subject-glow { width: clamp(5.5rem, 18vh, 9rem); }
+  .subject-name { font-size: 1.15rem; }
+  .stage-boost, .stage-hint { font-size: 0.68rem; }
+  .axe { padding: 0.35rem 0.25rem 0.4rem; }
+  .strip { max-height: 6.5rem; }
+  .stage-acts { margin-top: 0.35rem; }
+}
+
 /* ── barre du haut ───────────────────────────── */
 .topbar {
   grid-area: top;
@@ -679,12 +715,23 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
 .coll-head:hover { color: var(--ink); }
 .plier { font-size: 0.7rem; line-height: 1; width: 0.7em; }
 
-/* Un en-tête de panneau qui se replie : même allure qu'avant, mais c'est un bouton. */
-.panel-pliable {
-  width: 100%; background: none; border: 0; padding: 0;
+/* LE TITRE D'UN PANNEAU EST UN BOUTON, et lui seul : le sélecteur de lots vit dans le même
+   en-tête, et un bouton dans un bouton n'est pas du HTML valide. */
+.panel-plier {
+  display: flex; align-items: baseline; gap: 0.4rem;
+  background: none; border: 0; padding: 0;
   cursor: pointer; text-align: left; font: inherit; color: inherit;
 }
-.panel-pliable:hover h2 { color: var(--ink); }
+.panel-plier:hover h2 { color: var(--ink); }
+.panel-plier .plier { font-size: 0.7rem; color: var(--faint); }
+
+/* Replié, il ne reste que la barre de titre — et le compteur, qui est justement ce qu'on
+   vient lire du coin de l'œil sans ouvrir. */
+.panel.plie > :not(.panel-head) { display: none; }
+.panel.plie .panel-head {
+  padding-bottom: 0; margin-bottom: 0; border-bottom: 0;
+}
+.panel.plie { padding-bottom: 0.9rem; }
 .cell {
   aspect-ratio: 1; display: grid; place-items: center;
   background: var(--sunken); border-radius: 2px; font-size: 1.05rem;
