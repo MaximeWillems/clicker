@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.24.1';
+const VERSION = 'alpha 2.25.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -425,6 +425,50 @@ const MOTIF_BONUS = {
    mythique chromatique vaut environ 5,6·10^11, donc le troisième palier demanderait d'en
    vendre un million. C'est voulu : l'échelle ne s'arrête pas avant l'économie, c'est
    l'économie qui s'arrête avant l'échelle. */
+/* ── LA PLONGE ─────────────────────────────────────────────────────────────────
+   Le jeu pouvait se rendre INJOUABLE, et c'était à deux minutes du début : zéro bête, zéro œuf,
+   et moins que le prix d'un œuf commun — plus de rente, plus rien à cliquer, plus rien à
+   vendre. Le seul geste restant était d'effacer la partie. Le chemin le plus court passait par
+   le conseil de la professeure : on vend sa première bête pour quarante pièces, elle annonce
+   qu'il y a des choses à acheter qui ne sont pas des œufs, la Force du clic en coûte trente.
+
+   Alors on lave des assiettes. UNE ASSIETTE, UNE PIÈCE. Douze pour un œuf commun.
+
+   C'EST UNE PUNITION, ET ELLE EST ASSUMÉE. Une punition pour avoir mal géré, mais rattrapable :
+   on ne perd pas sa partie, on perd du temps. Un idle ne doit jamais pouvoir se rendre
+   injouable, mais il n'a aucune raison de faire semblant qu'une erreur n'en était pas une.
+
+   ELLE NE S'OUVRE QUE DANS L'IMPASSE, ET SE REFERME DÈS QU'ON EN SORT. Ce n'est pas un détail
+   d'équilibrage, c'est ce qui rend tout garde-fou inutile : une plonge qui n'existe que là où
+   rien d'autre n'existe ne peut pas devenir un revenu alternatif ni une stratégie d'ouverture.
+   Rien à doser, rien à surveiller.
+
+   NI FRÉNÉSIE, NI AUTO-CLIC. Une assiette vaut une pièce quoi qu'on ait acheté : le doublement
+   de la frénésie passe par clickPower, qui n'entre pas ici, et la carte ocellée est refusée
+   explicitement. Doubler les assiettes récompenserait l'erreur chez le joueur le mieux équipé ;
+   laisser la carte les laver ferait que l'erreur ne coûte rien à qui a déjà un album. La
+   punition est la même pour tout le monde, sinon elle n'en est plus une pour personne.
+
+   Et rien hors ligne : la plonge est un geste, pas une production.
+
+   C'EST UN ÉTAT DU JEU, PAS UN SUJET DE LA SCÈNE. `subjects()` liste toujours les incubateurs,
+   même vides, donc il y a toujours quelque chose en scène et `current()` ne rend jamais null.
+   `renderStage` et `tapStage` regardent donc la plonge AVANT de regarder le sujet. */
+const ASSIETTE = 1;              // ce que vaut une assiette
+
+// Le prix plancher du jeu : l'œuf le moins cher, quoi qu'on ait réglé ailleurs.
+const oeufPlancher = () => prixOeuf(EGG_BY_KEY.commun);
+
+/* L'impasse : rien en enclos, rien en couvaison, rien en réserve, et pas de quoi acheter. Les
+   quatre ensemble — il suffit d'un œuf qui couve pour qu'il reste quelque chose à faire. */
+const enPlonge = () => !state.pen.length && !totalEggs()
+                    && !state.incub.some(Boolean)
+                    && state.coins < oeufPlancher();
+
+// Combien d'assiettes avant de pouvoir racheter un œuf.
+const assiettesRestantes = () =>
+  Math.max(0, Math.ceil((oeufPlancher() - state.coins) / ASSIETTE));
+
 /* ── LA PENSION — SQUELETTE, PORTE FERMÉE ──────────────────────────────────────
    ┌────────────────────────────────────────────────────────────────────────────┐
    │ RIEN DE CE QUI SUIT N'EST JOIGNABLE. `PENSION_OUVERTE` est à false, aucune  │
@@ -653,6 +697,12 @@ const NOTES = [
     'Et un enclos de plus, c’est une bête de plus à la fois.',
     'Retiens ceci : bientôt, ce ne sera plus l’argent qui te limitera, mais la place. Une bête que tu gardes est un enclos qui ne tourne pas.',
     'Voilà. Tu sais tout ce que je sais. Le reste, tu vas me l’apprendre.',
+  ] },
+  { cle: 'plonge', test: () => enPlonge(), repliques: [
+    'Ah. Tu n’as plus rien.',
+    'Ça arrive, et ce n’est pas grave — on n’a pas encore vu d’éleveur qui ne se soit jamais retrouvé sans un sou.',
+    'Il y a de la vaisselle derrière. Une assiette, une pièce. Douze et tu repars avec un œuf.',
+    'Je ne la ferai pas à ta place. Tu as pris la décision, tu prends les assiettes avec.',
   ] },
   { cle: 'cadeau', test: () => (state.dons || 0) > 0, repliques: [
     'Tu as vu ? Elle vient de t’offrir quelque chose.',
@@ -1062,11 +1112,14 @@ function freshState() {
       temps: 0,            // secondes de boucle, absences comprises
       clics: 0,            // clics qui ont réellement fait avancer quelque chose
       eclos: 0, vendues: 0, evolutions: 0,
+      assiettes: 0,        // le seul aveu de la page de statistiques
       gagne: 0,            // toutes les pièces encaissées : ventes et rente
       prodiges: 0,
       fortune: 0,          // la plus grosse bourse jamais tenue
       record: 0,           // la plus grosse vente
     },
+    // les trophées décrochés, par clé. Ils traversent l'ascension, comme les compteurs.
+    trophees: {},
     frenesie: 0,        // secondes de clic double encore en réserve
     dons: 0,            // combien de cadeaux reçus en tout — sert aussi de test au tutoriel
     tuto: true,
@@ -1930,6 +1983,7 @@ function monteeNiveau(c, valueBefore, pt) {
    ───────────────────────────────────────────── */
 
 function tapStage() {
+  if (enPlonge()) { laverAssiette(); return; }
   const s = current();
   if (!s) return;
   const el = $('subject');
@@ -1966,6 +2020,23 @@ function tapStage() {
   if (estMur(c) && !avantMur) { celebrate(c, avantValeur, pt, 'mûre — prête à évoluer'); return; }
   if (rankOf(sizeFactor(c)).i !== avantRang) { celebrate(c, avantValeur, pt); return; }
   if (niveau(c) !== avantNiv) { monteeNiveau(c, avantValeur, pt); return; }
+  refresh();
+}
+
+/* Laver une assiette. Refusée à la carte ocellée : `mainDeCarte` est levé pendant ses clics,
+   et c'est le seul endroit du jeu où l'on distingue la main du joueur de celle d'une carte. */
+function laverAssiette() {
+  if (mainDeCarte || !enPlonge()) return;
+  state.coins += ASSIETTE;
+  state.stats.assiettes = (state.stats.assiettes || 0) + 1;
+  state.stats.clics++;
+  state.stats.gagne += ASSIETTE;
+  const el = $('subject'), pt = centerOf(el);
+  flash(el, 'shake');
+  floatText(pt.x + (Math.random() * 40 - 20), pt.y - 20, '+' + ASSIETTE);
+  blip(300 + Math.random() * 80, 0.03, 'triangle', 0.02);
+  // la dernière assiette sonne autrement : c'est le moment où l'on redevient éleveur
+  if (!enPlonge()) chord([392, 523, 659], 60);
   refresh();
 }
 
@@ -2357,6 +2428,7 @@ function loop() {
   runAutomations(dt);
   tickJoie(dt);
   tickOcelle(dt);
+  verifierTrophees();
   state.stats.temps += dt / state.speed;   // du temps vécu, pas du temps simulé
   if (state.coins > state.stats.fortune) state.stats.fortune = state.coins;
   hatchAll();          // hatchAll rafraîchit déjà l'affichage
@@ -3201,7 +3273,7 @@ function ascensionner() {
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
     // et les compteurs aussi : ils comptent une vie de fichier, pas une partie
-    stats: state.stats, dons: state.dons,
+    stats: state.stats, dons: state.dons, trophees: state.trophees,
   });
   nextId = 1;
 
@@ -3238,6 +3310,8 @@ function ascensionner() {
    variables se croisaient sans jamais se servir les uns des autres — `stage` et `subject` ne
    servaient qu'aux deux derniers, `slot` qu'au deuxième, la moitié du reste qu'au troisième. */
 function renderStage() {
+  // la plonge passe avant tout : c'est un état du jeu, pas un sujet en scène
+  if (enPlonge()) return renderPlonge();
   const s = current();
   if (!s) return renderRien();
   /* Les deux seules lignes que le cas plein partage : la sélection se recale sur ce qui est
@@ -3245,6 +3319,29 @@ function renderStage() {
   if (state.sel !== s.key) state.sel = s.key;
   setText($('stage-boost'), ligneBoosts(s));
   return s.kind === 'egg' ? renderOeuf(s) : renderBete(s);
+}
+
+/* L'ÉVIER. Le seul écran du jeu où le clic ne fait rien grandir : la barre monte vers le prix
+   d'un œuf, et le compte des assiettes descend. */
+function renderPlonge() {
+  const acts = refs.acts, stage = document.querySelector('.stage');
+  cacherAxes();
+  setText($('stage-boost'), '');
+  ['place', 'sell', 'evo', 'keep'].forEach(k => { acts[k].hidden = true; });
+
+  const reste = assiettesRestantes(), prix = oeufPlancher();
+  stage.classList.remove('apex', 'ready', 'cracking', 'prodige');
+  setStageRarity(stage, null);
+  setVar($('subject'), '--sz', '1');
+  setCreature($('stage-glyph'), null, '🍽️');
+  setFilter($('stage-glyph'), '');
+  setText($('stage-name'), 'La plonge');
+  setHtml($('stage-meta'), 'une assiette, une pièce');
+  setWidth($('stage-fill'), ((prix - reste) / prix * 100).toFixed(1) + '%');
+  setText($('stage-timer'), reste + ' assiette' + (reste > 1 ? 's' : '') + ' avant un œuf');
+  $('stage-timer').classList.remove('done');
+  setText($('stage-hint'), 'Plus de bête, plus d’œuf, plus assez pour en acheter un. ' +
+    'Alors on lave. Ce n’est pas rapide, mais on s’en sort toujours.');
 }
 
 // Rien en scène : l'enclos est vide et aucun incubateur ne tourne.
@@ -3975,6 +4072,90 @@ function avancePension(dt) {
   return nes;
 }
 
+/* ── LES TROPHÉES ──────────────────────────────────────────────────────────────
+   Le jeu comptait sans jamais rien attendre : dix-sept nombres qui montent, et pas un seul
+   objectif nommé depuis que les jalons ont laissé la place aux jetons. Un nombre qui monte
+   sans que rien ne l'attende reste un nombre.
+
+   UN TROPHÉE NE DONNE JAMAIS DE PUISSANCE. Ni multiplicateur, ni prime, ni pièce. C'est la
+   règle qui les sépare des jalons qu'on vient justement de démonter : un trophée qui pèse sur
+   l'équilibrage redevient un jalon déguisé, et il faudrait alors le viser plutôt que le
+   rencontrer. Ils ne paient qu'en reconnaissance, et c'est assez.
+
+   DEUX SORTES. Ceux qui se voient toujours, décrochés ou non, sont des OBJECTIFS : ils disent
+   au joueur où va le jeu, ce que plus rien ne faisait. Ceux qui restent cachés jusqu'à leur
+   décrochage sont des SURPRISES : les annoncer les tuerait, puisque leur seul contenu est
+   qu'on ne les attendait pas. Le compte « 8 / 12 » s'affiche quand même — savoir qu'il en
+   reste ne dit pas lesquels.
+
+   ILS TRAVERSENT L'ASCENSION, comme les compteurs : ils comptent une vie de fichier, pas une
+   partie. Un trophée qu'on perdrait en ascensionnant punirait le geste que le jeu demande.
+
+   Chaque test se lit sur l'état, jamais sur un événement : c'est ce qui permet de les vérifier
+   dix fois par seconde sans rien mémoriser, et de rattraper ceux qu'une version précédente
+   aurait manqués. */
+const TROPHEES = [
+  // ── les objectifs, toujours visibles ──
+  { cle: 'premiere', glyphe: '🥚', montre: true, nom: 'Première éclosion',
+    dit: 'Faire éclore un œuf.',
+    test: () => state.stats.eclos > 0 },
+  { cle: 'naturaliste', glyphe: '📖', montre: true, nom: 'Naturaliste',
+    dit: 'Rencontrer cinquante formes différentes.',
+    test: () => seenCount() >= 50 },
+  { cle: 'legende', glyphe: '✦', montre: true, nom: 'Une légende',
+    dit: 'Mener une bête jusqu’au dernier âge.',
+    test: () => Object.keys(state.seen || {}).some(k => k.endsWith(':' + AGES.length)) },
+  { cle: 'million', glyphe: '🪙', montre: true, nom: 'Le premier million',
+    dit: 'Tenir un million de pièces à la fois.',
+    test: () => state.stats.fortune >= 1e6 },
+  { cle: 'saut', glyphe: '🌀', montre: true, nom: 'Recommencer',
+    dit: 'Ascensionner une fois — tout perdre, et garder une carte.',
+    test: () => (state.asc.n || 0) > 0 },
+  { cle: 'equipe', glyphe: '🃏', montre: true, nom: 'Main pleine',
+    dit: 'Équiper cinq cartes en même temps.',
+    test: () => (state.slots || []).length >= SLOTS },
+
+  // ── les surprises, invisibles tant qu'on ne les a pas ──
+  { cle: 'vaisselle', glyphe: '🍽️', nom: 'La plonge',
+    dit: 'Laver sa première assiette. Ça arrive à tout le monde, et à personne deux fois.',
+    test: () => (state.stats.assiettes || 0) > 0 },
+  { cle: 'chromatique', glyphe: '🌈', nom: 'Coup d’œil',
+    dit: 'Voir naître un chromatique. Une chance sur huit mille cent quatre-vingt-douze.',
+    test: () => state.stats.prodiges > 0 },
+  { cle: 'demesure', glyphe: '🫧', nom: 'Démesuré',
+    dit: 'Engraisser une bête jusqu’au dernier rang de taille.',
+    test: () => state.pen.some(c => rankOf(sizeFactor(c)).i >= RANKS.length - 1) },
+  { cle: 'mythe', glyphe: '👑', nom: 'Sang de mythe',
+    dit: 'Faire éclore une lignée mythique.',
+    test: () => LINES.some(l => l.rarity === 'mythique' && state.seen[l.key + ':1']) },
+  { cle: 'complicite', glyphe: '💗', nom: 'Complicité',
+    dit: 'Recevoir dix cadeaux d’une bête qu’on garde en scène.',
+    test: () => (state.dons || 0) >= 10 },
+  { cle: 'emplettes', glyphe: '🧾', nom: 'Tout acheté',
+    dit: 'Prendre les vingt primes dans une même partie.',
+    test: () => PRIMES.every(p => prime(p.cle)) },
+];
+
+const trophee = cle => !!(state.trophees && state.trophees[cle]);
+const tropheesPris = () => TROPHEES.filter(t => trophee(t.cle)).length;
+
+/* Passe la table en revue. Appelée par la boucle : douze prédicats sur l'état, dix fois par
+   seconde, coûtent moins qu'un seul rendu — et lire l'état plutôt que guetter un événement
+   permet de rattraper ce qu'une version précédente n'avait pas encore su compter. */
+function verifierTrophees() {
+  for (const t of TROPHEES) {
+    if (trophee(t.cle)) continue;
+    let pris = false;
+    try { pris = !!t.test(); } catch (e) { pris = false; }
+    if (!pris) continue;
+    state.trophees[t.cle] = true;
+    if (rattrapage) continue;         // une absence ne se célèbre pas douze fois de suite
+    const pt = centerOf($('subject'));
+    floatText(pt.x, pt.y - 130, t.glyphe + '  ' + t.nom, 'gain');
+    chord([523, 659, 784, 1046, 1319], 80);
+  }
+}
+
 /* ─────────────────────────────────────────────
    Les statistiques
    ───────────────────────────────────────────── */
@@ -3992,6 +4173,7 @@ const STATS = [
     ['Première partie', dateCourte(state.stats.debut)],
     ['Temps de jeu', fmtTime(state.stats.temps)],
     ['Clics donnés', fmt(state.stats.clics)],
+    ['Assiettes lavées', fmt(state.stats.assiettes || 0)],
   ]],
   ['La ferme', () => [
     ['Œufs éclos', fmt(state.stats.eclos)],
@@ -4015,6 +4197,7 @@ const STATS = [
 function renderStats() {
   const hote = $('stats');
   hote.textContent = '';
+  renderTrophees();
   for (const [titre, lignes] of STATS) {
     const h = document.createElement('h3');
     h.className = 'stats-titre';
@@ -4028,6 +4211,27 @@ function renderStats() {
       l.append(g, d);
       hote.appendChild(l);
     }
+  }
+}
+
+/* Les trophées, sous les compteurs. Un décroché montre son nom et ce qu'il a fallu faire ;
+   un objectif non décroché montre les deux aussi, c'est tout son intérêt ; une surprise non
+   décrochée ne montre RIEN — l'annoncer la tuerait. */
+function renderTrophees() {
+  const hote = $('trophees');
+  hote.textContent = '';
+  setText($('trophees-meta'), tropheesPris() + ' / ' + TROPHEES.length);
+  for (const t of TROPHEES) {
+    const pris = trophee(t.cle);
+    if (!pris && !t.montre) continue;
+    const l = document.createElement('div');
+    l.className = 'trophee' + (pris ? ' pris' : '');
+    l.innerHTML = '<span class="trophee-glyphe"></span><span class="trophee-txt">' +
+                  '<b class="trophee-nom"></b><i class="trophee-dit"></i></span>';
+    l.querySelector('.trophee-glyphe').textContent = t.glyphe;
+    l.querySelector('.trophee-nom').textContent = t.nom;
+    l.querySelector('.trophee-dit').textContent = t.dit;
+    hote.appendChild(l);
   }
 }
 

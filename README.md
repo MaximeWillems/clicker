@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.24.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.25.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.24.1** | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
+| **2.25.0** | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
+| 2.24.1 | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
 | 2.24.0 | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
 | 2.23.0 | le squelette de la pension, porte fermée — rien ne change pour le joueur |
 | 2.22.0 | la collection se replie, section par section |
@@ -110,7 +111,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Trente-et-un scénarios, cinq cent soixante-sept vérifications. Passer un mot en argument ne joue que
+Trente-six scénarios, six cent trente-sept vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -319,6 +320,69 @@ les a toutes dépassées par construction.
 | `📊` | Ce que le fichier a compté depuis le premier jour. |
 | `💾` | Garder une copie de la partie, ou en restaurer une. |
 | `⟲` | Efface la partie et repart de zéro. |
+
+### La plonge
+
+**Le jeu pouvait se rendre injouable, et c'était à deux minutes du début.** Zéro bête, zéro
+œuf, et moins que le prix d'un œuf commun : plus de rente, plus rien à cliquer, plus rien à
+vendre. Le seul geste restant était d'effacer la partie. Le chemin le plus court passait par
+le conseil de la professeure — on vend sa première bête pour quarante pièces, elle annonce
+qu'il y a des choses à acheter qui ne sont pas des œufs, la Force du clic en coûte trente.
+
+Alors on lave des assiettes. **Une assiette, une pièce.** Douze pour un œuf commun.
+
+**C'est une punition, et elle est assumée.** Une punition pour avoir mal géré, mais
+rattrapable : on ne perd pas sa partie, on perd du temps. Un idle ne doit jamais pouvoir se
+rendre injouable, mais il n'a aucune raison de faire semblant qu'une erreur n'en était pas une.
+
+**Elle ne s'ouvre que dans l'impasse et se referme dès qu'on en sort** — quatre conditions
+ensemble : rien en enclos, rien en couvaison, rien en réserve, et pas de quoi acheter. Ce n'est
+pas un détail d'équilibrage, c'est ce qui rend tout garde-fou inutile : une plonge qui n'existe
+que là où rien d'autre n'existe ne peut pas devenir un revenu alternatif ni une stratégie
+d'ouverture. Rien à doser, rien à surveiller.
+
+**Ni frénésie, ni auto-clic.** Une assiette vaut une pièce quoi qu'on ait acheté — le
+doublement de la frénésie passe par `clickPower`, qui n'entre pas ici, et la carte ocellée est
+refusée explicitement. Doubler les assiettes récompenserait l'erreur chez le joueur le mieux
+équipé ; laisser la carte les laver ferait que l'erreur ne coûte rien à qui a déjà un album.
+**La punition est la même pour tout le monde, sinon elle n'en est plus une pour personne.**
+
+Un détail de structure qui vaut d'être noté : la plonge est un **état du jeu, pas un sujet de
+la scène**. `subjects()` liste toujours les incubateurs, même vides, donc il y a toujours
+quelque chose en scène et `current()` ne rend jamais `null` — `renderStage` et `tapStage`
+regardent donc la plonge *avant* de regarder le sujet.
+
+La professeure a enfin une scène pour les mauvais jours, et elle ne s'excuse pas : *« Je ne la
+ferai pas à ta place. Tu as pris la décision, tu prends les assiettes avec. »*
+
+### Les trophées
+
+Douze, sous les statistiques. Le jeu comptait sans jamais rien attendre — dix-sept nombres qui
+montent, et pas un seul objectif nommé depuis que les jalons ont laissé la place aux jetons. Un
+nombre qui monte sans que rien ne l'attende reste un nombre.
+
+**Un trophée ne donne jamais de puissance.** Ni multiplicateur, ni prime, ni pièce. C'est la
+règle qui les sépare des jalons qu'on vient justement de démonter : un trophée qui pèse sur
+l'équilibrage redevient un jalon déguisé, et il faudrait alors le *viser* plutôt que le
+rencontrer. Ils ne paient qu'en reconnaissance, et c'est assez. Un scénario du banc le vérifie
+— on les décroche tous et on regarde que ni le clic, ni les enclos, ni la bourse n'ont bougé.
+
+**Deux sortes.** Six se voient toujours, décrochés ou non : ce sont des **objectifs**, et ils
+disent au joueur où va le jeu — première éclosion, cinquante formes, une légende, le premier
+million, une ascension, cinq cartes équipées. Six restent **invisibles** jusqu'à leur
+décrochage : ce sont des **surprises**, et les annoncer les tuerait, puisque leur seul contenu
+est qu'on ne les attendait pas. Le compte `1 / 12` s'affiche quand même — savoir qu'il en reste
+ne dit pas lesquels.
+
+Parmi les cachés : **La plonge**, pour la première assiette. *« Ça arrive à tout le monde, et à
+personne deux fois. »*
+
+**Ils traversent l'ascension**, comme les compteurs : ils comptent une vie de fichier, pas une
+partie. Un trophée qu'on perdrait en ascensionnant punirait le geste que le jeu demande.
+
+Chaque test se lit **sur l'état, jamais sur un événement** : c'est ce qui permet de les vérifier
+dix fois par seconde sans rien mémoriser, et de rattraper ceux qu'une version précédente
+n'aurait pas encore su compter.
 
 ### Les statistiques
 

@@ -449,6 +449,139 @@ scenario('écran — les six panneaux se replient, et ça tient au rechargement'
   ok('les cinq autres restent fermés', jeu.PANNEAUX.filter(c => c !== 'boutique').every(plie));
 });
 
+/* ────────────────────────── la plonge et les trophées ────────────────────────── */
+
+// l'impasse exacte : rien en enclos, rien en couvaison, rien en réserve, pas de quoi acheter
+function impasse(jeu, sous) {
+  const s = jeu.state;
+  s.pen = []; s.incub = [null];
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  s.coins = sous === undefined ? 5 : sous;
+  jeu.refresh();
+}
+
+scenario('plonge — elle ne s’ouvre que dans l’impasse, et se referme en sortant', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  ok('fermée au démarrage, il y a un œuf en couvaison', !jeu.enPlonge());
+
+  impasse(jeu);
+  ok('ouverte quand il ne reste rien', jeu.enPlonge());
+  eq('la scène montre l’évier', (noeuds.get('stage-name').textContent || '').trim(), 'La plonge');
+  eq('et le compte des assiettes', jeu.assiettesRestantes(), jeu.oeufPlancher() - 5);
+
+  // chacune des quatre conditions suffit à la refermer
+  impasse(jeu); s.pen = [{ id: 99, line: 'crapaud', age: 1, p: 1, kind: 'commun' }];
+  ok('une bête en enclos la referme', !jeu.enPlonge());
+  impasse(jeu); s.incub = [{ line: 'crapaud', p: 0, kind: 'commun' }];
+  ok('un œuf en couvaison la referme', !jeu.enPlonge());
+  impasse(jeu); s.eggs.commun = 1;
+  ok('un œuf en réserve la referme', !jeu.enPlonge());
+  impasse(jeu, jeu.oeufPlancher());
+  ok('de quoi acheter la referme', !jeu.enPlonge());
+});
+
+scenario('plonge — une assiette, une pièce, quoi qu’on ait acheté', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  impasse(jeu, 0);
+  const cible = jeu.oeufPlancher();
+
+  jeu.tapStage();
+  eq('une assiette rapporte une pièce', s.coins, 1);
+  eq('elle est comptée', s.stats.assiettes, 1);
+  eq('et elle compte comme un clic du joueur', s.stats.clics, 1);
+
+  // ni la frénésie ni la Force du clic ne changent quoi que ce soit
+  s.up.clic = 20; s.frenesie = 30; s.primes.poigne = true; s.primes.main = true;
+  ok('le clic vaut beaucoup ailleurs', jeu.clickPower() > 10, jeu.clickPower());
+  const avant = s.coins;
+  jeu.tapStage();
+  eq('mais une assiette vaut toujours une pièce', s.coins, avant + 1);
+
+  // on lave jusqu'au bout
+  let n = 0;
+  while (jeu.enPlonge() && n++ < 100) jeu.tapStage();
+  eq('on sort avec de quoi acheter un œuf', s.coins, cible);
+  ok('et la plonge s’est refermée', !jeu.enPlonge());
+  jeu.refresh();
+  ok('la scène redevient un incubateur',
+     (noeuds.get('stage-name').textContent || '').trim() !== 'La plonge');
+});
+
+scenario('plonge — la carte ocellée ne lave pas à ta place', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  // une carte ocellée parfaite, au plafond
+  equiper(jeu, jeu.MOTIFS.indexOf('ocellé'), 5);
+  impasse(jeu, 0);
+  eq('elle clique pourtant très vite ailleurs', jeu.bonusAlbum().clicAuto, jeu.MOTIF_BONUS['ocellé'].cap);
+  for (let i = 0; i < 200; i++) jeu.tickOcelle(0.5);   // cent secondes
+  eq('aucune assiette lavée', s.stats.assiettes || 0, 0);
+  eq('aucune pièce gagnée', s.coins, 0);
+  ok('on est toujours dans l’impasse', jeu.enPlonge());
+  jeu.tapStage();
+  eq('seule la main du joueur lave', s.stats.assiettes, 1);
+});
+
+scenario('trophées — six objectifs visibles, six surprises cachées', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const lignes = () => { jeu.renderStats(); return noeuds.get('trophees').children; };
+  const nom = l => (l.querySelector('.trophee-nom').textContent || '');
+
+  const montres = jeu.TROPHEES.filter(t => t.montre).length;
+  eq('rien de décroché au départ', jeu.tropheesPris(), 0);
+  eq('seuls les objectifs s’affichent', lignes().length, montres);
+  ok('et aucun n’est marqué pris', [...lignes()].every(l => !l.classList.contains('pris')));
+  eq('le compte dit combien il en reste', (noeuds.get('trophees-meta').textContent || '').trim(),
+     '0 / ' + jeu.TROPHEES.length);
+
+  // aucune clé en double, chacun a de quoi s'afficher
+  const cles = new Set();
+  for (const t of jeu.TROPHEES) {
+    ok('« ' + t.cle + ' » n’est pas en double', !cles.has(t.cle));
+    cles.add(t.cle);
+    ok('« ' + t.cle + ' » a un nom, un glyphe et une phrase',
+       !!(t.nom && t.glyphe && t.dit && t.dit.length > 10));
+    ok('« ' + t.cle + ' » a un test', typeof t.test === 'function');
+  }
+
+  // une surprise apparaît au moment où on la décroche, pas avant
+  ok('« La plonge » est invisible', ![...lignes()].some(l => nom(l) === 'La plonge'));
+  impasse(jeu, 0);
+  jeu.tapStage();
+  jeu.verifierTrophees();
+  ok('elle apparaît une fois lavée', [...lignes()].some(l => nom(l) === 'La plonge'));
+  ok('et elle est marquée prise',
+     [...lignes()].find(l => nom(l) === 'La plonge').classList.contains('pris'));
+  eq('le compte suit', jeu.tropheesPris(), 1);
+});
+
+scenario('trophées — ils ne donnent rien, et traversent l’ascension', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 5e6; s.pens = 6;
+  /* AUCUN TROPHÉE NE DONNE DE PUISSANCE : c'est ce qui les sépare des jalons qu'on vient de
+     démonter. On décroche tout et on vérifie que rien n'a bougé. */
+  const avantClic = jeu.clickPower(), avantPen = jeu.pensTotal();
+  s.stats.eclos = 1; s.stats.fortune = 1e9; s.stats.assiettes = 1; s.stats.prodiges = 1;
+  s.dons = 99; s.seen = { 'crapaud:5': 1 };
+  const sous = s.coins;
+  jeu.verifierTrophees();
+  ok('des trophées sont tombés', jeu.tropheesPris() >= 5, jeu.tropheesPris());
+  eq('le clic n’a pas bougé', jeu.clickPower(), avantClic);
+  eq('les enclos non plus', jeu.pensTotal(), avantPen);
+  eq('et pas une pièce n’a été donnée', s.coins, sous);
+
+  bete(jeu, 'crapaud', 3, 3000);
+  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  const pris = jeu.tropheesPris();
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = [ap.neuves[0].id];
+  jeu.ascensionner();
+  eq('les trophées traversent l’ascension', jeu.tropheesPris(), pris);
+});
+
 /* ────────────────────────── la pension, porte fermée ────────────────────────── */
 
 scenario('pension — la porte est fermée, et rien ne peut l’ouvrir', () => {
@@ -611,11 +744,15 @@ scenario('primes — elles ne traversent pas l’ascension, la migration ne perd
 
 /* ────────────────────────── l'album, carte par carte ────────────────────────── */
 
-// une carte au sommet de ce que le jeu peut produire : c'est là que les bornes se testent
-const parfaite = (jeu, motif, id) => ({
-  id, line: 'ouroboros', age: 5, niv: 100, tint: jeu.TINTS.length - 1,
-  rank: jeu.RANKS.length - 1, prodige: true, palier: 1, motif, temper: 0,
-});
+/* Une carte au sommet de ce que le jeu peut produire : c'est là que les bornes se testent.
+   Déclarée en `function` et non en `const` : les scénarios s'exécutent dans l'ordre du
+   fichier, et celui de la plonge s'en sert avant d'arriver ici. */
+function parfaite(jeu, motif, id) {
+  return {
+    id, line: 'ouroboros', age: 5, niv: 100, tint: jeu.TINTS.length - 1,
+    rank: jeu.RANKS.length - 1, prodige: true, palier: 1, motif, temper: 0,
+  };
+}
 function equiper(jeu, motif, n) {
   jeu.state.album = []; jeu.state.slots = [];
   for (let i = 1; i <= n; i++) { jeu.state.album.push(parfaite(jeu, motif, i)); jeu.state.slots.push(i); }

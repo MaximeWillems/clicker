@@ -1031,6 +1031,28 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
 }
 
+/* ── LES TROPHÉES ─────────────────────────────────────────────────────────────
+   Deux états seulement : décroché ou non. Pas de barre de progression — un trophée n'est pas
+   une jauge, et montrer « 7 formes sur 50 » transformerait une rencontre en corvée. */
+.stats-titre-tro { display: flex; justify-content: space-between; align-items: baseline; }
+.trophees-meta { font-family: var(--f-num); color: var(--faint); letter-spacing: 0.06em; }
+.trophees { display: flex; flex-direction: column; }
+.trophee {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  padding: 0.5rem 0; border-top: 1px solid var(--rule);
+}
+.trophee-glyphe { font-size: 1.1rem; line-height: 1.2; filter: grayscale(1); opacity: 0.4; }
+.trophee-txt { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.trophee-nom {
+  font-family: var(--f-name); font-weight: 400; font-size: 0.92rem;
+  color: var(--faint);
+}
+.trophee-dit { font-style: normal; font-size: 0.76rem; color: var(--faint); line-height: 1.4; }
+
+.trophee.pris .trophee-glyphe { filter: none; opacity: 1; }
+.trophee.pris .trophee-nom { color: var(--ink); }
+.trophee.pris .trophee-dit { color: var(--soft); }
+
 /* ── L'écran de sauvegarde ─────────────────────────────────────────────────── */
 .sav-dit { color: var(--soft); font-size: 0.82rem; line-height: 1.5; margin: 0 0 0.6rem; }
 .sav-resume {

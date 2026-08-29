@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.24.1 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.25.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -53,12 +53,13 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
 | **Le socle de la pension** | 2.23–2.24.1 | les cinq pièces s'emboîtent-elles ? | écrites et scellées : on attend le bestiaire |
 | **Les écrans bas** | 2.24 | le jeu tient-il sur un portable ? | tout se replie, et deux ruptures en hauteur |
+| **La plonge** | 2.25 | peut-on rendre le jeu injouable ? | non, plus jamais — une assiette, une pièce |
+| **Les trophées** | 2.25 | reste-t-il un objectif nommé ? | douze, dont six qu'on ne voit qu'en les décrochant |
 
 ### Ce qui vient ensuite
 
 | Ce qui tombe | Sauv. | La question qu'elle pose au joueur |
 |---|---|---|
-| **La plonge** — laver des assiettes quand il ne reste rien, une pièce chacune | 14 | est-ce qu'on peut rendre un jeu injouable ? (non) |
 | La fusion — les paliers, et le repère sur les capsules | 11 | est-ce que les doublons valent d'être gardés ? |
 | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 11 | est-ce que l'ordre des achats suit la vie de la bête ? |
 | La pension, **ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | 14 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
@@ -213,7 +214,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 31 scénarios
+node tools/test.js              les 36 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -245,7 +246,6 @@ est ce qu'il faut avoir en tête pour choisir.
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
 | **Les fonds** | dix-sept lignées manquent, et huit fonds habilleraient les 135 formes | à chiffrer |
-| **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
@@ -351,12 +351,14 @@ une fois.
 
 ### Le diagnostic en trois phrases
 
-**Le jeu se souvient, depuis la 2.19.0.** Dix-sept compteurs cumulés sur la vie du fichier,
-qui traversent l'ascension. Ce qui manque encore, ce sont des objectifs à leur accrocher : un
-nombre qui monte sans que rien ne l'attende reste un nombre.
+**Le jeu se souvient, et il attend quelque chose.** Dix-huit compteurs cumulés sur la vie du
+fichier depuis la 2.19.0, et douze trophées accrochés dessus depuis la 2.25.0 — six objectifs
+nommés, six surprises. Le diagnostic « un nombre qui monte sans que rien ne l'attende reste un
+nombre » est réglé.
 
-**Il n'a plus un seul objectif nommé.** Les douze jalons ont disparu en 2.2.0 quand les jetons
-ont pris leur place. Ils sont écrits, gradués, et inutilisés.
+**Il a de nouveau des objectifs nommés**, depuis la 2.25.0 : six trophées visibles disent où
+va le jeu. Les douze jalons d'origine, eux, restent écrits et inutilisés — ils ne reviendront
+pas tels quels, puisqu'un trophée ne doit jamais donner de puissance.
 
 **Être présent paie un peu, depuis peu.** Le chromatique à 1/8 192 et la montée à 1/1 000 sont
 deux décisions justes qui se sont additionnées la même semaine, et les deux surprises de
