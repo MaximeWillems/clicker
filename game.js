@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.28.0';
+const VERSION = 'alpha 2.29.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -42,16 +42,30 @@ const VERSION = 'alpha 2.28.0';
 
    `fem` marque le genre du NOM D'ÂGE, pas celui de la bête : « légende » est féminin, donc
    son rang de taille s'accorde — une légende démesurée, un ancien démesuré. */
-/* L'ÂGE ENFANT DURAIT 45 SECONDES, soit trois clics par niveau. Un niveau qui tombe en trois
-   clics n'est pas un palier, c'est une case qu'on traverse : la première vie d'une bête se
-   bouclait avant qu'on ait eu le temps de la regarder, et le premier âge ne voulait rien dire.
-   Il est doublé — six clics par niveau, quatre-vingt-dix pour l'âge entier.
+/* L'OUVERTURE ÉTAIT EXPÉDIÉE. Mesuré au banc sur un joueur qui clique quatre fois par
+   seconde : première vente à trente secondes, force du clic à une minute, couveuse à une
+   minute vingt. Le jeu passait en pilote automatique avant qu'on ait compris ce qu'on
+   automatisait, et les cent premiers clics — les seuls où l'on regarde vraiment une bête —
+   duraient une demi-minute.
 
-   La suite ne bouge pas : à neuf clics par niveau l'adolescent tenait déjà debout, et l'âge
-   adulte en demande trente. Le coût économique du doublement est petit — l'enfant ne pèse
-   qu'un vingt-cinquième de la croissance d'une commune menée jusqu'à l'âge adulte. */
+   Deux leviers, tirés ensemble : ON GAGNE MOINS, ET ON CLIQUE PLUS.
+
+   L'âge enfant passe de quatre-vingt-dix à cent cinquante secondes — dix clics par niveau au
+   lieu de six — et une commune mûre ne vaut plus quarante pièces mais trente. Avec l'œuf à
+   dix-huit, la marge d'un cycle tombe de vingt-huit à douze : deux fois et demie moins, pour
+   une fois et demie plus de travail.
+
+RIEN D'AUTRE NE BOUGE, et c'est délibéré. Une première version resserrait aussi l'adolescent,
+   et la mesure a tranché : au bout d'une demi-heure le joueur n'avait toujours qu'un enclos.
+   Ces tables se multiplient entre elles — ralentir deux âges ne ralentit pas deux fois, ça
+   ralentit tout ce qui suit, indéfiniment. L'adolescent demandait déjà neuf clics par niveau
+   et l'adulte trente : le problème n'était que dans les cent premiers clics.
+
+   Ce qu'on ne touche pas, et pourquoi : le PRIX DES AUTOMATES. Ils ne sont pas trop bon marché
+   en eux-mêmes — c'est le revenu qui arrivait trop vite. Les monter en plus aurait déplacé le
+   mur sans changer le rythme. */
 const AGES = [
-  { nom: 'enfant',     niv: 15,  grow: 90,    value: 40 },
+  { nom: 'enfant',     niv: 15,  grow: 150,   value: 30 },
   { nom: 'adolescent', niv: 35,  grow: 180,   value: 500 },
   { nom: 'adulte',     niv: 65,  grow: 900,   value: 6000 },
   { nom: 'ancien',     niv: 85,  grow: 3600,  value: 80000 },
@@ -127,8 +141,12 @@ function liste(mots) {
    acheté. La règle d'or tient toujours : tous les œufs payants se remboursent à l'âge
    ancien, jamais avant. */
 const EGG_KINDS = [
-  { key: 'commun', name: 'Œuf commun', price: 12, glyph: '🥚', rarity: 'commune',
-    hatch: 30, odds: { commune: 0.999, rare: 0.001 } },
+  /* Dix-huit et non douze : c'est l'autre moitié du resserrement de l'ouverture. Une commune
+     mûre en rend trente, donc un cycle laisse douze pièces au lieu de vingt-huit. La couvaison
+     passe à quarante-cinq secondes pour la même raison — quarante-cinq clics avant de voir
+     ce qui sort, au lieu de trente. */
+  { key: 'commun', name: 'Œuf commun', price: 18, glyph: '🥚', rarity: 'commune',
+    hatch: 45, odds: { commune: 0.999, rare: 0.001 } },
   { key: 'rare', name: 'Œuf rare', price: 300000, glyph: '🥚', rarity: 'rare',
     hatch: 180, odds: { rare: 0.999, epique: 0.001 } },
   { key: 'epique', name: 'Œuf épique', price: 7500000, glyph: '🥚', rarity: 'epique',
@@ -723,7 +741,7 @@ const NOTES = [
   ] },
   { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR, repliques: [
     'Voilà tes premières pièces. La boutique s’ouvre à toi.',
-    { dit: 'Un œuf commun coûte douze pièces et s’en revend quarante une fois la bête mûre. Reprends-en un.',
+    { dit: 'Un œuf commun coûte dix-huit pièces et s’en revend trente une fois la bête mûre. Ce n’est pas grand-chose ; c’est ce qui fait tout. Reprends-en un.',
       fait: () => state.incub.some(o => o) || totalEggs() > 0 },
     'Vends, rachète, recommence. C’est la boucle qui te nourrira longtemps.',
   ] },

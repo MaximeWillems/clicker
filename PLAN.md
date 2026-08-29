@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.28.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.29.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -56,6 +56,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La plonge** | 2.25, 2.27 | peut-on rendre le jeu injouable ? | non — dix clics l'assiette, et elle se raconte avant de s'ouvrir |
 | **Les trophées** | 2.25 | reste-t-il un objectif nommé ? | douze, dont six qu'on ne voit qu'en les décrochant |
 | **Le dialogue** | 2.12, 2.26, 2.28 | la professeure regarde-t-elle ce qu'on fait ? | oui, et elle peut retenir : trois passages obligés éteignent l'écran |
+| **L'ouverture** | 2.29 | le début est-il trop facile ? | il l'était — trois fois plus long désormais, mesuré |
 
 ### Ce qui vient ensuite
 
@@ -506,11 +507,19 @@ l'écran vide au mauvais choix de carte — donc la mécanique tient. Mais « es
 recommencer ? » ne se répond pas en sautant une fois : il faut jouer le cycle d'après, et voir
 si l'album qu'on emporte change quelque chose à la façon dont on rejoue.
 
-**La mesure du rythme est périmée deux fois.** « Ère rare à 3 h 34 » date d'avant la baisse
-des prix de la 1.5, et la montée d'un cran passée à 1/1 000 en 2.2.2 l'a déplacée encore : le
-changement d'ère ne se fait plus par coup de chance mais uniquement par la bourse. Elle ne se
-déduit d'aucune division — le revenu n'est pas constant sur trois heures et demie — et demande
-une nouvelle simulation. C'est elle qui dira si le premier jeton tombe bien vers deux heures.
+**La mesure du rythme est périmée, et l'outil pour la refaire existe maintenant.** La 2.29.0
+a produit un simulateur d'ouverture — un joueur qui clique quatre fois par seconde, mène ses
+bêtes à l'âge adulte et achète toujours le moins cher — qui a mesuré la première demi-heure et
+tranché deux fois : le début était trois fois trop rapide, et resserrer aussi l'adolescent le
+rendait trois fois trop lent.
+
+Il vit dans `tools/rythme.js` : `node tools/rythme.js 180` rend les trois premières heures.
+Ce qui reste à mesurer avec lui : **quand tombe l'ère rare**, et **quand tombe le premier
+jeton**. « Ère rare à 3 h 34 » date d'avant la baisse des prix de la 1.5, et le resserrement de
+la 2.29.0 l'a déplacée encore.
+
+Ce qu'il ne dira jamais : rien sur le plaisir. Il mesure un débit, pas un rythme ressenti — un
+joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même courbe.
 
 **Deux lignes du tableau de puissance du README sont hors d'atteinte.** Elles décrivent ce que
 six cartes équipées rendraient, alors que l'album n'a que cinq emplacements. À retrancher.

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.28.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.29.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.28.0** | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
+| **2.29.0** | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
+| 2.28.0 | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
 | 2.27.0 | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
 | 2.26.0 | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
 | 2.25.0 | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
@@ -113,6 +114,17 @@ python -m http.server 5291
 ```bash
 node tools/test.js
 ```
+
+Et pour mesurer une courbe plutôt qu'un état :
+
+```bash
+node tools/rythme.js 45
+```
+
+Un joueur modèle — quatre clics par seconde, les bêtes menées à l'âge adulte, toujours l'achat
+le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est le seul moyen de
+voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
+rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
 Quarante-et-un scénarios, six cent quatre-vingt-douze vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
@@ -520,7 +532,7 @@ et seul le paiement le débloque.
 
 | Âge | Niveaux | Croissance | Un niveau dure | Valeur par niveau | Péage | Vaut, mûre |
 |---|---|---|---|---|---|---|
-| enfant | 1 → **15** | 1 min 30 | 6 s | +14 % | — | 40 |
+| enfant | 1 → **15** | 2 min 30 | 10 s | +14 % | — | 30 |
 | adolescent | 16 → **35** | 3 min | 9 s | +10,5 % | 200 | 500 |
 | adulte | 36 → **65** | 15 min | 30 s | +6,8 % | 3 000 | 6 000 |
 | ancien | 66 → **85** | 1 h | 3 min | +10,5 % | 40 000 | 80 000 |
@@ -534,12 +546,40 @@ durées, elles, ne bougent jamais.
 que l'enfance défile pendant que la légende se mérite. Sans aucune automatisation : mûre à
 1 min 30, adulte à 4 min 30, ancienne à 19 min, légende à 1 h 20, niveau 100 à 7 h 20.
 
-**L'âge enfant a été doublé en 2.18.0.** Il durait 45 secondes, soit **trois clics par
-niveau** : un niveau qui tombe en trois clics n'est pas un palier, c'est une case qu'on
-traverse, et la première vie d'une bête se bouclait avant qu'on ait eu le temps de la
-regarder. À six clics par niveau, le premier âge veut dire quelque chose. Le coût économique
-est petit — l'enfance ne pèse qu'un dixième de la croissance d'une commune menée jusqu'à
-l'âge adulte.
+#### L'ouverture, resserrée trois fois
+
+L'âge enfant a été rallongé deux fois : 45 s à l'origine, 90 s en 2.18.0, **150 s depuis la
+2.29.0** — dix clics par niveau au lieu de trois. Un niveau qui tombe en trois clics n'est pas
+un palier, c'est une case qu'on traverse.
+
+Mais allonger ne suffisait pas. **Mesuré au banc** sur un joueur qui clique quatre fois par
+seconde, mène ses bêtes à l'âge adulte et achète toujours le moins cher à sa portée :
+
+| | avant | après |
+|---|---|---|
+| première vente | 34 s | 49 s |
+| Force du clic | 1 min 08 | **3 min 17** |
+| Couveuse | 1 min 25 | **4 min 08** |
+| Éleveur | 4 min 48 | **15 min 59** |
+| Incubateur | 5 min 39 | 18 min 48 |
+| première évolution | 7 min 57 | 28 min 30 |
+| Acheteur automatique | 14 min 32 | 40 min 56 |
+
+Le jeu passait en pilote automatique **avant qu'on ait compris ce qu'on automatisait** : la
+couveuse tombait à une minute vingt-cinq, et les cent premiers clics — les seuls où l'on
+regarde vraiment une bête — duraient une demi-minute.
+
+**Deux leviers tirés ensemble : on gagne moins, et on clique plus.** L'œuf commun passe de 12
+à 18 et sa couvaison de 30 à 45 secondes ; une commune mûre ne vaut plus 40 mais 30. La marge
+d'un cycle tombe de 28 à 12 pièces — deux fois et demie moins — pour une fois et demie plus de
+travail. Le tout se multiplie : trois fois plus long sur toute l'ouverture.
+
+**Ce qu'on ne touche pas, et pourquoi.** Le prix des automates : ils n'étaient pas trop bon
+marché, c'est le revenu qui arrivait trop vite, et les monter aurait déplacé le mur sans
+changer le rythme. Et **l'adolescent** — une première version le resserrait aussi, la mesure a
+tranché : au bout d'une demi-heure le joueur n'avait toujours qu'un enclos. Ces tables se
+multiplient entre elles, ralentir deux âges ne ralentit pas deux fois mais indéfiniment. Le
+problème n'était que dans les cent premiers clics.
 
 **Chaque niveau paie.** Le multiplicateur de valeur suit une courbe géométrique de 0,15 à 1,00
 à l'intérieur de chaque tranche : un niveau vaut donc entre +7 % et +14 % de prix de vente. Il
@@ -636,7 +676,7 @@ garantit.
 
 | Œuf | Prix | Couvaison | commune | rare | épique | mythique | chance de monter |
 |---|---|---|---|---|---|---|---|
-| Œuf commun | 12 | 30 s | 99,9 % | 0,1 % | — | — | 1 sur 1 000 |
+| Œuf commun | 18 | 45 s | 99,9 % | 0,1 % | — | — | 1 sur 1 000 |
 | Œuf rare | 300 000 | 3 min | — | 99,9 % | 0,1 % | — | 1 sur 1 000 |
 | Œuf épique | 7,50 M | 12 min | — | — | 99,9 % | 0,1 % | 1 sur 1 000 |
 | Œuf mythique | 180 M | 45 min | — | — | — | 100 % | — |
