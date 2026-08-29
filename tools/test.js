@@ -1294,15 +1294,32 @@ scenario('pension — deux chimères donnent n’importe quoi, sauf une chimère
   ok('le couple est reconnu', jeu.couple2Jokers(c1, c2));
   ok('mais pas avec autre chose', !jeu.couple2Jokers(c1, loup));
 
-  /* DEUX CHIMÈRES NE FONT JAMAIS UNE CHIMÈRE, et jamais une merveille non plus : une
-     merveilleuse tirée par un couple générique viderait les recettes de leur sens. */
+  /* DEUX CHIMÈRES NE FONT JAMAIS UNE CHIMÈRE. Tout le reste sort, de la plus commune des
+     bêtes jusqu'à une merveille — celle-là une fois sur cinquante. */
   const tire = {};
-  for (let i = 0; i < 20000; i++) { const l = jeu.ligneeDe(c1, c2); tire[l] = (tire[l] || 0) + 1; }
+  const N = 200000;
+  for (let i = 0; i < N; i++) { const l = jeu.ligneeDe(c1, c2); tire[l] = (tire[l] || 0) + 1; }
   eq('jamais de chimère', tire.chimere, undefined);
-  eq('jamais de merveilleuse',
-     Object.keys(tire).filter(k => jeu.LINE_BY_KEY[k].rarity === 'merveilleuse').length, 0);
-  eq('tout le reste sort', Object.keys(tire).length, jeu.LINES.length - 3);
-  eq('et le sac le dit', jeu.poolJoker.length, jeu.LINES.length - 3);
+  eq('tout le reste sort', Object.keys(tire).length, jeu.LINES.length - 1);
+  eq('le sac ordinaire exclut les secrets et le joker',
+     jeu.poolJoker.length, jeu.LINES.length - 1 - jeu.LINES.filter(l => l.rarity === 'merveilleuse').length);
+
+  const merveilles = jeu.LINES.filter(l => l.rarity === 'merveilleuse')
+    .reduce((n, l) => n + (tire[l.key] || 0), 0) / N;
+  ok('une merveille une fois sur cinquante',
+     Math.abs(merveilles - jeu.JOKER_MERVEILLE) < 0.003, (merveilles * 100).toFixed(2) + ' %');
+
+  /* LA ROUTE RESTE PIRE QUE N'IMPORTE QUELLE RECETTE, et c'est la condition pour que les
+     recettes gardent un sens : on ne chasse pas une merveille aux chimères, on en trouve une. */
+  const parJoker = k => (tire[k] || 0) / N / (jeu.dureePension(c1, c2) / 3600);
+  for (const donne of [...new Set(jeu.RECETTES.map(r => r.donne))]) {
+    /* La MEILLEURE route, pas toutes : l'accident est fait pour être mauvais, et il l'est
+       naturellement plus que le joker — c'est cohérent, tous deux sont des rencontres. */
+    const best = Math.max(...jeu.RECETTES.filter(r => r.donne === donne)
+                                         .map(r => r.chance / (r.duree / 3600)));
+    ok(donne + ' : sa recette bat le joker', best > parJoker(donne) * 2,
+       best.toFixed(4) + ' vs ' + parJoker(donne).toFixed(4));
+  }
 
   // hors joker, l enfant reste l un des deux parents
   const vus = new Set();
@@ -1313,6 +1330,46 @@ scenario('pension — deux chimères donnent n’importe quoi, sauf une chimère
   jeu.pensionA = c1.id; jeu.pensionB = c2.id; jeu.refresh();
   ok('et l’écran l’annonce', /n’importe quelle lignée/.test(ditPension(jeu)), ditPension(jeu));
   ok('sans prétendre à une recette', !/autre chose/.test(ditPension(jeu)), ditPension(jeu));
+});
+
+scenario('tarasque — la seule merveille sans recette', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [c1, c2] = couple(jeu, 'chimere', 'chimere');
+
+  const t = jeu.LINE_BY_KEY.tarasque;
+  ok('elle existe', !!t);
+  eq('elle est du rang secret', t.rarity, 'merveilleuse');
+  eq('elle a cinq formes', t.forms.length, jeu.AGES.length);
+  ok('elle a ses étiquettes', !!jeu.ETIQUETTES.tarasque);
+
+  /* AUCUNE RECETTE NE LA DONNE, et c'est ce qui la distingue des deux autres : on ne la
+     cherche pas, elle arrive. */
+  ok('aucune recette ne la produit', !jeu.RECETTES.some(r => r.donne === 'tarasque'));
+  ok('et elle n’est dans aucun couple de recette',
+     !jeu.RECETTES.some(r => r.a === 'tarasque' || r.b === 'tarasque'));
+
+  // elle prend la moitié du sac secret à elle seule
+  const tire = {};
+  const N = 200000;
+  for (let i = 0; i < N; i++) { const l = jeu.ligneeDe(c1, c2); tire[l] = (tire[l] || 0) + 1; }
+  const secret = jeu.LINES.filter(l => l.rarity === 'merveilleuse')
+    .reduce((n, l) => n + (tire[l.key] || 0), 0);
+  ok('la moitié des merveilles tirées sont des tarasques',
+     Math.abs((tire.tarasque || 0) / secret - 0.5) < 0.05,
+     ((tire.tarasque || 0) / secret).toFixed(3));
+  ok('elle sort plus souvent que chacune des autres',
+     jeu.LINES.filter(l => l.rarity === 'merveilleuse' && l.key !== 'tarasque')
+       .every(l => (tire[l.key] || 0) < tire.tarasque));
+
+  /* ELLE RESTE SOUS LE SECRET tant qu'on n'en a pas vu une, comme les deux autres. */
+  eq('le rang est inconnu', jeu.rareteConnue('merveilleuse'), false);
+  jeu.pensionA = c1.id; jeu.pensionB = c2.id; jeu.refresh();
+  ok('et la phrase ne le dit pas', !/merveilleuse/.test(ditPension(jeu)), ditPension(jeu));
+  s.seen['tarasque:1'] = 1;
+  jeu.refresh();
+  ok('une fois connue, la phrase chiffre le sac',
+     /2 % de merveilleuse/.test(ditPension(jeu)), ditPension(jeu));
 });
 
 scenario('recettes — un mythique par famille, et la chimère n’en est pas une', () => {
@@ -1413,7 +1470,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   jeu.refresh();
   eq('le rang est connu', jeu.rareteConnue('merveilleuse'), true);
   eq('la cinquième section apparaît', grilles().length, 5);
-  eq('le compte monte à 145', jeu.formesVisibles(), 145);
+  eq('le compte monte à 150', jeu.formesVisibles(), 150);
   ok('le trophée est pris', !!s.trophees.merveille);
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.3.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.4.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.3.0** | trois améliorations globales : le Renom, la Patience et l'Ardeur |
+| **beta 1.4.0** | la Tarasque : une merveille sans recette, que seules deux chimères peuvent donner |
+| beta 1.3.0 | trois améliorations globales : le Renom, la Patience et l'Ardeur |
 | beta 1.2.0 | trois primes pour la pension : un nid plus chaud, un sang plus fort, un second nid |
 | beta 1.1.0 | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
 | beta 1.0.2 | un nid sans place ne se laisse plus remplir |
@@ -205,7 +206,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 29 lignées et leurs 145 formes, du têtard à Sun Wukong
+- 30 lignées et leurs 150 formes, du têtard à la Tarasque
 - **Le bonheur d'une bête** : la garder en scène lui fait offrir, de loin en loin, quelques secondes de clic double
 - **Un mode histoire** : le jeu se déplie une marche à la fois, et s'explique en dix notes
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
@@ -222,7 +223,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
-- Collection des 145 formes découvertes
+- Collection des 150 formes découvertes
 - **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
   du bonus, et tout le reste repart de zéro
 - **La pension** : deux bêtes adultes confiées pondent un œuf dont la lignée est promise — et
@@ -281,7 +282,7 @@ l'ascension, et elle ne peut pas revenir en arrière.
 #### Ce qui n'a pas encore de sens ne s'affiche pas
 
 La vue de l'œuf tombait à la première éclosion et **tout le reste arrivait d'un coup** : trois
-boutons de tri pour une seule bête, une collection de 145 cases dont une remplie, une ligne de
+boutons de tri pour une seule bête, une collection de 150 cases dont une remplie, une ligne de
 boosts annonçant des multiplicateurs qu'on n'a pas, des compteurs « 1 / 1 » qui ne comptent
 rien, et un pied de page sur la sauvegarde locale. Beaucoup de détails, aucun utilisable.
 
@@ -802,7 +803,7 @@ auraient rendu plus tard. L'épithète se dégonfle d'elle-même — un *adulte 
 
 ### Raretés
 
-**La pyramide compte 29 lignées : 10 communes, 10 rares, 4 épiques, 3 mythiques et 2 merveilleuses.** L'ère rare
+**La pyramide compte 30 lignées : 10 communes, 10 rares, 4 épiques, 3 mythiques et 3 merveilleuses.** L'ère rare
 est passée de quatre à dix en alpha 2.3.0 — les communes avaient été étoffées au fil du temps
 pendant que les autres ères restaient à leur compte d'origine, si bien qu'on voyait la même
 bête un œuf sur quatre à l'ère rare contre une sur dix à l'ère commune, alors que la rare dure
@@ -1562,6 +1563,10 @@ formule ordinaire, qui est calibrée pour l'élevage.
 | **Kitsune** | Ouroboros × Sphinx | 12 h | 1 % | 34 j |
 | | Ouroboros × Chat | 5 h | 0,1 % | 144 j |
 | **Sun Wukong** | Golem × Golem | 1 h | 0,1 % | 29 j |
+| **Tarasque** | Chimère × Chimère | 16 h | 1 % | 46 j |
+
+La Tarasque n'a pas de recette : elle sort du [joker](#la-chimère-est-un-joker), et de rien
+d'autre.
 
 **Une recette n'est pas une porte, c'est un tirage.** Le couple pond normalement — la lignée
 d'un des deux parents, comme n'importe quel couple — et la merveille sort par-dessus. Rien à
@@ -1602,20 +1607,50 @@ le 0,1 % jouable — 29 jours au lieu de 115 si on l'avait laissée à quatre he
 couple du jeu dont l'enfant n'est ni l'un ni l'autre des parents, et c'est la chose la plus
 chimérique qu'elles puissent faire — une chimère est faite de morceaux d'autres bêtes.
 
-Deux exclusions, et elles disent chacune quelque chose :
+**De la plus commune des bêtes jusqu'à une merveille.** Le sac s'ouvre sur le rang secret une
+fois sur cinquante : assez bas pour que ça n'arrive jamais quand on l'attend, assez haut pour
+que ça finisse par arriver. Deux mythiques immobilisées seize heures est le couple le plus cher
+du jeu ; il n'aurait aucun sens qu'il ne puisse rendre que du crapaud.
 
-- **jamais une chimère.** « Deux chimères ne font jamais une chimère » tient en six mots, et
-  c'est la règle qu'on retient ;
-- **jamais une merveilleuse.** Une merveille tirée au hasard par un couple générique viderait
-  les recettes de leur sens : le rang tient parce qu'il n'y a qu'une porte.
+Une seule exclusion, et c'est la règle qu'on retient : **jamais une chimère.**
 
-Reste vingt-six lignées à parts égales, seize heures d'attente, et deux mythiques immobilisées
-pendant ce temps. **C'est une loterie, pas un placement** : la valeur moyenne de ce qui sort
-est de l'ordre de vingt millions, contre plus de huit cents milliards de rente abandonnée. La
+**Le joker reste pire que n'importe quelle recette**, et c'est la condition pour que les
+recettes gardent un sens — 0,031 %/h par les chimères contre 0,083 pour la Kitsune et 0,100
+pour Wukong. *On ne chasse pas une merveille aux chimères, on en trouve une.*
+
+Pour le reste, **c'est une loterie et pas un placement** : la valeur moyenne de ce qui sort est
+de l'ordre de vingt millions, contre plus de huit cents milliards de rente abandonnée. La
 Chimère ne se croise pas pour gagner de l'argent, elle se croise pour voir ce qui sort.
 
 L'écran l'annonce, contrairement aux recettes : *« n'importe quelle lignée du bestiaire, sauf
-la leur »*. Ce n'est pas un secret, c'est la bête.
+la leur »*. Ce n'est pas un secret, c'est la bête. Le pourcentage de merveille, lui, ne
+s'affiche qu'une fois le rang connu.
+
+#### La Tarasque — la seule merveille sans recette
+
+Les deux autres se **cherchent** : on compose un couple précis et on attend. Celle-ci ne se
+cherche pas, elle **arrive** — deux chimères confiées pour voir ce qui sort, et un jour c'est
+elle. Elle prend la moitié du sac secret à elle seule, parce que c'est sa seule porte.
+
+Elle est la fille des chimères au sens le plus littéral : tête de lion, six pattes d'ours,
+carapace de tortue, queue de scorpion, écailles, et elle sort du Rhône. Là où la Chimère
+mythique est un composite qu'on regarde, **la Tarasque est un composite qu'on compte** — et
+c'est son arc : à chaque âge on reconnaît une bête de plus en elle.
+
+| Âge | Forme |
+|---|---|
+| 1 | Tarasque |
+| 2 | Tarasque à six pattes |
+| 3 | Tarasque écaillée |
+| 4 | Tarasque du Rhône |
+| 5 | Tarasque, la bête de Tarascon |
+
+Son histoire finit mal et bien à la fois, ce qui est rare : sainte Marthe l'apaise d'un
+cantique, les gens de la ville la tuent pendant qu'elle se laisse faire, puis rebaptisent la
+ville de son nom. **Le dernier âge ne porte donc pas sa taille mais leurs armes.**
+
+Ce que ça coûte : 46 jours de médiane, 31 avec le Nid tiède, **15 avec le Second nid en plus**.
+C'est la première chose du jeu qui donne une raison d'acheter les deux.
 
 #### Un mythique par famille, et la Chimère n'en est pas une
 
@@ -1646,7 +1681,7 @@ Elle fuyait par cinq endroits à la fois, et aucun n'est grave pris seul :
 | Ce qui fuyait | Ce que ça disait |
 |---|---|
 | une section de collection vide | qu'il existe un cinquième rang, et qu'il compte dix cases |
-| le dénominateur `/ 145` | qu'il manque dix formes qu'on ne peut pas atteindre |
+| le dénominateur `/ 150` | qu'il manque quinze formes qu'on ne peut pas atteindre |
 | le trophée « Une merveille », annoncé | *« Aucun œuf n'en donne — il faut la pension, et le bon couple »* |
 | la ligne de statistiques `0 / 2` | qu'il y a exactement deux bêtes à trouver |
 | les trois consignes du marchand | « les merveilleuses », à qui n'en a jamais vu |
@@ -1665,7 +1700,7 @@ mais à ce moment-là la pension l'a déjà pondu, et le savoir une heure trente
 partie de la récompense.
 
 À la première éclosion, **tout s'ouvre d'un coup** : la section apparaît avec ses deux lignées,
-le compteur passe à `/ 145`, le trophée tombe, la ligne de statistiques arrive et les trois
+le compteur passe à `/ 150`, le trophée tombe, la ligne de statistiques arrive et les trois
 consignes du marchand reviennent.
 
 #### Ce que la phrase dit, et ce qu'elle tait
@@ -1781,11 +1816,11 @@ replie séparément**.
 
 C'est la réponse principale au défilement sur un petit écran, et la seule qui tienne à toutes
 les tailles : le problème n'est pas la densité mais le **nombre de choses affichées en même
-temps**, et aucune compaction ne rattrape six panneaux dont un porte 145 cases. Fermer ce
+temps**, et aucune compaction ne rattrape six panneaux dont un porte 150 cases. Fermer ce
 qu'on ne regarde pas laisse la décision au joueur plutôt qu'à un point de rupture.
 
 Replié, il ne reste que la barre de titre — **et son compteur**, qui est justement ce qu'on
-vient lire du coin de l'œil sans ouvrir : `6 / 145` pour la collection, `5 / 21` pour les
+vient lire du coin de l'œil sans ouvrir : `6 / 150` pour la collection, `5 / 24` pour les
 primes.
 
 Deux détails d'implémentation qui se voient dans le code : le bouton n'enveloppe **que le

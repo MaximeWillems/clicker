@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.3.0';
+const VERSION = 'beta 1.4.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -133,7 +133,7 @@ const RARITY = {
 
 /* ── UN RANG SECRET N'EXISTE PAS TANT QU'ON N'EN A PAS VU UN ───────────────────
    La cinquième rareté fuitait par cinq endroits à la fois : une section de collection vide
-   avec dix cases grises, un dénominateur à 145 au lieu de 135, un trophée qui expliquait la
+   avec ses cases grises, un dénominateur gonflé de quinze formes, un trophée qui expliquait la
    recette en toutes lettres, une ligne de statistiques « 0 / 2 », et trois menus du marchand
    qui parlaient de bêtes que personne n'avait jamais vues.
 
@@ -713,6 +713,7 @@ const ETIQUETTES = {
      d'autre que la pierre, exactement comme le golem dont il sort. La règle qui l'a fait naître
      est celle qui l'isole ensuite, et c'est bien. */
   kitsune:    ['terre', 'poil'],     wukong:     ['terre', 'pierre'],
+  tarasque:   ['eau',   'écaille'],
 };
 
 /* CE QUI RALENTIT UNE COUVAISON, ET POURQUOI CE FACTEUR-LÀ.
@@ -1340,6 +1341,24 @@ const LINES = [
   { key: 'wukong', name: 'Sun Wukong', rarity: 'merveilleuse', forms: [
     ['Singe de pierre', '🗿'], ['Roi des singes', '🐒'], ['Sun Wukong', '🐵'],
     ['Sun Wukong sous la montagne', '⛰️'], ['Sun Wukong, l’égal du Ciel', '☁️'] ] },
+
+  /* LA TARASQUE — LA SEULE MERVEILLE SANS RECETTE. Les deux autres se cherchent : on compose
+     un couple précis et on attend. Celle-ci ne se cherche pas, elle ARRIVE — deux chimères
+     confiées pour voir ce qui sort, et un jour c'est elle. C'est la seule porte qu'elle ait, et
+     `poolJoker` est le seul endroit du code qui la connaisse.
+
+     Elle est la fille des chimères au sens le plus littéral : tête de lion, six pattes d'ours,
+     carapace de tortue, queue de scorpion, écailles, et elle sort du Rhône. Là où la Chimère
+     mythique est un composite qu'on regarde, la Tarasque est un composite qu'on COMPTE — et
+     c'est son arc : à chaque âge on reconnaît une bête de plus en elle.
+
+     Son histoire finit mal et bien à la fois, ce qui est rare : sainte Marthe l'apaise d'un
+     cantique, les gens de la ville la tuent pendant qu'elle se laisse faire, puis rebaptisent
+     la ville de son nom. Le dernier âge ne porte donc pas sa taille mais LEURS ARMES. */
+  { key: 'tarasque', name: 'Tarasque', rarity: 'merveilleuse', forms: [
+    ['Tarasque', '🐾', 'f'], ['Tarasque à six pattes', '🦂', 'f'],
+    ['Tarasque écaillée', '🐢', 'f'], ['Tarasque du Rhône', '🌊', 'f'],
+    ['Tarasque, la bête de Tarascon', '⚜️', 'f'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
@@ -4776,10 +4795,32 @@ function accoupler(a, b) {
    une chimère » est une règle qui tient en six mots, et c'est la chose la plus chimérique
    qu'elles puissent faire.
 
-   LES RANGS SECRETS SONT HORS DU SAC. Une merveille tirée au hasard par un couple générique
-   viderait les recettes de leur sens : le rang tient parce qu'il n'y a qu'une porte. */
+   DE LA PLUS COMMUNE DES BÊTES JUSQU'À UNE MERVEILLE. Le sac s'ouvre sur le rang secret une
+   fois sur cinquante — assez bas pour que ça n'arrive jamais quand on l'attend, assez haut
+   pour que ça finisse par arriver. Deux mythiques immobilisées seize heures est le couple le
+   plus cher du jeu ; il n'aurait aucun sens qu'il ne puisse rendre que du crapaud.
+
+   LA ROUTE RESTE PIRE QUE N'IMPORTE QUELLE RECETTE, et c'est la condition pour que les
+   recettes gardent un sens : 0,031 %/h par le joker contre 0,083 pour la Kitsune et 0,100
+   pour Wukong. On ne CHASSE pas une merveille aux chimères, on en trouve une.
+
+   LA TARASQUE FAIT EXCEPTION : elle prend la moitié du sac secret à elle seule, parce que
+   c'est sa seule porte. Elle est la fille des chimères, et rien d'autre ne la donne. */
+const JOKER_MERVEILLE = 0.02;
 const poolJoker = LINES.filter(l => !RARITY[l.rarity].secret && !l.joker);
-const ligneeAuHasard = () => poolJoker[Math.floor(Math.random() * poolJoker.length)].key;
+const poolSecret = LINES.filter(l => RARITY[l.rarity].secret);
+const EXCLUSIVE_JOKER = 'tarasque';
+
+function ligneeAuHasard() {
+  if (Math.random() < JOKER_MERVEILLE) {
+    // une fois sur deux la Tarasque, sinon l'une des autres merveilles au hasard
+    if (Math.random() < 0.5) return EXCLUSIVE_JOKER;
+    const autres = poolSecret.filter(l => l.key !== EXCLUSIVE_JOKER);
+    if (autres.length) return autres[Math.floor(Math.random() * autres.length)].key;
+    return EXCLUSIVE_JOKER;
+  }
+  return poolJoker[Math.floor(Math.random() * poolJoker.length)].key;
+}
 const couple2Jokers = (a, b) => !!(a && b && lineOf(a).joker && lineOf(b).joker);
 
 function ligneeDe(a, b) {
@@ -5174,7 +5215,9 @@ function renderPension() {
                                                           : 'Elles n’ont rien en commun') +
       ' · ' + fmtTime(t) + ' · ' +
       (couple2Jokers(a, b)
-        ? 'n’importe quelle lignée du bestiaire, sauf la leur'
+        ? 'n’importe quelle lignée du bestiaire, sauf la leur' +
+          (rareteConnue('merveilleuse')
+            ? ' — et ' + dec(JOKER_MERVEILLE * 100, 0) + ' % de merveilleuse' : '')
         : ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
                    : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
                      ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +

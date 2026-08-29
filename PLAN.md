@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.3.0 · sauvegarde v16 · 10 lignées illustrées sur 29
+    aujourd'hui : beta 1.4.0 · sauvegarde v16 · 10 lignées illustrées sur 30
 
 ---
 
@@ -115,7 +115,7 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **Les dix-sept dessins** | rien | — |
-| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur huit bêtes ? |
+| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
 | **L'animation du cinquième âge** — une planche par merveille | les dessins | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 

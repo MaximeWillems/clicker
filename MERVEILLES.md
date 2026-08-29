@@ -9,9 +9,9 @@ dessinées »* — et n'en gardait au départ que le milieu, les recettes étant
 ne savait pas quelles bêtes on dessine. **Deux d'entre elles ont éclos depuis** : voir
 [les recettes](#les-recettes), en fin de document, qui n'est plus une mise de côté.
 
-    aujourd'hui : 29 lignées · 145 formes · 50 dessins · 5 raretés
+    aujourd'hui : 30 lignées · 150 formes · 50 dessins · 5 raretés
 
-**Les huit merveilles sont arrêtées**, plus deux lignées qui rejoignent le rang mythique. Il ne
+**Les huit merveilles du casting sont arrêtées**, plus la Tarasque venue après coup, plus deux lignées qui rejoignent le rang mythique. Il ne
 reste aucune décision de casting : ce qui suit est une liste de travail, pas une sélection.
 
 **La Kitsune et Sun Wukong sont dans le jeu depuis la 3.1.0**, en glyphe — 🦊 et 🗿🐒🐵⛰️☁️ — avec
@@ -52,7 +52,7 @@ chacun se livre en cinq PNG, et le moteur n'apprend rien.
 | **Surtr** | rien chez lui — seulement ce que sa lame éclaire |
 | **Catoblépas** | l'herbe morte autour, jusqu'au geste final |
 | **Nuckelavee** | la terre qui flétrit derrière lui |
-| **Sun Wukong** | lui-même, et les rangs qui se dressent en face |
+| **Sun Wukong** | lui-même — le seul du rang qui ait une enfance |
 | **Kitsune** | le nombre de queues qu'elle montre |
 | **Olgoï-Khorkhoï** | le ver lui-même — sa taille et sa pose |
 | **Tiamat** | ce qui nage en elle |
@@ -100,15 +100,51 @@ recette. Rien à écrire à la main, bête par bête.
 
 | Nom | Origine | Plan de corps | Ce qui grandit |
 |---|---|---|---|
+| **Tarasque** | Provence | six bêtes en une | le nombre qu'on en reconnaît |
 | **Surtr** | nordique | un être de feu | ce que sa lame éclaire |
 | **Catoblépas** | Éthiopie de Pline | un bovidé | ce qui meurt autour |
 | **Nuckelavee** | Orcades | un cavalier d'une seule chair | ce qui flétrit devant lui |
-| **Sun Wukong** | chinoise | un simien | lui-même, et ce qui se dresse en face |
+| **Sun Wukong** | chinoise | un simien | lui-même |
 | **Kitsune** | japonaise | un éventail de queues | ce qu'elle cesse de cacher |
 | **Olgoï-Khorkhoï** | mongole | un tube sans tête | sa taille et sa pose |
 | **Tiamat** | mésopotamienne | un contenant | ce qui nage en elle |
 | **Typhon** | grecque | une foule de gueules | leur nombre |
 | ~~Kumbhakarna~~ | inde | un géant endormi | *écarté* |
+
+### Tarasque — celle qu'on compte
+
+**Elle n'était pas dans le casting**, et c'est la seule du document dans ce cas. Elle est
+arrivée par le besoin : quand la Chimère est devenue un joker en `beta 1.1.0`, ce joker n'avait
+pas de prix à donner. Une loterie qui ne rend que ce qu'on peut acheter n'est pas une loterie.
+
+Six bêtes en une — tête de lion, six pattes d'ours, carapace de tortue, queue de scorpion,
+écailles, et elle sort du Rhône. Elle a dévoré les voyageurs jusqu'à ce que sainte Marthe
+l'apaise d'un cantique ; les gens de Tarascon l'ont tuée pendant qu'elle se laissait faire,
+puis ont donné son nom à leur ville.
+
+**Elle est la fille des chimères, littéralement.** Là où la Chimère mythique est un composite
+qu'on *regarde*, la Tarasque est un composite qu'on **compte** : à chaque âge on reconnaît une
+bête de plus en elle. C'est le seul arc du bestiaire dont le sujet soit un *nombre de parties*
+plutôt qu'une taille ou un décor.
+
+| Âge | Forme |
+|---|---|
+| 1 | Tarasque |
+| 2 | Tarasque à six pattes |
+| 3 | Tarasque écaillée |
+| 4 | Tarasque du Rhône |
+| 5 | Tarasque, la bête de Tarascon |
+
+**Le cinquième âge ne porte pas sa taille mais les armes de la ville** — c'est le seul du rang
+dont la forme finale soit un emblème humain, et c'est fidèle : son histoire ne finit pas par
+elle, elle finit par ceux qui se sont nommés d'après elle.
+
+Ce qui bouge au dernier âge : **les six bêtes, chacune à son rythme** — la queue de scorpion,
+la tête de lion, les pattes. Le corps, lui, ne bouge pas, comme partout ailleurs dans le rang.
+
+**Sa dérogation à la règle 2** est assumée : « un plan de corps que rien d'autre n'occupe » —
+or la Chimère mythique occupe déjà le composite. C'est précisément le point. Ce qui l'en
+sépare tient au dessin : la Chimère se lit d'un coup, la Tarasque se lit en comptant.
 
 ### Surtr — celui qui attend la fin
 
@@ -396,7 +432,7 @@ comme il l'était sur les cinq âges. C'est ce qui l'empêche de devenir une bê
 | **Surtr** | la lumière de la lame monte et retombe | lui |
 | **Catoblépas** | l'herbe flétrit en cercles vers l'extérieur | la bête, tête levée |
 | **Nuckelavee** | le sang noir circule dans les veines jaunes | le cavalier et sa monture |
-| **Sun Wukong** | les rangs du Ciel avancent d'un pas, sans fin | le singe assis |
+| **Sun Wukong** | le nuage roule sous ses pieds, les plumes du cimier ondulent | lui |
 | **Kitsune** | les neuf queues respirent, déphasées | son corps et sa face |
 | **Olgoï-Khorkhoï** | les anneaux se contractent en vague le long du corps | sa silhouette |
 | **Tiamat** | les onze dérivent en elle | son corps |
@@ -488,6 +524,10 @@ pour l'élevage. Une merveille n'est pas de l'élevage.
 | **Kitsune** | Ouroboros × Sphinx | 12 h | 1 % | 34 j |
 | | Ouroboros × Chat | 5 h | 0,1 % | 144 j |
 | **Sun Wukong** | Golem × Golem | 1 h | 0,1 % | 29 j |
+| **Tarasque** | Chimère × Chimère | 16 h | 1 % | 46 j |
+
+**La Tarasque n'a pas de recette**, et c'est ce qui la définit : elle sort du joker, une fois
+sur cinquante quand deux chimères pondent, et de rien d'autre. Voir sa fiche plus haut.
 
 **Une recette n'est pas une porte, c'est un tirage.** Le couple pond normalement, et la
 merveille sort par-dessus. Rien à débloquer : on peut tomber dessus sans savoir, ce qui fait
