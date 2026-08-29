@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.4.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.6.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 16` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 17` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -67,7 +67,9 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.4.0** | la Tarasque : une merveille sans recette, que seules deux chimères peuvent donner |
+| **beta 1.6.0** | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
+| beta 1.5.0 | `tools/pixel.js` : une planche de sprites devient une grille de caractères, corrigeable à la main |
+| beta 1.4.0 | la Tarasque : une merveille sans recette, que seules deux chimères peuvent donner |
 | beta 1.3.0 | trois améliorations globales : le Renom, la Patience et l'Ardeur |
 | beta 1.2.0 | trois primes pour la pension : un nid plus chaud, un sang plus fort, un second nid |
 | beta 1.1.0 | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
@@ -219,7 +221,8 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rien ne se nourrit contre des pièces** : une bête grandit au clic et au temps, jamais à
   l'argent. Une bête mûre continue de grossir indéfiniment
 - Incubateurs et enclos, à prix croissant
-- Sept améliorations à niveaux : force du clic, couveuse, éleveur, mangeoire, puis Renom, Patience et Ardeur
+- Quatre améliorations à niveaux : force du clic, couveuse, éleveur, mangeoire
+- Trente-six primes, achats uniques répartis de 250 pièces à 15 milliards
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
@@ -555,37 +558,47 @@ toutes les cartes, et **l'album ne se serait jamais repeint après une fusion**.
 
 ### Les trois globales
 
-Quatre améliorations achètent une **capacité** — cliquer plus fort, couver, faire grandir,
-engraisser — et une fois qu'on les a, il ne reste qu'à les monter. Trois autres achètent un
-**coefficient** : elles ne font rien de neuf, elles rendent meilleur ce qu'on fait déjà.
+Trois axes qui ne se recouvrent pas, **quatre primes chacun**, réparties sur toute la fin de
+partie. Cumulées, les quatre d'une famille font **cinquante pour cent**.
 
-| Amélioration | Premier niveau | Ce qu'elle porte |
+| Axe | Ce qu'il porte | Les quatre primes |
 |---|---|---|
-| **Renom** | 7 515 | la **valeur** — ce qu'une bête se vend, et donc ce qu'elle rapporte |
-| **Patience** | 18 036 | la **rente** seule — la seule amélioration qui paie pour ne rien faire |
-| **Ardeur** | 45 090 | le **temps** — couvaison, croissance, engraissement |
+| **valeur** | ce qu'une bête se vend, et donc ce qu'elle rapporte | Bouche à oreille · Enseigne peinte · Renom · On vient de loin |
+| **rente** | la rente seule — le seul axe qui paie pour ne rien faire | Litière profonde · Abreuvoir · Patience · Rien ne presse |
+| **vitesse** | le temps : couvaison, croissance, engraissement | Réveil matinal · Ardeur · Bon pied · Sans relâche |
 
-**Un pour cent par niveau, sur tout**, sans jamais désigner une rareté ni un automate. C'est
-ce qui manquait en fin de partie, où l'argent n'avait plus qu'un seul emploi : les enclos.
+De 600 000 à 15 milliards, la dernière étant la prime la plus chère du jeu.
 
-**Un pour cent est volontairement petit.** Ce sont des puits, pas des raccourcis, et leur
-intérêt vient du fait qu'ils se cumulent avec absolument tout — teinte, taille, négoce, cartes
-de l'album. Ce que ça coûte, mesuré sur le Renom :
+**Elles ont été des améliorations à niveaux pendant trois versions, et c'était le mauvais
+objet.** Une amélioration dit toujours la même chose — « Renom niv. 12 → niv. 13 » — et
+cinquante achats plus tard elle la dit encore : le défaut exact qui avait fait naître les
+primes. Un coefficient global n'a pas besoin de cent niveaux, il a besoin de **quatre
+moments** : quatre primes nommées, chacune disant une chose et se taisant.
 
-| Ce qu'on veut | Ce que ça coûte |
-|---|---|
-| +10 % | 1,36 M |
-| +30 % | 580 M cumulés |
-| +50 % | 234 Md cumulés |
+Cinquante pour cent, c'est peu, et c'est voulu : ce sont des puits, pas des raccourcis, et
+leur intérêt vient du fait qu'ils se cumulent avec absolument tout — teinte, taille, négoce,
+cartes de l'album.
 
-**Elles meurent plus lentement que les quatre capacités** (×1,35 par palier contre ×1,65)
-parce qu'elles produisent moins par niveau. Une amélioration calée trop cher pour ce qu'elle
-rend n'est pas un choix difficile, c'est une case qu'on n'achète jamais.
+Une partie d'avant ne perd rien : les niveaux se convertissent en primes aux seuils de
+pour-cent cumulés (5, 15, 30, 50), **généreusement par principe**.
 
-**Les trois axes ne se recouvrent pas**, et c'est la seule chose à ne pas perdre en chemin :
-le Renom porte la valeur, la Patience la rente seule, l'Ardeur le temps. Trois façons de
-gagner, trois façons de jouer — vendre vite, garder longtemps, ou tout faire pousser plus
-vite.
+### La grille ne montre que les cinq prochaines
+
+Trente-six cases affichées d'un bloc, c'est un mur : les premières sont prises depuis
+longtemps et ne décident plus de rien, les dernières coûtent des milliards et ne décident pas
+encore. **Ce qui compte tient toujours dans les cinq suivantes.**
+
+C'est la même idée que [« la marche suivante »](#la-marche-suivante-éteinte) de la boutique,
+poussée d'un cran : on ne montre pas tout ce qui existe, on montre ce sur quoi porte la
+prochaine décision. Acheter la première fait monter la sixième.
+
+**Ce qui est pris n'est pas perdu** — un bouton du bandeau bascule la grille sur les primes
+déjà achetées. C'est une *consultation*, pas un choix : on va y relire ce qu'on a, jamais
+décider quoi que ce soit. D'où le bouton plutôt qu'une seconde grille toujours ouverte.
+
+Une prime conditionnée — les trois de la pension — n'entre pas dans le compte des cinq tant
+que son bâtiment n'existe pas. Et quand tout est pris, la grille bascule d'elle-même sur ce
+qu'on a, plutôt que de rester vide.
 
 ### Les trophées
 
@@ -1275,7 +1288,7 @@ Sans elle, on achetait des niveaux sans jamais voir ce qu'ils changeaient.
 Les deux premiers achats n'accélèrent pas la partie, ils **mettent le temps au travail** —
 c'est le moment précis où le jeu bascule de clicker à idle.
 
-Quatre améliorations sur sept se montent **niveau par niveau, sans plafond**. Le prix du
+Les quatre améliorations se montent **niveau par niveau, sans plafond**. Le prix du
 prochain niveau vaut `base × mult^niveau` : l'effet monte linéairement pendant que le prix
 double presque, donc chaque niveau se mérite et les rendements décroissent d'eux-mêmes.
 
@@ -1506,7 +1519,8 @@ première chose qu'un joueur ne comprend pas.
 | **Second nid** | 500 M | un couple de plus à la fois — la prime la plus chère du jeu |
 
 Les trois n'apparaissent qu'une fois **le bâtiment acheté** : trois cases qui parlent d'un
-panneau qu'on n'a pas encore encombrent la grille pour rien.
+panneau qu'on n'a pas encore encombrent la grille pour rien — et elles n'entrent pas non
+plus dans le compte des [cinq prochaines](#la-grille-ne-montre-que-les-cinq-prochaines).
 
 **Le Nid tiède ne raccourcit pas un couple déjà parti.** La durée est écrite au moment où le
 couple se forme ; sans ça la prime deviendrait un bouton « finis ma couvaison », ce qui est
@@ -1820,7 +1834,7 @@ temps**, et aucune compaction ne rattrape six panneaux dont un porte 150 cases. 
 qu'on ne regarde pas laisse la décision au joueur plutôt qu'à un point de rupture.
 
 Replié, il ne reste que la barre de titre — **et son compteur**, qui est justement ce qu'on
-vient lire du coin de l'œil sans ouvrir : `6 / 150` pour la collection, `5 / 24` pour les
+vient lire du coin de l'œil sans ouvrir : `6 / 150` pour la collection, `5 / 36` pour les
 primes.
 
 Deux détails d'implémentation qui se voient dans le code : le bouton n'enveloppe **que le

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.4.0 · sauvegarde v16 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.6.0 · sauvegarde v17 · 10 lignées illustrées sur 30
 
 ---
 
@@ -49,7 +49,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le clic** | 2.18 | un achat de clic se sent-il ? | oui — une seconde entière, et le premier âge ne s'évapore plus |
 | **Les compteurs** | 2.19 | le jeu se souvient-il de quelque chose ? | dix-sept nombres, cumulés sur le fichier |
 | **Les cartes** | 2.20 | l'ascension donne-t-elle envie ? | deux effets qui se voient dès la première seconde du cycle |
-| **Les primes** | 2.21 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | vingt achats uniques, chacun disant une seule chose |
+| **Les primes** | 2.21, beta 1.6 | acheter peut-il cesser d'être « niv. 5 → niv. 6 » ? | trente-six achats uniques, et la grille n'en montre que cinq à la fois |
 | **La collection** | 2.22 | 135 cases peuvent-elles se ranger ? | elle se replie, section par section |
 | **Le socle de la pension** | 2.23–2.24.1 | les cinq pièces s'emboîtent-elles ? | oui — écrites scellées, puis ouvertes sans une ligne à reprendre |
 | **Les écrans bas** | 2.24 | le jeu tient-il sur un portable ? | tout se replie, et deux ruptures en hauteur |

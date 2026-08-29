@@ -1601,37 +1601,42 @@ scenario('globales — trois axes qui ne se recouvrent pas', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e15; s.pens = 8;
   const c = bete(jeu, 'loup', 4, 20000);
-  const GRAIN = jeu.GRAIN;
 
-  const cles = ['renom', 'patience', 'ardeur'];
-  for (const k of cles) {
-    ok(k + ' est une amélioration à niveaux', !!jeu.UP_BY_KEY[k]);
-    eq(k + ' part de zéro', jeu.force(k), 0);
-    eq(k + ' — un coefficient neutre au départ', jeu.coef(k), 1);
+  /* TROIS FAMILLES DE QUATRE PRIMES, et la table décide de tout : une prime qui porte un
+     `bonus` entre dans le calcul sans qu'on touche à une ligne de moteur. */
+  const familles = { valeur: [], rente: [], vitesse: [] };
+  for (const p of jeu.PRIMES) for (const k of Object.keys(p.bonus || {})) familles[k].push(p);
+  for (const k of Object.keys(familles)) {
+    eq(k + ' — quatre primes', familles[k].length, 4);
+    eq(k + ' — cinquante pour cent en tout',
+       Math.round(familles[k].reduce((n, p) => n + p.bonus[k], 0) * 100), 50);
+    ok(k + ' — réparties sur toute la fin de partie',
+       Math.max(...familles[k].map(p => p.prix)) / Math.min(...familles[k].map(p => p.prix)) > 1000);
+    for (const p of familles[k]) eq(p.nom + ' ne porte qu’un axe', Object.keys(p.bonus).length, 1);
   }
+  for (const k of Object.keys(familles)) eq(k + ' — coefficient neutre au départ', jeu.coef(k), 1);
 
   const v0 = jeu.sellValue(c), r0 = jeu.renteOf(c);
   ok('la bête vaut et rapporte', v0 > 0 && r0 > 0);
 
-  /* LE RENOM PORTE LA VALEUR, donc la vente ET la rente qui en découle. */
-  s.up.renom = 10 * GRAIN;
+  /* LA VALEUR PORTE LA VENTE ET LA RENTE QUI EN DÉCOULE. */
+  s.primes['valeur-2'] = true; jeu.oublierPrimes();
   ok('la vente monte de dix pour cent',
      Math.abs(jeu.sellValue(c) / v0 - 1.1) < 0.001, jeu.sellValue(c) / v0);
   ok('et la rente suit toute seule',
      Math.abs(jeu.renteOf(c) / r0 - 1.1) < 0.001, jeu.renteOf(c) / r0);
-  s.up.renom = 0;
+  s.primes = {}; jeu.oublierPrimes();
 
-  /* LA PATIENCE NE PORTE QUE LA RENTE : c'est la seule amélioration qui paie uniquement
-     pour ne rien faire, et elle ne doit rien changer au prix de vente. */
-  s.up.patience = 10 * GRAIN;
+  /* LA RENTE NE PORTE QU'ELLE-MÊME : c'est le seul axe qui paie uniquement pour ne rien faire,
+     et il ne doit rien changer au prix de vente. */
+  s.primes['rente-2'] = true; jeu.oublierPrimes();
   eq('la vente ne bouge pas', jeu.sellValue(c), v0);
   ok('la rente monte seule',
      Math.abs(jeu.renteOf(c) / r0 - 1.1) < 0.001, jeu.renteOf(c) / r0);
-  s.up.patience = 0;
+  s.primes = {}; jeu.oublierPrimes();
 
-  /* L'ARDEUR PORTE LE TEMPS : couvaison, croissance, engraissement. */
-  s.up.couveuse = 3 * GRAIN; s.up.eleveur = 3 * GRAIN; s.up.mangeoire = 3 * GRAIN;
-  // une bête à part : on la remet à zéro entre deux mesures, et `c` ne doit pas bouger
+  /* LA VITESSE PORTE LE TEMPS : couvaison, croissance, engraissement. */
+  s.up.couveuse = 3 * jeu.GRAIN; s.up.eleveur = 3 * jeu.GRAIN; s.up.mangeoire = 3 * jeu.GRAIN;
   const jeune = bete(jeu, 'loup', 1, 0);
   const pousse = () => {
     s.incub[0] = { line: 'ouroboros', p: 0, kind: 'mythique' };
@@ -1640,41 +1645,102 @@ scenario('globales — trois axes qui ne se recouvrent pas', () => {
     return { oeuf: s.incub[0].p, bete: jeune.p };
   };
   const sans = pousse();
-  s.up.ardeur = 50 * GRAIN;
+  s.primes['vitesse-1'] = true; s.primes['vitesse-2'] = true;
+  s.primes['vitesse-3'] = true; s.primes['vitesse-4'] = true;
+  jeu.oublierPrimes();
   const avec = pousse();
   ok('la couvaison accélère de moitié',
      Math.abs(avec.oeuf / sans.oeuf - 1.5) < 0.001, avec.oeuf / sans.oeuf);
   ok('la croissance aussi',
      Math.abs(avec.bete / sans.bete - 1.5) < 0.001, avec.bete / sans.bete);
   eq('mais pas la valeur', jeu.sellValue(c), v0);
-  s.up.ardeur = 0;
 
-  /* ELLES MEURENT PLUS LENTEMENT que les quatre capacités, parce qu'elles rendent moins par
-     niveau : une amélioration calée trop cher pour ce qu'elle rend n'est pas un choix
-     difficile, c'est une case qu'on n'achète jamais. */
-  const capacite = jeu.UP_BY_KEY.eleveur.mult;
-  for (const k of cles) {
-    ok(k + ' monte moins vite que l’éleveur', jeu.UP_BY_KEY[k].mult < capacite,
-       jeu.UP_BY_KEY[k].mult + ' vs ' + capacite);
-    ok(k + ' coûte plus cher que la mangeoire',
-       jeu.UP_BY_KEY[k].base > jeu.UP_BY_KEY.mangeoire.base);
-  }
+  /* LES QUATRE D'UNE FAMILLE S'ADDITIONNENT, elles ne se remplacent pas. */
+  eq('les quatre vitesses font cinquante pour cent', Math.round((jeu.coef('vitesse') - 1) * 100), 50);
+  s.primes = {}; jeu.oublierPrimes();
+  eq('et tout retombe à neutre', jeu.coef('vitesse'), 1);
+
+  // elles ne sont plus des améliorations à niveaux : c'était le mauvais objet
+  for (const k of ['renom', 'patience', 'ardeur'])
+    eq(k + ' n’est plus une amélioration', jeu.UP_BY_KEY[k], undefined);
+  eq('il reste les quatre capacités', jeu.UPGRADES.length, 4);
 });
 
-scenario('globales — une partie d’avant les reçoit à zéro', () => {
+scenario('globales — une partie de v16 garde ce qu’elle avait monté', () => {
   const j0 = neuf(); const s0 = j0.state;
-  s0.coins = 5e6; s0.pens = 4;
+  s0.coins = 5e9; s0.pens = 4;
   const vieux = JSON.parse(JSON.stringify(s0));
-  delete vieux.up.renom; delete vieux.up.patience; delete vieux.up.ardeur;
+  vieux.v = 16;
+  // ce que valaient les trois améliorations à niveaux : 30 %, 15 %, 2 %
+  vieux.up.renom = 30 * j0.GRAIN;
+  vieux.up.patience = 15 * j0.GRAIN;
+  vieux.up.ardeur = 2 * j0.GRAIN;
 
   const k = neuf(vieux);
-  /* Aucune migration à écrire : `load` fusionne `up` sur l'état neuf, donc une clé ajoutée
-     trouve son zéro. C'est ce qui permet d'ajouter une amélioration sans toucher à SAVE_V. */
-  for (const cle of ['renom', 'patience', 'ardeur']) {
-    eq(cle + ' naît à zéro', k.state.up[cle], 0);
-    eq(cle + ' — coefficient neutre', k.coef(cle), 1);
-  }
-  eq('et la ferme est intacte', k.state.coins, 5e6);
+  eq('le format monte', k.state.v, k.SAVE_V);
+  /* CONVERSION GÉNÉREUSE PAR PRINCIPE : mal convertir vers le bas, c'est reprendre des heures
+     de jeu à quelqu'un qui n'a rien demandé. Les seuils sont les pour-cent cumulés. */
+  eq('trente pour cent de valeur rendus', Math.round((k.coef('valeur') - 1) * 100), 30);
+  eq('quinze de rente', Math.round((k.coef('rente') - 1) * 100), 15);
+  eq('et deux pour cent ne valaient pas une prime', k.coef('vitesse'), 1);
+  ok('la quatrième reste à acheter', !k.prime('valeur-4'));
+
+  for (const cle of ['renom', 'patience', 'ardeur'])
+    eq(cle + ' a disparu de l’état', k.state.up[cle], undefined);
+  eq('et la ferme est intacte', k.state.coins, 5e9);
+});
+
+scenario('primes — la grille ne montre que les cinq prochaines', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const cases = () => noeuds.get('primes').children.filter(b => !b.hidden);
+  const nom = b => b.children.map(x => x.textContent).join(' ');
+
+  s.coins = 1e15;
+  jeu.refresh();
+  eq('cinq cases, pas trente-six', cases().length, jeu.PRIMES_VUES);
+  const attendues = jeu.PRIMES.slice(0, jeu.PRIMES_VUES).map(p => p.nom);
+  ok('et ce sont les cinq moins chères',
+     attendues.every(n => cases().some(b => nom(b).includes(n))),
+     cases().map(nom).join(' | '));
+
+  /* ACHETER LA PREMIÈRE FAIT MONTER LA SIXIÈME : la grille suit toujours la prochaine
+     décision, elle ne garde pas ce qui est derrière. */
+  jeu.buyPrime(jeu.PRIMES[0]);
+  jeu.refresh();
+  eq('toujours cinq', cases().length, jeu.PRIMES_VUES);
+  ok('la prise a disparu', !cases().some(b => nom(b).includes(jeu.PRIMES[0].nom)),
+     cases().map(nom).join(' | '));
+  ok('et la suivante est entrée',
+     cases().some(b => nom(b).includes(jeu.PRIMES[jeu.PRIMES_VUES].nom)));
+
+  /* LE BOUTON BASCULE SUR CE QU'ON A DÉJÀ PRIS — une consultation, pas un choix. */
+  const bouton = noeuds.get('primes-voir');
+  eq('le bouton apparaît dès la première prise', bouton.hidden, false);
+  ok('et il compte', /1/.test(bouton.textContent), bouton.textContent);
+  jeu.primesPrises = true;
+  jeu.refresh();
+  eq('la grille bascule', cases().length, 1);
+  ok('sur la prime prise', nom(cases()[0]).includes(jeu.PRIMES[0].nom));
+  eq('le bouton se marque', bouton.getAttribute('aria-pressed'), 'true');
+  jeu.primesPrises = false;
+  jeu.refresh();
+  eq('et il revient', cases().length, jeu.PRIMES_VUES);
+
+  // une prime conditionnée n'entre pas dans le compte des cinq
+  const conditionnees = jeu.PRIMES.filter(p => p.si);
+  ok('il en existe', conditionnees.length > 0);
+  ok('aucune n’est montrée sans sa condition',
+     !cases().some(b => conditionnees.some(p => nom(b).includes(p.nom))),
+     cases().map(nom).join(' | '));
+
+  /* TOUT PRIS : la grille bascule d'elle-même, sinon elle serait vide. */
+  for (const p of jeu.PRIMES) s.primes[p.cle] = true;
+  jeu.oublierPrimes();
+  jeu.refresh();
+  eq('elle montre tout ce qu’on a', cases().length, jeu.PRIMES.length);
+  eq('et le compteur est plein', noeuds.get('primes-meta').textContent,
+     jeu.PRIMES.length + ' / ' + jeu.PRIMES.length);
 });
 
 /* ────────────────────────── la poussière et la fusion ────────────────────────── */

@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.5.0';
+const VERSION = 'beta 1.6.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -867,30 +867,73 @@ const PRIMES = [
     dit: 'Un bâtiment où confier deux bêtes adultes. Elles gardent leur enclos, cessent de rapporter, et pondent un œuf dont tu connais déjà la lignée.' },
   { cle: 'oeil',      prix: 500000,    glyphe: '👁️', nom: 'Œil exercé',
     dit: 'Une chance sur deux de plus de voir naître un chromatique — de 1 sur 8 192 à 1 sur 5 461.' },
+  { cle: 'valeur-1', prix: 600000, glyphe: '🗣️', nom: 'Bouche à oreille',
+    dit: 'On parle de ta ferme au marché. Cinq pour cent de valeur en plus sur tout ce que tu élèves — à la vente comme à la rente.',
+    bonus: { valeur: 0.05 } },
   { cle: 'generosite', prix: 1000000,  glyphe: '🎁', nom: 'Générosité',
     dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
+  { cle: 'vitesse-1', prix: 1500000, glyphe: '🐓', nom: 'Réveil matinal',
+    dit: 'Tout ce qui pousse tout seul pousse cinq pour cent plus vite : la couvaison, la croissance, l’engraissement.',
+    bonus: { vitesse: 0.05 } },
   { cle: 'negoce-epique', prix: 2000000, glyphe: '🔮', nom: 'Négoce épique',
     dit: 'Les épiques se vendent un quart plus cher.' },
+  { cle: 'rente-1', prix: 2500000, glyphe: '🛏️', nom: 'Litière profonde',
+    dit: 'Cinq pour cent de rente en plus. Ne touche pas au prix de vente : ça ne paie que si tu gardes.',
+    bonus: { rente: 0.05 } },
   { cle: 'pension-vite', prix: 3000000,  glyphe: '🔥', nom: 'Nid tiède',
     dit: 'Les couvaisons de la pension vont moitié plus vite. Ne raccourcit pas un couple déjà parti.',
     si: () => prime('pension') },
   { cle: 'intendance2', prix: 5000000, glyphe: '📜', nom: 'Grande intendance',
     dit: 'Encore un quart de moins sur chaque évolution, par-dessus l’Intendance.' },
+  { cle: 'valeur-2', prix: 8000000, glyphe: '🪧', nom: 'Enseigne peinte',
+    dit: 'Dix pour cent de valeur en plus. Une ferme qui a une enseigne est une ferme dont on retient le nom.',
+    bonus: { valeur: 0.10 } },
   { cle: 'couvoir',   prix: 12000000,  glyphe: '🏠', nom: 'Couvoir',
     dit: 'Trois incubateurs de plus, offerts.' },
+  { cle: 'vitesse-2', prix: 15000000, glyphe: '⚡', nom: 'Ardeur',
+    dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse. Elle ne remplace aucun automate, elle les multiplie.',
+    bonus: { vitesse: 0.10 } },
   { cle: 'pension-sang', prix: 20000000, glyphe: '🩸', nom: 'Sang dominant',
     dit: 'À la pension, la lignée du parent le plus rare sort deux fois plus souvent. Jamais plus d’une fois sur deux.',
     si: () => prime('pension') },
   { cle: 'paturage',  prix: 30000000,  glyphe: '🏞️', nom: 'Pâturage',
     dit: 'Trois enclos de plus, offerts.' },
+  { cle: 'rente-2', prix: 40000000, glyphe: '💧', nom: 'Abreuvoir',
+    dit: 'Dix pour cent de rente en plus. Une bête qui boit à sa soif rapporte sans qu’on la touche.',
+    bonus: { rente: 0.10 } },
   { cle: 'negoce-mythique', prix: 80000000, glyphe: '👑', nom: 'Négoce mythique',
     dit: 'Les mythiques se vendent un quart plus cher.' },
+  { cle: 'valeur-3', prix: 120000000, glyphe: '📯', nom: 'Renom',
+    dit: 'Quinze pour cent de valeur en plus. À ce stade, ce n’est plus toi qui cherches des acheteurs.',
+    bonus: { valeur: 0.15 } },
   { cle: 'main',      prix: 200000000, glyphe: '🖐️', nom: 'Main preste',
     dit: 'Chacun de tes clics compte double. Le plus cher, et le seul qui touche à ce que tu fais de tes mains.' },
+  { cle: 'vitesse-3', prix: 300000000, glyphe: '👟', nom: 'Bon pied',
+    dit: 'Quinze pour cent de vitesse en plus. Le temps ne se rattrape pas, mais il se serre.',
+    bonus: { vitesse: 0.15 } },
   { cle: 'pension-place', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
     dit: 'Un couple de plus à la fois. C’est la prime la plus chère du jeu, et la seule qui te dispense de choisir.',
     si: () => prime('pension') },
+
+  { cle: 'rente-3', prix: 800000000, glyphe: '🛋️', nom: 'Patience',
+    dit: 'Quinze pour cent de rente en plus. La seule prime du jeu qui paie uniquement pour ne rien faire.',
+    bonus: { rente: 0.15 } },
+  { cle: 'valeur-4', prix: 2000000000, glyphe: '🏆', nom: 'On vient de loin',
+    dit: 'Vingt pour cent de valeur en plus, et le compte est bon : cinquante pour cent en tout si tu as pris les quatre.',
+    bonus: { valeur: 0.20 } },
+  { cle: 'vitesse-4', prix: 5000000000, glyphe: '🌪️', nom: 'Sans relâche',
+    dit: 'Vingt pour cent de vitesse en plus. La dernière du lot, et la quatrième qui compte.',
+    bonus: { vitesse: 0.20 } },
+  { cle: 'rente-4', prix: 15000000000, glyphe: '🌝', nom: 'Rien ne presse',
+    dit: 'Vingt pour cent de rente en plus. La prime la plus chère du jeu, pour la façon de jouer la plus lente.',
+    bonus: { rente: 0.20 } },
 ];
+/* COMBIEN DE PRIMES LA GRILLE MONTRE À LA FOIS. Cinq : c'est ce qu'on peut comparer d'un
+   coup d'œil sans faire d'arbitrage, et ça tient sur une ligne de grille aux tailles usuelles.
+   La bascule ne se sauvegarde pas — c'est un coup d'œil, pas un réglage. */
+const PRIMES_VUES = 5;
+let primesPrises = false;
+
 // Le jeu n'en a pas besoin — il parcourt PRIMES — mais le banc d'essai désigne les primes
 // par leur clé, et une table de correspondance vaut mieux qu'un find() dans chaque scénario.
 const PRIME_BY_CLE = Object.fromEntries(PRIMES.map(p => [p.cle, p]));
@@ -1137,39 +1180,7 @@ const UPGRADES = [
     desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
     value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
 
-  /* ── LES TROIS GLOBALES ──────────────────────────────────────────────────────
-     Un pour cent par niveau, sur tout, sans jamais désigner une rareté ni un automate. Les
-     quatre premières améliorations achètent une CAPACITÉ — cliquer plus fort, couver, faire
-     grandir, engraisser — et une fois qu'on les a, il ne reste qu'à les monter. Celles-ci
-     achètent un COEFFICIENT : elles ne font rien de neuf, elles rendent meilleur ce qu'on
-     fait déjà.
-
-     C'est ce qui manquait en fin de partie, où l'argent n'avait plus qu'un seul emploi, les
-     enclos. Un pour cent est volontairement petit : ce sont des puits, pas des raccourcis, et
-     leur intérêt vient du fait qu'ils se cumulent avec absolument tout — teinte, taille,
-     négoce, cartes de l'album.
-
-     ELLES MEURENT PLUS LENTEMENT QUE LES AUTRES (1,35 contre 1,65) parce qu'elles produisent
-     moins par niveau. Une amélioration calée trop cher pour ce qu'elle rend n'est pas un choix
-     difficile, c'est une case qu'on n'achète jamais.
-
-     LES TROIS AXES NE SE RECOUVRENT PAS, et c'est la seule chose à ne pas perdre en chemin :
-     le Renom porte la VALEUR (donc la vente, et la rente qui en découle), la Patience porte la
-     RENTE seule (donc garder plutôt que vendre), l'Ardeur porte le TEMPS (tout ce qui pousse).
-     Trois façons de gagner, trois façons de jouer. */
-  { key: 'renom', name: 'Renom', base: 25000, mult: 1.35,
-    desc: 'Ta ferme se sait. Chaque niveau ajoute un pour cent à la valeur de tout ce que tu élèves — ce qu’une bête se vend, et donc ce qu’elle rapporte en restant là.',
-    value: n => n / GRAIN, unit: ' % de valeur en plus' },
-  { key: 'patience', name: 'Patience', base: 60000, mult: 1.35,
-    desc: 'Un pour cent de rente en plus par niveau. Ne touche pas au prix de vente : c’est la seule amélioration qui paie uniquement pour ne rien faire.',
-    value: n => n / GRAIN, unit: ' % de rente en plus' },
-  { key: 'ardeur', name: 'Ardeur', base: 150000, mult: 1.35,
-    desc: 'Un pour cent de plus par niveau à tout ce qui pousse tout seul : la couvaison, la croissance, l’engraissement. Elle ne remplace aucun automate, elle les multiplie.',
-    value: n => n / GRAIN, unit: ' % de vitesse en plus' },
 ];
-
-// Un coefficient global, en pour-cent par unité de puissance. Zéro tant que rien n'est acheté.
-const coef = key => 1 + force(key) / 100;
 
 /* Les trois déblocages à un seul niveau (acheteur, marchand, évolution) n'ont pas de
    puissance : ils ne se granulent pas. Tous les autres passent en tiers ici, et nulle part
@@ -1494,7 +1505,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 16;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 17;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1529,7 +1540,7 @@ function freshState() {
     incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
     pen: [],
     sel: 'i:0',
-    up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0, renom: 0, patience: 0, ardeur: 0 },
+    up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 },
     // les primes achetées, par clé. Elles ne traversent pas l'ascension.
     primes: {},
     /* Ce qui est replié dans la collection : la clé `tout` pour la section entière, une clé
@@ -1813,6 +1824,24 @@ function load() {
     merged.pension.dus = merged.pension.dus || {};
     merged.pension.nes = merged.pension.nes || 0;
 
+    /* v16 → v17 : les trois coefficients globaux quittent les améliorations à niveaux pour
+       devenir douze primes. Une partie qui avait monté le Renom, la Patience ou l'Ardeur perdrait
+       tout ce qu'elle y a mis ; on convertit donc en primes, et GÉNÉREUSEMENT — mal convertir
+       vers le bas, c'est reprendre des heures de jeu à quelqu'un qui n'a rien demandé.
+
+       Les seuils sont ceux qu'une prime coûte en pour-cent cumulés : 5, 15, 30, 50. Une Ardeur
+       montée à 30 % donne donc les trois premières vitesses, et la quatrième reste à acheter. */
+    if ((s.v || 0) < 17) {
+      const paliers = [5, 15, 30, 50];
+      for (const [vieux, famille] of [['renom', 'valeur'], ['patience', 'rente'], ['ardeur', 'vitesse']]) {
+        const pourCent = (merged.up[vieux] || 0) / GRAIN;
+        paliers.forEach((seuil, i) => {
+          if (pourCent >= seuil) merged.primes[famille + '-' + (i + 1)] = true;
+        });
+        delete merged.up[vieux];
+      }
+    }
+
     /* v15 → v16 : la cinquième rareté arrive. Une sorte d'œuf et trois consignes du marchand
        naissent avec elle, à zéro pour tout le monde — personne n'a jamais pu en tenir une. Rien
        à écrire ici : la normalisation de la réserve et les trois `parRarete(0)` plus haut
@@ -1918,8 +1947,36 @@ const coutFusion  = k => (k.etoiles || 1) >= ETOILES.length ? null
 /* Ce que l'album ajoute, famille par famille. Recalculé seulement quand les cartes équipées
    changent — c'est-à-dire à l'ascension et au chargement : baseValue l'appelle une fois par
    bête et par image, et refaire la somme à chaque appel se paierait à l'écran. */
-let bonusCache = null;
+let bonusCache = null, primeCache = null;
 const oublierAlbum = () => { bonusCache = null; };
+const oublierPrimes = () => { primeCache = null; };
+
+/* ── LES TROIS COEFFICIENTS GLOBAUX ────────────────────────────────────────────
+   La VALEUR (vente, et rente qui en découle), la RENTE seule, la VITESSE de tout ce qui
+   pousse. Trois axes qui ne se recouvrent pas — trois façons de gagner, trois façons de jouer.
+
+   ILS ONT ÉTÉ DES AMÉLIORATIONS À NIVEAUX PENDANT UNE VERSION, et c'était le mauvais objet.
+   Une amélioration dit toujours la même chose : « Renom niv. 12 → niv. 13 », et cinquante
+   achats plus tard elle la dit encore — le défaut exact qui avait fait naître les primes.
+   Un coefficient global n'a pas besoin de cent niveaux, il a besoin de QUATRE MOMENTS : quatre
+   primes nommées, réparties sur toute la fin de partie, chacune disant une chose et se taisant.
+
+   Cumulés, les quatre d'une famille font cinquante pour cent. C'est peu, et c'est voulu : ce
+   sont des puits, pas des raccourcis, et leur intérêt vient du fait qu'ils se cumulent avec
+   absolument tout — teinte, taille, négoce, cartes de l'album.
+
+   La table décide de tout : une prime qui porte un `bonus` entre ici sans qu'on touche à
+   cette fonction. */
+function bonusPrimes() {
+  if (primeCache) return primeCache;
+  const b = { valeur: 0, rente: 0, vitesse: 0 };
+  for (const p of PRIMES) {
+    if (!p.bonus || !prime(p.cle)) continue;
+    for (const k of Object.keys(p.bonus)) b[k] = (b[k] || 0) + p.bonus[k];
+  }
+  return (primeCache = b);
+}
+const coef = quoi => 1 + bonusPrimes()[quoi];
 function bonusAlbum() {
   if (bonusCache) return bonusCache;
   const b = { valeur: 0, couvee: 0, pousse: 0, gras: 0, rente: 0, peage: 0, oeuf: 0, prodige: 0,
@@ -1938,7 +1995,7 @@ const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
 // partie du bestiaire, et c'est ce qui lui donne un sens de choix plutôt que de cumul.
 const negoce    = c => prime('negoce-' + lineOf(c).rarity) ? 1.25 : 1;
 const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c)
-                     * (1 + bonusAlbum().valeur) * negoce(c) * coef('renom');
+                     * (1 + bonusAlbum().valeur) * negoce(c) * coef('valeur');
 
 function pickWeighted(list) {
   let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
@@ -2172,7 +2229,7 @@ const sellValue  = c => Math.max(1, Math.round(baseValue(c) * nivMult(c)));
 const renteOf = c => enPension(c) ? 0
                    : c.age >= AGE_RENTE
                    ? sellValue(c) / RENTE_H * (c.prodige ? RENTE_PRODIGE : 1)
-                     * (1 + bonusAlbum().rente) * coef('patience')
+                     * (1 + bonusAlbum().rente) * coef('rente')
                    : 0;
 const renteTotale = () => state.pen.reduce((n, c) => n + renteOf(c), 0);
 
@@ -2690,6 +2747,7 @@ function buyPrime(p) {
   if (prime(p.cle) || state.coins < p.prix) return;
   state.coins -= p.prix;
   state.primes[p.cle] = true;
+  oublierPrimes();
   if (p.cle === 'nichoir' || p.cle === 'couvoir') syncIncub();
   chord([392, 523, 659], 70);
   const pt = centerOf($('subject'));
@@ -2752,7 +2810,7 @@ function upLabel(u, lot) {
 // seuls le clic et la nourriture font bouger quoi que ce soit.
 function advance(dt) {
   const b = bonusAlbum();
-  const ardeur = coef('ardeur');
+  const ardeur = coef('vitesse');
   const couve = force('couveuse') * (1 + b.couvee) * ardeur;
   const eleve = force('eleveur') * (1 + b.pousse) * ardeur;
   if (couve) {
@@ -2853,7 +2911,7 @@ function runAutomations(dt) {
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
-    const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras) * coef('ardeur');
+    const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras) * coef('vitesse');
     for (const c of state.pen) {
       if (estMur(c) && !enPension(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
@@ -3926,6 +3984,7 @@ function ascensionner() {
      s'affichent qu'avec l'automate correspondant, et une ferme neuve n'en possède aucun : les
      consignes gouvernaient donc en silence, et tombaient d'un coup sur la ferme à l'instant du
      rachat du marchand. Un réglage qu'on ne peut pas voir ne doit pas agir. */
+  oublierPrimes();
   state = Object.assign(freshState(), {
     album, slots,
     /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
@@ -4447,15 +4506,40 @@ function tickView() {
 
   /* Le panneau s'ouvre quand la première prime est à portée, comme la boutique : voir une
      chose hors de prix fait avancer un joueur d'idle, ne rien voir du tout ne fait rien. */
-  const prises = PRIMES.filter(p => prime(p.cle)).length;
-  $('panel-primes').hidden = state.tuto && !prises && state.coins < PRIMES[0].prix * SEUIL_VOIR;
-  setText($('primes-meta'), prises + ' / ' + PRIMES.length);
+  /* ── LA GRILLE NE MONTRE QUE LES CINQ PROCHAINES ────────────────────────────
+     Trente-six cases affichées d'un bloc, c'est un mur : les premières sont prises depuis
+     longtemps et ne décident plus de rien, les dernières coûtent des milliards et ne décident
+     pas encore. Ce qui compte tient toujours dans les cinq suivantes.
+
+     C'est la même idée que « la marche suivante » de la boutique, poussée d'un cran : on ne
+     montre pas tout ce qui existe, on montre ce sur quoi porte la prochaine décision.
+
+     CE QUI EST PRIS N'EST PAS PERDU — le bouton du bandeau bascule la grille sur les primes
+     déjà achetées. C'est une consultation, pas un choix : on va y relire ce qu'on a, jamais
+     décider quoi que ce soit. D'où le bouton plutôt qu'une seconde grille toujours ouverte. */
+  const prises = PRIMES.filter(p => prime(p.cle));
+  const aPrendre = PRIMES.filter(p => !prime(p.cle) && (!p.si || p.si()));
+  // plus rien à prendre : la grille bascule d'elle-même sur ce qu'on a, sinon elle serait vide
+  const versPrises = primesPrises || !aPrendre.length;
+  const montrees = new Set((versPrises ? prises : aPrendre.slice(0, PRIMES_VUES)).map(p => p.cle));
+
+  $('panel-primes').hidden = state.tuto && !prises.length &&
+                             state.coins < PRIMES[0].prix * SEUIL_VOIR;
+  setText($('primes-meta'), prises.length + ' / ' + PRIMES.length);
+
+  const bouton = $('primes-voir');
+  bouton.hidden = !prises.length;
+  bouton.setAttribute('aria-pressed', String(versPrises));
+  setText(bouton, versPrises ? 'les prochaines' : 'voir les ' + prises.length + ' prises');
+  bouton.title = versPrises ? 'Revenir aux primes qui restent à prendre'
+                            : 'Voir les primes déjà achetées';
+  setText($('primes-vide'), versPrises ? 'Rien de pris pour l’instant.'
+                                      : 'Tout est pris. La ferme n’a plus rien à t’offrir.');
+  $('primes-vide').hidden = versPrises ? !!prises.length : !!aPrendre.length;
+
   for (const p of PRIMES) {
     const r = refs.primes[p.cle], pris = prime(p.cle);
-    /* UNE PRIME PEUT ATTENDRE SON BÂTIMENT. « Second nid » n'a aucun sens avant la pension,
-       et trois cases qui parlent d'un panneau qu'on n'a pas encore encombrent la grille pour
-       rien. Une fois prise, elle reste visible quoi qu'il arrive. */
-    r.el.hidden = !pris && !!p.si && !p.si();
+    r.el.hidden = !montrees.has(p.cle);
     r.el.classList.toggle('prise', pris);
     r.el.classList.toggle('prete', !pris && state.coins >= p.prix);
     r.el.disabled = pris || state.coins < p.prix;
@@ -5586,6 +5670,12 @@ function bindTools() {
     refresh();
   });
 
+  $('primes-voir').addEventListener('click', () => {
+    primesPrises = !primesPrises;
+    blip(440, 0.04, 'sine', 0.03);
+    refresh();
+  });
+
   $('btn-pause').addEventListener('click', () => basculerPause());
 
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
@@ -5762,6 +5852,7 @@ function bindTools() {
 
 function start() {
   state = load();
+  oublierPrimes();
   syncIncub();          // les primes peuvent donner des incubateurs : le tableau doit suivre
   buildChrome();
   bindTools();

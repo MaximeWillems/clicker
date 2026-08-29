@@ -1013,6 +1013,16 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   cursor: not-allowed; text-align: center;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
+/* le bandeau du panneau : le compteur, puis la bascule vers ce qu'on a déjà pris */
+.primes-voir {
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.04em;
+  background: none; color: var(--faint); border: 1px solid var(--rule);
+  border-radius: 3px; padding: 0.1rem 0.4rem; cursor: pointer; margin-left: 0.4rem;
+}
+.primes-voir:hover { color: var(--ink); border-color: var(--rule-hi); }
+.primes-voir[aria-pressed="true"] { color: var(--jade); border-color: var(--jade-dim); }
+.primes-vide { font-size: 0.74rem; color: var(--faint); margin: 0.3rem 0 0; }
+
 .prime-glyphe { font-size: 1.15rem; line-height: 1.2; filter: grayscale(1); opacity: 0.5; }
 .prime-nom {
   font-family: var(--f-ui); font-size: 0.6rem; line-height: 1.25;
