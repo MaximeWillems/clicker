@@ -1052,6 +1052,27 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
 }
 
+/* ── LA CARTE : SES ÉTOILES ET SES DEUX GESTES ────────────────────────────────
+   Les deux boutons portent leur PRIX sur eux — ce que la carte rend si on la fond, ce que
+   l'étoile suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible, et
+   c'est le seul arbitrage que l'album propose. */
+.carte-etoiles {
+  font-style: normal; font-size: 0.7rem; letter-spacing: 0.1em;
+  color: var(--coin);
+}
+.carte-actes { display: flex; flex-direction: column; gap: 3px; margin-left: auto; }
+.carte-acte {
+  font-family: var(--f-num); font-size: 0.6rem; white-space: nowrap;
+  background: var(--sunken); color: var(--soft);
+  border: 1px solid var(--rule); border-radius: 3px;
+  padding: 0.15rem 0.35rem; cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.carte-acte:hover:not(:disabled) { color: var(--ink); border-color: var(--rule-hi); }
+.carte-acte:disabled { opacity: 0.35; cursor: not-allowed; }
+.carte-acte.fondre:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+.carte-acte.fusion:hover:not(:disabled) { border-color: var(--coin); color: var(--coin); }
+
 /* ── LES TROPHÉES ─────────────────────────────────────────────────────────────
    Deux états seulement : décroché ou non. Pas de barre de progression — un trophée n'est pas
    une jauge, et montrer « 7 formes sur 50 » transformerait une rencontre en corvée. */

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.31.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.32.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -57,6 +57,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les trophées** | 2.25 | reste-t-il un objectif nommé ? | douze, dont six qu'on ne voit qu'en les décrochant |
 | **Le dialogue** | 2.12, 2.26, 2.28 | la professeure regarde-t-elle ce qu'on fait ? | oui, et elle peut retenir : trois passages obligés éteignent l'écran |
 | **L'ouverture** | 2.29 | le début est-il trop facile ? | il l'était — trois fois plus long désormais, mesuré |
+| **La fusion et la poussière** | 2.30 → 2.32 | est-ce qu'une carte ratée vaut d'être gardée ? | oui — dix cartes font une étoile |
 
 ### La ligne d'arrivée de l'alpha
 
@@ -90,7 +91,6 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **La fusion et la poussière** — désintégrer, fusionner, trois paliers | rien | est-ce qu'une carte ratée vaut d'être gardée ? |
 | **Les automates par âge** — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | rien | est-ce que l'ordre des achats suit la vie de la bête ? |
 | **Les dix-sept dessins** | rien | — |
 | **La pension, ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | les dessins | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
@@ -99,8 +99,9 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **La rareté de l'enfant** — le tirage entre parents, la montée par âge | l'hérédité | est-ce que la montée reste un cadeau et non une voie ? |
 | **Les merveilleuses** — la rareté, les recettes, trois lignées dessinées | l'hérédité | est-ce qu'une merveilleuse se raconte ? |
 
-Trois de ces lignes portent la bêta : **la fusion, la pension et les merveilleuses**. Les
-quatre autres sont la route qui y mène.
+**La fusion est tombée en 2.32.0** : il reste donc deux des trois pièces de la bêta, la pension
+et les merveilleuses — et les deux sont au bout de la même chaîne, qui commence par les
+dessins.
 
 L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
 passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
@@ -269,7 +270,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 44 scénarios
+node tools/test.js              les 48 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.31.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.32.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -55,7 +55,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.31.0** | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
+| **2.32.0** | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
+| 2.31.0 | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
 | 2.30.2 | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
 | 2.30.1 | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
 | 2.30.0 | un jeton vaut une carte, et sauter les dépense tous |
@@ -149,7 +150,7 @@ le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est
 voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
 rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
-Quarante-quatre scénarios, sept cent trente-quatre vérifications. Passer un mot en argument ne joue que
+Quarante-huit scénarios, sept cent quatre-vingt-sept vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -463,6 +464,70 @@ Deux détails de structure. La plonge est un **état du jeu, pas un sujet de la 
 `renderRien()`, qui n'était **atteignable par personne** pour cette même raison, sert enfin :
 c'est l'écran de l'impasse avant qu'elle parle.
 
+### La fusion et la poussière
+
+Une carte porte des **étoiles** : elle naît à une, la fusion la monte à deux puis à trois, et
+ça s'arrête là. Ce qu'on paie pour le faire est une monnaie qui n'existe que pour l'album — la
+**poussière**, `✧`.
+
+#### Pourquoi une monnaie et pas des doublons
+
+Une fusion classique demande deux cartes identiques. Ici c'est **impossible** : une carte porte
+une lignée, un âge, un niveau, un motif, une teinte, un rang et un chromatique — près de
+**treize millions de combinaisons**. Deux exemplaires identiques n'arriveront jamais.
+
+Le problème réel n'est donc pas le doublon, c'est **la carte médiocre**. Une ferme de vingt
+bêtes en produit vingt à chaque saut, dont trois valent la peine. La poussière transforme les
+dix-sept autres en carburant.
+
+#### Ce qu'une carte rend, ce qu'une fusion coûte
+
+    poussière = 10 × rareté(1 / 3 / 10 / 30) × chromatique(×3) × fond(×2)
+    fusion    = 100 puis 400, × la même rareté
+
+| Rareté | Une carte rend | ★→★★ | ★★→★★★ |
+|---|---|---|---|
+| commune | ✧ 10 | 100 | 400 |
+| rare | ✧ 30 | 300 | 1 200 |
+| épique | ✧ 100 | 1 000 | 4 000 |
+| mythique | ✧ 300 | 3 000 | 12 000 |
+
+**La rareté est du même côté des deux équations, et elle s'annule** : monter une commune ou une
+mythique demande le **même nombre de cartes de sa propre rareté** — dix pour la deuxième
+étoile, quarante pour la troisième. Personne n'a intérêt à fondre ses mythiques pour nourrir
+ses communes, et l'arbitrage reste dans la lignée qu'on aime.
+
+**La qualité n'entre pas.** Niveau, teinte et rang décident déjà de la puissance : les faire
+entrer aussi punirait deux fois d'avoir une bonne carte, et rendrait « garder ou fondre »
+insoluble. *Une carte vaut sa puissance, **ou** sa poussière, et les deux ne se ressemblent
+pas.*
+
+#### Trois règles qui tiennent le système
+
+**On ne défait pas une fusion.** Les étoiles n'entrent pas dans ce qu'une carte rend : une
+carte à trois étoiles fond pour exactement ce que rendrait une carte neuve. Sans cette règle,
+fusionner puis fondre fabriquerait de la poussière à l'infini — c'est la seule façon de vider
+le système de son sens, et un scénario du banc la garde.
+
+**Une carte équipée ne se fond pas.** Elle s'évaporerait d'un emplacement et changerait le
+build en silence ; le joueur découvrirait la perte à l'effet, pas au geste. Il faut la retirer
+d'abord — un geste de plus, mais délibéré.
+
+**Ce qu'on n'emporte pas à l'ascension laisse un peu de poussière**, un dixième de ce que sa
+carte aurait rendu. Les bêtes non retenues disparaissaient jusque-là sans rien laisser. Ce
+n'est pas grand-chose, et c'est voulu : ça récompense d'ascensionner sur une ferme pleine sans
+rendre le sacrifice indolore.
+
+#### Les deux gestes portent leur prix
+
+Chaque carte affiche deux boutons : `✧ 10` pour ce qu'elle rend, `★ 100` pour ce que l'étoile
+suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible — et c'est le seul
+arbitrage que l'album propose.
+
+Un défaut a été trouvé en câblant tout ça : la signature de `renderAlbum` lisait encore
+`k.palier`, laissé derrière par le renommage de la 2.30.2. Elle valait donc `undefined` pour
+toutes les cartes, et **l'album ne se serait jamais repeint après une fusion**.
+
 ### Les trophées
 
 Douze, sous les statistiques. Le jeu comptait sans jamais rien attendre — dix-sept nombres qui
@@ -484,6 +549,11 @@ ne dit pas lesquels.
 
 Parmi les cachés : **La plonge**, pour la première assiette. *« Ça arrive à tout le monde, et à
 personne deux fois. »*
+
+**Quatre sont venus avec la fusion** en 2.32.0 — deux objectifs, deux surprises : `★ Deux
+étoiles` et `✦ Trois étoiles` disent où va l'album ; `✧ Poussière` (fondre sa première carte)
+et `🔥 Fondeur` (en fondre cinquante) attendent d'être décrochés. Ils portent le compte à
+**seize, dont huit visibles**.
 
 **Ils traversent l'ascension**, comme les compteurs : ils comptent une vie de fichier, pas une
 partie. Un trophée qu'on perdrait en ascensionnant punirait le geste que le jeu demande.

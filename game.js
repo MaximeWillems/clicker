@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 2.31.0';
+const VERSION = 'alpha 2.32.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -378,6 +378,39 @@ const SLOTS = 5;
 
    La table est là avant la fusion parce que la puissance la lit déjà. */
 const ETOILES = [1, 1.8, 3];
+
+/* ── LA POUSSIÈRE DE CARTE ─────────────────────────────────────────────────────
+   Une monnaie qui n'existe que pour l'album. On l'obtient en DÉSINTÉGRANT une carte, un peu à
+   chaque ascension pour les bêtes qu'on n'emporte pas, et elle ne sert qu'à FUSIONNER.
+
+   POURQUOI UNE MONNAIE ET PAS DES DOUBLONS. Une fusion classique demande deux cartes
+   identiques ; ici c'est impossible. Une carte porte une lignée, un âge, un niveau, un motif,
+   une teinte, un rang et un chromatique — près de treize millions de combinaisons. Deux
+   exemplaires identiques n'arriveront jamais.
+
+   Le problème réel n'est donc pas le doublon, c'est LA CARTE MÉDIOCRE : une ferme de vingt
+   bêtes en produit vingt à chaque saut, dont trois valent la peine. La poussière transforme
+   les dix-sept autres en carburant.
+
+   LA RARETÉ EST DU MÊME CÔTÉ DES DEUX ÉQUATIONS, et c'est délibéré : elle multiplie ce qu'une
+   carte rend ET ce qu'une fusion coûte, donc elle s'annule. Monter une commune ou une mythique
+   demande le même nombre de cartes DE SA PROPRE RARETÉ — dix pour la deuxième étoile, quarante
+   pour la troisième. Personne n'a intérêt à fondre ses mythiques pour nourrir ses communes.
+
+   LA QUALITÉ N'ENTRE PAS. Niveau, teinte et rang décident déjà de la puissance : les faire
+   entrer aussi punirait deux fois d'avoir une bonne carte, et rendrait « garder ou fondre »
+   insoluble. Une carte vaut sa puissance, OU sa poussière, et les deux ne se ressemblent pas.
+
+   ET ON NE DÉFAIT PAS UNE FUSION : les étoiles n'entrent pas dans ce qu'une carte rend. Sinon
+   fusionner puis désintégrer fabriquerait de la poussière à l'infini. */
+const POUSSIERE_BASE    = 10;
+const POUSSIERE_RARETE  = { commune: 1, rare: 3, epique: 10, mythique: 30 };
+const POUSSIERE_PRODIGE = 3;
+const POUSSIERE_FOND    = 2;      // les fonds n'existent pas encore : le facteur dort
+// ce qu'une bête sacrifiée à l'ascension laisse, en fraction de ce que sa carte aurait rendu
+const POUSSIERE_SAUT    = 0.1;
+// pour aller à la deuxième étoile, puis à la troisième — multiplié par la rareté
+const FUSION_COUT       = [0, 100, 400];
 
 /* LE MOTIF DÉCIDE DE CE QUE LA CARTE ACCÉLÈRE. Il ne servait à rien, il est déjà tiré à
    l'éclosion et gardé à vie : lui confier le bonus ne demande aucune mécanique neuve, et il
@@ -1235,6 +1268,7 @@ function freshState() {
       temps: 0,            // secondes de boucle, absences comprises
       clics: 0,            // clics qui ont réellement fait avancer quelque chose
       eclos: 0, vendues: 0, evolutions: 0,
+      fondues: 0, fusions: 0,
       assiettes: 0,        // le seul aveu de la page de statistiques
       gagne: 0,            // toutes les pièces encaissées : ventes et rente
       prodiges: 0,
@@ -1243,6 +1277,9 @@ function freshState() {
     },
     // les trophées décrochés, par clé. Ils traversent l'ascension, comme les compteurs.
     trophees: {},
+    /* La poussière de carte. Elle traverse l'ascension comme l'album : la remettre à zéro
+       obligerait à tout fondre avant chaque saut, une corvée déguisée en décision. */
+    poussiere: 0,
     /* Les clics déjà donnés sur l'assiette en cours, de 0 à neuf. Dans la sauvegarde : perdre
        neuf clics parce qu'on a rechargé la page ajouterait une punition à la punition. */
     frotte: 0,
@@ -1551,6 +1588,15 @@ function qualiteDe(k) {
   return 0.4 + 0.6 * q;      // de 0,40 pour une carte bâclée à 1,00 pour un trophée
 }
 const puissanceDe = k => plafondDe(k) * ETOILES[(k.etoiles || 1) - 1] * qualiteDe(k);
+
+const rareteDe    = k => LINE_BY_KEY[k.line].rarity;
+// Ce qu'une carte rend si on la fond. Les étoiles n'entrent pas : on ne défait pas une fusion.
+const poussiereDe = k => Math.round(POUSSIERE_BASE * POUSSIERE_RARETE[rareteDe(k)]
+                                    * (k.prodige ? POUSSIERE_PRODIGE : 1)
+                                    * (k.fond ? POUSSIERE_FOND : 1));
+// Ce que coûte l'étoile suivante, ou null quand la carte est au bout.
+const coutFusion  = k => (k.etoiles || 1) >= ETOILES.length ? null
+                       : FUSION_COUT[k.etoiles || 1] * POUSSIERE_RARETE[rareteDe(k)];
 
 /* Ce que l'album ajoute, famille par famille. Recalculé seulement quand les cartes équipées
    changent — c'est-à-dire à l'ascension et au chargement : baseValue l'appelle une fois par
@@ -3157,7 +3203,11 @@ function carteEl(k) {
   el.className = 'carte rar-' + LINE_BY_KEY[k.line].rarity;
   el.dataset.id = k.id;
   el.innerHTML = '<span class="carte-bete"></span><span class="carte-txt">' +
-                 '<b class="carte-nom"></b><i class="carte-eff"></i></span>';
+                 '<b class="carte-nom"></b><i class="carte-eff"></i>' +
+                 '<i class="carte-etoiles"></i></span>' +
+                 '<span class="carte-actes">' +
+                 '<button type="button" class="carte-acte fondre"></button>' +
+                 '<button type="button" class="carte-acte fusion"></button></span>';
   const bete = el.querySelector('.carte-bete');
   setCreature(bete, artAt(k.line, k.age), form(k.line, k.age)[1]);
   bete.style.filter = k.prodige ? PRODIGE_FILTER : (TINTS[k.tint] || TINTS[0]).filter;
@@ -3167,13 +3217,35 @@ function carteEl(k) {
      ignore ce qu'est une rente, et c'était le cas de la moitié de la table. */
   el.title = nomCarte(k) + ' — niveau ' + k.niv + ', ' + nomAge(k.age, k.rank) +
              ' · puissance ' + dec(puissanceDe(k), 2) + '\n\n' + motifBonus(k).dit;
+
+  const e = k.etoiles || 1;
+  el.querySelector('.carte-etoiles').textContent = '★'.repeat(e) + '☆'.repeat(ETOILES.length - e);
+
+  /* Les deux gestes portent leur PRIX sur eux. Une carte se fond ou se fusionne, et les deux
+     décisions se prennent en regardant le même nombre : ce qu'elle rend, ce que l'étoile
+     suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible. */
+  const fondre = el.querySelector('.fondre'), fusion = el.querySelector('.fusion');
+  const equipee = state.slots.indexOf(k.id) !== -1;
+  fondre.textContent = '✧ ' + fmt(poussiereDe(k));
+  fondre.disabled = equipee;
+  fondre.title = equipee ? 'Retire-la de tes cartes actives avant de la fondre.'
+                         : 'Fondre : + ' + fmt(poussiereDe(k)) + ' de poussière. Sans retour.';
+  const cout = coutFusion(k);
+  fusion.textContent = cout === null ? '★★★' : '★ ' + fmt(cout);
+  fusion.disabled = cout === null || (state.poussiere || 0) < cout;
+  fusion.title = cout === null ? 'Elle est au bout : trois étoiles.'
+               : 'Fusionner : ' + fmt(cout) + ' de poussière pour la ' +
+                 (e + 1) + 'e étoile. Tu en as ' + fmt(state.poussiere || 0) + '.';
   return el;
 }
 
 let albumSig = '';
 function renderAlbum() {
-  const sig = state.album.map(k => k.id + ':' + k.palier).join(',') + '|' +
-              state.slots.join(',') + '|' + state.asc.n;
+  /* Les ÉTOILES entrent dans la signature : sans elles, une fusion ne repeignait rien. Le
+     champ s'appelait `palier` et le renommage de la 2.30.2 avait laissé cette ligne derrière —
+     elle lisait donc `undefined` pour toutes les cartes. */
+  const sig = state.album.map(k => k.id + ':' + (k.etoiles || 1)).join(',') + '|' +
+              state.slots.join(',') + '|' + state.asc.n + '|' + (state.poussiere || 0);
   if (sig === albumSig) return;
   albumSig = sig;
 
@@ -3181,7 +3253,8 @@ function renderAlbum() {
   const host = $('album');
   host.textContent = '';
   $('album-meta').textContent = state.album.length +
-    (state.album.length > 1 ? ' cartes' : ' carte');
+    (state.album.length > 1 ? ' cartes' : ' carte') +
+    '  ·  ✧ ' + fmt(state.poussiere || 0);
 
   if (!state.album.length) {
     $('album-intro').textContent = 'Aucune carte pour l’instant. Les bêtes présentes dans ' +
@@ -3221,6 +3294,40 @@ function renderAlbum() {
   };
   zone('Équipées — ' + equipees.length + ' / ' + SLOTS, equipees, 'slots', true);
   zone('En réserve — gardées d’une ascension à l’autre', reste, 'reserve', false);
+}
+
+/* Fondre une carte. REFUSÉE SUR UNE CARTE ÉQUIPÉE : une carte qui s'évapore d'un emplacement
+   changerait le build en silence, et le joueur découvrirait la perte à l'effet, pas au geste.
+   Il faut la retirer d'abord — un geste de plus, mais délibéré. */
+function desintegrer(id) {
+  const k = carteDe(id);
+  if (!k || state.slots.indexOf(id) !== -1) return false;
+  state.poussiere = (state.poussiere || 0) + poussiereDe(k);
+  state.stats.fondues = (state.stats.fondues || 0) + 1;
+  state.album = state.album.filter(x => x.id !== id);
+  oublierAlbum();
+  albumSig = '';
+  chord([392, 330], 70);
+  refresh();
+  save();
+  return true;
+}
+
+// Monter une carte d'une étoile. Deux fusions au plus : ETOILES n'a que trois entrées.
+function fusionner(id) {
+  const k = carteDe(id);
+  if (!k) return false;
+  const cout = coutFusion(k);
+  if (cout === null || (state.poussiere || 0) < cout) return false;
+  state.poussiere -= cout;
+  k.etoiles = (k.etoiles || 1) + 1;
+  state.stats.fusions = (state.stats.fusions || 0) + 1;
+  oublierAlbum();
+  albumSig = '';
+  chord([523, 659, 784, 1046], 80);
+  refresh();
+  save();
+  return true;
 }
 
 /* Déplacer une carte entre le build et la réserve. Rend false quand le geste ne peut pas
@@ -3404,6 +3511,14 @@ function ascensionner() {
      les capsules qu'on n'équipe pas rejoignent la réserve » — et décrivait l'ascension d'avant
      la 2.10, quand tout un enclos y était versé. Ce qui glisse en réserve aujourd'hui, ce sont
      les cartes DÉJÀ POSSÉDÉES qu'un nouveau choix déloge de leurs emplacements. */
+  /* CE QU'ON N'EMPORTE PAS LAISSE UN PEU DE POUSSIÈRE. Les bêtes non retenues disparaissaient
+     sans rien laisser : un dixième de ce que leur carte aurait rendu ne rend pas le sacrifice
+     indolore, mais il récompense d'ascensionner sur une ferme pleine plutôt que sur trois
+     têtards — ce que le jeu voulait déjà encourager sans avoir de moyen de le dire. */
+  const laisse = ap.neuves
+    .filter(k => ascChoix.indexOf(k.id) === -1)
+    .reduce((n, k) => n + Math.round(poussiereDe(k) * POUSSIERE_SAUT), 0);
+
   const album = state.album.concat(neuves);
   /* Les bêtes retenues d'abord, puis les cartes déjà équipées pour combler ce qui reste : ne
      rien choisir ne doit pas vider son build. Le joueur réarrangera dans l'album s'il veut. */
@@ -3436,6 +3551,7 @@ function ascensionner() {
     // tous les jetons partent, employés ou non : c'est le prix de sauter trop tôt
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: 0 },
     seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
+    poussiere: (state.poussiere || 0) + laisse,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
     // et les compteurs aussi : ils comptent une vie de fichier, pas une partie
@@ -4332,6 +4448,20 @@ const TROPHEES = [
   { cle: 'emplettes', glyphe: '🧾', nom: 'Tout acheté',
     dit: 'Prendre les vingt primes dans une même partie.',
     test: () => PRIMES.every(p => prime(p.cle)) },
+
+  // ── l'album, et ce qu'on en fait ──
+  { cle: 'deuxEtoiles', glyphe: '★', montre: true, nom: 'Deux étoiles',
+    dit: 'Fusionner une carte. Il faut dix cartes de sa rareté, fondues pour leur poussière.',
+    test: () => state.album.some(k => (k.etoiles || 1) >= 2) || state.stats.fusions > 0 },
+  { cle: 'troisEtoiles', glyphe: '✦', montre: true, nom: 'Trois étoiles',
+    dit: 'Mener une carte au bout. Cinquante cartes de sa rareté, et il n’y a pas de quatrième.',
+    test: () => state.album.some(k => (k.etoiles || 1) >= ETOILES.length) },
+  { cle: 'poussiere', glyphe: '✧', nom: 'Poussière',
+    dit: 'Fondre sa première carte. Une carte ratée n’est pas une carte perdue.',
+    test: () => (state.stats.fondues || 0) > 0 },
+  { cle: 'fondeur', glyphe: '🔥', nom: 'Fondeur',
+    dit: 'En fondre cinquante. À ce stade, l’album n’est plus une collection mais une fonderie.',
+    test: () => (state.stats.fondues || 0) >= 50 },
 ];
 
 const trophee = cle => !!(state.trophees && state.trophees[cle]);
@@ -4383,6 +4513,11 @@ const STATS = [
     ['Formes rencontrées', seenCount() + ' / ' + (LINES.length * AGES.length)],
     ['Chromatiques', fmt(state.stats.prodiges)],
     ['Cadeaux reçus', fmt(state.dons || 0)],
+  ]],
+  ['L’album', () => [
+    ['Poussière en poche', fmt(state.poussiere || 0)],
+    ['Cartes fondues', fmt(state.stats.fondues || 0)],
+    ['Fusions', fmt(state.stats.fusions || 0)],
   ]],
   ['Les records', () => [
     ['Plus grosse fortune', fmt(state.stats.fortune)],
@@ -4791,6 +4926,16 @@ function bindTools() {
 
   // le clic bascule la carte vers l'autre bloc — même effet, sans le geste
   albumHote.addEventListener('click', e => {
+    /* Les deux boutons d'une carte passent AVANT le basculement : ils sont dans la carte, donc
+       sans cette sortie un clic sur « fondre » déplacerait aussi la carte. */
+    const acte = e.target.closest && e.target.closest('.carte-acte');
+    if (acte) {
+      const carte = acte.closest('.carte');
+      const quoi = parseInt(carte.dataset.id, 10);
+      const fait = acte.classList.contains('fondre') ? desintegrer(quoi) : fusionner(quoi);
+      if (!fait) blip(300, 0.05, 'sine', 0.03);
+      return;
+    }
     const c = e.target.closest && e.target.closest('.carte');
     if (!c) return;
     const id = parseInt(c.dataset.id, 10);

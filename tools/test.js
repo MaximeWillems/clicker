@@ -914,6 +914,130 @@ scenario('pension — les trois calculs tiennent, sans rien ouvrir', () => {
   eq('il y a une place, inutilisée', jeu.placesPension(), jeu.PENSION.places);
 });
 
+/* ────────────────────────── la poussière et la fusion ────────────────────────── */
+
+// une carte quelconque, pour peupler un album
+function pave(jeu, id, ligne, etoiles) {
+  return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
+           prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
+}
+
+scenario('poussière — la rareté s’annule des deux côtés', () => {
+  const jeu = neuf();
+  /* LA RARETÉ MULTIPLIE CE QU'UNE CARTE REND ET CE QU'UNE FUSION COÛTE. Elle s'annule donc :
+     monter une commune ou une mythique demande le MÊME nombre de cartes de sa propre rareté.
+     Sans ça, une rareté deviendrait la monnaie des autres. */
+  for (const ligne of ['crapaud', 'loup', 'golem', 'ouroboros']) {
+    const k1 = pave(jeu, 1, ligne, 1), k2 = pave(jeu, 1, ligne, 2);
+    eq(ligne + ' : dix cartes pour la deuxième étoile',
+       jeu.coutFusion(k1) / jeu.poussiereDe(k1), 10);
+    eq(ligne + ' : quarante pour la troisième',
+       jeu.coutFusion(k2) / jeu.poussiereDe(k1), 40);
+  }
+  const nu = pave(jeu, 1, 'crapaud');
+  const chroma = Object.assign(pave(jeu, 2, 'crapaud'), { prodige: true });
+  eq('un chromatique rend trois fois plus', jeu.poussiereDe(chroma), jeu.poussiereDe(nu) * 3);
+
+  /* LA QUALITÉ N'ENTRE PAS : niveau, teinte et rang décident déjà de la puissance. */
+  const bacle = Object.assign(pave(jeu, 3, 'crapaud'), { niv: 1, tint: 0, rank: 0 });
+  eq('une carte bâclée rend autant qu’une parfaite', jeu.poussiereDe(bacle), jeu.poussiereDe(nu));
+  ok('mais elle est bien plus faible', jeu.puissanceDe(bacle) < jeu.puissanceDe(nu));
+});
+
+scenario('poussière — fondre, fusionner, et ne jamais défaire', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3)];
+  s.slots = [1];
+  s.poussiere = 0;
+
+  ok('une carte équipée ne se fond pas', !jeu.desintegrer(1));
+  eq('elle est toujours là', s.album.length, 3);
+  ok('une carte libre se fond', jeu.desintegrer(2));
+  eq('et rend sa poussière', s.poussiere, jeu.poussiereDe(pave(jeu, 9)));
+  eq('l’album en perd une', s.album.length, 2);
+  eq('le compteur suit', s.stats.fondues, 1);
+
+  const cout = jeu.coutFusion(s.album[0]);
+  ok('sans poussière, pas de fusion', !jeu.fusionner(1));
+  s.poussiere = cout;
+  ok('avec juste assez, elle passe', jeu.fusionner(1));
+  eq('la carte gagne une étoile', s.album[0].etoiles, 2);
+  eq('et la poussière est dépensée', s.poussiere, 0);
+
+  s.poussiere = 1e6;
+  ok('la deuxième fusion passe', jeu.fusionner(1));
+  eq('trois étoiles', s.album[0].etoiles, jeu.ETOILES.length);
+  eq('il n’y a pas de quatrième', jeu.coutFusion(s.album[0]), null);
+  ok('et fusionner encore est refusé', !jeu.fusionner(1));
+
+  /* ON NE DÉFAIT PAS UNE FUSION : les étoiles n'entrent pas dans ce qu'une carte rend. Sinon
+     fusionner puis fondre fabriquerait de la poussière à l'infini. */
+  jeu.deplacerCarte(1, false);
+  const avant = s.poussiere;
+  jeu.desintegrer(1);
+  eq('une carte à trois étoiles rend autant qu’une neuve',
+     s.poussiere - avant, jeu.poussiereDe(pave(jeu, 9)));
+});
+
+scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () => {
+  const bete3 = (j, ligne, age, p) => {
+    const st = j.state;
+    st.incub[0] = { line: ligne, p: 9999, kind: 'commun' };
+    j.hatchAll();
+    const c = st.pen[st.pen.length - 1];
+    c.age = age; c.p = p;
+    return c;
+  };
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 5e6; s.pens = 20;
+  for (let i = 0; i < 10; i++) bete3(jeu, 'crapaud', 3, 3000);
+  s.asc.jetons = 2; s.asc.paliers = jeu.RANG_PREMIER;
+
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = ap.neuves.slice(0, 2).map(k => k.id);
+  eq('rien en poche avant', s.poussiere || 0, 0);
+  jeu.ascensionner();
+  eq('deux cartes emportées', jeu.state.album.length, 2);
+  /* Les huit sacrifiées laissent un dixième de ce que leur carte aurait rendu. Ce n'est pas
+     grand-chose — et c'est voulu : ça récompense d'ascensionner sur une ferme pleine sans
+     rendre le sacrifice indolore. */
+  eq('les huit autres laissent un peu de poussière', jeu.state.poussiere, 8);
+  ok('la poussière traverse le saut',
+     jeu.state.poussiere > 0 && jeu.state.coins === 0);
+});
+
+scenario('trophées — quatre de plus pour l’album', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const pris = cle => !!s.trophees[cle];
+  s.album = [pave(jeu, 1)]; s.slots = []; s.poussiere = 1e6;
+
+  jeu.verifierTrophees();
+  ok('rien de décroché au départ', !pris('deuxEtoiles') && !pris('poussiere'));
+
+  jeu.fusionner(1); jeu.verifierTrophees();
+  ok('« Deux étoiles » tombe à la première fusion', pris('deuxEtoiles'));
+  ok('« Trois étoiles » pas encore', !pris('troisEtoiles'));
+  jeu.fusionner(1); jeu.verifierTrophees();
+  ok('et tombe à la seconde', pris('troisEtoiles'));
+
+  s.album.push(pave(jeu, 2));
+  jeu.desintegrer(2); jeu.verifierTrophees();
+  ok('« Poussière » tombe à la première fonte', pris('poussiere'));
+  ok('« Fondeur » attend cinquante', !pris('fondeur'));
+  for (let i = 3; i < 55; i++) { s.album.push(pave(jeu, i)); jeu.desintegrer(i); }
+  jeu.verifierTrophees();
+  ok('et tombe à la cinquantième', pris('fondeur'));
+
+  // deux objectifs visibles, deux surprises
+  const t = cle => jeu.TROPHEES.find(x => x.cle === cle);
+  ok('« Deux étoiles » est un objectif', t('deuxEtoiles').montre === true);
+  ok('« Trois étoiles » aussi', t('troisEtoiles').montre === true);
+  ok('« Poussière » est une surprise', !t('poussiere').montre);
+  ok('« Fondeur » aussi', !t('fondeur').montre);
+});
+
 /* ────────────────────────── les primes ────────────────────────── */
 
 scenario('primes — la table tient debout et s’allume par paliers', () => {
