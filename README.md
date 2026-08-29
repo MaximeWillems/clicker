@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.7.1
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.8.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.7.1** | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
+| **beta 1.8.0** | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
+| beta 1.7.1 | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
 | beta 1.7.0 | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
 | beta 1.6.0 | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
 | beta 1.5.0 | `tools/pixel.js` : une planche de sprites devient une grille de caractères, corrigeable à la main |
@@ -1512,6 +1513,30 @@ Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour déc
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
 
+#### Une bête confiée quitte la bande
+
+Elle reste dans son **enclos** — c'est tout le prix de la pension — mais elle cesse d'être un
+*sujet* : on ne la sélectionne plus, on ne clique plus dessus, on ne la vend plus, et elle ne
+traîne plus dans une bande de quarante vignettes dont seize seraient inertes.
+
+Elle est visible ailleurs, et mieux : **la ligne de son couple** dit ce qu'elle fait et depuis
+combien de temps. La bande montre ce sur quoi on peut agir, le panneau montre ce qui travaille.
+Et le compteur d'enclos ajoute « *· 2 en pension* », sans quoi la pension ferait disparaître des
+bêtes **et** des places sans rien dire.
+
+**C'est aussi ce qui rend la pause inutile pour composer un couple.** Avant, on déposait une
+bête dans le nid et elle continuait de vieillir, d'être vendue et de bouger dans la bande sous
+la main. Maintenant elle en sort au moment du dépôt. Si le marchand attrape la seconde entre le
+premier dépôt et le second, **elle disparaît simplement** — et le nid le dit à la ligne
+suivante.
+
+[La pause](#le-bouton-pause) reste, parce qu'arrêter sa ferme est utile pour tout le reste :
+relire un réglage, compter ses enclos, regarder une bête sans la voir vieillir.
+
+**Le verrou de la vente tient des deux côtés.** Le marchand automatique sautait déjà les bêtes
+confiées depuis la `beta 1.0.0` ; maintenant la vente à la main ne les atteint plus non plus,
+puisque rien ne les désigne. Deux protections écrites une seule fois.
+
 #### L'acheteur peut se taire
 
 C'est **le seul des trois automates qui dépense**, et c'était le seul qui n'avait pas de
@@ -1792,9 +1817,11 @@ derrière un panneau disparu.
 
 ### Le bouton pause
 
-Une ferme qu'on peut **arrêter**. Il existe pour une raison précise : arranger deux parents
-pendant que le marchand vend, que l'évolution monte et que les bêtes grandissent, c'est
-arranger une bande qui bouge sous la main.
+Une ferme qu'on peut **arrêter**. Il est né pour la pension — arranger deux parents pendant
+que le marchand vend, c'est arranger une bande qui bouge sous la main — et il ne lui sert
+plus : depuis la `beta 1.8.0`, [une bête confiée quitte la bande](#une-bête-confiée-quitte-la-bande)
+au moment du dépôt. Il reste parce qu'arrêter sa ferme est utile pour tout le reste : relire un
+réglage, compter ses enclos, regarder une bête sans la voir vieillir.
 
 En pause, rien ne pousse, rien ne rentre, rien ne couve — **et le clic ne fait rien non plus.**
 Une ferme arrêtée l'est pour tout le monde, la main du joueur comprise. La scène se désature :

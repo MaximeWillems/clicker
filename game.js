@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.7.1';
+const VERSION = 'beta 1.8.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2410,9 +2410,23 @@ const TRIS = {
                  || a.c.id - b.c.id,
 };
 
+/* UNE BÊTE CONFIÉE QUITTE LA BANDE. Elle reste dans `state.pen` — elle occupe toujours son
+   enclos, et c'est tout le prix de la pension — mais elle n'est plus un SUJET : on ne la
+   sélectionne plus, on ne clique plus dessus, on ne la vend plus, et elle ne se traîne plus
+   dans une bande de quarante vignettes dont seize seraient inertes.
+
+   Elle est visible ailleurs, et mieux : la ligne de son couple, au panneau de la pension, dit
+   ce qu'elle fait et depuis combien de temps. La bande montre ce sur quoi on peut agir, le
+   panneau montre ce qui travaille.
+
+   C'est aussi ce qui rend la pause inutile pour composer un couple. Avant, on déposait une
+   bête dans le nid et elle continuait de vieillir, d'être vendue et de bouger dans la bande
+   sous la main ; maintenant elle en sort au moment du dépôt. Si le marchand l'attrape entre
+   le geste et le clic, elle disparaît simplement — et le nid le dit à la ligne suivante. */
 function subjects() {
   const list = state.incub.map((slot, i) => ({ key: 'i:' + i, kind: 'egg', i, slot }));
-  const betes = state.pen.map(c => ({ key: 'c:' + c.id, kind: 'creature', c }));
+  const betes = state.pen.filter(c => !enPension(c))
+                         .map(c => ({ key: 'c:' + c.id, kind: 'creature', c }));
   const tri = TRIS[state.tri];
   if (tri) betes.sort(tri);
   /* Les bêtes d'abord : la bande les montre dans deux groupes séparés, mais tenirLaCase et
@@ -3037,9 +3051,16 @@ function offrirFrenesie(palier) {
 }
 
 /* ── LA PAUSE ──────────────────────────────────────────────────────────────────
-   Un bouton qui arrête la ferme. Il existe pour une raison précise : la pension se remplit au
-   glisser-déposer, et arranger deux parents pendant que le marchand vend, que l'évolution
-   monte et que les bêtes grandissent, c'est arranger une bande qui bouge sous la main.
+   Un bouton qui arrête la ferme.
+
+   ELLE N'EST PLUS NÉCESSAIRE À LA PENSION, et c'était pourtant sa raison d'être : arranger
+   deux parents pendant que le marchand vend et que les bêtes bougent sous la main. Depuis
+   qu'une bête confiée QUITTE LA BANDE au moment du dépôt, le geste ne court plus après une
+   cible mouvante — et si le marchand attrape la seconde entre le premier dépôt et le second,
+   elle disparaît simplement, ce qui se lit.
+
+   Elle reste, parce qu'arrêter sa ferme est utile pour tout le reste : relire un réglage,
+   compter ses enclos, regarder une bête sans la voir vieillir.
 
    ELLE NE SE SAUVEGARDE PAS, et c'est délibéré. Une pause est un moment, pas un réglage :
    fermer l'onglet en pause puis revenir le lendemain sur une ferme gelée serait une partie
@@ -3057,11 +3078,12 @@ function basculerPause(v) {
   const b = $('btn-pause');
   b.setAttribute('aria-pressed', String(enPause));
   b.textContent = enPause ? '▶' : '⏸';
-  b.title = enPause ? 'Reprendre la ferme' : 'Mettre la ferme en pause — rien ne pousse, rien ne se vend';
+  b.title = enPause ? 'Reprendre la ferme'
+                    : 'Arrêter la ferme — rien ne pousse, rien ne se vend, rien ne couve';
   const note = $('pause-note');
   note.hidden = !enPause;
-  setText(note, 'La ferme est arrêtée. Rien ne pousse, rien ne se vend, rien ne couve — ' +
-                'le moment de composer un couple à la pension.');
+  setText(note, 'La ferme est arrêtée. Rien ne pousse, rien ne se vend, rien ne couve, ' +
+                'et le clic ne fait rien non plus.');
   document.body.classList.toggle('en-pause', enPause);
   refresh();
 }
@@ -4593,7 +4615,12 @@ function tickView() {
   }
 
   const stock = totalEggs();
-  setText($('compte-pen'), penUsed() + ' / ' + pensTotal());
+  /* LE COMPTEUR D'ENCLOS COMPTE LES BÊTES CONFIÉES, puisqu'elles occupent leur case. Sans
+     cette mention, la pension ferait disparaître des bêtes ET des places sans rien dire, et le
+     joueur chercherait longtemps où sont passés ses enclos. */
+  const parquees = state.pen.filter(c => enPension(c)).length;
+  setText($('compte-pen'), penUsed() + ' / ' + pensTotal() +
+    (parquees ? ' · ' + parquees + ' en pension' : ''));
   setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
   // La réserve n'existe que si on a acheté des œufs d'avance : pas de ligne vide sinon.
   $('strip-meta').hidden = !stock;

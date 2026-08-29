@@ -48,6 +48,7 @@ function el(tag) {
     },
     style: { setProperty() {}, filter: '', width: '', fontSize: '' },
     dataset: {}, hidden: false, disabled: false, title: '', value: '', alt: '', type: 'button',
+    parent: null,
     _attrs: {},
     get className() { return [...this.classList._s].join(' '); },
     set className(v) { this.classList._s = new Set(String(v).split(/\s+/).filter(Boolean)); },
@@ -62,20 +63,26 @@ function el(tag) {
       });
     },
     get firstElementChild() { return this.children[0] || null; },
-    appendChild(c) { this.children.push(c); return c; },
-    append(...cs) { cs.forEach(c => this.children.push(c)); },
-    replaceChildren(...cs) { this.children = cs; },
-    remove() {},
+    /* CHAQUE NŒUD CONNAÎT SON PÈRE, et `remove()` fait vraiment quelque chose. C'était un
+       no-op, si bien que le banc ne pouvait pas voir une vignette QUITTER la bande : elle
+       s'accumulait, et un scénario qui comptait les enfants d'une bande comptait des fantômes.
+       Trois lignes de plus, et tout ce qui se retire devient observable. */
+    appendChild(c) { c.parent = this; this.children.push(c); return c; },
+    append(...cs) { cs.forEach(c => { c.parent = this; this.children.push(c); }); },
+    replaceChildren(...cs) { cs.forEach(c => { c.parent = this; }); this.children = cs; },
+    remove() { if (this.parent) this.parent.removeChild(this); },
     insertBefore(n, ref) {
       const i = ref ? this.children.indexOf(ref) : -1;
       const j = this.children.indexOf(n);
       if (j !== -1) this.children.splice(j, 1);
+      n.parent = this;
       if (i === -1) this.children.push(n); else this.children.splice(i, 0, n);
       return n;
     },
     removeChild(n) {
       const i = this.children.indexOf(n);
       if (i !== -1) this.children.splice(i, 1);
+      if (n.parent === this) n.parent = null;
       return n;
     },
     addEventListener() {}, removeEventListener() {},

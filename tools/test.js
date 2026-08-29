@@ -1139,6 +1139,73 @@ scenario('pension — le nid se remplit au glisser comme au clic', () => {
   eq('et une bête qui n’existe pas non plus', jeu.poserAuNid(9999, 'a'), false);
 });
 
+scenario('pension — une bête confiée quitte la bande, sans quitter son enclos', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  const temoin = bete(jeu, 'cerf', 4, 20000);
+  jeu.refresh();
+
+  const bande = () => noeuds.get('strip-pen').children.length;
+  const vivantes = () => jeu.subjects().filter(x => x.kind === 'creature').length;
+  eq('trois bêtes dans la bande', bande(), 3);
+  eq('et trois sujets', vivantes(), 3);
+  const enclos = jeu.penUsed();
+
+  jeu.accoupler(a, b);
+  jeu.refresh();
+
+  /* ELLE QUITTE LA BANDE : on ne la sélectionne plus, on ne clique plus dessus, on ne la vend
+     plus, et elle ne traîne plus dans une bande dont la moitié serait inerte. */
+  eq('il n’en reste qu’une dans la bande', bande(), 1);
+  eq('et un seul sujet', vivantes(), 1);
+  ok('la confiée n’est plus sélectionnable', !jeu.subjects().some(x => x.key === 'c:' + a.id));
+
+  /* MAIS ELLE N'A PAS QUITTÉ SON ENCLOS — c'est tout le prix de la pension. */
+  eq('l’enclos reste occupé', jeu.penUsed(), enclos);
+  ok('elle est toujours dans state.pen', s.pen.some(c => c.id === a.id));
+  eq('et elle ne rapporte rien', jeu.renteOf(a), 0);
+  ok('le compteur d’enclos le dit', /2 en pension/.test(noeuds.get('compte-pen').textContent),
+     noeuds.get('compte-pen').textContent);
+
+  /* LE REGARD SUIT. Confier la bête qu'on regardait ne doit pas laisser la scène sur un
+     fantôme : la sélection retombe sur ce qui reste. */
+  ok('la scène montre autre chose', jeu.current() && jeu.current().key !== 'c:' + a.id);
+
+  jeu.romprePension(a.id);
+  jeu.refresh();
+  eq('rompre les rend à la bande', bande(), 3);
+  eq('et aux sujets', vivantes(), 3);
+  ok('le compteur se tait', !/en pension/.test(noeuds.get('compte-pen').textContent));
+});
+
+scenario('pension — le marchand ne vend pas une bête confiée, même à la main', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  const temoin = bete(jeu, 'cerf', 4, 20000);
+  jeu.accoupler(a, b);
+
+  s.primes.marchand = true;
+  for (const r of Object.keys(jeu.RARITY)) s.sellAt[r] = 1;
+  const combien = s.pen.length;
+  jeu.runAutomations(1);
+  ok('les deux parents restent',
+     s.pen.some(c => c.id === a.id) && s.pen.some(c => c.id === b.id));
+  eq('seul le témoin est parti', s.pen.length, combien - 1);
+
+  /* ET À LA MAIN NON PLUS : elle n'est plus un sujet, donc plus rien ne la désigne. Le
+     verrou tient des deux côtés, sans avoir à l'écrire deux fois. */
+  s.sel = 'c:' + a.id;
+  ok('la sélection ne la retrouve pas', !jeu.current() || jeu.current().key !== 'c:' + a.id);
+  const avant = s.pen.length;
+  const sujet = jeu.current();
+  if (sujet && sujet.c) jeu.sell(sujet.c);      // ce que fait le bouton « vendre »
+  ok('la confiée est toujours là', s.pen.some(c => c.id === a.id));
+  ok('elle est toujours en pension', jeu.enPension(a));
+  eq('et le couple tient', jeu.couples().length, 1);
+});
+
 scenario('pension — un nid sans place ne se laisse pas remplir', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e9;

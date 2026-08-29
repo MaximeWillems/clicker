@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.7.1 · sauvegarde v17 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.8.0 · sauvegarde v17 · 10 lignées illustrées sur 30
 
 ---
 
@@ -129,7 +129,9 @@ Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n
 
 - **Huit couples se composent à la main, un par un.** Le nid marche pour un couple et pour deux ;
   à huit, désigner seize bêtes dans une bande de quarante devient la corvée que le glisser-déposer
-  devait supprimer. C'est la première chose à reprendre si la pension complète se joue vraiment.
+  devait supprimer. La `beta 1.8.0` a retiré les confiées de la bande, ce qui l'allège à mesure
+  qu'on remplit la pension — mais ne règle pas le problème : c'est le CHOIX des seize qui est
+  long, pas leur affichage.
 - **Le plafond de la réserve devient le vrai frein.** Cinquante œufs par sorte se remplissent en
   trois minutes quand la pension tourne à mille œufs l'heure ; au-delà, tout dépend du nombre
   d'incubateurs qui la vident. Ce n'est pas un défaut — c'est un couplage qu'il faut avoir vu.
