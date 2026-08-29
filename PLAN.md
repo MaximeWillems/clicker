@@ -90,7 +90,7 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **La fusion** — les paliers, et le repère sur les capsules | rien | est-ce que les doublons valent d'être gardés ? |
+| **La fusion et la poussière** — désintégrer, fusionner, trois paliers | rien | est-ce qu'une carte ratée vaut d'être gardée ? |
 | **Les automates par âge** — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | rien | est-ce que l'ordre des achats suit la vie de la bête ? |
 | **Les dix-sept dessins** | rien | — |
 | **La pension, ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | les dessins | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
@@ -108,12 +108,98 @@ le construire d'abord leur donne un endroit où atterrir. Le prix de l'inversion
 accepté : l'album est sorti sans son cran le plus haut, la merveilleuse ne s'obtenant qu'en
 pension.
 
-### Ce qui se livre en petit paquet
+### La fusion et la poussière de carte
 
-**La fusion** est presque gratuite : le champ `palier` existe déjà sur chaque capsule et
-la table `PALIERS` est écrite. Une question y reste ouverte — est-ce que le palier 4
-transforme un cadran en *règle* (+1 enclos, +1 clic automatique) plutôt qu'en plus gros
-pourcentage ? Une règle se raconte, un pourcentage s'oublie.
+Le champ `palier` existe déjà sur chaque capsule et `PALIERS = [1, 1.8, 3, 5]` est écrite :
+une carte peut être fusionnée **trois fois**, et chaque cran multiplie toute sa puissance.
+Ce qui manquait, c'était **ce qu'on paie pour le faire**. La réponse est une monnaie propre aux
+cartes : la **poussière**.
+
+#### Pourquoi une monnaie, et pas des doublons
+
+Une fusion classique demande deux cartes identiques. Ici c'est impossible, et le calcul le dit
+sans appel : une carte porte une lignée, un âge, un niveau, un motif, une teinte, un rang et
+un chromatique, soit **près de treize millions de cartes distinctes**. Deux exemplaires
+identiques n'arriveront jamais.
+
+Le problème réel n'est donc pas le doublon, c'est **la carte médiocre**. Une ferme de vingt
+bêtes en produit vingt à chaque ascension, dont trois valent la peine. La poussière transforme
+les dix-sept autres en carburant, et la question du plan — *« est-ce que les doublons valent
+d'être gardés ? »* — devient **« est-ce qu'une carte ratée vaut d'être gardée ? »**, à quoi la
+réponse est oui : elle vaut ce qu'on en tire.
+
+#### Les trois robinets, et le seul évier
+
+| | |
+|---|---|
+| **désintégrer une carte** | la source principale — c'est le geste qu'on répète |
+| **l'ascension** | un peu de poussière par bête sacrifiée : ce qu'on jette cesse d'être une perte sèche |
+| **fusionner** | le seul évier, et il doit tout absorber |
+
+Le deuxième mérite un mot : aujourd'hui les bêtes qu'on n'emporte pas **disparaissent sans
+rien laisser**. Leur donner un peu de poussière ne rend pas le sacrifice indolore — « pas
+beaucoup » est la consigne — mais il récompense d'ascensionner sur une ferme pleine plutôt que
+sur trois têtards, ce que le jeu voulait déjà encourager sans avoir de moyen de le dire.
+
+#### Ce qu'une carte rend, quand on la désintègre
+
+Les mêmes axes que sa puissance, pour qu'une bonne carte fasse mal à détruire :
+
+    poussière = BASE × rareté × chromatique × fond
+
+| Axe | Proposition | Pourquoi |
+|---|---|---|
+| **base** | 10 | de quoi compter en dizaines, pas en unités |
+| **rareté** | ×1 · ×3 · ×10 · ×30 | plus raide que le plafond de puissance (1 / 1,6 / 2,5 / 4) — la poussière est une ressource, pas un multiplicateur |
+| **chromatique** | ×3 | une bête sur 8 192 |
+| **fond** | ×2 | quand les fonds existeront ; sans eux le facteur vaut 1 |
+
+**La qualité n'entre pas.** Niveau, teinte et rang décident déjà de la puissance de la carte :
+les faire entrer aussi dans la poussière punirait deux fois d'avoir une bonne carte, et
+rendrait la décision « garder ou fondre » insoluble. On veut au contraire qu'elle soit
+lisible — *une carte vaut sa puissance, ou sa poussière, et les deux ne se ressemblent pas.*
+
+#### Ce qu'une fusion coûte
+
+    coût = COÛT[palier visé] × rareté
+
+avec `COÛT = [—, 100, 400, 1600]`, soit ×4 par cran.
+
+**Le facteur de rareté est le même des deux côtés**, et c'est délibéré : il s'annule. Monter
+une commune ou une mythique d'un cran demande **le même nombre de cartes de sa propre
+rareté** — dix pour le premier cran, quarante pour le deuxième, cent soixante pour le
+troisième. Un joueur n'a donc jamais intérêt à fondre ses mythiques pour nourrir ses communes,
+ni l'inverse : chaque rareté se nourrit d'elle-même, et l'arbitrage reste dans la lignée qu'on
+aime.
+
+#### La règle qui protège tout
+
+**Fusionner puis désintégrer ne doit jamais rendre plus qu'on n'a mis.** C'est la seule façon
+de fabriquer de la poussière à l'infini, et elle suffirait à vider le système de son sens.
+Deux façons de s'en assurer, à trancher :
+
+- le palier **n'entre pas** dans la poussière rendue — une carte fusionnée rend autant qu'une
+  carte neuve, et le dernier cran est un aller sans retour ;
+- ou il entre, mais en rendant strictement moins que le coût cumulé.
+
+La première est plus simple et se raconte mieux : **on ne défait pas une fusion.**
+
+#### Ce qui reste à trancher
+
+- **La poussière traverse-t-elle l'ascension ?** Oui, sûrement : c'est une monnaie de cartes,
+  et l'album traverse. La remettre à zéro obligerait à tout fondre avant chaque saut — une
+  corvée déguisée en décision.
+- **Peut-on désintégrer une carte équipée ?** Non. Une carte qui s'évapore d'un emplacement
+  change le build en silence ; il faudra la retirer d'abord.
+- **Où s'affiche la poussière ?** Dans l'en-tête de l'album, à côté du compte de cartes. Et
+  chaque carte doit dire ce qu'elle rendrait — sinon la décision se prend à l'aveugle.
+- **Le palier 4 est-il un cadran ou une règle ?** La question d'origine tient toujours :
+  est-ce que le dernier cran transforme un pourcentage en *règle* — un enclos de plus, un clic
+  automatique — plutôt qu'en plus gros pourcentage ? Une règle se raconte, un pourcentage
+  s'oublie. C'est le seul endroit du système où l'on peut se le permettre, puisqu'il demande
+  cent soixante cartes.
+- **Faut-il un plafond de poussière ?** Probablement pas : elle se dépense par centaines et
+  s'obtient par dizaines, l'accumulation est lente par construction.
 
 **Le socle de la pension est l'atome** : emplacements, parents, durée, œuf et rente
 suspendue tombent ensemble ou ne tombent pas. Retirer n'importe lequel des cinq laisse un jeu
