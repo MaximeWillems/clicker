@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.30.2 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.31.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -194,12 +194,11 @@ La première est plus simple et se raconte mieux : **on ne défait pas une fusio
   change le build en silence ; il faudra la retirer d'abord.
 - **Où s'affiche la poussière ?** Dans l'en-tête de l'album, à côté du compte de cartes. Et
   chaque carte doit dire ce qu'elle rendrait — sinon la décision se prend à l'aveugle.
-- **Les plafonds de motifs écrasent encore la troisième étoile, pour certaines familles.**
-  Mesuré : une carte perlée parfaite donne déjà trois enclos à **deux** étoiles — c'est son
-  plafond, la troisième n'ajoute rien. Le tigré, lui, gagne encore (+101 % puis +168 %). Un
-  quatrième cran existait et souffrait bien pire du même mal ; le supprimer a réglé la moitié
-  du problème, mais les familles à plafond bas restent à revoir — soit en relevant leur cap,
-  soit en acceptant qu'une carte perlée se fusionne une fois et pas deux.
+- **Les dix familles rendent maintenant quelque chose à la troisième étoile**, et un scénario
+  du banc le garde. C'est le perlé qui posait le problème — il plafonnait dès la deuxième — et
+  il a été remplacé en 2.31.0 par le martelé, calé pour atteindre 96 % de son plafond à la
+  troisième exactement. La règle à retenir pour toute famille future : **`pas × 12` doit rester
+  juste sous `cap`**, puisque 12 est la puissance d'une carte parfaite à trois étoiles.
 - **Faut-il un plafond de poussière ?** Probablement pas : elle se dépense par centaines et
   s'obtient par dizaines, l'accumulation est lente par construction.
 
@@ -270,7 +269,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 43 scénarios
+node tools/test.js              les 44 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -552,7 +551,7 @@ vaudrait plus que dix scénarios de plus.
 
 **L'ascension ne donnait pas envie**, et la 2.20.0 attaque la moitié qu'on savait nommer : ses
 récompenses étaient huit pourcentages, invisibles au moment précis où elles devraient
-convaincre — le début du cycle suivant, avec un œuf et zéro pièce. L'ocellé et le perlé se
+convaincre — le début du cycle suivant, avec un œuf et zéro pièce. L'ocellé et le martelé se
 voient à la première seconde. Reste à jouer un cycle entier pour savoir si ça suffit.
 
 **Ce qu'on ne sait toujours pas de l'ascension**, c'est si elle donne envie de recommencer.

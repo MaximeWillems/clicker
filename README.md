@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.30.2
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.31.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -55,7 +55,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.30.2** | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
+| **2.31.0** | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
+| 2.30.2 | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
 | 2.30.1 | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
 | 2.30.0 | un jeton vaut une carte, et sauter les dépense tous |
 | 2.29.1 | un œuf ne récite plus ses statistiques, il dit une phrase |
@@ -148,7 +149,7 @@ le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est
 voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
 rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
-Quarante-trois scénarios, sept cent onze vérifications. Passer un mot en argument ne joue que
+Quarante-quatre scénarios, sept cent trente-quatre vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -984,7 +985,7 @@ la **vitesse** de croissance, pas sur les bornes — les seuils de niveau sont l
 tout le monde, et la durée de référence des rangs de taille reste celle de l'âge, sinon un
 tempérament vif cumulerait deux bonus.
 
-**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé, ocellé, perlé —
+**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé, ocellé, martelé —
 n'a aucun effet sur la bête vivante. C'est de l'identité pure, jusqu'au jour où elle devient
 une carte : là, il décide de tout.
 
@@ -1422,7 +1423,7 @@ inintéressante le jour où le sien l'est.
 | zébré | prix des œufs | −3 % | −40 % |
 | constellé | chance de chromatique | ×1,07 | ×2 |
 | **ocellé** | **clics automatiques** | **+0,10 / s** | **1 clic / s** |
-| **perlé** | **enclos en plus** | **+0,50** | **+3 enclos** |
+| **martelé** | **force du clic** | **+8 %** | **+100 %** |
 
 **Deux familles baissent des prix au lieu d'augmenter des vitesses.** C'est ce qui empêche la
 deuxième partie d'être la première en accéléré : une ferme menée au zébré ne se joue pas comme
@@ -1446,15 +1447,27 @@ débit d'un coup. Ce n'est pas un automate de plus, c'est une main qui reste —
 travaille pas quand on dort. Ses clics ne comptent pas non plus dans les « clics donnés » de
 la page de statistiques : le joueur ne les a pas donnés.
 
-**Le perlé donne des enclos** qu'on n'a pas payés, et qui **ne font pas monter le prix des
-suivants** — `penCost` reste calé sur ce qui a été acheté, sinon la carte ferait payer deux
-fois ce qu'elle donne. Les fractions de plusieurs cartes s'additionnent, et seul le total
-entier compte.
+**Le martelé alourdit chaque clic** — jusqu'à ×2 pour une carte parfaite à trois étoiles. Il
+ne fait pas cliquer à ta place ; c'est l'ocellé qui s'en charge. **Les deux se multiplient**, et
+c'est le premier vrai duo de l'album : trois ocellées seules rendent une seconde par seconde,
+trois ocellées et deux martelées en rendent deux.
 
-Un piège s'y cachait, attrapé au banc : `qualiteDe` additionne 0,5 + 0,2 + 0,2 + 0,1, ce qui
-vaut `0.9999999999999999` en virgule flottante. Une carte perlée parfaite pesait donc 3,999…96
-au lieu de 4, son effet 1,999…98 au lieu de 2, et le plancher tombait d'un cran : **la carte
-annonçait deux enclos et n'en donnait qu'un.**
+Il a remplacé le **perlé**, qui donnait des enclos, et pour trois raisons :
+
+- **il plafonnait dès la deuxième étoile** — trois enclos étaient atteints à ★★☆, et la
+  troisième ne donnait rien. On aurait payé quarante cartes pour un cran vide ;
+- **la place était déjà servie trois fois** par les primes *Paille fraîche*, *Pâturage* et
+  *Étable* ;
+- **il dissolvait la seule tension de la fin de partie**, celle que la professeure annonce
+  elle-même : *« bientôt ce ne sera plus l'argent qui te limitera, mais la place. »* Une carte
+  qui offre des enclos supprime la question.
+
+Le pas du martelé est calé pour que **la troisième étoile compte** : 0,08 × 12 fait 0,96, juste
+sous le plafond de 100 %. Un scénario du banc vérifie maintenant cette propriété sur **les dix
+familles** — une famille dont la deuxième étoile plafonne déjà est une famille à revoir.
+
+Et **la plonge reste plate** : elle ne passe pas par `clickPower`, donc aucune carte ne lave
+une assiette plus vite.
 
 #### Ce qu'une carte dit d'elle-même
 
@@ -1712,8 +1725,8 @@ désignait déjà les paliers de fortune qui donnent les jetons et les paliers d
 se montent en tiers. Trois sens pour un mot, à quelques lignes d'écart dans le même fichier.
 
 Le quatrième cran a disparu avec le renommage. Il valait ×5, mais **les plafonds des familles
-de motifs le mangeaient** : le tigré plafonne à +200 % et l'atteignait déjà, le perlé plafonne
-à trois enclos et les atteignait dès la deuxième étoile. On aurait payé très cher un cran qui,
+de motifs le mangeaient** : le tigré plafonne à +200 % et l'atteignait déjà, et le perlé —
+remplacé depuis par le martelé — plafonnait à trois enclos dès la deuxième étoile. On aurait payé très cher un cran qui,
 selon le motif, ne donnait rien.
 
 **La merveilleuse**, cinquième rareté, ne s'obtiendra qu'en pension : l'album sort donc avec
