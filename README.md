@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.8.1
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.8.2
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.8.1** | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
+| **beta 1.8.2** | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
+| beta 1.8.1 | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
 | beta 1.8.0 | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
 | beta 1.7.1 | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
 | beta 1.7.0 | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
@@ -1612,6 +1613,26 @@ en place. Ce qu'elle offre, c'est de produire au lieu d'acheter, et de **choisir
 
 Le [plafond de la réserve](#le-plafond-de-la-réserve) borne les deux de la même façon : au-delà
 de cinquante œufs par sorte, ce qui compte est le nombre d'incubateurs qui la vident.
+
+#### Le nid ne se rebâtit plus sous le curseur
+
+**Le même défaut que la bande avait avant la 2.14.0**, et le commentaire de `renderStrip` le
+racontait déjà : le panneau se reconstruisait à chaque redessin, c’est-à-dire **dix fois par
+seconde**.
+
+- Le bouton disparaît **entre l’appui et le relâchement** : le navigateur n’émet alors aucun
+  « click », et retirer une bête du nid ne marchait qu’un coup sur deux.
+- La cible d’un dépôt est détruite **sous le curseur** pendant qu’on la survole, si bien que
+  le glisser-déposer scintillait et manquait sa case.
+
+D’où une **signature**, comme partout ailleurs dans le fichier : on ne rebâtit que si la
+structure a changé — les couples, les deux occupants du nid *et leur âge*, l’ouverture, la
+portée. Ce qui coule (la barre, le temps restant, la phrase) se repeint sans toucher au DOM.
+
+**Une bête posée se reprend aussi à la main.** Composer un couple était un aller simple : seul
+le clic la ressortait. La case pleine est maintenant une poignée — on la glisse sur l’autre
+côté et **les deux s’échangent**, ce qui est le geste qu’on fait sans y penser pour relire un
+couple dans l’autre sens.
 
 #### Un couple bloqué ne tire pas
 

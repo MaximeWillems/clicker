@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.8.1';
+const VERSION = 'beta 1.8.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -5343,36 +5343,47 @@ const auNid = id => state.pen.find(c => c.id === id && !enPension(c)) || null;
    geste qu'il refusera ensuite ment deux fois — d'abord en acceptant, ensuite en refusant. */
 const nidOuvert = () => prime('pension') && couples().length < placesPension();
 
-/* Poser une bête dans le nid. La même bête des deux côtés n'a pas de sens : on la déplace
-   plutôt que de refuser, parce que refuser demanderait au joueur de deviner laquelle des deux
-   cases il occupe déjà. */
+/* Poser une bête dans le nid.
+
+   LA MÊME BÊTE DES DEUX CÔTÉS N'A PAS DE SENS, et refuser demanderait au joueur de deviner
+   laquelle des deux cases elle occupe déjà. On ÉCHANGE donc : glisser le parent de gauche sur
+   celui de droite les intervertit, au lieu de laisser un trou à gauche. C'est le geste qu'on
+   fait sans y penser quand on veut relire un couple dans l'autre sens.
+
+   Venue de la bande, elle prend simplement la place, et l'occupant sort. */
 function poserAuNid(id, cote) {
-  if (!nidOuvert()) return false;
-  const c = auNid(id);
-  if (!c) return false;
-  if (cote === 'a') { if (pensionB === id) pensionB = null; pensionA = id; }
-  else              { if (pensionA === id) pensionA = null; pensionB = id; }
+  if (!nidOuvert() || !auNid(id)) return false;
+  const venait = pensionA === id ? 'a' : pensionB === id ? 'b' : null;
+  const occupant = cote === 'a' ? pensionA : pensionB;
+  const pose = (ou, v) => { if (ou === 'a') pensionA = v; else pensionB = v; };
+  pose(cote, id);
+  if (venait && venait !== cote) pose(venait, occupant);
   return true;
 }
 
-function renderPension() {
-  const p = $('panel-pension');
-  /* LE PANNEAU EST UN BÂTIMENT : il n'existe pas tant qu'on ne l'a pas acheté. Un couple en
-     cours le garde à l'écran même après une ascension, le temps qu'il se vide — sans quoi deux
-     bêtes resteraient parquées derrière un panneau disparu. */
-  p.hidden = !prime('pension') && !couples().length;
-  if (p.hidden) return;
+let pensionSig = '', refsPension = null;
 
-  setText($('pension-meta'), couples().length + ' / ' + placesPension());
+/* LE PANNEAU SE BÂTIT UNE FOIS, ET SE REPEINT ENSUITE. Il se reconstruisait à chaque `refresh`,
+   c'est-à-dire DIX FOIS PAR SECONDE, et c'était le même défaut que la bande avait avant la
+   2.14.0 — le commentaire de `renderStrip` le raconte déjà :
 
+   • le bouton disparaît entre l'appui et le relâchement, le navigateur n'émet alors AUCUN
+     « click », et retirer une bête du nid ne marchait qu'un coup sur deux ;
+   • la cible d'un dépôt est détruite sous le curseur pendant qu'on la survole, si bien que le
+     glisser-déposer scintillait et manquait sa case.
+
+   D'où une SIGNATURE, comme partout ailleurs dans ce fichier : on ne rebâtit que si la
+   structure a changé. Ce qui bouge à chaque tour — la barre, le temps restant, la phrase — se
+   repeint sans toucher au DOM. */
+function batirPension(a, b, ouvert, portee) {
   const hote = $('pension');
   hote.textContent = '';
+  refsPension = { couples: [], go: null, dit: null };
 
   /* ── LES COUPLES EN COURS ──
      En haut, comme les cartes équipées de l'album : c'est le seul bloc qui agit déjà. */
-  const portee = porteePension();
   for (const k of couples()) {
-    const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
+    const pa = state.pen.find(c => c.id === k.a), pb = state.pen.find(c => c.id === k.b);
     /* LA LIGNE EST UN BOUTON : c'est le seul moyen de récupérer deux parents, puisqu'un couple
        ne se défait plus tout seul. Manuel par principe — une ferme qui rendrait les bêtes à
        chaque ponte redemanderait le geste indéfiniment. */
@@ -5380,42 +5391,33 @@ function renderPension() {
     el.type = 'button';
     el.className = 'couple';
     el.dataset.rompre = String(k.a);
-    el.title = !a || !b ? 'Rompre ce couple'
-      : 'Rompre le couple — ' + fullName(a) + ' et ' + fullName(b) + ' retrouvent leur rente';
+    el.title = !pa || !pb ? 'Rompre ce couple'
+      : 'Rompre le couple — ' + fullName(pa) + ' et ' + fullName(pb) + ' retrouvent leur rente';
+
     const qui = document.createElement('span');
     qui.className = 'couple-qui';
-    qui.textContent = (a ? glyphOf(a) : '—') + ' ' + (b ? glyphOf(b) : '—');
+    qui.textContent = (pa ? glyphOf(pa) : '—') + ' ' + (pb ? glyphOf(pb) : '—');
     const txt = document.createElement('span');
     txt.className = 'couple-txt';
     const nom = document.createElement('b');
     nom.className = 'couple-nom';
-    nom.textContent = !a || !b ? 'Couple rompu'
-      : LINE_BY_KEY[a.line].name + ' × ' + LINE_BY_KEY[b.line].name;
+    nom.textContent = !pa || !pb ? 'Couple rompu'
+      : LINE_BY_KEY[pa.line].name + ' × ' + LINE_BY_KEY[pb.line].name;
     const barre = document.createElement('span');
     barre.className = 'couple-bar';
     const jauge = document.createElement('i');
-    jauge.style.width = Math.min(100, k.t / k.duree * 100).toFixed(1) + '%';
     barre.appendChild(jauge);
     txt.append(nom, barre);
     const reste = document.createElement('span');
     reste.className = 'couple-reste';
-    /* CE QU'UN COUPLE PRODUIT, et non seulement quand il finit. Un couple qui ne se défait plus
-       est un débit, pas une commande : c'est ce chiffre-là qu'on compare à la boutique. */
-    reste.textContent = !a || !b ? 'perdu'
-      : k.t >= k.duree ? 'réserve pleine'
-      : fmtTime(k.duree - k.t) + (portee > 1 ? ' · ×' + portee : '');
     el.append(qui, txt, reste);
     hote.appendChild(el);
+    refsPension.couples.push({ k, vivant: !!(pa && pb), jauge, reste });
   }
 
   /* ── LE NID ──
      Deux cases côte à côte, et un signe entre les deux. Chacune est à la fois une zone de
-     dépôt et un bouton : c'est ce qui donne les deux gestes sans dupliquer l'élément. */
-  const a = auNid(pensionA), b = auNid(pensionB);
-  if (!a) pensionA = null;
-  if (!b) pensionB = null;
-
-  const ouvert = nidOuvert();
+     dépôt, une poignée et un bouton : c'est ce qui donne les trois gestes sur un seul élément. */
   const nid = document.createElement('div');
   nid.className = 'nid';
   const case_ = (cote, c) => {
@@ -5427,6 +5429,11 @@ function renderPension() {
     // une case qu'on ne peut pas remplir ne se laisse ni cliquer ni survoler
     z.disabled = !c && !ouvert;
     if (c) {
+      /* UNE BÊTE POSÉE SE REPREND À LA MAIN. La case pleine est une poignée : on la glisse
+         sur l'autre côté pour échanger les deux parents, ou on la clique pour la sortir. Sans
+         ça, composer un couple était un aller simple. */
+      z.draggable = true;
+      z.dataset.cle = 'c:' + c.id;
       const g = document.createElement('span');
       g.className = 'nid-bete';
       setCreature(g, artFor(c), glyphOf(c));
@@ -5441,7 +5448,7 @@ function renderPension() {
       d.textContent = AGES[c.age - 1].nom + ' · ' + etiqDe(c).join(', ');
       t.append(n, d);
       z.append(g, t);
-      z.title = 'Retirer ' + fullName(c) + ' du nid';
+      z.title = 'Clique pour retirer ' + fullName(c) + ' du nid, ou glisse-la sur l’autre case';
     } else {
       const v = document.createElement('span');
       v.className = 'nid-vide-mot';
@@ -5460,16 +5467,63 @@ function renderPension() {
   nid.append(case_('a', a), signe, case_('b', b));
   hote.appendChild(nid);
 
-  /* ── CE QUE LE COUPLE DONNERAIT ── */
   const dit = document.createElement('p');
   dit.className = 'pension-dit';
+  hote.appendChild(dit);
+  refsPension.dit = dit;
+
+  const go = document.createElement('button');
+  go.type = 'button';
+  go.className = 'asc-go';
+  go.id = 'pension-go';
+  go.textContent = 'Confier';
+  hote.appendChild(go);
+  refsPension.go = go;
+}
+
+function renderPension() {
+  const p = $('panel-pension');
+  /* LE PANNEAU EST UN BÂTIMENT : il n'existe pas tant qu'on ne l'a pas acheté. Un couple en
+     cours le garde à l'écran même après une ascension, le temps qu'il se vide — sans quoi deux
+     bêtes resteraient parquées derrière un panneau disparu. */
+  p.hidden = !prime('pension') && !couples().length;
+  if (p.hidden) { pensionSig = ''; return; }
+
+  const a = auNid(pensionA), b = auNid(pensionB);
+  if (!a) pensionA = null;
+  if (!b) pensionB = null;
+  const ouvert = nidOuvert();
+  const portee = porteePension();
+
+  /* LA SIGNATURE PORTE TOUT CE QUI DESSINE, et rien de ce qui coule. L'ÂGE des deux bêtes du
+     nid en fait partie : elles continuent de grandir tant qu'on ne les a pas confiées, et leur
+     nom change avec. */
+  const carte = c => c ? c.id + ':' + c.age : '-';
+  const sig = couples().map(k => k.a + '×' + k.b).join(',') + '|' +
+              carte(a) + '/' + carte(b) + '|' + (ouvert ? 'o' : 'f') + '|' +
+              portee + '|' + placesPension();
+  if (sig !== pensionSig) { pensionSig = sig; batirPension(a, b, ouvert, portee); }
+
+  setText($('pension-meta'), couples().length + ' / ' + placesPension());
+
+  // ── ce qui coule : la barre et le temps restant, repeints sans rien reconstruire ──
+  for (const r of refsPension.couples) {
+    setWidth(r.jauge, Math.min(100, r.k.t / r.k.duree * 100).toFixed(1) + '%');
+    setText(r.reste, !r.vivant ? 'perdu'
+      : r.k.t >= r.k.duree ? 'réserve pleine'
+      : fmtTime(r.k.duree - r.k.t) + (portee > 1 ? ' · ×' + portee : ''));
+  }
+
+  /* ── CE QUE LE COUPLE DONNERAIT ── */
+  const dit = refsPension.dit;
+  dit.classList.remove('refus', 'recette');
   const refus = refusPension(a, b);
   if (!a || !b) {
-    dit.textContent = couples().length >= placesPension()
+    setText(dit, couples().length >= placesPension()
       ? 'La place est prise. Attends que le couple ait fini.'
-      : 'Deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.';
+      : 'Deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.');
   } else if (refus) {
-    dit.textContent = refus;
+    setText(dit, refus);
     dit.classList.add('refus');
   } else {
     const d = distanceDe(a, b), t = dureePension(a, b);
@@ -5486,7 +5540,7 @@ function renderPension() {
        servi une fois, et le garder ensuite ne serait plus du mystère mais de la rétention. */
     const rec = recetteDe(a, b);
     const su = rec && state.seen[rec.donne + ':1'];
-    dit.textContent =
+    setText(dit,
       (d === 0 ? 'Elles se ressemblent en tout' : d === 1 ? 'Elles ont une chose en commun'
                                                           : 'Elles n’ont rien en commun') +
       ' · ' + fmtTime(t) + ' · ' +
@@ -5498,31 +5552,20 @@ function renderPension() {
                    : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
                      ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +
       (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name
-                      : ' · et peut-être autre chose');
+                      : ' · et peut-être autre chose'));
     if (rec) dit.classList.add('recette');
   }
-  hote.appendChild(dit);
+  refsPension.go.disabled = !!refus || !a || !b;
 
-  const go = document.createElement('button');
-  go.type = 'button';
-  go.className = 'asc-go';
-  go.id = 'pension-go';
-  go.textContent = 'Confier';
-  go.disabled = !!refus || !a || !b;
-  hote.appendChild(go);
-
-  /* CE QUI ATTEND EN RÉSERVE. Un œuf de pension se range parmi les autres et ne se distingue
-     plus de rien : sans cette ligne, on couve cinq heures pour voir un « œuf commun » de plus
-     dans la boutique, et la lignée promise n'existe que dans le code. */
   /* LE DÉBIT DE LA PENSION ENTIÈRE, en œufs par heure. C'est le seul chiffre qui se compare à
      l'acheteur automatique, et c'est la question que la pension pose en fin de partie :
      acheter ses œufs, ou les produire. */
-  const debit = couples().reduce((n, k) => n + porteePension() / (k.duree / 3600), 0);
-  const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
-  const nes = state.pension.nes || 0;
+  const debit = couples().reduce((n, k) => n + portee / (k.duree / 3600), 0);
   /* UNE LIGNÉE INCONNUE D'UN RANG SECRET NE SE NOMME PAS ICI. Lire « sun wukong » dans une
      liste de réserve, c'est apprendre la nouvelle par une note de bas de page une heure et
      demie avant l'éclosion, qui est le seul moment où elle valait quelque chose. */
+  const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
+  const nes = state.pension.nes || 0;
   const nommer = l => rareteConnue(LINE_BY_KEY[l].rarity)
     ? LINE_BY_KEY[l].name.toLowerCase() : 'quelque chose que tu n’as jamais vu';
   /* GROUPÉ ET COMPTÉ, jamais énuméré. Une pension nue rendait un œuf toutes les seize heures
@@ -5805,6 +5848,26 @@ function bindTools() {
   }
 
   const nidHote = $('pension');
+
+  /* UNE BÊTE POSÉE EST UNE POIGNÉE, ELLE AUSSI. Composer un couple était un aller simple : une
+     fois la bête dans le nid, seul le clic la ressortait. Maintenant on la glisse sur l'autre
+     case pour échanger les deux parents — et comme elle porte la même clé qu'une vignette de
+     la bande, le dépôt n'a rien de particulier à savoir. */
+  nidHote.addEventListener('dragstart', e => {
+    const z = e.target.closest && e.target.closest('.nid-case');
+    if (!z || !z.draggable || !z.dataset.cle) return;
+    e.dataTransfer.setData('text/plain', z.dataset.cle);
+    e.dataTransfer.effectAllowed = 'copy';
+    z.classList.add('porte');
+    document.body.classList.add('glisse');
+  });
+  nidHote.addEventListener('dragend', e => {
+    const z = e.target.closest && e.target.closest('.nid-case');
+    if (z) z.classList.remove('porte');
+    document.body.classList.remove('glisse');
+    for (const c of nidHote.querySelectorAll('.nid-case')) c.classList.remove('survol');
+  });
+
   nidHote.addEventListener('dragover', e => {
     const z = e.target.closest && e.target.closest('.nid-case');
     if (!z || z.disabled) return;      // une case fermée ne fait pas semblant d'accepter
@@ -5823,7 +5886,10 @@ function bindTools() {
     z.classList.remove('survol');
     // la clé d'un sujet, « c:12 » : seules les bêtes sont attrapables, mais on revérifie
     const cle = e.dataTransfer.getData('text/plain') || '';
-    if (!poserAuNid(parseInt(cle.slice(2), 10), z.dataset.cote)) {
+    const id = parseInt(cle.slice(2), 10);
+    // reposée sur sa propre case : rien à faire, et surtout pas un refus qui grince
+    if (id === (z.dataset.cote === 'a' ? pensionA : pensionB)) return;
+    if (!poserAuNid(id, z.dataset.cote)) {
       blip(300, 0.05, 'sine', 0.03);
       return;
     }

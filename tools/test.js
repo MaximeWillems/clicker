@@ -1126,10 +1126,14 @@ scenario('pension — le nid se remplit au glisser comme au clic', () => {
   ok('les deux cases sont pleines', casesNid(jeu).every(z => z.classList.contains('pleine')));
   ok('et la phrase chiffre le couple', /1 h/.test(ditPension(jeu)), ditPension(jeu));
 
-  /* LA MÊME BÊTE DES DEUX CÔTÉS N'A PAS DE SENS : on la déplace plutôt que de refuser. */
-  ok('reposer à gauche celle de droite', jeu.poserAuNid(b.id, 'a'));
+  /* LA MÊME BÊTE DES DEUX CÔTÉS N'A PAS DE SENS : les deux s’échangent plutôt que de laisser
+     un trou, ce qui est le geste qu’on fait pour relire un couple dans l’autre sens. */
+  ok('glisser celle de droite sur celle de gauche', jeu.poserAuNid(b.id, 'a'));
   eq('elle a changé de côté', jeu.pensionA, b.id);
-  eq('et libéré la sienne', jeu.pensionB, null);
+  eq('et l’autre a pris sa place', jeu.pensionB, a.id);
+  ok('reposer une bête sur sa propre case ne change rien', jeu.poserAuNid(b.id, 'a'));
+  eq('elle est toujours à gauche', jeu.pensionA, b.id);
+  eq('et l’autre à droite', jeu.pensionB, a.id);
 
   // une bête déjà en pension ne se repose pas
   jeu.pensionA = a.id; jeu.pensionB = b.id;
@@ -1204,6 +1208,81 @@ scenario('pension — le marchand ne vend pas une bête confiée, même à la ma
   ok('la confiée est toujours là', s.pen.some(c => c.id === a.id));
   ok('elle est toujours en pension', jeu.enPension(a));
   eq('et le couple tient', jeu.couples().length, 1);
+});
+
+scenario('pension — le panneau se bâtit une fois, et se repeint ensuite', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.refresh();
+
+  const nid = () => noeuds.get('pension').children.find(c => c.classList.contains('nid'));
+  const cases = () => nid().children.filter(c => c.classList.contains('nid-case'));
+
+  /* LE MÊME DÉFAUT QUE LA BANDE AVANT LA 2.14.0. Le panneau se reconstruisait à chaque
+     `refresh`, dix fois par seconde : le bouton disparaît entre l'appui et le relâchement, le
+     navigateur n'émet alors aucun « click », et la cible d'un dépôt est détruite sous le
+     curseur pendant qu'on la survole. Retirer une bête du nid ne marchait qu'un coup sur deux,
+     et le glisser-déposer scintillait. */
+  const avant = nid();
+  for (let i = 0; i < 50; i++) jeu.refresh();
+  ok('cinquante redessins ne touchent pas au nid', nid() === avant);
+
+  jeu.poserAuNid(a.id, 'a');
+  jeu.refresh();
+  ok('mais un dépôt le rebâtit', nid() !== avant);
+  const apres = nid();
+  for (let i = 0; i < 50; i++) jeu.refresh();
+  ok('puis il redevient stable', nid() === apres);
+
+  /* CE QUI COULE SE REPEINT SANS RIEN RECONSTRUIRE. */
+  jeu.poserAuNid(b.id, 'b');
+  jeu.accoupler(a, b);
+  jeu.refresh();
+  const ligne = () => noeuds.get('pension').children.find(c => c.classList.contains('couple'));
+  const reste = () => ligne().children.find(c => c.classList.contains('couple-reste')).textContent;
+  const noeud = ligne(), t0 = reste();
+  jeu.avancePension(600);
+  jeu.refresh();
+  ok('la ligne du couple est le même nœud', ligne() === noeud);
+  ok('mais son temps a changé', reste() !== t0, t0 + ' → ' + reste());
+
+  /* L'ÂGE DES BÊTES DU NID EST DANS LA SIGNATURE : elles grandissent tant qu'on ne les a pas
+     confiées, et leur nom change avec. */
+  jeu.romprePension(a.id);
+  jeu.poserAuNid(a.id, 'a');
+  jeu.refresh();
+  const stable = nid();
+  jeu.refresh();
+  ok('rien ne bouge sans raison', nid() === stable);
+  a.age = 5;
+  jeu.refresh();
+  ok('mais un âge qui change rebâtit', nid() !== stable);
+});
+
+scenario('pension — une bête posée se reprend et s’échange', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.poserAuNid(a.id, 'a');
+  jeu.poserAuNid(b.id, 'b');
+  jeu.refresh();
+
+  const cases = () => noeuds.get('pension').children.find(c => c.classList.contains('nid'))
+                        .children.filter(c => c.classList.contains('nid-case'));
+
+  /* COMPOSER UN COUPLE ÉTAIT UN ALLER SIMPLE : une fois la bête dans le nid, seul le clic la
+     ressortait. Une case pleine est maintenant une poignée. */
+  ok('les deux cases sont des poignées', cases().every(z => z.draggable));
+  eq('et elles portent la clé de leur bête', cases().map(z => z.dataset.cle).join(' '),
+     'c:' + a.id + ' c:' + b.id);
+  ok('elles se disent reprenables', /retirer/.test(cases()[0].title), cases()[0].title);
+
+  // une case vide n'est pas une poignée
+  jeu.pensionB = null;
+  jeu.refresh();
+  eq('la case vide ne se glisse pas', !!cases()[1].draggable, false);
+  eq('et ne porte pas de clé', cases()[1].dataset.cle, undefined);
 });
 
 scenario('pension — un nid sans place ne se laisse pas remplir', () => {

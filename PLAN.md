@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.8.1 · sauvegarde v17 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.8.2 · sauvegarde v17 · 10 lignées illustrées sur 30
 
 ---
 
@@ -61,7 +61,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les automates par âge** | 1.0 → 1.4 | est-ce que l'ordre des achats suit la vie de la bête ? | oui, depuis les cinq âges — la ligne avait survécu à sa propre livraison |
 | **La pension** | 3.0 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? | oui, et mesuré : jamais le centième de ce qu'elles rapporteraient |
 | **Les merveilleuses** | 3.1 | est-ce qu'une merveilleuse se raconte ? | deux écloses sur huit écrites — la réponse est dans le dessin, pas dans le code |
-| **Le nid et la pause** | beta 1.0 | confier une bête est-il un geste ? | oui — on l'attrape dans la bande et on la pose, et la ferme peut s'arrêter le temps de le faire |
+| **Le nid et la pause** | beta 1.0, 1.8 | confier une bête est-il un geste ? | oui — et la pause n'est plus nécessaire depuis qu'une bête confiée quitte la bande |
 | **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
 
@@ -123,6 +123,56 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Les fonds** — 1 sur 800, héréditaires, visibles sur les cartes | l'hérédité | est-ce qu'un fond se chasse ? |
 
+### Le chantier graphique
+
+Trois demandes, et elles vont ensemble : c'est **le même écran** qu'elles habillent. Le jeu a
+été construit en supposant que le dessin viendrait après ; il est venu pour dix lignées, et
+tout le reste — cartes, œufs, fonds — est encore de la typographie et des bordures.
+
+#### Les cartes doivent ressembler à des cartes
+
+Aujourd'hui une carte d'album est **une ligne** : une vignette à gauche, deux lignes de texte à
+droite, une bordure teintée à la rareté. Ça se lit, ça se trie, ça se glisse — et ça n'a
+strictement rien d'une carte. Le mot est employé partout dans le jeu, y compris dans les
+mécaniques qui en dépendent (les étoiles, la poussière, la fusion), et l'objet ne le tient pas.
+
+Ce qu'une carte demande, et qui n'existe nulle part :
+
+- un **cadre** — un rapport hauteur/largeur assumé, pas une bande ;
+- une **zone d'illustration** distincte de la zone de texte ;
+- un **dos** ou une signature de rareté qui se voit à distance ;
+- de quoi supporter le fond animé ci-dessous sans devenir illisible.
+
+C'est le plus gros morceau de CSS du projet, et il touche trois écrans : l'album, l'écran
+d'ascension, et le choix des cartes actives.
+
+#### Les fonds, animés
+
+Les [fonds](#les-fonds--à-développer) étaient prévus comme une variante *visuelle et
+collectionnable* de plus, au même rang que les teintes. La demande les précise : **animés, de
+particules et de couleurs**, et visibles à la fois **sur la créature en scène et sur sa carte**.
+
+Deux conséquences qui n'étaient pas dans la note d'origine :
+
+- ils deviennent le **premier élément animé du jeu** hors du cinquième âge des merveilles, ce
+  qui pose la même question de coût — et la même réponse : `prefers-reduced-motion` fige tout ;
+- ils doivent tenir **derrière un sprite de 32 px** sans le manger, et **derrière une carte**
+  sans en rendre le texte illisible. C'est la contrainte qui décidera de leur forme, pas
+  l'inverse.
+
+À faire en canvas ou en CSS pur ? La réponse dépend du nombre de fonds visibles à la fois : un
+seul en scène, mais potentiellement cinq cartes équipées côte à côte.
+
+#### Un dessin pour les œufs
+
+Les cinq sortes d'œufs partagent le même glyphe 🥚 et se distinguent par leur nom et leur
+couleur de bordure. C'est le seul objet du jeu qu'on regarde **pendant des minutes** — la
+couvaison est une attente — et il n'a pas d'image.
+
+Cinq dessins : commun, rare, épique, mythique, merveille. Ils profitent du même outillage que
+les créatures (`tools/pixel.js`), et ils sont **le meilleur rapport travail/visibilité du
+projet** : cinq images pour l'écran que tout le monde voit en premier.
+
 ### Ce que la 1.7 laisse derrière elle
 
 Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n'est réglée :
@@ -132,6 +182,11 @@ Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n
   devait supprimer. La `beta 1.8.0` a retiré les confiées de la bande, ce qui l'allège à mesure
   qu'on remplit la pension — mais ne règle pas le problème : c'est le CHOIX des seize qui est
   long, pas leur affichage.
+- **Le panneau de pension a coûté deux défauts d'affichage en deux versions**, et les deux
+  étaient déjà documentés ailleurs dans le fichier : un tirage dans une branche morte
+  (`beta 1.8.1`) et un DOM rebâti sous le curseur (`beta 1.8.2`, le même défaut que la bande
+  avant la 2.14.0). **Tout écran neuf doit être relu contre les commentaires de `renderStrip`
+  avant d'être écrit**, pas après.
 - **Le plafond de la réserve devient le vrai frein.** Cinquante œufs par sorte se remplissent en
   trois minutes quand la pension tourne à mille œufs l'heure ; au-delà, tout dépend du nombre
   d'incubateurs qui la vident. Ce n'est pas un défaut — c'est un couplage qu'il faut avoir vu.

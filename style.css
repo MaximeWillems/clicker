@@ -1134,6 +1134,9 @@ body.glisse .nid-case.vide:not(.fermee) { border-color: var(--jade-dim); backgro
 .nid-case.fermee:hover { border-color: var(--rule-hi); }
 .nid-case.survol { border-color: var(--jade); background: var(--jade-dim); }
 
+/* une case pleine est une poignée : on la glisse sur l’autre pour échanger les deux parents */
+.nid-case.pleine { cursor: grab; }
+.nid-case.pleine.porte { opacity: 0.4; cursor: grabbing; }
 .nid-bete { font-size: 1.6rem; line-height: 1; flex: none; }
 .nid-bete img { width: 1em; height: 1em; display: block; object-fit: contain; }
 .nid-txt { display: flex; flex-direction: column; min-width: 0; }
