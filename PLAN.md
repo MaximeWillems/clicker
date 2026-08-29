@@ -58,6 +58,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le dialogue** | 2.12, 2.26, 2.28 | la professeure regarde-t-elle ce qu'on fait ? | oui, et elle peut retenir : trois passages obligés éteignent l'écran |
 | **L'ouverture** | 2.29 | le début est-il trop facile ? | il l'était — trois fois plus long désormais, mesuré |
 | **La fusion et la poussière** | 2.30 → 2.32 | est-ce qu'une carte ratée vaut d'être gardée ? | oui — dix cartes font une étoile |
+| **Les automates par âge** | 1.0 → 1.4 | est-ce que l'ordre des achats suit la vie de la bête ? | oui, depuis les cinq âges — la ligne avait survécu à sa propre livraison |
 
 ### La ligne d'arrivée de l'alpha
 
@@ -91,7 +92,6 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **Les automates par âge** — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | rien | est-ce que l'ordre des achats suit la vie de la bête ? |
 | **Les dix-sept dessins** | rien | — |
 | **La pension, ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | les dessins | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
 | **La compatibilité** — étiquettes, stérilité, durée par distance | la pension ouverte | est-ce que la règle se devine sans wiki ? |
@@ -100,8 +100,19 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **Les merveilleuses** — la rareté, les recettes, trois lignées dessinées | l'hérédité | est-ce qu'une merveilleuse se raconte ? |
 
 **La fusion est tombée en 2.32.0** : il reste donc deux des trois pièces de la bêta, la pension
-et les merveilleuses — et les deux sont au bout de la même chaîne, qui commence par les
-dessins.
+et les merveilleuses — et les deux sont au bout de la même chaîne, qui commence par les dessins.
+
+**Une ligne a disparu sans être faite, parce qu'elle l'était déjà.** « Les automates par âge —
+l'éleveur aux jeunes, la mangeoire aux grandes bêtes » décrivait mot pour mot ce que le jeu
+fait depuis les cinq âges : l'éleveur pousse jusqu'à `bandTo` et s'arrête à la maturité, la
+mangeoire ne touche qu'aux bêtes mûres. Vérifié au banc — avec les deux à fond, une jeune gagne
+de la croissance et zéro embonpoint ; une fois mûre, l'inverse exactement.
+
+La ligne avait survécu à sa propre implémentation, et personne ne l'avait rayée. C'est le
+risque d'un plan qui décrit une intention plutôt qu'un état : **une ligne qu'on n'a pas
+rayée finit par ressembler à du travail restant.** Il vaut la peine, de temps en temps, de
+relire ce qui reste en se demandant non pas « est-ce qu'on veut le faire ? » mais « est-ce que
+ce n'est pas déjà fait ? ».
 
 L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
 passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
