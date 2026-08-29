@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.7.0';
+const VERSION = 'beta 1.7.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -232,6 +232,7 @@ const EGG_KINDS = [
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
 // les quatre qu'on peut acheter : la boutique, l'acheteur et les dévoilements ne voient qu'eux
 const OEUFS_VENDUS = EGG_KINDS.filter(e => e.price);
+const EN_VENTE = Object.fromEntries(OEUFS_VENDUS.map(e => [e.key, e]));
 
 /* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
@@ -1563,7 +1564,9 @@ function freshState() {
     v: SAVE_V,
     coins: 0,
     eggs: Object.fromEntries(EGG_KINDS.map(e => [e.key, 0])),
-    buyKind: 'commun',      // ce que rachète l'acheteur automatique
+    /* Ce que rachète l'acheteur automatique. La chaîne vide l'ARRÊTE : c'est le seul des
+       trois automates qui n'avait pas de « jamais », alors qu'il est le seul à dépenser. */
+    buyKind: 'commun',
     incubators: 1,
     pens: 1,
     incub: [{ line: rollLine('commun'), p: 0, kind: 'commun' }],   // le premier œuf est offert
@@ -1718,7 +1721,10 @@ function load() {
     merged.eggs = typeof merged.eggs === 'number'
       ? Object.assign({}, vide, { commun: merged.eggs })
       : Object.assign({}, vide, merged.eggs || {});
-    if (!EGG_BY_KEY[merged.buyKind]) merged.buyKind = 'commun';
+    /* '' est une consigne valable — l'acheteur arrêté — et ne doit pas se faire corriger.
+       Tout le reste se vérifie contre ce qui SE VEND, et non contre les sortes d'œufs : l'œuf de
+       merveille en est une, il n'a pas de prix, et le faire racheter rendrait NaN de pièces. */
+    if (merged.buyKind !== '' && !EN_VENTE[merged.buyKind]) merged.buyKind = 'commun';
     /* Le marchand n'avait qu'un palier unique et un plafond de rareté. On les convertit en
        consignes par rareté : celles que le plafond couvrait gardent le palier, les autres
        passent à « jamais » — exactement ce que la sauvegarde faisait déjà. */
@@ -2962,8 +2968,15 @@ function runAutomations(dt) {
   /* L'acheteur prend le relais quand la réserve est sèche. C'est la seule moitié qui se paie,
      et c'est la bonne : DÉPENSER à ta place est une décision, poser un œuf déjà acheté n'en
      est pas une. */
-  if (prime('acheteur')) {
-    const voulu = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
+  /* L'ACHETEUR SE COUPE. C'est le seul des trois automates qui DÉPENSE, et le seul qui n'avait
+     pas de « jamais » : le marchand et l'évolution en ont un par rareté depuis toujours.
+
+     Ça ne manquait pas tant que la boutique était la seule source d'œufs. Depuis que la pension
+     en produit, l'acheteur devient une fuite — il rachète ce qu'on fabrique déjà, au prix fort,
+     pendant qu'on regarde ailleurs. Et une prime ne se revend pas : sans interrupteur, l'avoir
+     achetée devenait irréversible. */
+  if (prime('acheteur') && EN_VENTE[state.buyKind]) {
+    const voulu = EN_VENTE[state.buyKind];
     for (let i = 0; i < state.incub.length; i++) {
       if (state.incub[i]) continue;
       const prix = prixOeuf(voulu);
@@ -3218,6 +3231,8 @@ function remplirMenus() {
 
   const ach = $('sel-acheteur');
   ach.textContent = '';
+  // en tête, comme le « jamais » des deux autres automates : la consigne de ne rien faire
+  ach.appendChild(option('', 'jamais — je m’en occupe moi-même'));
   for (const e of OEUFS_VENDUS) {
     ach.appendChild(option(e.key, e.name.replace('Œuf ', 'Œufs ') + 's — ' +
       fmt(prixOeuf(e)) + ', couve en ' + fmtTime(e.hatch)));
@@ -4384,7 +4399,10 @@ function valeurAu(c, age) {
 }
 
 function noteAcheteur() {
-  const e = EGG_BY_KEY[state.buyKind] || EGG_BY_KEY.commun;
+  if (!EN_VENTE[state.buyKind])
+    return 'Il est arrêté : il ne dépense plus rien. Les œufs de ta réserve continuent de se ' +
+           'placer seuls dans les incubateurs libres — ça, c’est gratuit et ça ne s’arrête pas.';
+  const e = EN_VENTE[state.buyKind];
   const parHeure = Math.floor(3600 / (e.hatch / Math.max(1, force('couveuse'))));
   return 'Environ ' + parHeure + ' éclosion' + (parHeure > 1 ? 's' : '') +
     ' par heure et par incubateur, à ta couveuse actuelle. ' +
@@ -5901,7 +5919,7 @@ function bindTools() {
   }
 
   $('sel-acheteur').addEventListener('change', e => {
-    state.buyKind = EGG_BY_KEY[e.target.value] ? e.target.value : 'commun';
+    state.buyKind = e.target.value === '' || EN_VENTE[e.target.value] ? e.target.value : 'commun';
   });
 
   $('tri').addEventListener('click', e => {

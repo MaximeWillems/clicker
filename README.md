@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.7.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.7.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.7.0** | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
+| **beta 1.7.1** | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
+| beta 1.7.0 | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
 | beta 1.6.0 | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
 | beta 1.5.0 | `tools/pixel.js` : une planche de sprites devient une grille de caractères, corrigeable à la main |
 | beta 1.4.0 | la Tarasque : une merveille sans recette, que seules deux chimères peuvent donner |

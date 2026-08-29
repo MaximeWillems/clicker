@@ -1708,6 +1708,49 @@ scenario('merveilles — une partie de v15 reçoit ses clés sans rien perdre', 
   eq('avec ses enclos', k.state.pens, 4);
 });
 
+scenario('acheteur — il peut se taire, et la réserve continue sans lui', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9; s.primes.acheteur = true;
+  s.incubators = 3; s.incub = [null, null, null];
+  jeu.refresh();
+
+  /* C'EST LE SEUL DES TROIS AUTOMATES QUI DÉPENSE, et le seul qui n'avait pas de « jamais ».
+     Une prime ne se revendant pas, l'avoir achetée était irréversible. */
+  const menu = noeuds.get('sel-acheteur');
+  eq('la première consigne est de ne rien faire', menu.children[0].value, '');
+  ok('et elle se lit', /jamais/.test(menu.children[0].textContent), menu.children[0].textContent);
+
+  const avant = s.coins;
+  jeu.runAutomations(1);
+  eq('en marche, il remplit', s.incub.filter(Boolean).length, 3);
+  ok('et il dépense', s.coins < avant);
+
+  s.buyKind = '';
+  s.incub = [null, null, null];
+  const garde = s.coins;
+  jeu.runAutomations(1);
+  eq('arrêté, il ne remplit rien', s.incub.filter(Boolean).length, 0);
+  eq('et ne dépense rien', s.coins, garde);
+  jeu.refresh();
+  ok('la note le dit', /arrêté/.test(noeuds.get('note-acheteur').textContent),
+     noeuds.get('note-acheteur').textContent);
+
+  /* LA RÉSERVE SE VIDE QUAND MÊME : elle est déjà payée, et c'est justement ce qu'on veut
+     quand la pension produit. */
+  s.eggs.rare = 2;
+  jeu.runAutomations(1);
+  eq('deux œufs de la réserve sont placés', s.incub.filter(Boolean).length, 2);
+  eq('la réserve est vidée', jeu.eggStock('rare'), 0);
+  eq('et toujours rien dépensé', s.coins, garde);
+
+  // la consigne traverse un rechargement sans se faire corriger en « commun »
+  const brut = JSON.parse(JSON.stringify(s));
+  eq('elle survit', neuf(brut).state.buyKind, '');
+  // une consigne absurde, elle, se corrige toujours
+  brut.buyKind = 'merveille';
+  eq('un œuf qu’on n’achète pas retombe sur le commun', neuf(brut).state.buyKind, 'commun');
+});
+
 /* ───────────────────────────── les trois globales ───────────────────────────── */
 
 scenario('globales — trois axes qui ne se recouvrent pas', () => {
