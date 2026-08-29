@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.27.0';
+const VERSION = 'alpha 2.28.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -653,10 +653,23 @@ const PROF = {
    `fait` est la règle générale : obéir à la professeure vaut mieux qu'un clic sur son texte,
    et cliquer deux fois — une fois pour elle, une fois pour l'œuf — n'a aucun sens.
 
-   `tient` s'y ajoute quand la phrase est un passage obligé : la boîte cesse alors d'être
-   cliquable et attend qu'on fasse le geste. On le réserve aux DEUX actions que la partie ne
-   peut pas contourner — cliquer l'œuf, cliquer la bête. Tenir sur un achat facultatif
-   bloquerait la file des scènes suivantes pour un joueur qui décide autre chose.
+   `tient` s'y ajoute quand la phrase est un passage obligé. LA BOÎTE NE S'AVANCE PLUS DU
+   TOUT — ni par un clic sur le texte, ni par la croix, qui disparaît. Le reste de l'écran
+   s'éteint avec elle : la boutique, la bande, les réglages et les outils deviennent inertes,
+   et il ne reste que le geste demandé. C'est la seule façon d'obtenir qu'on le fasse.
+
+   Tenir sans éteindre le reste ne bloquait rien : on lisait la consigne, on allait cliquer
+   ailleurs, et la scène restait plantée là. Tenir en laissant la croix ne bloquait rien non
+   plus — deux clics suffisaient à traverser tout le mode histoire sans rien apprendre.
+
+   LA SORTIE EXISTE, ET ELLE EST FRANCHE : le bouton 📖 reste vivant et éteint le mode histoire
+   d'un coup. On peut refuser le tutoriel ; on ne peut pas le suivre à moitié.
+
+   TROIS RÈGLES POUR CHOISIR OÙ TENIR. L'action doit être POSSIBLE tout de suite — tenir sur
+   « achète une couveuse » condamnerait qui n'a pas les pièces. Elle doit être GRATUITE, ou
+   avoir une porte gratuite : on tient sur « vends ou paie le péage » parce que vendre est
+   toujours possible. Et elle doit être INDISPENSABLE à la suite : le reste du mode histoire
+   n'a pas de sens si on ne l'a pas faite.
 
    ET UNE SCÈNE PEUT SE PÉRIMER. `perime` dit quand ce dont elle parle n'existe plus : l'œuf
    dont elle annonçait le craquement a éclos, la bête mûre dont elle expliquait le choix est
@@ -700,7 +713,11 @@ const NOTES = [
      on avance, on n'efface pas. */
   { cle: 'mure', test: () => state.pen.some(estMur), repliques: [
     'Son niveau s’est bloqué. On dit qu’elle est mûre : elle a fini l’âge où elle était.',
-    { dit: 'C’est ici que le métier commence. Tu peux la vendre, ou payer son péage pour qu’elle passe à l’âge suivant.',
+    /* Le troisième et dernier passage obligé. Vendre est toujours possible et ne coûte rien,
+       donc la porte est ouverte même sans un sou ; et tout ce que le mode histoire raconte
+       ensuite suppose qu'on a tranché une fois. */
+    { dit: 'C’est ici que le métier commence. Tu peux la vendre, ou payer son péage pour qu’elle passe à l’âge suivant. Décide.',
+      tient: 1,
       fait: () => state.stats.vendues > 0 || state.stats.evolutions > 0 },
     'Il n’y a pas de bonne réponse à cette question. Il y en a une pour aujourd’hui.',
   ] },
@@ -3974,8 +3991,8 @@ function avanceSeule() {
 function replique(saut) {
   const n = scene();
   if (!n) { state.dial = null; return; }
-  // une réplique qui tient n'avance que par l'action ; seule la croix la lève
-  if (!saut && ligne(n, state.dial.i).tient) return;
+  // une réplique qui tient n'avance QUE par l'action — la croix n'y peut rien non plus
+  if (ligne(n, state.dial.i).tient) return;
   if (saut || state.dial.i + 1 >= n.repliques.length) {
     state.vu[n.cle] = true;
     state.dial = null;
@@ -4008,6 +4025,8 @@ function renderTuto() {
     setText($('dial-dit'), l.dit);
     setText($('dial-suite'), l.tient ? '●' : i + 1 < n.repliques.length ? '▸' : '✓');
     $('dial-boite').classList.toggle('tient', !!l.tient);
+    // la croix disparaît : rien ne doit laisser croire qu'on peut passer outre
+    $('dial-passer').hidden = !!l.tient;
     boite.hidden = false;
   } else {
     boite.hidden = true;
@@ -4020,6 +4039,12 @@ function renderTuto() {
 
      La condition est `seen` : elle dit si une forme a DÉJÀ été rencontrée, elle survit à
      l'ascension, et elle ne peut pas revenir en arrière. */
+  /* L'ÉCRAN S'ÉTEINT PENDANT QU'ELLE TIENT. Tout devient inerte sauf le sujet — l'œuf ou la
+     bête qu'elle demande de toucher — et le bouton 📖, qui est la seule sortie. */
+  const n2 = scene();
+  const tenu = !!(n2 && state.tuto && ligne(n2, Math.min(state.dial.i, n2.repliques.length - 1)).tient);
+  document.body.classList.toggle('tenu', tenu);
+
   document.body.classList.toggle('debut', state.tuto && !seenCount());
 
   /* ── CE QUI N'A PAS ENCORE DE SENS NE S'AFFICHE PAS ────────────────────────

@@ -299,10 +299,69 @@ scenario('dialogue — faire ce qu’elle dit fait avancer, et « tient » bloqu
   s.incub[0].p = 1; jeu.refresh();            // on fait le geste demandé
   ok('faire la chose fait avancer', dit() !== bloquee, dit());
 
-  // la croix passe toujours, même ce qui tient
+});
+
+scenario('dialogue — une réplique qui tient éteint l’écran et ne se passe pas', () => {
+  const jeu = neuf(); const s = jeu.state;
+  const tient = () => noeuds.get('dial-boite').classList.contains('tient');
+  const tenu = () => document.body.classList.contains('tenu');
+  jeu.refresh();
+
+  let garde = 0;
+  while (!tient() && garde++ < 10) jeu.replique(false);
+  ok('on atteint une réplique qui tient', tient());
+
+  ok('l’écran s’éteint autour', tenu());
+  ok('et la croix disparaît', noeuds.get('dial-passer').hidden);
+
+  /* NI LE TEXTE NI LA CROIX. Tenir en laissant la croix ne bloquait rien : deux clics
+     suffisaient à traverser tout le mode histoire sans rien apprendre. */
+  const bloquee = ditDial();
+  jeu.replique(false);
+  eq('un clic sur le texte ne passe pas', ditDial(), bloquee);
+  jeu.replique(true);
+  eq('la croix non plus', ditDial(), bloquee);
+  ok('la boîte tient toujours', tient());
+
+  // faire le geste, et seulement lui, débloque
+  s.incub[0].p = 1; jeu.refresh();
+  ok('le geste débloque', ditDial() !== bloquee, ditDial());
+  ok('et rallume l’écran', !tenu());
+
+  /* LA SORTIE EXISTE ET ELLE EST FRANCHE : on peut refuser le tutoriel, pas le suivre à
+     moitié. Le bouton 📖 reste vivant sous le voile. */
   garde = 0;
-  while (!tient() && garde++ < 20) { jeu.replique(false); if (noeuds.get('dial').hidden) break; }
-  if (tient()) { jeu.replique(true); ok('la croix lève ce qui tient', !tient() || noeuds.get('dial').hidden); }
+  while (!tient() && garde++ < 30) {
+    jeu.replique(false);
+    if (noeuds.get('dial').hidden) { s.incub[0].p = 9999; jeu.hatchAll(); jeu.refresh(); }
+  }
+  ok('on retient de nouveau', tient());
+  s.tuto = false; jeu.refresh();
+  ok('éteindre le mode histoire rallume tout', !tenu());
+  ok('et ferme la boîte', noeuds.get('dial').hidden);
+});
+
+scenario('dialogue — on ne tient que sur ce qui est possible et gratuit', () => {
+  const jeu = neuf();
+  /* TROIS RÈGLES : l'action doit être possible tout de suite, gratuite ou avoir une porte
+     gratuite, et indispensable à la suite. Tenir sur « achète une couveuse » condamnerait qui
+     n'a pas les pièces — ce scénario garde la liste courte. */
+  const tenues = [];
+  for (const n of jeu.NOTES) {
+    for (const r of n.repliques) {
+      if (r && r.tient) tenues.push(n.cle);
+    }
+  }
+  eq('trois passages obligés, pas un de plus', tenues.length, 3);
+  for (const cle of ['oeuf', 'bete', 'mure']) {
+    ok('« ' + cle + ' » tient', tenues.indexOf(cle) !== -1);
+  }
+  // et chacun a de quoi savoir qu'on l'a fait
+  for (const n of jeu.NOTES) {
+    for (const r of n.repliques) {
+      if (r && r.tient) ok('« ' + n.cle + ' » sait quand le geste est fait', typeof r.fait === 'function');
+    }
+  }
 });
 
 // ouvre une scène et une seule : toutes les autres sont marquées lues d'avance
@@ -315,8 +374,10 @@ function seule(cle, prep) {
   jeu.refresh();
   return jeu;
 }
-const ditDial = () => (noeuds.get('dial-dit').textContent || '');
-const dialOuvert = () => !noeuds.get('dial').hidden;
+// en `function` : les scénarios s'exécutent dans l'ordre du fichier, et ceux du dialogue
+// s'en servent avant d'arriver ici
+function ditDial() { return noeuds.get('dial-dit').textContent || ''; }
+function dialOuvert() { return !noeuds.get('dial').hidden; }
 
 scenario('dialogue — une scène se ferme quand ce dont elle parle disparaît', () => {
   const jeu0 = neuf();

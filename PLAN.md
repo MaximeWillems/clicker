@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.27.0 · sauvegarde v14 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.28.0 · sauvegarde v14 · 10 lignées illustrées sur 27
 
 ---
 
@@ -55,7 +55,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les écrans bas** | 2.24 | le jeu tient-il sur un portable ? | tout se replie, et deux ruptures en hauteur |
 | **La plonge** | 2.25, 2.27 | peut-on rendre le jeu injouable ? | non — dix clics l'assiette, et elle se raconte avant de s'ouvrir |
 | **Les trophées** | 2.25 | reste-t-il un objectif nommé ? | douze, dont six qu'on ne voit qu'en les décrochant |
-| **Le dialogue** | 2.12, 2.26 | la professeure regarde-t-elle ce qu'on fait ? | oui — dix répliques suivent l'action, trois scènes se périment |
+| **Le dialogue** | 2.12, 2.26, 2.28 | la professeure regarde-t-elle ce qu'on fait ? | oui, et elle peut retenir : trois passages obligés éteignent l'écran |
 
 ### Ce qui vient ensuite
 
@@ -215,7 +215,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 39 scénarios
+node tools/test.js              les 41 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 

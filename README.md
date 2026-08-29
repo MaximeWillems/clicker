@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.27.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.28.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.27.0** | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
+| **2.28.0** | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
+| 2.27.0 | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
 | 2.26.0 | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
 | 2.25.0 | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
 | 2.24.1 | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
@@ -113,7 +114,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Trente-neuf scénarios, six cent soixante-quatorze vérifications. Passer un mot en argument ne joue que
+Quarante-et-un scénarios, six cent quatre-vingt-douze vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -289,11 +290,33 @@ garde, pourquoi la question n'a pas de bonne réponse. Fermer sur l'action ferai
 l'explication à qui a agi vite, c'est-à-dire à qui joue bien. `fait` y suffit : on avance, on
 n'efface pas.
 
-Une réplique peut en plus **tenir** : la boîte cesse d'être cliquable et attend le geste. On le
-réserve aux **deux actions que la partie ne peut pas contourner** — cliquer l'œuf, cliquer la
-bête. Tenir sur un achat facultatif bloquerait toutes les scènes suivantes pour un joueur qui
-décide autre chose ; « achète une couveuse » avance donc à l'achat *ou* au clic. La croix passe
-tout, y compris ce qui tient : personne ne doit rester coincé.
+#### Trois passages obligés
+
+Une réplique peut **tenir**, et alors elle tient vraiment. **La boîte ne s'avance plus du
+tout** — ni par un clic sur le texte, ni par la croix, qui disparaît. Et **le reste de l'écran
+s'éteint** : la boutique, la bande, les réglages, les outils, la bourse deviennent inertes et
+grisés. Il ne reste que le sujet, qui pulse doucement.
+
+Les deux moitiés étaient nécessaires. Tenir sans éteindre le reste ne bloquait rien : on lisait
+la consigne, on allait cliquer ailleurs, et la scène restait plantée là. Tenir en laissant la
+croix ne bloquait rien non plus — **deux clics suffisaient à traverser tout le mode histoire
+sans rien apprendre**.
+
+**La sortie existe, et elle est franche** : le bouton `📖` reste vivant sous le voile et éteint
+le mode histoire d'un coup. On peut refuser le tutoriel ; on ne peut pas le suivre à moitié.
+
+**Trois règles décident où l'on tient**, et elles gardent la liste courte :
+
+- **possible tout de suite** — tenir sur « achète une couveuse » condamnerait qui n'a pas les
+  pièces, puisque la scène s'ouvre à 60 % du prix ;
+- **gratuite, ou avec une porte gratuite** — on tient sur « vends ou paie le péage » parce que
+  vendre est toujours possible, même sans un sou ;
+- **indispensable à la suite** — le reste du mode histoire n'a pas de sens sans elle.
+
+Il en reste donc trois, et un scénario du banc vérifie qu'il n'y en a pas une de plus : cliquer
+l'œuf, cliquer la bête, et **trancher le premier vrai choix du jeu** — vendre sa première bête
+mûre ou payer son péage. Chacune sait aussi reconnaître qu'on l'a faite, ce que le même
+scénario vérifie.
 
 La vérification tourne à chaque rendu, ce qui règle aussi le rechargement : une consigne déjà
 exécutée avant la fermeture de la page ne se redemande pas à la réouverture. La boucle est

@@ -276,6 +276,27 @@ body {
 
 /* LA VUE DE L'ŒUF. Avant la première éclosion, il ne reste que la scène : la colonne
    latérale et la bande disparaissent, et la grille se referme sur une seule colonne. */
+/* ── PENDANT QU'ELLE TIENT ─────────────────────────────────────────────────────
+   Tout s'éteint sauf ce qu'elle demande de toucher. Sans ça, « tenir » ne tenait rien : on
+   lisait la consigne et on allait cliquer ailleurs, la scène plantée derrière.
+
+   Deux exceptions, et deux seulement : le SUJET, qui est le geste demandé, et le bouton 📖,
+   qui est la sortie. Refuser le tutoriel doit rester possible ; le suivre à moitié, non. */
+body.tenu .side,
+body.tenu .strip-wrap,
+body.tenu .stage-acts,
+body.tenu .foot,
+body.tenu .brand,
+body.tenu .purse { pointer-events: none; opacity: 0.35; filter: saturate(0.4); }
+body.tenu .tool { pointer-events: none; opacity: 0.35; }
+body.tenu #btn-tuto { pointer-events: auto; opacity: 1; }
+body.tenu .subject { animation: appel 1.6s ease-in-out infinite; }
+@keyframes appel {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) { body.tenu .subject { animation: none; } }
+
 body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "main"; }
 body.debut .side,
 body.debut .strip-wrap,
