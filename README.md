@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.16.1
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 2.17.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -37,7 +37,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **2.16.1** | le banc d'essai entre dans le dépôt, la scène se découpe en trois |
+| **2.17.0** | la partie se télécharge, se copie et se restaure |
+| 2.16.1 | le banc d'essai entre dans le dépôt, la scène se découpe en trois |
 | 2.16.0 | le bonheur d'une bête, et la frénésie de clic qu'elle offre |
 | 2.15.0 | aucun nom de bête ne reprend un mot d'âge ni de taille |
 | 2.14.0 | la réserve d'œufs se vide toute seule, gratuitement |
@@ -101,7 +102,7 @@ python -m http.server 5291
 node tools/test.js
 ```
 
-Seize scénarios, trois cent cinquante-six vérifications. Passer un mot en argument ne joue que
+Vingt scénarios, trois cent quatre-vingt-cinq vérifications. Passer un mot en argument ne joue que
 les scénarios dont le nom le contient : `node tools/test.js frénésie`.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
@@ -299,14 +300,48 @@ couvaison — et une ferme à cinquante millions recevait trente secondes plus t
 bête. Elle grandit au clic ». Les notes ne parlent que du tout début : une partie enregistrée
 les a toutes dépassées par construction.
 
-## Boutons de test (en haut à droite)
+## Les boutons du coin (en haut à droite)
 
 | Bouton | Effet |
 |---|---|
+| `×1` | Cycle ×1 → ×10 → ×100. Accélère toute la simulation pour tester une progression complète en quelques minutes. **Test.** |
 | `📖` | Éteint le mode histoire — tout devient visible. Le rallumer rejoue les notes depuis le début. |
-| `×1` | Cycle ×1 → ×10 → ×100. Accélère toute la simulation pour tester une progression complète en quelques minutes. |
 | `♪` | Coupe le son. |
+| `💾` | Garder une copie de la partie, ou en restaurer une. |
 | `⟲` | Efface la partie et repart de zéro. |
+
+### La sauvegarde en clair
+
+La partie ne vit que dans le stockage local d'un navigateur. Le vider, changer de machine ou
+ouvrir la page en navigation privée l'efface **sans retour** — c'est la seule perte du jeu que
+rien ne rattrape, et l'écran `💾` est le seul qui la répare.
+
+**Garder** se fait de deux façons : un fichier `eclosion-AAAAMMJJ-hhmm.json` qui se range tout
+seul par ordre chronologique, ou le texte copié au presse-papier — à coller dans une note, un
+mail à soi-même, n'importe où hors du navigateur. Le presse-papier peut être refusé (il
+demande un contexte sécurisé, ce qu'une page ouverte en `file://` n'est pas) : le
+téléchargement reste donc le chemin principal, et la copie un raccourci qui peut échouer sans
+conséquence.
+
+**Restaurer** accepte un fichier ou du texte collé, et affiche **ce que le fichier contient
+avant d'écraser quoi que ce soit** — nombre de bêtes, pièces, cartes, ascensions, format et
+date. C'est la seule protection qui compte : le risque d'une restauration n'est pas de rater
+le geste, c'est de restaurer le mauvais fichier sur une bonne partie. Le bouton reste fermé
+tant que le texte ne tient pas, et ce qui est refusé dit pourquoi.
+
+Deux règles qui ne se devinent pas :
+
+- **Un format plus récent est refusé.** Migrer vers l'avant est impossible ; charger quand
+  même donnerait une partie silencieusement abîmée. Un format plus *ancien* passe, et `load()`
+  le migre comme il migre n'importe quelle vieille sauvegarde.
+- **La date repart à maintenant.** Restaurer une copie n'est pas rentrer d'une absence : sans
+  ça, un fichier vieux d'une semaine offrirait au chargement les huit heures de ferme
+  automatique que le plafond hors-ligne autorise — un cadeau pour un geste qui n'en est pas
+  un.
+
+La restauration **recharge la page** plutôt que de rebrancher l'état à chaud : le démarrage
+refait la boutique, les menus, les intervalles et le rattrapage dans le bon ordre, et une
+restauration doit ressembler exactement à une ouverture de page.
 
 ## Équilibrage
 

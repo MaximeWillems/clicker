@@ -15,7 +15,7 @@
 
    Un nombre qui monte remet à zéro ceux qui le suivent. C'est l'unique copie du numéro
    dans tout le projet : on la change dans le commit qui apporte la modification. */
-const VERSION = 'alpha 2.16.1';
+const VERSION = 'alpha 2.17.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3527,6 +3527,86 @@ function refresh() {
 }
 
 /* ─────────────────────────────────────────────
+   La sauvegarde, en clair
+   ───────────────────────────────────────────── */
+
+/* Le jeu tient dans le stockage local d'un navigateur. Le vider, changer de machine, ouvrir
+   en navigation privée : la partie disparaît, et c'est la seule perte du jeu qui ne se
+   rattrape par rien. Une copie hors du navigateur est la réponse, et elle tient en deux
+   fonctions — en fabriquer une, en relire une. */
+
+// Ce qu'on exporte, c'est l'état vivant, pas ce que localStorage porte : les deux peuvent
+// différer de cinq secondes, et c'est toujours le premier qui a raison.
+const texteSauvegarde = () => JSON.stringify(state);
+
+/* Lit un texte et dit ce qu'il contient, SANS RIEN ÉCRIRE. C'est ce résumé qui protège du
+   vrai risque de la restauration : écraser une bonne partie avec le mauvais fichier. On
+   refuse aussi un format plus récent que celui qu'on sait lire — migrer vers l'avant est
+   impossible, et charger quand même donnerait une partie silencieusement abîmée. */
+function lireSauvegarde(texte) {
+  let d;
+  try { d = JSON.parse(texte); }
+  catch (e) { return { ok: false, dit: 'Ce texte n’est pas une sauvegarde : il ne se lit pas.' }; }
+  if (!d || typeof d !== 'object' || Array.isArray(d))
+    return { ok: false, dit: 'Ce texte n’est pas une sauvegarde.' };
+  if (typeof d.coins !== 'number' || !Array.isArray(d.pen) || !Array.isArray(d.incub))
+    return { ok: false, dit: 'Sauvegarde incomplète : la ferme manque.' };
+  if (typeof d.v !== 'number')
+    return { ok: false, dit: 'Sauvegarde sans numéro de format.' };
+  if (d.v > SAVE_V)
+    return { ok: false, dit: 'Cette sauvegarde vient d’une version plus récente du jeu ' +
+                             '(format v' + d.v + ', ici v' + SAVE_V + ').' };
+
+  const cartes = (d.album || []).length, sauts = (d.asc && d.asc.n) || 0;
+  const quand = d.t ? new Date(d.t) : null;
+  return { ok: true, data: d, dit:
+    d.pen.length + ' bête' + (d.pen.length > 1 ? 's' : '') + ' en enclos · ' +
+    fmt(d.coins) + ' pièce' + (d.coins >= 2 ? 's' : '') +
+    (cartes ? ' · ' + cartes + ' carte' + (cartes > 1 ? 's' : '') : '') +
+    (sauts ? ' · ' + sauts + ' ascension' + (sauts > 1 ? 's' : '') : '') +
+    ' · format v' + d.v +
+    (quand && !isNaN(quand) ? ' · ' + quand.toLocaleString('fr-FR') : '') };
+}
+
+/* Pose la sauvegarde lue et recharge. Recharger plutôt que rebrancher l'état à chaud : le
+   démarrage refait la boutique, les menus, les intervalles et le rattrapage dans le bon
+   ordre, et une restauration doit ressembler exactement à une ouverture de page. */
+function restaurer(texte) {
+  const lu = lireSauvegarde(texte);
+  if (!lu.ok) return lu;
+  /* La date repart à maintenant. Restaurer une copie n'est pas rentrer d'une absence : sans
+     ça, un fichier vieux d'une semaine offrirait au chargement les huit heures de ferme
+     automatique que le plafond hors-ligne autorise, ce qui serait un cadeau pour un geste
+     qui n'en est pas un. */
+  lu.data.t = Date.now();
+  // couper la sauvegarde AVANT de recharger, sinon beforeunload réécrit ce qu'on vient de poser
+  stopSaving = true;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(lu.data)); }
+  catch (e) {
+    stopSaving = false;
+    return { ok: false, dit: 'Le navigateur a refusé d’écrire la sauvegarde.' };
+  }
+  location.reload();
+  return lu;
+}
+
+// Dit à l'écran ce que vaut le texte en cours de saisie, et n'ouvre le bouton que s'il tient.
+function jugerSav(texte) {
+  if (!texte.trim()) { setText($('sav-resume'), ''); $('sav-go').disabled = true; return; }
+  const lu = lireSauvegarde(texte);
+  setText($('sav-resume'), lu.ok ? '→ ' + lu.dit : '✕ ' + lu.dit);
+  $('sav-resume').classList.toggle('sav-non', !lu.ok);
+  $('sav-go').disabled = !lu.ok;
+}
+
+// Un nom de fichier qui se range tout seul par ordre chronologique.
+function nomFichierSauvegarde() {
+  const d = new Date(), n = x => String(x).padStart(2, '0');
+  return 'eclosion-' + d.getFullYear() + n(d.getMonth() + 1) + n(d.getDate()) +
+         '-' + n(d.getHours()) + n(d.getMinutes()) + '.json';
+}
+
+/* ─────────────────────────────────────────────
    Démarrage
    ───────────────────────────────────────────── */
 
@@ -3639,6 +3719,59 @@ function bindTools() {
     state.sound = !state.sound;
     $('btn-sound').setAttribute('aria-pressed', String(state.sound));
     if (state.sound) blip(660, 0.06, 'triangle', 0.03);
+  });
+
+  /* L'ÉCRAN DE SAUVEGARDE. Le presse-papier n'est pas garanti — il demande un contexte
+     sécurisé, ce qu'une page ouverte en `file://` n'est pas — donc le téléchargement reste
+     le chemin principal et la copie un raccourci qui peut échouer sans conséquence. */
+  const ouvrirSav = (v) => {
+    $('sauvegarde').hidden = !v;
+    if (!v) return;
+    setText($('sav-etat'), 'Ta partie actuelle : ' + lireSauvegarde(texteSauvegarde()).dit);
+    $('sav-colle').value = '';
+    jugerSav('');
+  };
+  $('btn-sav').addEventListener('click', () => ouvrirSav(true));
+  $('sav-close').addEventListener('click', () => ouvrirSav(false));
+  $('sauvegarde').addEventListener('click', e => { if (e.target === $('sauvegarde')) ouvrirSav(false); });
+
+  $('sav-fichier').addEventListener('click', () => {
+    const url = URL.createObjectURL(new Blob([texteSauvegarde()], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = nomFichierSauvegarde();
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    chord([523, 784], 60);
+  });
+
+  $('sav-copier').addEventListener('click', () => {
+    const dire = ok => setText($('sav-etat'), ok
+      ? 'Copié. Colle-le où tu veux — un fichier texte, une note, un mail à toi-même.'
+      : 'Le navigateur a refusé le presse-papier. Passe par le téléchargement.');
+    try {
+      navigator.clipboard.writeText(texteSauvegarde()).then(() => dire(true), () => dire(false));
+    } catch (e) { dire(false); }
+  });
+
+  $('sav-choix').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const lecteur = new FileReader();
+    lecteur.onload = () => { $('sav-colle').value = String(lecteur.result); jugerSav($('sav-colle').value); };
+    lecteur.onerror = () => { setText($('sav-resume'), 'Ce fichier ne se lit pas.'); $('sav-go').disabled = true; };
+    lecteur.readAsText(f);
+  });
+
+  $('sav-colle').addEventListener('input', e => jugerSav(e.target.value));
+
+  $('sav-go').addEventListener('click', () => {
+    const texte = $('sav-colle').value;
+    const lu = lireSauvegarde(texte);
+    if (!lu.ok) return;
+    if (!confirm('Restaurer cette sauvegarde ?\n\n' + lu.dit +
+                 '\n\nTa partie actuelle sera remplacée. C’est irréversible.')) return;
+    const r = restaurer(texte);
+    if (!r.ok) setText($('sav-resume'), r.dit);
   });
 
   $('btn-reset').addEventListener('click', () => {

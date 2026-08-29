@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 2.16.0 · sauvegarde v11 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 2.17.0 · sauvegarde v11 · 10 lignées illustrées sur 27
 
 ---
 
@@ -33,9 +33,9 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 |---|---|---|---|
 | **Les cinq âges** | 1.0 → 1.4 | est-ce que la progression cesse de reculer ? | oui — plus rien ne redescend, par construction |
 | **Les prix de moitié** | 1.5 | est-ce que la partie compressée se joue mieux ? | à mesurer encore |
-| **L'album et l'ascension** | 2.0 → 2.5 | est-ce qu'on veut recommencer ? | **jamais joué de bout en bout** |
+| **L'album et l'ascension** | 2.0 → 2.5 | est-ce qu'on veut recommencer ? | jouée plusieurs fois ; la question de fond reste ouverte |
 | **Les achats par lots** | 2.1 | est-ce que la fin de partie cesse d'être une paperasse ? | oui |
-| **Les jetons de fortune** | 2.2, 2.9 | est-ce que l'ascension se mérite ? | le pas de mille tient, non éprouvé |
+| **Les jetons de fortune** | 2.2, 2.9 | est-ce que l'ascension se mérite ? | le pas de mille tient |
 | **Dix lignées rares** | 2.3 | est-ce que l'ère rare cesse de se répéter ? | oui sur le papier — six lignées sans dessin |
 | **Le glisser-déposer des cartes** | 2.7 | est-ce que l'album se manipule ? | non vérifié : rien de visuel ne l'est |
 | **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
@@ -122,7 +122,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 16 scénarios
+node tools/test.js              les 20 scénarios
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -153,12 +153,16 @@ est ce qu'il faut avoir en tête pour choisir.
 
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
-| **Export / import de la sauvegarde** | la seule catastrophe irrattrapable du jeu | une heure |
 | **Compteurs de partie** | le jeu ne garde presque aucune trace de ce qu'on a fait | une soirée |
 | **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
+
+**L'export / import est sorti du vivier** : livré en 2.17.0. La partie se télécharge en
+fichier ou se copie en texte, et se relit dans l'autre sens — avec un résumé de ce que le
+fichier contient affiché *avant* d'écraser quoi que ce soit, parce que le vrai risque de la
+restauration n'est pas de rater le geste, c'est de restaurer le mauvais fichier.
 
 **La frénésie de clic est sortie du vivier** : livrée en 2.16.0, sous une forme plus douce que
 prévu. Elle ne s'achète pas et ne se déclenche pas — une bête qu'on garde en scène l'offre
@@ -202,9 +206,9 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
   parce qu'elle se répétait ; les épiques et les mythiques, elles, se traversent trop vite
   pour que le compte se voie. Au-delà, le contenu qui manque n'est pas le nombre de lignées,
   c'est le nombre de dessins — dix-sept sur vingt-sept n'en ont pas.
-- **Un deuxième axe de prestige.** L'ascension n'a pas encore été jouée une seule fois de bout
-  en bout. Empiler un second cycle sur un premier non éprouvé est la façon classique dont un
-  idle devient illisible.
+- **Un deuxième axe de prestige.** Le premier cycle n'a pas encore été rejoué *après* une
+  ascension. Empiler un second prestige avant de savoir si le premier donne envie de
+  recommencer est la façon classique dont un idle devient illisible.
 - **Remonter les taux pour compenser.** Si l'éclosion paraît plate, la réponse est la couche
   d'événements, pas un retour en arrière qui redonnerait aux surprises leur banalité.
 - **Découper `game.js` en modules.** Le fichier fait 3 800 lignes et part à la poubelle au
@@ -294,9 +298,11 @@ ligne du bonheur — tout ce CSS n'a été relu qu'à l'œil, dans le code. Le b
 rien en page et ne le dira jamais. Une demi-heure passée à ouvrir la page pour de vrai
 vaudrait plus que dix scénarios de plus.
 
-**L'ascension n'a jamais été jouée de bout en bout.** Six versions l'ont construite et
-réparée, aucune ne l'a éprouvée. Tant que ce n'est pas fait, tout ce qui s'empile dessus —
-fusion, paliers de cartes — se construit sur du non-vérifié.
+**Ce qu'on ne sait toujours pas de l'ascension**, c'est si elle donne envie de recommencer.
+Elle a été jouée plusieurs fois — c'est comme ça que cinq de ses défauts sont sortis, de
+l'écran vide au mauvais choix de carte — donc la mécanique tient. Mais « est-ce qu'on veut
+recommencer ? » ne se répond pas en sautant une fois : il faut jouer le cycle d'après, et voir
+si l'album qu'on emporte change quelque chose à la façon dont on rejoue.
 
 **La mesure du rythme est périmée deux fois.** « Ère rare à 3 h 34 » date d'avant la baisse
 des prix de la 1.5, et la montée d'un cran passée à 1/1 000 en 2.2.2 l'a déplacée encore : le

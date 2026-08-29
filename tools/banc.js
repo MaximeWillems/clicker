@@ -135,6 +135,12 @@ global.window = {
   addEventListener() {}, AudioContext: null,
   matchMedia: () => ({ matches: false, addEventListener() {} }),
 };
+/* Recharger la page et écrire au presse-papier sont les deux gestes que le banc ne peut pas
+   faire. On les remplace par des trous qui comptent, ce qui suffit à vérifier qu'ils ont été
+   demandés au bon moment. */
+let rechargements = 0;
+global.location = { reload() { rechargements++; }, get _n() { return rechargements; } };
+global.navigator = { clipboard: { writeText: () => Promise.resolve() } };
 global.requestAnimationFrame = () => 0;
 global.setInterval = () => 0;
 global.confirm = () => true;
@@ -188,6 +194,7 @@ const fabrique = new Function(
    sans ça la sauvegarde du précédent traîne dans le store. `graine` pose une partie déjà
    commencée avant le chargement. */
 function neuf(graine) {
+  rechargements = 0;
   for (const k of Object.keys(store)) delete store[k];
   if (graine) store[CLE] = JSON.stringify(graine);
   for (const n of noeuds.values()) {
@@ -204,4 +211,9 @@ function neuf(graine) {
 // retrouve l'identifiant d'un nœud : la carte est petite, la recherche linéaire suffit
 function n_id(n) { for (const [id, x] of noeuds) if (x === n) return id; return ''; }
 
-module.exports = { neuf, noeuds, IDS, inconnus, RACINE, lire, CLE };
+module.exports = {
+  neuf, noeuds, IDS, inconnus, RACINE, lire, CLE,
+  // ce que le store contient vraiment, pour vérifier ce qu'une restauration a posé
+  brut: () => store[CLE],
+  rechargements: () => rechargements,
+};

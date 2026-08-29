@@ -33,6 +33,7 @@
     <button type="button" id="btn-tuto" class="tool" aria-pressed="true"
             title="Mode histoire — l'éteindre montre tout d'un coup, le rallumer rejoue les notes">📖</button>
     <button type="button" id="btn-sound" class="tool" title="Couper le son" aria-pressed="true">♪</button>
+    <button type="button" id="btn-sav" class="tool" title="Sauvegarder ou restaurer la partie">💾</button>
     <button type="button" id="btn-reset" class="tool tool-danger" title="Effacer la partie">⟲</button>
   </div>
 </header>
@@ -293,6 +294,45 @@
     <div class="asc-foot">
       <button type="button" class="asc-go" id="asc-go">Ascensionner</button>
     </div>
+  </div>
+</div>
+
+<!-- LA SAUVEGARDE. La partie ne vit que dans le stockage local d'un navigateur : la vider,
+     changer de machine ou ouvrir en navigation privée l'efface sans retour, et c'est la seule
+     catastrophe du jeu qui ne se rattrape pas. Cet écran est le seul qui la répare. -->
+<div id="sauvegarde" class="asc" hidden>
+  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="sav-title">
+    <div class="asc-head">
+      <h2 id="sav-title">Sauvegarde</h2>
+      <button type="button" class="asc-close" id="sav-close" title="Fermer">✕</button>
+    </div>
+
+    <section class="asc-sec">
+      <h3>Garder une copie</h3>
+      <p class="sav-dit">Ta partie ne vit que dans ce navigateur. Vider ses données, changer de
+        machine ou l’ouvrir en navigation privée l’efface sans retour.</p>
+      <p class="sav-resume" id="sav-etat"></p>
+      <div class="sav-actes">
+        <button type="button" class="asc-go" id="sav-fichier">Télécharger le fichier</button>
+        <button type="button" class="sav-second" id="sav-copier">Copier le texte</button>
+      </div>
+    </section>
+
+    <section class="asc-sec">
+      <h3>Restaurer</h3>
+      <p class="asc-warn">⚠ Remplace ta partie actuelle, qui sera perdue.</p>
+      <div class="sav-actes">
+        <input type="file" id="sav-choix" accept=".json,application/json">
+      </div>
+      <p class="sav-dit">…ou colle ici le texte d’une sauvegarde :</p>
+      <textarea id="sav-colle" class="sav-colle" rows="3" spellcheck="false"></textarea>
+      <!-- Ce que le fichier contient, AVANT d'écraser quoi que ce soit : c'est la seule
+           protection contre la restauration du mauvais fichier. -->
+      <p class="sav-resume" id="sav-resume"></p>
+      <div class="sav-actes">
+        <button type="button" class="asc-go" id="sav-go" disabled>Restaurer</button>
+      </div>
+    </section>
   </div>
 </div>
 

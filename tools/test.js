@@ -13,7 +13,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { neuf, noeuds, inconnus, RACINE, lire } = require('./banc.js');
+const { neuf, noeuds, inconnus, RACINE, lire, brut, rechargements } = require('./banc.js');
 
 const filtre = process.argv[2];
 let scenarios = 0, verifs = 0, ratees = [];
@@ -396,6 +396,88 @@ scenario('jetons — un palier de fortune tous les ×1000, à partir du premier 
   const apres = s.asc.jetons;
   jeu.crediterJetons();
   eq('un palier ne paie qu’une fois', s.asc.jetons, apres);
+});
+
+/* ────────────────────────── la sauvegarde en clair ────────────────────────── */
+
+scenario('sauvegarde — une copie se relit, et dit ce qu’elle contient', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 4242; s.pens = 6;
+  bete(jeu, 'crapaud', 2, 400);
+  bete(jeu, 'crabe', 3, 3000);
+
+  const texte = jeu.texteSauvegarde();
+  const lu = jeu.lireSauvegarde(texte);
+  ok('la copie se relit', lu.ok, lu.dit);
+  ok('le résumé compte les bêtes', /2 bêtes/.test(lu.dit), lu.dit);
+  ok('et annonce le format', new RegExp('format v' + jeu.SAVE_V).test(lu.dit), lu.dit);
+  eq('les pièces traversent', lu.data.coins, 4242);
+});
+
+scenario('sauvegarde — ce qui ne tient pas est refusé, avec la raison', () => {
+  const jeu = neuf();
+  const refus = t => jeu.lireSauvegarde(t);
+
+  ok('du texte quelconque', !refus('bonjour').ok);
+  ok('et on dit pourquoi', /ne se lit pas/.test(refus('bonjour').dit), refus('bonjour').dit);
+  ok('un tableau JSON', !refus('[1,2,3]').ok);
+  ok('du JSON sans ferme', !refus('{\"v\":11,\"coins\":10}').ok);
+  ok('on nomme ce qui manque', /ferme/.test(refus('{\"v\":11,\"coins\":10}').dit));
+  ok('une sauvegarde sans format', !refus('{\"coins\":1,\"pen\":[],\"incub\":[]}').ok);
+
+  // un format PLUS RÉCENT que ce que le jeu sait lire : migrer vers l'avant est impossible
+  const futur = JSON.stringify({ v: jeu.SAVE_V + 5, coins: 1, pen: [], incub: [] });
+  ok('un format venu du futur', !refus(futur).ok);
+  ok('et on dit lequel', /plus récente/.test(refus(futur).dit), refus(futur).dit);
+
+  // celui d'AVANT passe : c'est load() qui migrera
+  const vieux = JSON.stringify({ v: 1, coins: 1, pen: [], incub: [] });
+  ok('un vieux format est accepté', refus(vieux).ok, refus(vieux).dit);
+});
+
+scenario('sauvegarde — restaurer pose le fichier et recharge la page', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 99999; s.pens = 5;
+  bete(jeu, 'crabe', 4, 30000);
+  const copie = jeu.texteSauvegarde();
+
+  // la partie continue et diverge
+  s.coins = 3; s.pen = [];
+  eq('aucun rechargement pour l’instant', rechargements(), 0);
+
+  const r = jeu.restaurer(copie);
+  ok('la restauration passe', r.ok, r.dit);
+  eq('la page est rechargée', rechargements(), 1);
+
+  const pose = JSON.parse(brut());
+  eq('c’est bien la copie qui est posée', pose.coins, 99999);
+  eq('avec sa bête', pose.pen.length, 1);
+  /* La date repart à maintenant : restaurer n'est pas rentrer d'une absence, et un fichier
+     vieux d'une semaine ne doit pas offrir huit heures de ferme au chargement. */
+  ok('la date est remise à maintenant', Math.abs(Date.now() - pose.t) < 5000, pose.t);
+
+  eq('un texte invalide ne recharge rien', jeu.restaurer('nawak').ok, false);
+  eq('et ne recharge toujours pas', rechargements(), 1);
+});
+
+scenario('sauvegarde — l’écran juge ce qu’on colle avant de laisser restaurer', () => {
+  const jeu = neuf();
+  jeu.state.tuto = false;
+  const T = () => (noeuds.get('sav-resume').textContent || '').trim();
+
+  jeu.jugerSav('');
+  eq('rien de collé, rien à dire', T(), '');
+  ok('et le bouton est fermé', noeuds.get('sav-go').disabled);
+
+  jeu.jugerSav('n’importe quoi');
+  ok('un texte invalide est marqué', T().startsWith('✕'), T());
+  ok('le bouton reste fermé', noeuds.get('sav-go').disabled);
+  ok('et la ligne passe en rouge', noeuds.get('sav-resume').classList.contains('sav-non'));
+
+  jeu.jugerSav(jeu.texteSauvegarde());
+  ok('une vraie sauvegarde est décrite', T().startsWith('→'), T());
+  ok('le bouton s’ouvre', !noeuds.get('sav-go').disabled);
+  ok('et la ligne n’est plus rouge', !noeuds.get('sav-resume').classList.contains('sav-non'));
 });
 
 /* ───────────────────────────── le verdict ───────────────────────────── */
