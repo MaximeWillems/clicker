@@ -85,90 +85,28 @@ la série 3.
 
 ### Ce qui vient ensuite
 
-| Ce qui tombe | Sauv. | La question qu'elle pose au joueur |
+La colonne du milieu dit **ce qu'il faut avoir fait avant**, ce qui est plus utile qu'un ordre :
+deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
+
+| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| La fusion — les paliers, et le repère sur les capsules | 11 | est-ce que les doublons valent d'être gardés ? |
-| Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 11 | est-ce que l'ordre des achats suit la vie de la bête ? |
-| La pension, **ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | 14 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
-| La compatibilité — étiquettes, stérilité, durée par distance | 12 | est-ce que la règle se devine sans wiki ? |
-| L'hérédité — les quatre issues, les fusions, les teintes exclusives | 12 | est-ce qu'on a envie de sélectionner ? |
-| La rareté de l'enfant — le tirage entre parents, la montée par âge | 12 | est-ce que la montée reste un cadeau et non une voie ? |
-| Les merveilleuses — la rareté, les recettes, trois lignées dessinées | 12 | est-ce qu'une merveilleuse se raconte ? |
+| **La fusion** — les paliers, et le repère sur les capsules | rien | est-ce que les doublons valent d'être gardés ? |
+| **Les automates par âge** — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | rien | est-ce que l'ordre des achats suit la vie de la bête ? |
+| **Les dix-sept dessins** | rien | — |
+| **La pension, ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | les dessins | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
+| **La compatibilité** — étiquettes, stérilité, durée par distance | la pension ouverte | est-ce que la règle se devine sans wiki ? |
+| **L'hérédité** — les quatre issues, les fusions, les teintes exclusives | la compatibilité | est-ce qu'on a envie de sélectionner ? |
+| **La rareté de l'enfant** — le tirage entre parents, la montée par âge | l'hérédité | est-ce que la montée reste un cadeau et non une voie ? |
+| **Les merveilleuses** — la rareté, les recettes, trois lignées dessinées | l'hérédité | est-ce qu'une merveilleuse se raconte ? |
+
+Trois de ces lignes portent la bêta : **la fusion, la pension et les merveilleuses**. Les
+quatre autres sont la route qui y mène.
 
 L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
 passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
 le construire d'abord leur donne un endroit où atterrir. Le prix de l'inversion est connu et
 accepté : l'album est sorti sans son cran le plus haut, la merveilleuse ne s'obtenant qu'en
 pension.
-
-### Sortir de l'impasse — la plonge
-
-**Décidé.** Quand il ne reste plus rien — pas de bête, pas d'œuf, et moins que le prix d'un
-œuf commun — on va faire la plonge. **Une assiette lavée, une pièce.** Douze assiettes pour un
-œuf commun.
-
-**C'est une punition, et elle est assumée comme telle.** Une punition pour avoir mal géré, mais
-rattrapable : on ne perd pas sa partie, on perd du temps. C'est exactement le bon dosage pour
-un idle — le jeu ne doit jamais pouvoir se rendre injouable, mais il n'a aucune raison de
-faire semblant qu'une erreur n'en était pas une.
-
-C'est aussi la seule sortie qui rende l'état vide **jouable** au lieu de le rendre impossible,
-et elle raconte quelque chose : on repart de rien, à la main, comme au premier jour.
-
-#### La règle qui la borne
-
-**Elle ne s'ouvre que dans l'impasse, et se referme dès qu'on en sort.** C'est-à-dire :
-zéro bête, zéro œuf en réserve, aucun œuf en couvaison, et moins que le prix de l'œuf le
-moins cher. Dès que la douzième pièce tombe, l'évier disparaît.
-
-Cette condition n'est pas un détail d'équilibrage, c'est **ce qui rend les garde-fous
-inutiles** : une plonge qui ne s'ouvre que là où rien d'autre n'existe ne peut par
-construction pas devenir un revenu alternatif, ni une stratégie de début de partie. Rien à
-doser, rien à surveiller. Une plonge disponible en permanence aurait demandé un débit
-soigneusement mauvais, ce qui est toujours un mauvais signe.
-
-#### Ni frénésie, ni auto-clic — tranché
-
-**Un clic de frénésie ne lave qu'une assiette, et une carte ocellée ne fait pas la plonge.**
-Rien de ce qui multiplie la ferme ne s'applique à l'évier.
-
-C'est la conséquence directe de ce qu'est la plonge : une punition rattrapable. Laisser la
-frénésie doubler les assiettes reviendrait à récompenser l'erreur chez le joueur le mieux
-équipé, et laisser l'ocellé les laver reviendrait à ce que l'erreur ne coûte rien du tout à
-qui a déjà un album. La punition doit être la même pour tout le monde, sinon elle n'en est
-plus une pour personne.
-
-Elle porte aussi une règle plus large, à retenir pour la suite : **la plonge est un geste, pas
-une production.** Tout ce qui multiplie la ferme s'arrête à la porte de la cuisine.
-
-#### Ce qui reste à trancher
-
-- **Le seuil exact.** « Moins que l'œuf le moins cher » vaut toujours l'œuf commun, quel que
-  soit le réglage de l'acheteur : c'est le prix plancher du jeu.
-- **Ce que la scène montre.** La pile d'assiettes prend la place du sujet, et le compte
-  descend. C'est le seul écran du jeu où le clic ne fait pas grandir quelque chose.
-- **Ce que la professeure en dit.** C'est un moment de tutoriel évident, et elle n'a pas
-  encore de scène pour les mauvais jours.
-- **Les compteurs.** Une assiette est un clic du joueur : elle compte dans « clics donnés ».
-  Un compteur d'assiettes lavées serait un joli aveu à laisser dans les statistiques.
-- **Hors ligne : non.** Même raison que le bonheur — c'est une main qui travaille, et une main
-  ne travaille pas quand on dort.
-
-#### Les trois sorties écartées, et pourquoi
-
-- **Le filet muet** — la boutique refuse l'achat qui condamne. La moins chère et la plus sûre,
-  mais elle grise un bouton sans rien expliquer et retire au joueur une décision qu'il avait
-  le droit de prendre. Reste en réserve si la plonge tarde.
-- **L'œuf de secours** — un œuf offert quand on n'a plus rien. Une ligne, aucun système. Mais
-  un cadeau qui tombe du ciel ne se raconte pas, et le jeu a toujours préféré une règle à une
-  exception.
-- **Le prêt** — le plus intéressant sur le papier, et le plus dangereux : **une dette peut
-  fabriquer une impasse pire que celle qu'elle répare**, sans bête ET endetté. Il pourra
-  revenir plus tard comme vraie mécanique d'économie, jamais comme filet de sécurité.
-
-**La règle qui vaut au-delà de ce choix :** un idle ne doit jamais pouvoir se rendre
-injouable. C'est la seule faute dont un joueur ne revient pas, et elle ne se rattrape pas par
-un bon équilibrage ailleurs.
 
 ### Ce qui se livre en petit paquet
 
@@ -195,7 +133,10 @@ Ce qu'il restera à faire le jour venu tient en quatre choses : finir les dessin
 plafond de la réserve d'œufs, écrire l'écran qui désigne deux bêtes, et remplacer les deux
 bouchons `distanceDe` et `oeufDe` par la compatibilité et l'hérédité.
 
-### Le chantier parallèle : les dessins
+### Le chantier qui barre la route : les dessins
+
+Ce n'était qu'une voie de fond ; depuis que la pension attend le bestiaire pour ouvrir, c'est
+**le premier verrou de la bêta**.
 
 **17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
 serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
