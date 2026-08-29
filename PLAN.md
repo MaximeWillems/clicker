@@ -58,6 +58,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 
 | Ce qui tombe | Sauv. | La question qu'elle pose au joueur |
 |---|---|---|
+| **La plonge** — laver des assiettes quand il ne reste rien, une pièce chacune | 14 | est-ce qu'on peut rendre un jeu injouable ? (non) |
 | La fusion — les paliers, et le repère sur les capsules | 11 | est-ce que les doublons valent d'être gardés ? |
 | Les automates par âge — l'éleveur aux jeunes, la mangeoire aux grandes bêtes | 11 | est-ce que l'ordre des achats suit la vie de la bête ? |
 | La pension, **ouvrir la porte** — l'écran, le plafond de la réserve d'œufs, le drapeau | 14 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? |
@@ -71,6 +72,60 @@ passe après. L'album est la clé de voûte vers laquelle les deux autres chanti
 le construire d'abord leur donne un endroit où atterrir. Le prix de l'inversion est connu et
 accepté : l'album est sorti sans son cran le plus haut, la merveilleuse ne s'obtenant qu'en
 pension.
+
+### Sortir de l'impasse — la plonge
+
+**Décidé.** Quand il ne reste plus rien — pas de bête, pas d'œuf, et moins que le prix d'un
+œuf commun — on va faire la plonge. **Une assiette lavée, une pièce.** Douze assiettes pour un
+œuf commun, soit une poignée de secondes : c'est un ralentisseur, pas une punition. Le jeu ne
+doit jamais pouvoir se rendre injouable, et il ne doit pas non plus se venger d'une erreur.
+
+C'est la seule sortie qui rende l'état vide **jouable** au lieu de le rendre impossible, et
+elle raconte quelque chose : on repart de rien, à la main, comme au premier jour.
+
+#### La règle qui la borne
+
+**Elle ne s'ouvre que dans l'impasse, et se referme dès qu'on en sort.** C'est-à-dire :
+zéro bête, zéro œuf en réserve, aucun œuf en couvaison, et moins que le prix de l'œuf le
+moins cher. Dès que la douzième pièce tombe, l'évier disparaît.
+
+Cette condition n'est pas un détail d'équilibrage, c'est **ce qui rend les garde-fous
+inutiles** : une plonge qui ne s'ouvre que là où rien d'autre n'existe ne peut par
+construction pas devenir un revenu alternatif, ni une stratégie de début de partie. Rien à
+doser, rien à surveiller. Une plonge disponible en permanence aurait demandé un débit
+soigneusement mauvais, ce qui est toujours un mauvais signe.
+
+#### Ce qui reste à trancher
+
+- **Le seuil exact.** « Moins que l'œuf le moins cher » vaut toujours l'œuf commun, quel que
+  soit le réglage de l'acheteur : c'est le prix plancher du jeu.
+- **Ce que la scène montre.** La pile d'assiettes prend la place du sujet, et le compte
+  descend. C'est le seul écran du jeu où le clic ne fait pas grandir quelque chose.
+- **Ce que la professeure en dit.** C'est un moment de tutoriel évident, et elle n'a pas
+  encore de scène pour les mauvais jours.
+- **La frénésie et l'ocellé.** Un clic de frénésie lave-t-il deux assiettes ? Une carte
+  ocellée fait-elle la plonge à ta place ? Le plus simple est **non aux deux** — la plonge est
+  un geste, pas une production, et rien de ce qui multiplie la ferme ne doit s'y appliquer.
+- **Les compteurs.** Une assiette est un clic du joueur : elle compte dans « clics donnés ».
+  Un compteur d'assiettes lavées serait un joli aveu à laisser dans les statistiques.
+- **Hors ligne : non.** Même raison que le bonheur — c'est une main qui travaille, et une main
+  ne travaille pas quand on dort.
+
+#### Les trois sorties écartées, et pourquoi
+
+- **Le filet muet** — la boutique refuse l'achat qui condamne. La moins chère et la plus sûre,
+  mais elle grise un bouton sans rien expliquer et retire au joueur une décision qu'il avait
+  le droit de prendre. Reste en réserve si la plonge tarde.
+- **L'œuf de secours** — un œuf offert quand on n'a plus rien. Une ligne, aucun système. Mais
+  un cadeau qui tombe du ciel ne se raconte pas, et le jeu a toujours préféré une règle à une
+  exception.
+- **Le prêt** — le plus intéressant sur le papier, et le plus dangereux : **une dette peut
+  fabriquer une impasse pire que celle qu'elle répare**, sans bête ET endetté. Il pourra
+  revenir plus tard comme vraie mécanique d'économie, jamais comme filet de sécurité.
+
+**La règle qui vaut au-delà de ce choix :** un idle ne doit jamais pouvoir se rendre
+injouable. C'est la seule faute dont un joueur ne revient pas, et elle ne se rattrape pas par
+un bon équilibrage ailleurs.
 
 ### Ce qui se livre en petit paquet
 
@@ -174,7 +229,7 @@ est ce qu'il faut avoir en tête pour choisir.
 
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
-| **Sortir de l'impasse** | le jeu peut se rendre injouable en deux minutes | une heure à deux soirées |
+| **Les fonds** | dix-sept lignées manquent, et huit fonds habilleraient les 135 formes | à chiffrer |
 | **Trophées** — les douze jalons rendus au jeu | il ne reste plus un seul objectif nommé | une soirée |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
@@ -196,49 +251,46 @@ prévu. Elle ne s'achète pas et ne se déclenche pas — une bête qu'on garde 
 d'elle-même, tous les quatre à cinq cents secondes de présence, et ne double que le clic. Neuf
 pour cent du temps à ×2, mesuré : c'est un cadeau, pas une amélioration.
 
-### Sortir de l'impasse
+### Les fonds — à développer
 
-Le jeu peut se rendre injouable : plus de bête, plus d'œuf, et moins que le prix d'un œuf.
-Quatre façons d'en sortir, du filet muet au vrai morceau de jeu. Aucune n'est tranchée.
+Une bête pourrait naître avec un **fond** : un décor derrière elle, tiré à l'éclosion et gardé
+à vie. Il se voit sur la scène et **sur la carte d'album**, et il fait monter un peu le prix
+de vente. Il **s'hérite**, comme les teintes, le jour où la pension existera.
 
-| La sortie | Ce qu'elle règle | Ce qu'elle coûte |
-|---|---|---|
-| **Le filet muet** | l'impasse ne peut plus arriver | une heure, et une décision retirée au joueur |
-| **L'œuf de secours** | on repart, sans rien devoir | une heure, et un cadeau qui ne se raconte pas |
-| **La plonge** | l'impasse devient un moment de jeu | une soirée |
-| **Le prêt** | l'impasse devient une décision | deux soirées, et un risque d'impasse pire |
+Rien n'est écrit ; ce qui suit est ce qu'il faut avoir en tête avant de commencer.
 
-**Le filet muet.** La boutique refuse tout achat qui laisserait le joueur sans bête, sans œuf
-et sans de quoi en payer un. C'est la sortie la moins chère et la plus sûre, mais elle grise un
-bouton sans rien expliquer, et retire au joueur une décision qu'il avait le droit de prendre.
-À garder en réserve si rien de mieux ne sort.
+#### Pourquoi c'est le meilleur rapport dessin / variété du jeu
 
-**L'œuf de secours.** Quand on n'a plus rien, la boutique offre un œuf commun. Une condition,
-une ligne, aucun nouveau système. Mais un cadeau qui tombe du ciel ne se raconte pas, et le
-jeu a jusqu'ici toujours préféré une règle à une exception.
+Les dix-sept lignées sans image demandent **cinq dessins chacune**, et chaque dessin ne sert
+qu'à une forme. Un fond, lui, sert **aux 135 formes à la fois** : huit fonds multiplient par
+neuf le nombre d'images différentes qu'on peut croiser, pour huit fichiers. C'est l'inverse
+exact du coût des créatures, et c'est l'argument principal en faveur de l'idée.
 
-**La plonge.** Sans rien à élever, on peut travailler de ses mains : chaque clic rapporte
-quelques pièces, jusqu'à de quoi racheter un œuf. C'est la seule sortie qui rende l'état vide
-JOUABLE au lieu de le rendre impossible, et elle raconte quelque chose — on repart de rien, à
-la main, comme au premier jour. Elle se limite d'elle-même : personne ne plonge quand il
-possède une ferme.
+#### Ce qu'il faut décider avant d'écrire
 
-Deux garde-fous si on la prend. Elle ne doit **jamais** être un revenu alternatif : le débit
-doit rester très en dessous de ce que rapporte une seule bête commune, sinon elle devient la
-stratégie optimale du début de partie. Et elle ne doit **pas tourner hors ligne**, pour la même
-raison que le bonheur — c'est une main qui travaille, et une main ne travaille pas quand on
-dort.
+- **Un quatrième axe de variante**, après la teinte, le tempérament et le motif. Trois posent
+  déjà la question « combien d'identité une bête peut-elle porter avant de devenir une fiche
+  technique ? » — le jeu n'affiche qu'**une seule épithète** exprès. Le fond doit-il entrer
+  dans le nom (`Têtard farouche des cendres`) ou rester purement visuel ? Le second est plus
+  sûr : le fond SE VOIT, il n'a pas besoin d'être dit.
+- **Combien de bêtes n'ont pas de fond.** La plupart, sûrement. Un fond doit rester une
+  rencontre — s'il est fréquent, il devient un décor et cesse d'être une variante.
+- **Ce que « un peu plus cher » veut dire.** L'échelle existe déjà : la teinte va de ×1,10 à
+  ×1,20. Un fond dans cette fourchette s'intègre sans rien déranger ; au-delà il faudrait
+  reprendre l'équilibrage des variantes en entier.
+- **Le fond et le motif ne font pas le même métier.** Le motif décide de l'EFFET d'une carte,
+  le fond de sa VALEUR. Les deux peuvent coexister sur la même bête sans se marcher dessus,
+  mais la carte d'album devra montrer les deux sans devenir illisible.
+- **L'hérédité.** Elle attend la pension, donc les quatre issues de l'hérédité des teintes.
+  Le fond suivra la même règle, quelle qu'elle soit : c'est une raison de plus de ne pas
+  écrire l'hérédité des teintes à la légère.
 
-**Le prêt.** On emprunte, on rembourse avec intérêt. C'est la sortie la plus intéressante sur
-le papier : elle transforme l'impasse en décision, et elle donne enfin un sens économique à
-une partie qui ne connaît que l'accumulation. C'est aussi la plus dangereuse — **une dette
-peut fabriquer une impasse pire que celle qu'elle répare** : emprunter, mal dépenser, et se
-retrouver sans bête ET endetté. Si on la prend, la dette doit être bornée à ce qu'une bête
-commune rembourse, et le jeu ne doit jamais pouvoir refuser un second prêt.
+#### Le piège de migration, le même que pour les teintes
 
-**La règle qui vaut quelle que soit la sortie choisie :** un idle ne doit jamais pouvoir se
-rendre injouable. C'est la seule faute dont un joueur ne revient pas, et elle ne se rattrape
-pas par un bon équilibrage ailleurs.
+Une bête stockera son fond **par indice**. Les nouveaux fonds s'ajoutent donc **à la fin** de
+la table, jamais au milieu : en insérer un redécorerait tout le bestiaire déjà éclos. C'est
+exactement la règle qui protège déjà `TINTS` et `MOTIFS`, et elle a déjà failli être oubliée
+une fois.
 
 ### Le diagnostic en trois phrases
 
@@ -373,8 +425,8 @@ on vend sa première bête pour 40 pièces, la professeure annonce qu'« il y a 
 acheter qui ne sont pas des œufs », la Force du clic en coûte 30 — et il en reste 10 pour un
 œuf qui en vaut 12. Cinq minutes de boucle plus tard, toujours 10.
 
-La sortie est à écrire ; les candidats sont dans le vivier, sous
-[Sortir de l'impasse](#sortir-de-limpasse). Ce qui est certain, c'est qu'un idle ne doit
+La sortie est choisie et reste à écrire : c'est
+[la plonge](#sortir-de-limpasse--la-plonge), une pièce par assiette lavée. Un idle ne doit
 jamais pouvoir se rendre injouable — c'est la seule faute dont un joueur ne revient pas.
 
 **Rien de visuel n'a jamais été vérifié.** C'est la dette qui grossit le plus vite : l'album,
