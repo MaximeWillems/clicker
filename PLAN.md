@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : alpha 3.0.0 · sauvegarde v15 · 10 lignées illustrées sur 27
+    aujourd'hui : alpha 3.1.0 · sauvegarde v16 · 10 lignées illustrées sur 29
 
 ---
 
@@ -60,6 +60,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La fusion et la poussière** | 2.30 → 2.32 | est-ce qu'une carte ratée vaut d'être gardée ? | oui — dix cartes font une étoile |
 | **Les automates par âge** | 1.0 → 1.4 | est-ce que l'ordre des achats suit la vie de la bête ? | oui, depuis les cinq âges — la ligne avait survécu à sa propre livraison |
 | **La pension** | 3.0 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? | oui, et mesuré : jamais le centième de ce qu'elles rapporteraient |
+| **Les merveilleuses** | 3.1 | est-ce qu'une merveilleuse se raconte ? | deux écloses sur huit écrites — la réponse est dans le dessin, pas dans le code |
 
 ### La ligne d'arrivée de l'alpha
 
@@ -80,19 +81,22 @@ la pension n'offre qu'un raccourci vers ce qu'on pouvait déjà acheter. Sans la
 merveilleuses n'ont pas de porte. **Le jeu est aujourd'hui un très bon prototype de sa moitié
 d'avant**, et ces trois pièces sont ce qui manque pour qu'il soit un jeu.
 
-**Deux des trois sont tombés.** La fusion en 2.32.0, la pension en 3.0.0. Il ne reste que les
-merveilleuses — et l'ordre a encore changé en route : *la pension a été ouverte sans elles*.
+**Les trois sont tombés.** La fusion en 2.32.0, la pension en 3.0.0, les merveilleuses en
+3.1.0 — et la boucle est fermée : on élève pour reproduire, on reproduit pour obtenir ce qui ne
+s'achète nulle part, l'album donne une raison de garder les doublons.
 
-C'était le bon appel, et il faut savoir ce qu'il coûte. La pension était bloquée derrière les
-dix-sept dessins manquants, qui sont eux-mêmes bloqués derrière du travail d'illustration qu'on
-ne peut pas simuler au banc. En l'ouvrant sur les vingt-sept lignées existantes — dessinées ou
-non, le jeu n'en montre que le glyphe — elle devient jouable tout de suite. Le prix : **sans les
-merveilleuses, la pension ne rend aucune lignée qu'on ne pourrait pas acheter**. Elle sert à
-viser, pas à débloquer. C'est un outil de collection, et il faut le dire ainsi plutôt que de
-laisser croire qu'elle ouvre sur autre chose.
+L'ordre a changé deux fois en route, et les deux fois pour la même raison : **ne pas rester
+bloqué derrière les dessins.** La pension a ouvert sur les vingt-sept lignées existantes,
+dessinées ou non — le jeu n'en montre que le glyphe. Les merveilleuses ont suivi à deux sur
+huit, par les deux seules dont les recettes se lisaient sans rien ajouter au bestiaire.
 
-Les nombres continuent : la bêta ne remet rien à zéro, et la pension est le majeur qui ouvre
-la série 3.
+Ce que ça coûte, et il faut le dire : **six merveilles sur huit sont écrites et pas écloses**,
+et le rang le plus haut du jeu tient aujourd'hui sur deux bêtes en glyphe. Ce n'est pas une
+dette de code — il n'y a rien à écrire pour les six autres, seulement des recettes et des PNG.
+
+**Le mot « alpha » peut donc tomber, et c'est une décision plutôt qu'un calcul** : la
+définition demandait « les premières merveilleuses », elle ne disait pas combien. Les nombres,
+eux, continuent — la bêta ne remet rien à zéro.
 
 ### Ce qui vient ensuite
 
@@ -102,14 +106,20 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **Les dix-sept dessins** | rien | — |
+| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur huit bêtes ? |
+| **L'animation du cinquième âge** — une planche par merveille | les dessins | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
-| **Les merveilleuses** — la rareté, les recettes, trois lignées dessinées | l'hérédité | est-ce qu'une merveilleuse se raconte ? |
 | **La seconde place de pension** — en prime, très cher | rien | est-ce qu'on choisit encore son couple, ou est-ce qu'on empile ? |
 
 **La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
 la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la
 pension, parce qu'aucune d'elles n'avait de sens séparément — une pension sans règle de
 compatibilité, c'est un bouton qui attend.
+
+**Les six merveilles restantes ne coûtent aucun code.** La 3.1.0 a posé la rareté, la sorte
+d'œuf qui ne s'achète pas, la table `RECETTES` et la phrase qui les annonce sans les nommer.
+Ajouter Surtr, c'est cinq PNG et une ligne de recette. C'est le meilleur endroit où la dette du
+projet pouvait se déplacer : elle est entièrement dans le dessin.
 
 **La seconde place n'est pas une évidence**, et c'est pour ça qu'elle est dans la table et pas
 dans le code. Une place unique force à choisir *quel* couple confier ; deux places suppriment la
@@ -462,8 +472,16 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
 ### Ce qu'on a décidé de ne pas faire
 
 - **Mettre la merveilleuse en boutique.** Elle tient toute sa valeur du fait qu'elle ne
-  s'achète pas. La pension a ouvert sans elle, ce qui la laisse sans porte pour l'instant —
-  et c'est un manque assumé, pas une invitation à la vendre.
+  s'achète pas, et c'est vérifié des deux côtés depuis la 3.1.0 : aucun œuf vendu ne la cote,
+  et `buyEgg` refuse ce qui n'a pas de prix.
+- **Lui donner plus de valeur qu'une mythique.** Même multiplicateur, même plafond de carte,
+  même rente. Si elle rapportait davantage, la pension redeviendrait une stratégie d'argent et
+  tout le travail de la 3.0.0 tomberait sur la première éclose. Un cran de rareté, jamais un
+  cran de puissance.
+- **Réserver la merveille à sa recette une fois qu'on en a une.** Elle se reproduit comme le
+  reste — Wukong × golem rend 5 % de Wukong. La seconde est plus facile que la première, et
+  c'est la bonne asymétrie : ça donne une raison de garder une merveille plutôt que de la
+  vendre.
 - **De nouvelles lignées au-delà des vingt-sept.** L'ère rare a été portée à dix en 2.3.0
   parce qu'elle se répétait ; les épiques et les mythiques, elles, se traversent trop vite
   pour que le compte se voie. Au-delà, le contenu qui manque n'est pas le nombre de lignées,
@@ -574,8 +592,9 @@ doit être relue en se demandant si elle peut assécher la partie.**
 
 **Rien de visuel n'a jamais été vérifié.** C'est la dette qui grossit le plus vite : l'album,
 l'écran d'ascension, le sélecteur de lots, la boîte de dialogue, les trois colonnes d'axes, la
-ligne du bonheur, et maintenant le panneau de pension avec ses deux menus et sa barre de
-couvaison — tout ce CSS n'a été relu qu'à l'œil, dans le code. Le banc d'essai ne met
+ligne du bonheur, le panneau de pension avec ses deux menus et sa barre de couvaison, et
+maintenant la clarté de la merveilleuse et son halo de nom — tout ce CSS n'a été relu qu'à
+l'œil, dans le code. Le banc d'essai ne met
 rien en page et ne le dira jamais. Une demi-heure passée à ouvrir la page pour de vrai
 vaudrait plus que dix scénarios de plus.
 

@@ -23,11 +23,15 @@
   --jade-dim: #1B3A32;
   --red:      #C9705C;
 
-  /* la hiérarchie des lignées : neutre, bleu, violet, or */
-  --r-commune:  #8C998C;
-  --r-rare:     #6BA4D8;
-  --r-epique:   #B07BD8;
-  --r-mythique: #E4A63E;
+  /* la hiérarchie des lignées : neutre, bleu, violet, or, lumière.
+     La merveilleuse ne prend pas une couleur de plus : elle prend la seule chose qui soit
+     au-dessus de l’or sur un fond sombre, la clarté. C’est aussi la seule dont le nom porte
+     un halo — le rang le plus haut du jeu ne se lit pas, il se voit. */
+  --r-commune:     #8C998C;
+  --r-rare:        #6BA4D8;
+  --r-epique:      #B07BD8;
+  --r-mythique:    #E4A63E;
+  --r-merveilleuse:#F6F1E3;
 
   --f-ui:   "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --f-num:  "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
@@ -767,16 +771,19 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
 .rar-rare     { --rar: var(--r-rare); }
 .rar-epique   { --rar: var(--r-epique); }
 .rar-mythique { --rar: var(--r-mythique); }
+.rar-merveilleuse { --rar: var(--r-merveilleuse); }
 .egg-commun   { --rar: var(--r-commune); }
 .egg-rare     { --rar: var(--r-rare); }
 .egg-epique   { --rar: var(--r-epique); }
 .egg-mythique { --rar: var(--r-mythique); }
+.egg-merveille { --rar: var(--r-merveilleuse); }
 
 .rar {
   color: var(--rar, var(--faint));
   font-weight: 500; letter-spacing: 0.1em;
 }
 .rar-commune.rar { color: var(--faint); }
+.rar-merveilleuse.rar { text-shadow: 0 0 10px color-mix(in srgb, var(--rar) 55%, transparent); }
 
 /* la scène et les vignettes se teintent de la rareté du sujet */
 .stage.rar-rare .subject-glow,
@@ -792,14 +799,22 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
 }
 .stage.rar-mythique .subject-glow,
 .stage.egg-mythique .subject-glow { opacity: 0.4; }
+.stage.rar-merveilleuse .subject-glow,
+.stage.egg-merveille .subject-glow {
+  background: radial-gradient(circle, var(--rar) 0%, transparent 66%); opacity: 0.55;
+}
+.stage.rar-merveilleuse .stage-bar > i { background: var(--rar); }
 .stage.rar-rare .stage-bar > i,
 .stage.rar-epique .stage-bar > i,
 .stage.rar-mythique .stage-bar > i { background: var(--rar); }
 
-.thumb.rar-rare, .thumb.rar-epique, .thumb.rar-mythique,
-.thumb.egg-rare, .thumb.egg-epique, .thumb.egg-mythique { border-color: color-mix(in srgb, var(--rar) 45%, var(--rule)); }
+.thumb.rar-rare, .thumb.rar-epique, .thumb.rar-mythique, .thumb.rar-merveilleuse,
+.thumb.egg-rare, .thumb.egg-epique, .thumb.egg-mythique,
+.thumb.egg-merveille { border-color: color-mix(in srgb, var(--rar) 45%, var(--rule)); }
 .thumb.rar-rare .thumb-tag, .thumb.rar-epique .thumb-tag, .thumb.rar-mythique .thumb-tag,
-.thumb.egg-rare .thumb-tag, .thumb.egg-epique .thumb-tag, .thumb.egg-mythique .thumb-tag { color: var(--rar); }
+.thumb.rar-merveilleuse .thumb-tag,
+.thumb.egg-rare .thumb-tag, .thumb.egg-epique .thumb-tag, .thumb.egg-mythique .thumb-tag,
+.thumb.egg-merveille .thumb-tag { color: var(--rar); }
 
 .buy.egg-rare .t, .buy.egg-epique .t, .buy.egg-mythique .t { color: var(--rar); }
 .buy.egg-rare:hover:not(:disabled),

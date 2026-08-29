@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'alpha 3.0.0';
+const VERSION = 'alpha 3.1.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -118,7 +118,27 @@ const RARITY = {
   rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1, plafond: 1.6 },
   epique:   { name: 'épique',   plur: 'épiques',   mult: 600,   rank: 2, plafond: 2.5 },
   mythique: { name: 'mythique', plur: 'mythiques', mult: 15000, rank: 3, plafond: 4 },
+  /* LA MERVEILLEUSE VAUT EXACTEMENT CE QUE VAUT UNE MYTHIQUE, et c'est la décision la plus
+     importante du rang. Elle est un cran de RARETÉ, pas un cran de PUISSANCE : elle ne rapporte
+     pas plus, ne se vend pas plus cher, et sa carte ne plafonne pas plus haut.
+
+     Sans cette règle, la pension redeviendrait une stratégie d'argent — tout le travail de la
+     3.0.0 pour qu'elle n'en soit pas une tomberait sur la première merveille éclose. Et le rang
+     le plus haut du jeu se mettrait à peser sur l'équilibrage de tout le reste.
+
+     Ce qu'elle a que les autres n'ont pas tient en une phrase : AUCUN ŒUF NE LA DONNE. */
+  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 15000, rank: 4, plafond: 4 },
 };
+
+// du plus rare au plus commun — l'ordre du tirage, et il se refait seul si un rang s'ajoute
+const RARETES_HAUT_EN_BAS = Object.keys(RARITY).sort((a, b) => RARITY[b].rank - RARITY[a].rank);
+
+/* UNE VALEUR PAR RARETÉ, LA TABLE FAISANT FOI. Les trois consignes du marchand — l'âge de
+   vente, la taille exigée, l'âge d'évolution — étaient écrites en clair à sept endroits, avec
+   les quatre raretés en dur à chaque fois. Ajouter la cinquième laissait donc `undefined`
+   partout où l'un des sept avait été oublié : un menu vide, une consigne muette, et rien qui
+   lève. Un rang ajouté à RARITY se propage maintenant tout seul. */
+const parRarete = v => Object.fromEntries(Object.keys(RARITY).map(k => [k, v]));
 
 // « a, b et c » plutôt que « a, b, c » : les notes doivent se lire à voix haute.
 function liste(mots) {
@@ -167,9 +187,21 @@ const EGG_KINDS = [
   { key: 'mythique', name: 'Œuf mythique', price: 180000000, glyph: '🥚', rarity: 'mythique',
     hatch: 2700, odds: { mythique: 1 },
     dit: 'Il en sort des dieux. Prends ton après-midi.' },
+  /* CELUI-CI NE S'ACHÈTE PAS, et c'est toute la définition du rang. Il n'a pas de prix, donc il
+     ne paraît ni en boutique, ni dans le menu de l'acheteur, ni dans l'escalier des
+     dévoilements — trois listes qui se filtrent sur `price` et non sur une liste d'exceptions.
+
+     Il existe quand même comme sorte d'œuf, parce que la pension dépose ce qu'elle pond dans la
+     RÉSERVE ORDINAIRE : le plafond, le placement automatique et l'incubateur n'ont ainsi rien à
+     apprendre. Une merveille couve comme le reste, seulement plus longtemps. */
+  { key: 'merveille', name: 'Œuf de merveille', price: null, glyph: '🥚', rarity: 'merveilleuse',
+    hatch: 5400, odds: { merveilleuse: 1 },
+    dit: 'Aucune boutique n’en vend. Celui-là, tu l’as fait naître.' },
 ];
 
 const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
+// les quatre qu'on peut acheter : la boutique, l'acheteur et les dévoilements ne voient qu'eux
+const OEUFS_VENDUS = EGG_KINDS.filter(e => e.price);
 
 /* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
@@ -404,7 +436,7 @@ const ETOILES = [1, 1.8, 3];
    ET ON NE DÉFAIT PAS UNE FUSION : les étoiles n'entrent pas dans ce qu'une carte rend. Sinon
    fusionner puis désintégrer fabriquerait de la poussière à l'infini. */
 const POUSSIERE_BASE    = 10;
-const POUSSIERE_RARETE  = { commune: 1, rare: 3, epique: 10, mythique: 30 };
+const POUSSIERE_RARETE  = { commune: 1, rare: 3, epique: 10, mythique: 30, merveilleuse: 90 };
 const POUSSIERE_PRODIGE = 3;
 const POUSSIERE_FOND    = 2;      // les fonds n'existent pas encore : le facteur dort
 // ce qu'une bête sacrifiée à l'ascension laisse, en fraction de ce que sa carte aurait rendu
@@ -643,6 +675,11 @@ const ETIQUETTES = {
   sphinx:     ['terre', 'poil'],     cheval:     ['terre', 'poil'],
   chimere:    ['terre', 'poil'],     behemoth:   ['terre', 'écaille'],
   ouroboros:  ['terre', 'écaille'],
+  /* LES DEUX MERVEILLES ONT LEURS ÉTIQUETTES, comme tout le monde : une merveille peut être
+     parent. Wukong est de PIERRE — né d'un œuf de pierre, il ne se croise donc avec rien
+     d'autre que la pierre, exactement comme le golem dont il sort. La règle qui l'a fait naître
+     est celle qui l'isole ensuite, et c'est bien. */
+  kitsune:    ['terre', 'poil'],     wukong:     ['terre', 'pierre'],
 };
 
 /* CE QUI RALENTIT UNE COUVAISON, ET POURQUOI CE FACTEUR-LÀ.
@@ -656,13 +693,81 @@ const ETIQUETTES = {
    du parent le MOINS rare — le moins rare et non le plus, parce que c'est sa lignée qui sort
    dans quatre-vingt-dix-neuf pour cent des cas quand l'écart est grand. Deux mythiques passent
    ainsi de quinze minutes à seize heures. */
-const PENSION_MULT = { commune: 1, rare: 4, epique: 16, mythique: 64 };
+const PENSION_MULT = { commune: 1, rare: 4, epique: 16, mythique: 64, merveilleuse: 256 };
 
 /* LA CHANCE QUE L'ENFANT PRENNE LA LIGNÉE DU PARENT LE PLUS RARE, selon l'écart. À égalité
    c'est un tirage à pile ou face ; au-delà, ça devient une loterie et non un robinet. Un
    pour cent sur trois crans d'écart : croiser une commune avec une mythique reste un pari, pas
    une stratégie. */
 const PENSION_CHANCE = [0.5, 0.20, 0.05, 0.01];
+
+/* ── LES RECETTES ──────────────────────────────────────────────────────────────
+   Un couple précis, une durée à lui, et une chance sur cent ou sur mille de rendre autre chose
+   que ce que la pension rend d'habitude. C'est la seule façon d'obtenir une merveilleuse.
+
+   UNE RECETTE N'EST PAS UNE PORTE, C'EST UN TIRAGE. Le couple pond normalement — la lignée
+   d'un des deux parents, comme n'importe quel couple — et la merveille sort par-dessus, de
+   temps en temps. Rien à débloquer, rien à cocher : on peut tomber dessus sans savoir, ce qui
+   fait qu'une merveille EXISTE dans le monde avant que quiconque sache la fabriquer.
+
+   CHACUNE PORTE SA PROPRE DURÉE, et n'emprunte rien à la formule ordinaire. Celle-ci est
+   calibrée pour l'élevage — durée × richesse des parents — et une merveille n'est pas de
+   l'élevage. Deux pierres, notamment, ne couvent pas : rien n'est élevé là-dedans, il y a une
+   pierre qui finit par se fendre, et c'est la plus courte attente du jeu.
+
+   POURQUOI DEUX ROUTES PAR MERVEILLE, ET POURQUOI ELLES NE DISENT PAS LA MÊME CHOSE :
+
+   • L'ACCIDENT — des parents qu'on a déjà, un pour mille. Personne ne le vise. C'est ce qui
+     fait qu'une merveille se rencontre avant de se chercher.
+   • LA RECETTE — le couple exact, un pour cent. C'est la route.
+
+   L'exact doit toujours écraser l'accident en rendement, sinon il ne sert à rien. Mesuré :
+   0,083 %/h contre 0,020 pour la Kitsune, 0,100 contre rien pour Wukong. Un facteur quatre :
+   l'accident n'est jamais une stratégie, seulement une histoire.
+
+   CE QUE ÇA COÛTE EN TEMPS RÉEL, la pension tournant jour et nuit (elle avance hors ligne) :
+   trente-quatre jours de médiane pour la Kitsune par sa recette, vingt-neuf pour Wukong. Un
+   mois chacune, par deux chemins qui n'ont rien à voir — l'une se trouve, l'autre se cherche.
+
+   LA CHIMÈRE EST UN CARREFOUR, et c'est structurel : c'est la seule bête du jeu qui soit faite
+   d'autres bêtes. Tout ce qui est composite passera par elle — le Nuckelavee par le cheval, le
+   Catoblépas par le cerf. Un mythique par famille de merveilles, ce qui donne au joueur une
+   carte mentale au lieu d'une liste. */
+const RECETTES = [
+  /* KITSUNE. La recette : deux menteurs composites — celui qui pose une question pour dévorer,
+     et celui dont le corps est fait de plusieurs bêtes. Ce qui en sort cache neuf queues.
+     L'accident : Bastet et le corps composite. La silhouette, sans l'esprit. */
+  { a: 'chimere', b: 'sphinx', donne: 'kitsune', duree: 12 * 3600, chance: 0.01 },
+  { a: 'chimere', b: 'chat',   donne: 'kitsune', duree:  5 * 3600, chance: 0.001 },
+
+  /* SUN WUKONG. Il naît d'un œuf de pierre, sur une montagne, sans parents : le mythe ne
+     demande pas de singe, il demande une pierre qui s'ouvre. Or « on ne croise pas la pierre »
+     laisse passer exactement un couple, et personne n'a de raison de l'essayer. Une
+     interdiction devient un secret, et il n'y a pas de seconde route. */
+  { a: 'golem',   b: 'golem',  donne: 'wukong',  duree:  1 * 3600, chance: 0.001 },
+];
+
+/* CE QUI SE PASSE APRÈS LA PREMIÈRE, et c'est voulu : une merveille se reproduit comme le
+   reste. Elle n’a pas de règle à part — `ligneeDe` la traite comme n’importe quel parent,
+   et la recette n'est le passage obligé que pour la PREMIÈRE. Ce que ça donne, mesuré :
+
+     Wukong × golem     20 h   5 %    il retourne à la pierre dont il sort
+     Kitsune × sphinx   20 h   5 %    par la même famille que sa recette
+     Kitsune × loup      7 h   1 %    la route pauvre, plus lente en rendement
+     Kitsune × chimère  48 h   —      refusé : au-delà du plafond
+
+   La seconde est donc plus facile que la première, et c'est la bonne asymétrie : elle donne
+   une raison de GARDER une merveille plutôt que de la vendre, ce qui est exactement ce qu'on
+   veut d'une bête de collection. Le rang reste tenu par la seule règle qui compte — aucun œuf
+   n'en donne — et la première coûte un mois. */
+
+/* La recette de ce couple, ou null. L'ordre des deux parents n'entre jamais en compte : on
+   désigne deux bêtes, pas un père et une mère. */
+function recetteDe(a, b) {
+  if (!a || !b) return null;
+  const x = lineOf(a).key, y = lineOf(b).key;
+  return RECETTES.find(r => (r.a === x && r.b === y) || (r.a === y && r.b === x)) || null;
+}
 
 /* LE PLAFOND DE LA RÉSERVE D'ŒUFS. Le plan le réclamait AVANT la pension et jamais après :
    c'est le seul frein du hors-ligne, et une partie qui tournerait déjà sans lui rentrerait sur
@@ -1117,6 +1222,30 @@ const LINES = [
   { key: 'ouroboros', name: 'Ouroboros', rarity: 'mythique', forms: [
     ['Ouroboros', '🐍'], ['Ouroboros éveillé', '🐍'], ['Ouroboros clos', '🐍'],
     ['Ouroboros sans fin', '🌀'], ['Ouroboros, la boucle du monde', '♾️'] ] },
+
+  /* ── LES MERVEILLEUSES ────────────────────────────────────────────────────
+     Aucun œuf ne les donne. On ne les rencontre qu'en pension, par un couple précis, et le
+     couple ne les rend qu'une fois de temps en temps : voir RECETTES.
+
+     KITSUNE reprend le traitement de l'Ouroboros — le nom ne change pas, l'épithète pousse —
+     mais pour une raison qui lui est propre : ELLE A NEUF QUEUES DEPUIS TOUJOURS, ET ELLE LES
+     CACHE. « Une queue par siècle » devient ce qu'elle montre, pas ce qu'elle acquiert. Effet
+     de bord : 1, 3, 5, 7, 9 — c'est la seule bête du jeu dont on lise l'âge sur le dessin.
+
+     SUN WUKONG est l'exception du rang : il grandit pour de vrai, parce qu'il est le seul dieu
+     du lot à avoir une enfance. Né d'un œuf de pierre — la seule légende du monde dont
+     l'ouverture soit une éclosion, ce qui dans ce jeu-ci n'est pas un détail.
+
+     Son titre complet est inutilisable et c'est le piège de la 2.15.0 : « Le Grand Sage égal du
+     Ciel » contient « grand », qui est un rang de taille, et la ligne afficherait « Le Grand
+     Sage égal du Ciel · taille normale ». « L'égal du Ciel » dit la même chose et passe. */
+  { key: 'kitsune', name: 'Kitsune', rarity: 'merveilleuse', forms: [
+    ['Kitsune', '🦊', 'f'], ['Kitsune à trois queues', '🦊', 'f'],
+    ['Kitsune à cinq queues', '🦊', 'f'], ['Kitsune à sept queues', '🦊', 'f'],
+    ['Kitsune, la neuvième queue', '⛩️', 'f'] ] },
+  { key: 'wukong', name: 'Sun Wukong', rarity: 'merveilleuse', forms: [
+    ['Singe de pierre', '🗿'], ['Roi des singes', '🐒'], ['Sun Wukong', '🐵'],
+    ['Sun Wukong sous la montagne', '⛰️'], ['Sun Wukong, l’égal du Ciel', '☁️'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
@@ -1241,7 +1370,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 15;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 16;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1269,7 +1398,7 @@ function freshState() {
   return {
     v: SAVE_V,
     coins: 0,
-    eggs: { commun: 0, rare: 0, epique: 0, mythique: 0 },
+    eggs: Object.fromEntries(EGG_KINDS.map(e => [e.key, 0])),
     buyKind: 'commun',      // ce que rachète l'acheteur automatique
     incubators: 1,
     pens: 1,
@@ -1292,11 +1421,11 @@ function freshState() {
     /* Un âge de vente PAR RARETÉ, 0 = le marchand n'y touche pas. C'est ce qui permet
        d'écouler les communes dès l'âge adulte pendant qu'on mène les mythiques jusqu'au
        bout : une consigne unique forçait à choisir entre les deux. */
-    sellAt: { commune: 0, rare: 0, epique: 0, mythique: 0 },
+    sellAt: parRarete(0),
     /* Une taille minimale PAR RARETÉ. Engraisser une commune, c'est immobiliser un enclos
        pour quelques pièces ; engraisser une mythique, c'est en gagner des milliards. Un
        réglage unique obligeait à trancher pour tout le monde. 0 = dès la maturité. */
-    sellRank: { commune: 0, rare: 0, epique: 0, mythique: 0 },
+    sellRank: parRarete(0),
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
     /* Le mode histoire. `tuto` l'allume, `vu` retient ce qui a déjà été dit ET ce qui a déjà
        été dévoilé — les deux se marquent une fois pour toutes, et rien ne revient en arrière.
@@ -1338,7 +1467,7 @@ function freshState() {
        mener une ancienne à la légende coûte 600 000 en commune et 9 milliards en mythique — donc
        ce n'est pas la même décision, et un réglage unique ne pouvait pas l'exprimer. On
        pousse les communes jusqu'au bout pendant qu'on arrête les mythiques à l'âge adulte. */
-    evolveUpTo: { commune: 0, rare: 0, epique: 0, mythique: 0 },
+    evolveUpTo: parRarete(0),
     seen: {},
     /* Ce qui traverse l'ascension. `album` garde TOUTES les capsules, `slots` ne porte que
        les identifiants des cartes équipées — seules celles-là agissent. `asc` compte les
@@ -1377,7 +1506,7 @@ function rollLine(kindKey) {
   const odds = (EGG_BY_KEY[kindKey] || EGG_BY_KEY.commun).odds;
   let r = Math.random(), base = 'commune';
   // du plus rare au plus commun ; en cas d'arrondi, on retombe sur la rareté de base de l'œuf
-  for (const key of ['mythique', 'epique', 'rare', 'commune']) {
+  for (const key of RARETES_HAUT_EN_BAS) {
     const p = odds[key] || 0;
     if (p > 0) base = key;
     r -= p;
@@ -1421,7 +1550,7 @@ function load() {
       else if (merged.up[k] === false || merged.up[k] == null) merged.up[k] = 0;
     }
     // la réserve d'œufs était un simple compteur avant qu'il n'y ait plusieurs sortes
-    const vide = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+    const vide = Object.fromEntries(EGG_KINDS.map(e => [e.key, 0]));
     merged.eggs = typeof merged.eggs === 'number'
       ? Object.assign({}, vide, { commun: merged.eggs })
       : Object.assign({}, vide, merged.eggs || {});
@@ -1430,12 +1559,12 @@ function load() {
        consignes par rareté : celles que le plafond couvrait gardent le palier, les autres
        passent à « jamais » — exactement ce que la sauvegarde faisait déjà. */
     if (s.sellFrom !== undefined && !s.sellAt) {
-      merged.sellAt = { commune: 0, rare: 0, epique: 0, mythique: 0 };
+      merged.sellAt = parRarete(0);
       for (const [cle, r] of Object.entries(RARITY)) {
         if (r.rank <= (s.sellRarity || 0)) merged.sellAt[cle] = s.sellFrom || 0;
       }
     }
-    merged.sellAt = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 }, merged.sellAt || {});
+    merged.sellAt = Object.assign(parRarete(0), merged.sellAt || {});
     delete merged.sellFrom; delete merged.sellRarity;
     // les œufs déjà en couvaison n'avaient pas de sorte
     for (const slot of merged.incub || []) if (slot && !slot.kind) slot.kind = 'commun';
@@ -1460,16 +1589,16 @@ function load() {
        raretés — c'est exactement ce que la consigne faisait, en quatre exemplaires. */
     if (typeof merged.evolveUpTo === 'number') {
       const avant = merged.evolveUpTo;
-      merged.evolveUpTo = { commune: avant, rare: avant, epique: avant, mythique: avant };
+      merged.evolveUpTo = parRarete(avant);
     }
-    merged.evolveUpTo = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 },
+    merged.evolveUpTo = Object.assign(parRarete(0),
                                       merged.evolveUpTo || {});
     // v5 → v6 : la taille minimale suit le même chemin, un nombre unique devient quatre
     if (typeof merged.sellRank === 'number') {
       const avant = merged.sellRank;
-      merged.sellRank = { commune: avant, rare: avant, epique: avant, mythique: avant };
+      merged.sellRank = parRarete(avant);
     }
-    merged.sellRank = Object.assign({ commune: 0, rare: 0, epique: 0, mythique: 0 },
+    merged.sellRank = Object.assign(parRarete(0),
                                     merged.sellRank || {});
     /* v3 → v4 : les améliorations se montent en tiers de palier. Un niveau d'avant en vaut
        donc trois, sans quoi une partie en cours verrait sa ferme divisée par trois. */
@@ -1559,6 +1688,11 @@ function load() {
     }
     merged.pension.dus = merged.pension.dus || {};
     merged.pension.nes = merged.pension.nes || 0;
+
+    /* v15 → v16 : la cinquième rareté arrive. Une sorte d'œuf et trois consignes du marchand
+       naissent avec elle, à zéro pour tout le monde — personne n'a jamais pu en tenir une. Rien
+       à écrire ici : la normalisation de la réserve et les trois `parRarete(0)` plus haut
+       fabriquent leurs clés depuis les tables, et une partie de v15 les reçoit au chargement. */
 
     merged.tuto = merged.tuto !== false;
     merged.vu = merged.vu || {};
@@ -1725,7 +1859,7 @@ const sousLePrix = c => (c.cost || 0) > sellValue(c);
    L'alerte se cantonne donc au début de la vie, et chaque rareté a droit à un âge de plus
    que la précédente : c'est là que la méprise est possible, et seulement là. Ailleurs, la
    bête reste affichée sous son prix — sans rouge, sans vert, sans commentaire. */
-const ALERTE_JUSQU = { commune: 0, rare: 1, epique: 2, mythique: 3 };
+const ALERTE_JUSQU = { commune: 0, rare: 1, epique: 2, mythique: 3, merveilleuse: 4 };
 const aPerte = c => sousLePrix(c) && c.age <= ALERTE_JUSQU[lineOf(c).rarity];
 
 /* Une bête porte UNE épithète, jamais quatre. « chromatique · écarlate · rayé · placide »
@@ -2412,8 +2546,10 @@ function toggleKeep(c) {
 
 function buyEgg(kind) {
   const e = EGG_BY_KEY[kind];
+  // une merveille n'a pas de prix : trois listes la cachent déjà, celle-ci ferme la porte
+  if (!e || !e.price) return;
   const prix = prixOeuf(e);
-  if (!e || state.coins < prix) return;
+  if (state.coins < prix) return;
   // le plafond de réserve vaut pour l'achat comme pour la ponte
   if (eggStock(kind) >= PLAFOND_OEUFS) return;
   state.coins -= prix;
@@ -2773,8 +2909,8 @@ function setFilter(el, v) { if (el.__f !== v) { el.__f = v; el.style.filter = v;
 function setFont(el, v) { if (el.__fs !== v) { el.__fs = v; el.style.fontSize = v; } }
 
 // La scène porte une seule classe de rareté à la fois — elle teinte le halo et la jauge.
-const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique',
-                     'egg-commun', 'egg-rare', 'egg-epique', 'egg-mythique'];
+const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique', 'rar-merveilleuse',
+                     'egg-commun', 'egg-rare', 'egg-epique', 'egg-mythique', 'egg-merveille'];
 /* Remplit les trois colonnes d'axes, et marque celle que la grande barre est en train de
    remplir — c'est le lien qui manquait le plus : la barre vise le niveau tant que la bête
    grandit, puis la taille une fois qu'elle est mûre, sans que rien ne le dise. */
@@ -2835,7 +2971,7 @@ function remplirMenus() {
 
   const ach = $('sel-acheteur');
   ach.textContent = '';
-  for (const e of EGG_KINDS) {
+  for (const e of OEUFS_VENDUS) {
     ach.appendChild(option(e.key, e.name.replace('Œuf ', 'Œufs ') + 's — ' +
       fmt(prixOeuf(e)) + ', couve en ' + fmtTime(e.hatch)));
   }
@@ -2902,7 +3038,7 @@ function buildChrome() {
     refs.acts[d.key] = b;
   }
 
-  const items = EGG_KINDS.map(e => ({
+  const items = OEUFS_VENDUS.map(e => ({
     key: 'egg-' + e.key, title: e.name, desc: eggDesc(e), rarity: e.key,
     cost: () => prixOeuf(e), run: () => buyEgg(e.key),
   })).concat([
@@ -3109,7 +3245,12 @@ function renderCollection() {
       h.setAttribute('aria-expanded', String(!estPlie(cle)));
       h.innerHTML = '<span class="plier" aria-hidden="true"></span><span class="coll-nom"></span>';
       h.querySelector('.plier').textContent = estPlie(cle) ? '▸' : '▾';
-      h.querySelector('.coll-nom').textContent = RARITY[rarity].name + ' · ×' + RARITY[rarity].mult;
+      /* LE TITRE DIT CE QUI DISTINGUE LA SECTION, pas ce qu’elle a en commun avec la
+         voisine. La merveilleuse vaut autant qu’une mythique : afficher « ×15000 » deux
+         fois de suite ressemble à un bug, alors que ce qui la sépare tient en trois mots. */
+      const achetable = EGG_KINDS.some(e => e.price && e.rarity === rarity);
+      h.querySelector('.coll-nom').textContent = RARITY[rarity].name +
+        (achetable ? ' · ×' + RARITY[rarity].mult : ' · ne s’achète pas');
       h.addEventListener('click', () => plier(cle));
       host.appendChild(h);
       grille = document.createElement('div');
@@ -3152,7 +3293,7 @@ const prixVoir = cle => cle.startsWith('up:') ? UP_BY_KEY[cle.slice(3)].base
 
    Trié par prix, l'escalier redevient un escalier : œuf commun, incubateur, enclos, puis les
    raretés. Et le tri se refait tout seul le jour où un prix change. */
-const CLES_VOIR = EGG_KINDS.map(e => 'egg-' + e.key)
+const CLES_VOIR = OEUFS_VENDUS.map(e => 'egg-' + e.key)
   .concat(['incub', 'pen'])
   .concat(UPGRADES.map(u => 'up:' + u.key))
   .sort((a, b) => prixVoir(a) - prixVoir(b));
@@ -4415,6 +4556,8 @@ const rareteBasse = (a, b) =>
 
 // Ce que coûte l'attente. Bornée : au-delà du plafond, le couple est refusé plutôt que subi.
 function dureePension(a, b) {
+  const rec = recetteDe(a, b);
+  if (rec) return rec.duree;
   const d = distanceDe(a, b);
   if (d === null) return null;
   return (PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b))
@@ -4477,7 +4620,12 @@ function avancePension(dt) {
     const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
     // un parent vendu pendant la couvaison annule le couple sans rien rendre
     if (!a || !b) return false;
-    const ligne = ligneeDe(a, b), sorte = sorteDe(ligne);
+    /* LA RECETTE PASSE AVANT. Elle ne remplace pas la ponte ordinaire, elle se pose
+       dessus : le couple pond sa lignée habituelle dans quatre-vingt-dix-neuf cas sur cent,
+       et la merveille dans le centième. */
+    const rec = recetteDe(a, b);
+    const ligne = rec && Math.random() < rec.chance ? rec.donne : ligneeDe(a, b);
+    const sorte = sorteDe(ligne);
     /* La réserve est pleine : le couple GARDE son œuf et attend. Le jeter punirait une absence,
        et c'est précisément ce que le plafond doit éviter de faire. */
     if (eggStock(sorte) >= PLAFOND_OEUFS) { k.t = k.duree; return true; }
@@ -4551,6 +4699,9 @@ const TROPHEES = [
   { cle: 'complicite', glyphe: '💗', nom: 'Complicité',
     dit: 'Recevoir dix cadeaux d’une bête qu’on garde en scène.',
     test: () => (state.dons || 0) >= 10 },
+  { cle: 'merveille', glyphe: '✨', montre: true, nom: 'Une merveille',
+    dit: 'Faire naître une merveilleuse. Aucun œuf n’en donne — il faut la pension, et le bon couple.',
+    test: () => LINES.some(l => l.rarity === 'merveilleuse' && state.seen[l.key + ':1']) },
   { cle: 'couvee', glyphe: '🪺', montre: true, nom: 'Une première couvée',
     dit: 'Faire naître un œuf en pension. Il faut deux bêtes adultes, un enclos de libre, et du temps.',
     test: () => (state.stats.pension || 0) > 0 },
@@ -4626,6 +4777,9 @@ const STATS = [
   ]],
   ['Les rencontres', () => [
     ['Nés en pension', fmt(state.stats.pension || 0)],
+    ['Merveilles rencontrées', LINES.filter(l => l.rarity === 'merveilleuse' &&
+        state.seen[l.key + ':1']).length + ' / ' +
+        LINES.filter(l => l.rarity === 'merveilleuse').length],
     ['Formes rencontrées', seenCount() + ' / ' + (LINES.length * AGES.length)],
     ['Chromatiques', fmt(state.stats.prodiges)],
     ['Cadeaux reçus', fmt(state.dons || 0)],
@@ -4741,13 +4895,24 @@ function renderPension() {
     const chance = PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)];
     const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
     const bas = haut === a ? b : a;
+    /* CE QUE LA PHRASE DIT D'UNE RECETTE, ET CE QU'ELLE TAIT. Tant qu'on n'a jamais vu la
+       merveille, elle ne la nomme pas : « et peut-être autre chose » suffit à dire qu'il y a
+       quelque chose ici, et rien de plus. Chercher les couples dans les menus est gratuit ;
+       les essayer coûte des jours. C'est la fouille qu'on récompense, pas la lecture d'un wiki.
+
+       Une fois la bête rencontrée, la phrase la nomme et donne son pourcentage : le mystère a
+       servi une fois, et le garder ensuite ne serait plus du mystère mais de la rétention. */
+    const rec = recetteDe(a, b);
+    const su = rec && state.seen[rec.donne + ':1'];
     setText($('pension-dit'),
       (d === 0 ? 'Elles se ressemblent en tout' : d === 1 ? 'Elles ont une chose en commun'
                                                           : 'Elles n’ont rien en commun') +
       ' · ' + fmtTime(t) + ' · ' +
       (ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
                    : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
-                     ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()));
+                     ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +
+      (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name
+                      : ' · et peut-être autre chose'));
   }
   $('pension-go').disabled = !!refus || !a || !b;
   setText($('pension-go'), 'Confier');

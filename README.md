@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 3.0.0
+    alpha MAJEUR.MINEUR.CORRECTIF          aujourd'hui : alpha 3.1.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -43,13 +43,16 @@ une, le jeu est un très bon prototype de sa moitié d'avant.
 Les nombres continuent — la bêta ne remet rien à zéro. La pension est le **majeur** qui
 ouvre la série 3.
 
-**Deux des trois sont tombés.** La [fusion des cartes](#la-fusion-et-la-poussière) est là
-depuis la 2.32.0, la [pension](#la-pension) depuis la 3.0.0. Il ne manque que les
-merveilleuses — et c'est délibéré : la pension a été ouverte **sans** elles, ce qui en fait un
-outil de collection plutôt qu'une porte vers l'inaccessible. La cinquième rareté reste le
-dernier verrou de la bêta.
+**Les trois sont tombés.** La [fusion des cartes](#la-fusion-et-la-poussière) en 2.32.0, la
+[pension](#la-pension) en 3.0.0, les [merveilleuses](#les-merveilleuses) en 3.1.0. La boucle
+est fermée : on élève pour reproduire, on reproduit pour obtenir ce qui ne s'achète nulle part,
+et l'album donne une raison de garder les doublons.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 15` aujourd'hui), qui numérote le *format*
+Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
+([MERVEILLES.md](MERVEILLES.md)). **Le mot reste donc à changer, et c'est une décision, pas un
+calcul** — la définition demandait « les premières merveilleuses », elle ne disait pas combien.
+
+À ne pas confondre avec le `v` de la sauvegarde (`v: 16` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme : `alpha 1.2.0` n'a pas touché au format, `alpha 1.3.0` l'a fait passer
 de 4 à 5.
@@ -58,7 +61,8 @@ de 4 à 5.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **3.0.0** | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
+| **3.1.0** | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
+| 3.0.0 | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
 | 2.32.0 | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
 | 2.31.0 | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
 | 2.30.2 | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
@@ -189,7 +193,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 27 lignées et leurs 135 formes, du têtard à l'Ouroboros éternel
+- 29 lignées et leurs 145 formes, du têtard à Sun Wukong
 - **Le bonheur d'une bête** : la garder en scène lui fait offrir, de loin en loin, quelques secondes de clic double
 - **Un mode histoire** : le jeu se déplie une marche à la fois, et s'explique en dix notes
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
@@ -206,11 +210,13 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
-- Collection des 135 formes découvertes
+- Collection des 145 formes découvertes
 - **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
   du bonus, et tout le reste repart de zéro
 - **La pension** : deux bêtes adultes confiées pondent un œuf dont la lignée est promise — et
   cessent de rapporter le temps de la couvaison
+- **Les merveilleuses** : une cinquième rareté qu'aucun œuf ne donne, obtenue par des recettes
+  de pension
 
 Absent volontairement : gènes, hérédité des teintes, lignées cachées, comptes, marché entre
 joueurs. Tout cela demande le serveur, ou attend une version de la pension qui n'existe pas
@@ -263,7 +269,7 @@ l'ascension, et elle ne peut pas revenir en arrière.
 #### Ce qui n'a pas encore de sens ne s'affiche pas
 
 La vue de l'œuf tombait à la première éclosion et **tout le reste arrivait d'un coup** : trois
-boutons de tri pour une seule bête, une collection de 135 cases dont une remplie, une ligne de
+boutons de tri pour une seule bête, une collection de 145 cases dont une remplie, une ligne de
 boosts annonçant des multiplicateurs qu'on n'a pas, des compteurs « 1 / 1 » qui ne comptent
 rien, et un pied de page sur la sauvegarde locale. Beaucoup de détails, aucun utilisable.
 
@@ -750,7 +756,7 @@ auraient rendu plus tard. L'épithète se dégonfle d'elle-même — un *adulte 
 
 ### Raretés
 
-**La pyramide compte 27 lignées : 10 communes, 10 rares, 4 épiques, 3 mythiques.** L'ère rare
+**La pyramide compte 29 lignées : 10 communes, 10 rares, 4 épiques, 3 mythiques et 2 merveilleuses.** L'ère rare
 est passée de quatre à dix en alpha 2.3.0 — les communes avaient été étoffées au fil du temps
 pendant que les autres ères restaient à leur compte d'origine, si bien qu'on voyait la même
 bête un œuf sur quatre à l'ère rare contre une sur dix à l'ère commune, alors que la rare dure
@@ -1458,9 +1464,111 @@ une évidence.
 
 - **L'hérédité.** Teintes, tempérament et motif se tirent encore au hasard. Les fusions de
   teintes et les teintes exclusives viendront avec leur propre version.
-- **Les merveilleuses.** La cinquième rareté devait être le prix unique de la pension. On a
-  ouvert sans elle, et il faut le dire à voix haute : c'est ce qui manque pour que la pension
-  ouvre sur autre chose que ce que la boutique vend déjà.
+- **Les six autres merveilles.** Surtr, Catoblépas, Nuckelavee, Olgoï-Khorkhoï, Tiamat et
+  Typhon sont écrits dans [MERVEILLES.md](MERVEILLES.md) et attendent leurs dessins. Leurs
+  recettes suivront le même schéma : un mythique par famille, deux routes, des durées propres.
+
+### Les merveilleuses
+
+**La cinquième rareté.** Deux lignées pour l'instant — la **Kitsune** et **Sun Wukong** — et
+une seule règle qui les définit :
+
+> Aucun œuf n'en donne. On ne les obtient qu'en pension, par un couple précis, et le couple ne
+> les rend qu'une fois de temps en temps.
+
+**Elle ne vaut pas plus qu'une mythique.** Même multiplicateur de prix, même plafond de carte,
+même rente. C'est la décision la plus importante du rang : si une merveille rapportait
+davantage, la pension redeviendrait une stratégie d'argent et tout le travail de la 3.0.0 pour
+qu'elle n'en soit pas une tomberait sur la première éclose. Un cran de **rareté**, jamais un
+cran de **puissance**.
+
+#### Les recettes
+
+Une recette porte **son couple, sa durée et son pourcentage** — elle n'emprunte rien à la
+formule ordinaire, qui est calibrée pour l'élevage.
+
+| Merveille | Couple | Durée | Chance | Médiane |
+|---|---|---|---|---|
+| **Kitsune** | Chimère × Sphinx | 12 h | 1 % | 34 j |
+| | Chimère × Chat | 5 h | 0,1 % | 144 j |
+| **Sun Wukong** | Golem × Golem | 1 h | 0,1 % | 29 j |
+
+**Une recette n'est pas une porte, c'est un tirage.** Le couple pond normalement — la lignée
+d'un des deux parents, comme n'importe quel couple — et la merveille sort par-dessus. Rien à
+débloquer, rien à cocher : on peut tomber dessus sans savoir, ce qui fait qu'une merveille
+**existe dans le monde avant que quiconque sache la fabriquer**.
+
+D'où les **deux routes** par merveille, qui ne disent pas la même chose :
+
+- **l'accident** — des parents qu'on a déjà, un pour mille. Personne ne le vise ;
+- **la recette** — le couple exact, un pour cent. C'est la route.
+
+L'exact doit toujours écraser l'accident en rendement, sinon il ne sert à rien : 0,083 %/h
+contre 0,020 pour la Kitsune, un facteur quatre. L'accident n'est jamais une stratégie,
+seulement une histoire.
+
+#### Pourquoi ces couples-là
+
+**Kitsune.** Elle n'est pas un renard, elle est **ce qui se fait passer pour autre chose** — et
+il n'y a donc pas de renard à ajouter au bestiaire. La **Chimère** est le corps fait de
+plusieurs bêtes, le **Sphinx** est le seul du jeu qui parle pour tromper. Ce qui sort de deux
+menteurs composites cache neuf queues. Le **Chat** tient l'autre bout : Bastet donne la
+silhouette, pas l'esprit.
+
+**Sun Wukong.** Il naît d'un **œuf de pierre**, sur une montagne, sans parents : le mythe ne
+demande pas de singe, il demande une pierre qui s'ouvre. Or *« on ne croise pas la pierre »*
+laisse passer exactement un couple — le golem avec lui-même — et personne n'a de raison de
+l'essayer. **Une interdiction devient un secret.**
+
+Et la durée s'ensuit : **deux pierres ne couvent pas.** Rien n'est élevé là-dedans, il y a une
+pierre qui finit par se fendre. C'est la plus courte attente du jeu, et c'est aussi ce qui rend
+le 0,1 % jouable — 29 jours au lieu de 115 si on l'avait laissée à quatre heures.
+
+#### Ce que la phrase dit, et ce qu'elle tait
+
+Sur un couple qui porte une recette, la ligne du panneau gagne un suffixe :
+
+    Elles se ressemblent en tout · 1 h 00 m · un œuf de l'une ou de l'autre · et peut-être autre chose
+
+Elle ne nomme rien. Chercher les couples dans les menus est gratuit, les essayer coûte des
+jours : c'est la fouille qu'on récompense, pas la lecture d'un wiki. **Une fois la bête
+rencontrée**, la phrase la nomme et donne son pourcentage — le mystère a servi une fois, et le
+garder ensuite ne serait plus du mystère mais de la rétention.
+
+#### La seconde est plus facile que la première
+
+Une merveille se reproduit comme le reste : elle n'a pas de règle à part, et la recette n'est
+le passage obligé que pour la **première**.
+
+| Couple | Durée | Ce qui sort |
+|---|---|---|
+| Wukong × Golem | 20 h | 5 % Wukong — il retourne à la pierre dont il sort |
+| Kitsune × Sphinx | 20 h | 5 % Kitsune |
+| Kitsune × Loup | 7 h | 1 % Kitsune — la route pauvre |
+| Kitsune × Chimère | 48 h | refusé : au-delà du plafond |
+
+C'est la bonne asymétrie : elle donne une raison de **garder** une merveille plutôt que de la
+vendre, ce qui est exactement ce qu'on veut d'une bête de collection. Le rang reste tenu par la
+seule règle qui compte — aucun œuf n'en donne — et la première coûte un mois.
+
+#### Les deux bêtes
+
+**Kitsune** reprend le traitement de l'Ouroboros — le nom ne change pas, l'épithète pousse —
+mais pour une raison qui lui est propre : **elle a neuf queues depuis toujours, et elle les
+cache.** « Une queue par siècle » devient ce qu'elle *montre*, pas ce qu'elle acquiert. Effet
+de bord : 1, 3, 5, 7, 9 — c'est la seule bête du jeu dont on lise l'âge sur le dessin.
+
+**Sun Wukong** est l'exception du rang : il grandit pour de vrai, parce qu'il est le seul dieu
+du lot à avoir une enfance. Son arc va de la pierre au ciel — *Singe de pierre*, *Roi des
+singes*, *Sun Wukong*, *sous la montagne*, *l'égal du Ciel*.
+
+Son titre complet est inutilisable, et c'est le piège de la 2.15.0 : « Le Grand Sage égal du
+Ciel » contient **grand**, qui est un rang de taille, et la ligne afficherait « Le Grand Sage
+égal du Ciel · taille normale ». Le scénario `noms` du banc le rejetterait. « L'égal du Ciel »
+dit la même chose et passe.
+
+Les six autres merveilles sont écrites et attendent leurs dessins : voir
+[MERVEILLES.md](MERVEILLES.md).
 
 ### Tout se replie
 
@@ -1470,11 +1578,11 @@ replie séparément**.
 
 C'est la réponse principale au défilement sur un petit écran, et la seule qui tienne à toutes
 les tailles : le problème n'est pas la densité mais le **nombre de choses affichées en même
-temps**, et aucune compaction ne rattrape six panneaux dont un porte 135 cases. Fermer ce
+temps**, et aucune compaction ne rattrape six panneaux dont un porte 145 cases. Fermer ce
 qu'on ne regarde pas laisse la décision au joueur plutôt qu'à un point de rupture.
 
 Replié, il ne reste que la barre de titre — **et son compteur**, qui est justement ce qu'on
-vient lire du coin de l'œil sans ouvrir : `6 / 135` pour la collection, `5 / 20` pour les
+vient lire du coin de l'œil sans ouvrir : `6 / 145` pour la collection, `5 / 20` pour les
 primes.
 
 Deux détails d'implémentation qui se voient dans le code : le bouton n'enveloppe **que le
@@ -1907,8 +2015,9 @@ de motifs le mangeaient** : le tigré plafonne à +200 % et l'atteignait déjà,
 remplacé depuis par le martelé — plafonnait à trois enclos dès la deuxième étoile. On aurait payé très cher un cran qui,
 selon le motif, ne donnait rien.
 
-**La merveilleuse**, cinquième rareté, ne s'obtiendra qu'en pension : l'album sort donc avec
-quatre plafonds au lieu de cinq.
+**La merveilleuse**, cinquième rareté, ne s'obtient qu'en pension — et elle partage le plafond
+du mythique plutôt que d'en ouvrir un cinquième, pour la même raison qui lui donne la même
+valeur marchande : c'est un cran de rareté, pas un cran de puissance.
 
 ### Le code couleur
 
@@ -1917,7 +2026,7 @@ jauges, prix, focus, sélection — ce qui vidait de son sens le rang des mythiq
 
 | Couleur | Sens, et rien d'autre |
 |---|---|
-| gris-vert, bleu, violet, **or** | les quatre raretés, et le prodige pour l'or |
+| gris-vert, bleu, violet, **or**, clarté | les cinq raretés, et le prodige pour l'or |
 | beige `--coin` | la monnaie et les prix |
 | vert `--accent` | la progression, la sélection, le focus |
 | vert `--good` | une vente rentable |

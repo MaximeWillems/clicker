@@ -1046,6 +1046,154 @@ scenario('pension — une partie de v14 se relit sans rien perdre', () => {
   eq('et la pension tourne à vide sans lever', m.avancePension(1e5), 0);
 });
 
+/* ─────────────────────────────── les merveilles ─────────────────────────────── */
+
+scenario('merveilles — aucun œuf n’en donne, et rien ne la met en vente', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+
+  /* LA DÉFINITION DU RANG EST UNE ABSENCE, et c'est ce qui se vérifie le plus mal : rien ne
+     lève quand une porte s'ouvre par accident. On la garde donc des deux côtés — la structure
+     des tables, puis le tirage lui-même. */
+  const merv = jeu.LINES.filter(l => l.rarity === 'merveilleuse');
+  ok('il y a des merveilleuses', merv.length >= 2, merv.length);
+  for (const e of jeu.EGG_KINDS) {
+    if (!e.price) continue;
+    eq('l’œuf ' + e.key + ' ne cote aucune merveilleuse', e.odds.merveilleuse, undefined);
+  }
+
+  let sorties = 0;
+  for (const e of jeu.OEUFS_VENDUS)
+    for (let i = 0; i < 20000; i++)
+      if (jeu.LINE_BY_KEY[jeu.rollLine(e.key)].rarity === 'merveilleuse') sorties++;
+  eq('quatre-vingt mille tirages, aucune merveilleuse', sorties, 0);
+
+  // et la porte de service : l'œuf de merveille existe, mais il n'a pas de prix
+  eq('la sorte existe', jeu.EGG_BY_KEY.merveille.rarity, 'merveilleuse');
+  eq('elle n’a pas de prix', jeu.EGG_BY_KEY.merveille.price, null);
+  ok('la boutique ne la liste pas', !jeu.OEUFS_VENDUS.some(e => e.key === 'merveille'));
+  ok('les dévoilements non plus', !jeu.CLES_VOIR.includes('egg-merveille'));
+  jeu.buyEgg('merveille');
+  eq('et l’acheter ne fait rien', jeu.eggStock('merveille'), 0);
+  eq('sans rien coûter', s.coins, 1e12);
+});
+
+scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8;
+  const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
+
+  const rec = jeu.recetteDe(g1, g2);
+  ok('le couple porte une recette', !!rec);
+  eq('elle donne Wukong', rec.donne, 'wukong');
+  /* LA RECETTE PORTE SA DURÉE, elle n'emprunte rien à la formule ordinaire — qui rendrait
+     quatre heures ici. Deux pierres ne couvent pas : il y en a une qui finit par se fendre. */
+  eq('et sa propre durée', jeu.dureePension(g1, g2), 3600);
+  eq('l’ordre des parents n’entre pas en compte', jeu.recetteDe(g2, g1), rec);
+
+  const vrai = Math.random;
+  try {
+    Math.random = () => 0;                       // le centième tombe
+    jeu.accoupler(g1, g2);
+    eq('un œuf est pondu', jeu.avancePension(3601), 1);
+  } finally { Math.random = vrai; }
+
+  eq('il est dans la réserve des merveilles', jeu.eggStock('merveille'), 1);
+  eq('et sa lignée est promise', (s.pension.dus.merveille || []).join(), 'wukong');
+  s.incub[0] = null;
+  jeu.placeEgg(0, 'merveille');
+  eq('c’est bien lui qui couve', s.incub[0].line, 'wukong');
+  ok('et il couve plus longtemps qu’un mythique',
+     jeu.hatchTime(s.incub[0]) > jeu.EGG_BY_KEY.mythique.hatch);
+
+  s.incub[0].p = 1e6; s.pen = [];
+  jeu.hatchAll();
+  eq('la bête est née', s.pen[0].line, 'wukong');
+  jeu.verifierTrophees();
+  ok('et le trophée tombe', !!s.trophees.merveille);
+});
+
+scenario('merveilles — sans la recette, le couple pond comme les autres', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8;
+  const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
+
+  const vrai = Math.random;
+  try {
+    Math.random = () => 0.99;                    // le centième ne tombe pas
+    jeu.accoupler(g1, g2);
+    eq('un œuf quand même', jeu.avancePension(3601), 1);
+  } finally { Math.random = vrai; }
+
+  eq('mais aucune merveille', jeu.eggStock('merveille'), 0);
+  eq('c’est un œuf épique', jeu.eggStock('epique'), 1);
+  eq('de golem', (s.pension.dus.epique || []).join(), 'golem');
+});
+
+scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la bête', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8;
+  const a = bete(jeu, 'chimere', 4, 20000), b = bete(jeu, 'sphinx', 4, 20000);
+  const loup = bete(jeu, 'loup', 4, 20000);
+  const dit = () => noeuds.get('pension-dit').textContent;
+
+  jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
+  ok('elle annonce autre chose', /peut-être autre chose/.test(dit()), dit());
+  ok('sans la nommer', !/Kitsune/.test(dit()), dit());
+  ok('et la durée est celle de la recette', /12 h/.test(dit()), dit());
+
+  jeu.pensionB = loup.id; jeu.refresh();
+  ok('un couple ordinaire ne promet rien', !/autre chose/.test(dit()), dit());
+
+  s.seen['kitsune:1'] = true;
+  jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
+  ok('une fois rencontrée, la phrase la nomme', /1 % Kitsune/.test(dit()), dit());
+});
+
+scenario('merveilles — un cran de rareté, jamais un cran de puissance', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8;
+
+  /* SI UNE MERVEILLE VALAIT PLUS QU'UNE MYTHIQUE, la pension redeviendrait une stratégie
+     d'argent et tout le travail de la 3.0.0 tomberait sur la première éclose. */
+  eq('même multiplicateur qu’une mythique',
+     jeu.RARITY.merveilleuse.mult, jeu.RARITY.mythique.mult);
+  eq('et même plafond de carte',
+     jeu.RARITY.merveilleuse.plafond, jeu.RARITY.mythique.plafond);
+
+  const w = bete(jeu, 'wukong', 3, 20000), o = bete(jeu, 'ouroboros', 3, 20000);
+  w.tint = o.tint; w.niv = o.niv; w.over = o.over = 0; w.temper = o.temper; w.prodige = o.prodige = false;
+  eq('donc elle se vend au même prix', jeu.sellValue(w), jeu.sellValue(o));
+
+  // et les trois consignes du marchand ont bien leur clef, sinon elles seraient muettes
+  for (const cle of Object.keys(jeu.RARITY)) {
+    eq('vente ' + cle, typeof s.sellAt[cle], 'number');
+    eq('taille ' + cle, typeof s.sellRank[cle], 'number');
+    eq('évolution ' + cle, typeof s.evolveUpTo[cle], 'number');
+  }
+});
+
+scenario('merveilles — une partie de v15 reçoit ses clés sans rien perdre', () => {
+  const j0 = neuf(); const s0 = j0.state;
+  s0.coins = 5e6; s0.pens = 4; s0.stats.eclos = 12;
+  const vieux = JSON.parse(JSON.stringify(s0));
+  vieux.v = 15;
+  // une v15 ne connaît ni la cinquième rareté ni sa sorte d'œuf
+  delete vieux.eggs.merveille;
+  delete vieux.sellAt.merveilleuse;
+  delete vieux.sellRank.merveilleuse;
+  delete vieux.evolveUpTo.merveilleuse;
+
+  const k = neuf(vieux);
+  eq('le format monte', k.state.v, k.SAVE_V);
+  eq('la sorte d’œuf naît à zéro', k.state.eggs.merveille, 0);
+  eq('la consigne de vente aussi', k.state.sellAt.merveilleuse, 0);
+  eq('la taille exigée aussi', k.state.sellRank.merveilleuse, 0);
+  eq('l’évolution aussi', k.state.evolveUpTo.merveilleuse, 0);
+  eq('et la ferme est intacte', k.state.coins, 5e6);
+  eq('avec ses enclos', k.state.pens, 4);
+});
+
 /* ────────────────────────── la poussière et la fusion ────────────────────────── */
 
 // une carte quelconque, pour peupler un album
