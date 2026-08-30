@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.12.0';
+const VERSION = 'beta 1.13.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -352,6 +352,46 @@ const TINTS = [
    sur tout l'album, elle ramène la chance à 1/4096 — un doublement qui se sent enfin, là où
    il n'était qu'un confort. */
 const PRODIGE_ODDS  = 1 / 8192;
+/* ── LES FONDS ─────────────────────────────────────────────────────────────────
+   Un décor derrière la bête, tiré à l'éclosion et gardé à vie. Il se voit sur la scène et sur
+   la carte, et il fait monter un peu le prix de vente.
+
+   POURQUOI C'EST LE MEILLEUR RAPPORT DESSIN / VARIÉTÉ DU JEU. Les dix-sept lignées sans image
+   demandent cinq dessins chacune, et chaque dessin ne sert qu'à une forme. Un fond sert aux
+   CENT CINQUANTE FORMES à la fois : huit fonds multiplient par neuf le nombre d'images
+   différentes qu'on peut croiser, pour zéro fichier — ils sont en CSS.
+
+   IL N'ENTRE PAS DANS LE NOM, et c'est tranché depuis la note d'origine. Un fond SE VOIT : le
+   dire en plus serait une redite, et le jeu n'affiche qu'une seule épithète exprès, pour
+   qu'une bête reste une bête et pas une fiche technique.
+
+   PRESTIGIEUX VEUT DIRE RARE : un sur huit cents, et SEULEMENT dans les œufs de la boutique.
+   Un fond fréquent devient un décor et cesse d'être une rencontre — même règle que le
+   chromatique. La pension, elle, n'en donne aucun : elle donnera des fonds le jour où elle
+   saura les HÉRITER, et pas avant. On achète pour tomber dessus, on élèvera pour en obtenir un
+   précis — c'est la même frontière que pour les teintes.
+
+   LE FOND ET LE MOTIF NE FONT PAS LE MÊME MÉTIER : le motif décide de l'EFFET d'une carte, le
+   fond de sa VALEUR. Ils coexistent sur la même bête sans se marcher dessus.
+
+   `mult` reste dans la fourchette des teintes — de 1,10 à 1,20 — pour ne pas avoir à reprendre
+   l'équilibrage des variantes en entier. `sens` dit d'où partent les particules, `n` combien il
+   y en a : tout le reste est dans la feuille de style, une classe par fond. */
+const FONDS = [
+  { key: 'braise',  nom: 'braise',   mult: 1.14, sens: 'monte',  n: 9 },
+  { key: 'givre',   nom: 'givre',    mult: 1.14, sens: 'tombe',  n: 11 },
+  { key: 'nuee',    nom: 'nuée',      mult: 1.10, sens: 'derive', n: 10 },
+  { key: 'abysse',  nom: 'abysse',   mult: 1.16, sens: 'monte',  n: 8 },
+  { key: 'orage',   nom: 'orage',    mult: 1.12, sens: 'tombe',  n: 14 },
+  { key: 'pollen',  nom: 'pollen',   mult: 1.10, sens: 'derive', n: 12 },
+  { key: 'cendre',  nom: 'cendre',   mult: 1.12, sens: 'tombe',  n: 9 },
+  { key: 'aurore',  nom: 'aurore',   mult: 1.20, sens: 'derive', n: 7 },
+];
+const FOND_BY_KEY = Object.fromEntries(FONDS.map(f => [f.key, f]));
+// une bête sur huit cents en a un, et il se tire alors uniformément parmi les huit
+const FOND_ODDS = 1 / 800;
+const fondDe = c => (c && c.fond && FOND_BY_KEY[c.fond]) || null;
+
 const PRODIGE_MULT  = 25;
 const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
 
@@ -1535,7 +1575,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 18;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 19;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1677,10 +1717,14 @@ function pickLine(rarityKey) {
    Sans cette file la pension ne viserait rien du tout — deux loups pondraient un « œuf
    commun », et l'œuf commun rendrait un crapaud. C'est la seule ligne qui fait la différence
    entre un système de sélection et une machine à œufs gratuits. */
-const tireLigne = kind => {
+function tireLigne(kind) {
   const file = (state.pension && state.pension.dus && state.pension.dus[kind]) || [];
-  return file.length ? file.shift() : rollLine(kind);
-};
+  /* ELLE DIT AUSSI D'OÙ VIENT L'ŒUF. Un œuf de pension et un œuf acheté sont indiscernables
+     une fois dans la réserve — c'était voulu, tout le reste du jeu n'a pas à les distinguer.
+     Les fonds, si : eux ne se tirent que sur ce qui vient de la boutique. */
+  return file.length ? { line: file.shift(), pension: true }
+                     : { line: rollLine(kind), pension: false };
+}
 
 function rollLine(kindKey) {
   const odds = (EGG_BY_KEY[kindKey] || EGG_BY_KEY.commun).odds;
@@ -2038,7 +2082,8 @@ function bonusAlbum() {
   return (bonusCache = b);
 }
 
-const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1);
+const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1) *
+                         (fondDe(c) ? fondDe(c).mult : 1);
 // Une prime de négoce par rareté : c'est le seul bonus du jeu qui ne vaut que pour une
 // partie du bestiaire, et c'est ce qui lui donne un sens de choix plutôt que de cumul.
 const negoce    = c => prime('negoce-' + lineOf(c).rarity) ? 1.25 : 1;
@@ -2058,7 +2103,7 @@ function pickWeighted(list) {
 const dexDe = cle => {
   state.dex = state.dex || {};
   return (state.dex[cle] = state.dex[cle] ||
-    { teintes: {}, caracteres: {}, motifs: {}, prodiges: 0, nes: 0, couples: {} });
+    { teintes: {}, caracteres: {}, motifs: {}, fonds: {}, prodiges: 0, nes: 0, couples: {} });
 };
 const dexVu = cle => (state.dex && state.dex[cle]) || null;
 
@@ -2069,6 +2114,7 @@ function noterEclosion(c) {
   d.teintes[c.tint] = (d.teintes[c.tint] || 0) + 1;
   d.caracteres[c.temper] = (d.caracteres[c.temper] || 0) + 1;
   d.motifs[c.motif] = (d.motifs[c.motif] || 0) + 1;
+  if (c.fond) { d.fonds = d.fonds || {}; d.fonds[c.fond] = (d.fonds[c.fond] || 0) + 1; }
   if (c.prodige) d.prodiges++;
 }
 
@@ -2081,12 +2127,19 @@ function noterPonte(a, b, ligne) {
   d.couples[cle] = (d.couples[cle] || 0) + 1;
 }
 
-// Tiré une fois, à l'éclosion, et jamais retouché ensuite.
-function rollVariants() {
+/* Tiré une fois, à l'éclosion, et jamais retouché ensuite.
+
+   `achete` dit si l'œuf vient de la BOUTIQUE. Seul un œuf acheté peut porter un fond : celui
+   qui sort de la pension n'en a pas, parce que la pension donnera des fonds le jour où elle
+   saura les hériter. Sans ce garde, une ligne de production à mille œufs l'heure sortirait un
+   fond toutes les cinq minutes, et « prestigieux » ne voudrait plus rien dire. */
+function rollVariants(achete) {
   return {
     tint: pickWeighted(TINTS),
     temper: Math.floor(Math.random() * TEMPERS.length),
     motif: Math.floor(Math.random() * MOTIFS.length),
+    fond: achete && Math.random() < FOND_ODDS
+      ? FONDS[Math.floor(Math.random() * FONDS.length)].key : null,
     // le constellé pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
     prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige) * (prime('oeil') ? 1.5 : 1),
   };
@@ -2705,7 +2758,7 @@ function placeEgg(i, kind) {
   kind = kind || bestStocked();
   if (state.incub[i] || !kind || !eggStock(kind)) return;
   state.eggs[kind]--;
-  state.incub[i] = { line: tireLigne(kind), p: 0, kind };
+  state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
   // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
   // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
   if (!state.pen.length) state.sel = 'i:' + i;
@@ -2723,7 +2776,7 @@ function hatchAll() {
     // qu'il est en train de vendre à perte
     const c = Object.assign({ id: nextId++, line: slot.line, age: 1, p: 0, over: 0,
                               cost: prixOeuf(EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun) },
-                           rollVariants());
+                           rollVariants(!slot.pension));
     // un prodige est protégé d'office : on ne perd pas une bête sur huit mille
     // parce que le marchand l'a vendue avant qu'on l'ait vue
     if (c.prodige) { c.keep = true; state.stats.prodiges++; }
@@ -3020,7 +3073,7 @@ function runAutomations(dt) {
     if (state.incub[i]) continue;
     const kind = bestStocked();
     state.eggs[kind]--;
-    state.incub[i] = { line: tireLigne(kind), p: 0, kind };
+    state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
   }
 
   /* L'acheteur prend le relais quand la réserve est sèche. C'est la seule moitié qui se paie,
@@ -3041,7 +3094,8 @@ function runAutomations(dt) {
       if (state.coins < prix) break;   // incubateur vide plutôt que consigne bradée
       state.coins -= prix;
       bilanAuto.depense += prix;
-      state.incub[i] = { line: rollLine(voulu.key), p: 0, kind: voulu.key };   // acheté, donc tiré
+      // acheté, donc tiré — et donc éligible à un fond
+      state.incub[i] = { line: rollLine(voulu.key), p: 0, kind: voulu.key, pension: false };
     }
   }
 }
@@ -3846,7 +3900,44 @@ function crediterJetons() {
    aperçus-là sont jetés si le joueur referme sans valider. */
 function capsuleBrute(c) {
   return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, tint: c.tint,
-           temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige, etoiles: 1 };
+           temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige,
+           fond: c.fond || null, etoiles: 1 };
+}
+
+/* PEINDRE UN FOND. Le décor est une classe et des particules : le dégradé vit dans la feuille
+   de style, les particules sont des `span` vides que le CSS anime. Chacune reçoit sa position
+   et son retard — sans quoi les neuf braises monteraient ensemble, ce qui n'est pas une
+   braise mais un rideau.
+
+   RIEN N'EST ALLÉ DANS UN CANVAS, et c'est un choix : cinq cartes équipées plus la scène font
+   six surfaces animées à la fois, et six contextes 2D redessinés en boucle coûteraient plus
+   que tout le reste du jeu réuni. Une dizaine de `span` en `transform` ne coûte rien, et
+   `prefers-reduced-motion` les fige d'une seule règle.
+
+   L'ALÉATOIRE EST TIRÉ DE LA BÊTE, pas de `Math.random` : deux redessins de la même carte
+   doivent rendre le même décor, sinon les particules sautent à chaque rafraîchissement. */
+function peindreFond(hote, c) {
+  const f = fondDe(c);
+  hote.className = hote.className.split(' ').filter(x => !x.startsWith('fond-')).join(' ');
+  hote.textContent = '';
+  if (!f) { hote.hidden = true; return; }
+  hote.hidden = false;
+  /* `fond` PORTE LE DÉCOR, `fond-<clé>` ses couleurs, `fond-<sens>` la direction. On repose la
+     première à chaque fois plutôt que de compter sur le HTML : la carte, elle, est créée en JS
+     et ne l'a jamais eue. */
+  hote.classList.add('fond', 'fond-' + f.key, 'fond-' + f.sens);
+  // un générateur simple et stable, semé par l'identifiant de la bête
+  let g = (c.id || 1) * 2654435761 % 4294967296;
+  const suivant = () => ((g = (g * 1103515245 + 12345) % 2147483648) / 2147483648);
+  for (let i = 0; i < f.n; i++) {
+    const p = document.createElement('span');
+    p.className = 'fond-p';
+    p.style.setProperty('--x', (suivant() * 100).toFixed(1) + '%');
+    p.style.setProperty('--d', (-suivant() * 9).toFixed(2) + 's');
+    p.style.setProperty('--t', (5 + suivant() * 7).toFixed(2) + 's');
+    p.style.setProperty('--s', (0.6 + suivant() * 0.9).toFixed(2));
+    hote.appendChild(p);
+  }
 }
 
 const nomCarte = k => form(k.line, k.age)[0];
@@ -3901,6 +3992,9 @@ function carteEl(k) {
       '<button type="button" class="carte-acte fondre"></button>' +
       '<button type="button" class="carte-acte fusion"></button>' +
     '</span>';
+
+  peindreFond(el.querySelector('.carte-fond'), k);
+  if (fondDe(k)) el.classList.add('a-fond');
 
   const bete = el.querySelector('.carte-bete');
   setCreature(bete, artAt(k.line, k.age), form(k.line, k.age)[1]);
@@ -4288,7 +4382,10 @@ function ascensionner() {
    qui vit. Ils tenaient dans une seule fonction de deux cent vingt lignes où trois jeux de
    variables se croisaient sans jamais se servir les uns des autres — `stage` et `subject` ne
    servaient qu'aux deux derniers, `slot` qu'au deuxième, la moitié du reste qu'au troisième. */
+/* Le fond ne suit que les bêtes : un œuf n'en a pas, et l'écran de plonge encore moins. On
+   l'éteint donc en tête, et seule la branche « créature » le rallume. */
 function renderStage() {
+  $('stage-fond').hidden = true;
   // la plonge passe avant tout : c'est un état du jeu, pas un sujet en scène
   if (enPlonge()) return plongeOuverte() ? renderPlonge() : renderRien();
   const s = current();
@@ -4426,6 +4523,7 @@ function renderBete(s) {
   stage.classList.toggle('apex', c.age === AGES.length);
   stage.classList.toggle('ready', mur);
   setStageRarity(stage, 'rar-' + lineOf(c).rarity);
+  peindreFond($('stage-fond'), c);
   // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
   setVar(subject, '--sz', visualScale(c).toFixed(3));
   setFilter($('stage-glyph'), c.prodige ? PRODIGE_FILTER : tintOf(c).filter);
@@ -5412,6 +5510,9 @@ const TROPHEES = [
   { cle: 'merveille', glyphe: '✨', nom: 'Une merveille',
     dit: 'Faire naître une merveilleuse. Aucun œuf n’en donne — il faut la pension, et le bon couple.',
     test: () => LINES.some(l => l.rarity === 'merveilleuse' && state.seen[l.key + ':1']) },
+  { cle: 'fond', glyphe: '🌌', nom: 'Un décor',
+    dit: 'Croiser une bête née avec un fond. Une sur huit cents, et seulement dans les œufs de la boutique.',
+    test: () => Object.values(state.dex || {}).some(d => Object.keys(d.fonds || {}).length) },
   { cle: 'chromatique', glyphe: '🌈', nom: 'Coup d’œil',
     dit: 'Voir naître un chromatique. Une chance sur huit mille cent quatre-vingt-douze.',
     test: () => state.stats.prodiges > 0 },
@@ -5505,6 +5606,12 @@ const STATS = [
         ' / ' + LINES.filter(l => l.rarity === 'merveilleuse').length]] : []),
     ['Formes rencontrées', seenCount() + ' / ' + formesVisibles()],
     ['Chromatiques', fmt(state.stats.prodiges)],
+    ['Fonds croisés', (() => {
+      const vus = new Set();
+      for (const d of Object.values(state.dex || {}))
+        for (const k of Object.keys(d.fonds || {})) vus.add(k);
+      return vus.size + ' / ' + FONDS.length;
+    })()],
     ['Cadeaux reçus', fmt(state.dons || 0)],
   ]],
   ['L’album', () => [
@@ -5937,6 +6044,15 @@ function renderEncyclopedie() {
   encyRangee(hote, 'Teintes', TINTS, i => TINTS[i].name || 'sans teinte', d && d.teintes);
   encyRangee(hote, 'Caractères', TEMPERS, i => TEMPERS[i].name, d && d.caracteres);
   encyRangee(hote, 'Motifs', MOTIFS, i => MOTIFS[i], d && d.motifs);
+  /* UN OBJET DE COLLECTION A BESOIN D'UN ENDROIT OÙ ÊTRE COLLECTIONNÉ. Sans cette rangée,
+     « collectionnable » n'était qu'un mot : les fonds se croisaient et se revendaient sans
+     laisser de trace nulle part. Elle se lit par clé et non par indice, comme la table. */
+  const vusFonds = {};
+  for (const k of Object.keys((d && d.fonds) || {})) {
+    const i = FONDS.findIndex(f => f.key === k);
+    if (i >= 0) vusFonds[i] = d.fonds[k];
+  }
+  encyRangee(hote, 'Fonds', FONDS, i => FONDS[i].nom, vusFonds);
   if (d && d.prodiges) {
     const p = document.createElement('p');
     p.className = 'ency-titre';

@@ -719,7 +719,114 @@ scenario('encyclopédie — une carte par lignée, et deux vues qui se réponden
   jeu.dexFiltre = 'tout';
   jeu.refresh();
 
-  /* LES DEUX VUES. La ferme d'un côté, l'encyclopédie de l'autre, et l'onglet ne se
+  /* ──────────────────────────────── les fonds ──────────────────────────────── */
+
+scenario('fonds — un sur huit cents, et seulement à la boutique', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15; s.pens = 20;
+
+  eq('huit fonds', jeu.FONDS.length, 8);
+  eq('chacun sa clé', new Set(jeu.FONDS.map(f => f.key)).size, 8);
+  ok('tous dans la fourchette des teintes',
+     jeu.FONDS.every(f => f.mult >= 1.10 && f.mult <= 1.20),
+     jeu.FONDS.map(f => f.mult).join(' '));
+
+  /* PRESTIGIEUX VEUT DIRE RARE, et « seulement dans les œufs de la boutique » compte autant
+     que le chiffre : une pension à mille œufs l'heure en sortirait un toutes les cinq
+     minutes, et le mot ne voudrait plus rien dire. */
+  const N = 300000;
+  let achetes = 0, pondus = 0;
+  for (let i = 0; i < N; i++) if (jeu.rollVariants(true).fond) achetes++;
+  for (let i = 0; i < N; i++) if (jeu.rollVariants(false).fond) pondus++;
+  ok('un sur huit cents à l’achat',
+     Math.abs(achetes / N - jeu.FOND_ODDS) < jeu.FOND_ODDS * 0.3,
+     (achetes / N * 800).toFixed(2) + ' fois la cible');
+  eq('aucun à la pension', pondus, 0);
+
+  /* L'ŒUF DE PENSION ET L'ŒUF ACHETÉ SONT INDISCERNABLES dans la réserve — c'était voulu.
+     `tireLigne` est le seul endroit qui sache les distinguer, et il le dit à l'éclosion. */
+  s.pension.dus = { commun: ['loup'] };
+  const promis = jeu.tireLigne('commun');
+  eq('la lignée promise vient de la pension', promis.line, 'loup');
+  eq('et elle se dit telle', promis.pension, true);
+  eq('un tirage ordinaire ne l’est pas', jeu.tireLigne('commun').pension, false);
+});
+
+scenario('fonds — il vaut, il se peint, il se retient, il ne se nomme pas', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15; s.pens = 20;
+  const c = bete(jeu, 'loup', 3, 20000);
+
+  const nu = jeu.sellValue(c), nom = jeu.fullName(c);
+  c.fond = 'aurore';
+  const f = jeu.FOND_BY_KEY.aurore;
+
+  /* IL ENTRE DANS LA VALEUR, dans la fourchette des teintes — au-delà il faudrait reprendre
+     l'équilibrage des variantes en entier. */
+  ok('la bête vaut plus', jeu.sellValue(c) > nu, nu + ' → ' + jeu.sellValue(c));
+  ok('exactement son multiplicateur',
+     Math.abs(jeu.sellValue(c) / nu - f.mult) < 0.01, jeu.sellValue(c) / nu);
+
+  /* ET IL N'ENTRE PAS DANS LE NOM. Un fond SE VOIT : le dire en plus serait une redite, et le
+     jeu n'affiche qu'une seule épithète exprès. */
+  eq('le nom ne bouge pas', jeu.fullName(c), nom);
+  ok('et il ne dit pas le fond', !/aurore/i.test(jeu.fullName(c)), jeu.fullName(c));
+
+  // il se peint, sur la scène
+  s.sel = 'c:' + c.id;
+  jeu.refresh();
+  const scene = noeuds.get('stage-fond');
+  eq('la scène le montre', scene.hidden, false);
+  ok('avec sa classe', scene.className.includes('fond-aurore'), scene.className);
+  eq('et ses particules', scene.children.length, f.n);
+  eq('un redessin n’en ajoute pas', (jeu.refresh(), noeuds.get('stage-fond').children.length), f.n);
+
+  // une bête sans fond n'en peint aucun, et un œuf non plus
+  c.fond = null;
+  jeu.refresh();
+  eq('rien à montrer', noeuds.get('stage-fond').hidden, true);
+
+  /* IL SE RETIENT AU CARNET : un objet de collection a besoin d'un endroit où être
+     collectionné, sinon « collectionnable » n'est qu'un mot. */
+  c.fond = 'braise';
+  jeu.noterEclosion(c);
+  eq('le carnet le compte', jeu.dexVu('loup').fonds.braise, 1);
+  jeu.encyLignee = 'loup';
+  jeu.encySig = '';
+  jeu.renderEncyclopedie();
+  const plat = noeuds.get('ency').children
+    .map(e => (e.textContent || '') + e.children.map(x => ' ' + x.textContent +
+              x.children.map(y => ' ' + y.textContent).join('')).join('')).join(' | ');
+  ok('la fiche a sa rangée', /Fonds . 1 . 8/.test(plat), plat);
+  ok('et nomme celui qu’on a croisé', /braise/.test(plat), plat);
+
+  jeu.verifierTrophees();
+  ok('le trophée tombe', !!s.trophees.fond);
+});
+
+scenario('fonds — la carte emporte celui de la bête', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8;
+  const c = bete(jeu, 'loup', 3, 20000);
+  c.fond = 'givre'; c.keep = true;
+
+  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  const neuve = jeu.apercuAscension().neuves.find(x => x.line === 'loup');
+  ok('la capsule existe', !!neuve);
+  eq('et elle emporte le fond', neuve.fond, 'givre');
+
+  s.album = [neuve]; s.slots = []; s.asc.n = 1;
+  jeu.oublierAlbum(); jeu.refresh();
+  const cartes = [];
+  const m = e => { if (e.classList && e.classList.contains('carte')) cartes.push(e); e.children.forEach(m); };
+  noeuds.get('album').children.forEach(m);
+  ok('la carte se signale', cartes[0].className.includes('a-fond'), cartes[0].className);
+  const zone = cartes[0].children.find(x => (x.className || '').includes('carte-fond'));
+  ok('le décor est dans la zone d’illustration', zone.className.includes('fond-givre'), zone.className);
+  ok('et il porte des particules', zone.children.length > 0, zone.children.length);
+});
+
+/* LES DEUX VUES. La ferme d'un côté, l'encyclopédie de l'autre, et l'onglet ne se
      sauvegarde pas : on ouvre le jeu sur sa ferme, toujours. */
   eq('on démarre sur la ferme', jeu.vue, 'ferme');
   eq('et la vue de l’encyclopédie est cachée', noeuds.get('vue-dex').hidden, true);

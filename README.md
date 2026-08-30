@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.12.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.13.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 18` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 19` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.12.0** | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
+| **beta 1.13.0** | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
+| beta 1.12.0 | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
 | beta 1.11.0 | les seize menus des réglages deviennent des segments de boutons |
 | beta 1.10.0 | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
 | beta 1.9.0 | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
@@ -608,6 +609,82 @@ décider quoi que ce soit. D'où le bouton plutôt qu'une seconde grille toujour
 Une prime conditionnée — les trois de la pension — n'entre pas dans le compte des cinq tant
 que son bâtiment n'existe pas. Et quand tout est pris, la grille bascule d'elle-même sur ce
 qu'on a, plutôt que de rester vide.
+
+### Les fonds
+
+Une bête peut naître avec un **fond** : un décor derrière elle, tiré à l'éclosion et gardé à
+vie. Il se voit sur la scène et sur sa carte, et il fait monter un peu son prix.
+
+| Fond | Sens | Valeur |
+|---|---|---|
+| **braise** | monte | ×1,14 |
+| **givre** | tombe | ×1,14 |
+| **nuée** | dérive | ×1,10 |
+| **abysse** | monte | ×1,16 |
+| **orage** | tombe | ×1,12 |
+| **pollen** | dérive | ×1,10 |
+| **cendre** | tombe | ×1,12 |
+| **aurore** | dérive | ×1,20 |
+
+**Huit décors, zéro fichier.** C'est l'argument principal de l'idée : les dix-sept lignées sans
+image demandent cinq dessins chacune, et chaque dessin ne sert qu'à une forme. Un fond sert aux
+**cent cinquante formes à la fois** — huit fonds multiplient par neuf le nombre d'images
+différentes qu'on peut croiser, et ils sont en CSS.
+
+#### Un sur huit cents, et seulement à la boutique
+
+Le qualificatif compte autant que le chiffre. **La pension n'en donne aucun** : elle en donnera
+le jour où elle saura les *hériter*, et pas avant. Sans ce garde, une ligne de production à
+mille œufs l'heure en sortirait un toutes les cinq minutes, et « prestigieux » ne voudrait plus
+rien dire — même règle que le chromatique.
+
+C'est aussi la frontière qui donne sa place à chacune des deux voies : **on achète pour tomber
+dessus, on élèvera pour en obtenir un précis.**
+
+Techniquement, l'œuf de pension et l'œuf acheté sont indiscernables une fois dans la réserve —
+c'était voulu, tout le reste du jeu n'a pas à les distinguer. `tireLigne` est le seul endroit
+qui le sache, et il le dit à l'éclosion.
+
+#### Il vaut, il se voit, il ne se nomme pas
+
+Le multiplicateur reste dans la **fourchette des teintes**, de 1,10 à 1,20 : au-delà il faudrait
+reprendre l'équilibrage des variantes en entier.
+
+Et **il n'entre pas dans le nom**. Un fond *se voit* : le dire en plus serait une redite, et le
+jeu n'affiche qu'une seule épithète exprès, pour qu'une bête reste une bête et pas une fiche
+technique. `Têtard farouche` garde son nom, et son décor par-dessus le marché.
+
+**Le fond et le motif ne font pas le même métier** : le motif décide de l'*effet* d'une carte,
+le fond de sa *valeur*. Ils coexistent sans se marcher dessus.
+
+#### La contrainte qui a tout dessiné
+
+Tenir **derrière un sprite de 32 px** sans le manger, et **derrière une carte** sans en rendre
+le texte illisible. D'où trois décisions :
+
+- le dégradé est **sombre et peu saturé** — il occupe le fond du fond, jamais le premier plan ;
+- les particules sont **petites et peu nombreuses**, entre sept et quatorze, et jamais au centre
+  plus qu'ailleurs : c'est là qu'est la bête ;
+- sur la carte, le fond est enfermé dans la
+  [zone d'illustration](#une-carte-ressemble-à-une-carte). Le nom, l'effet et la rareté vivent
+  en dehors : aucun texte ne peut être traversé par une particule.
+
+**Rien n'est allé dans un canvas**, et c'est un choix : cinq cartes équipées plus la scène font
+six surfaces animées à la fois, et six contextes 2D redessinés en boucle coûteraient plus que
+tout le reste du jeu réuni. Une dizaine de `span` en `transform` ne coûte rien.
+
+**L'aléatoire est tiré de la bête**, pas de `Math.random` : deux redessins de la même carte
+rendent le même décor, sinon les particules sauteraient à chaque rafraîchissement.
+
+Et `prefers-reduced-motion` **fige tout**. Ce n'est pas une option : c'est le premier élément
+animé du jeu hors du cinquième âge des merveilles.
+
+#### Où on les collectionne
+
+Un objet de collection a besoin d'un endroit où être collectionné, sinon « collectionnable »
+n'est qu'un mot. La [fiche d'une lignée](#lencyclopédie) a donc sa rangée **Fonds**, au même
+titre que les teintes et les caractères — avec la même règle : seuls ceux qu'on a croisés **sur
+cette lignée** s'affichent. Les statistiques comptent le total, `3 / 8`.
 
 ### Une carte ressemble à une carte
 

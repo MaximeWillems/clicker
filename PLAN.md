@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.12.0 · sauvegarde v18 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.13.0 · sauvegarde v19 · 10 lignées illustrées sur 30
 
 ---
 
@@ -122,7 +122,7 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 | **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
-| **Les fonds** — 1 sur 800, héréditaires, visibles sur les cartes | l'hérédité | est-ce qu'un fond se chasse ? |
+| **L'hérédité des fonds** — la pension n'en donne aucun tant qu'elle ne sait pas les transmettre | l'hérédité | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
 
 ### Le chantier graphique
 
@@ -444,7 +444,12 @@ prévu. Elle ne s'achète pas et ne se déclenche pas — une bête qu'on garde 
 d'elle-même, tous les quatre à cinq cents secondes de présence, et ne double que le clic. Neuf
 pour cent du temps à ×2, mesuré : c'est un cadeau, pas une amélioration.
 
-### Les fonds — à développer
+### Les fonds — faits en `beta 1.13.0`
+
+> **Cette section est la note d'avant.** Elle est gardée telle quelle parce qu'elle dit ce qui a
+> été tranché et pourquoi ; ce qui a été construit vit dans le [README](README.md#les-fonds).
+> Ce qui reste à faire tient en un mot : **l'hérédité**. La pension n'en donne aucun, exprès,
+> jusqu'à ce qu'elle sache les transmettre.
 
 Une bête pourrait naître avec un **fond** : un décor derrière elle, tiré à l'éclosion et gardé
 à vie. Il se voit sur la scène et **sur la carte d'album**, et il fait monter un peu le prix

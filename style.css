@@ -998,6 +998,86 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .album .carte:hover { border-color: var(--rule-hi); }
 .album .carte.porte { opacity: 0.4; cursor: grabbing; }
 
+/* ── LES FONDS ──────────────────────────────────────────────────────
+   Huit décors, zéro fichier. Chacun est un dégradé et une poignée de particules ; ce qui change
+   d'un fond à l'autre tient dans quatre variables — deux couleurs de ciel, une couleur de
+   particule, une taille — et dans le SENS où elles vont.
+
+   LA CONTRAINTE QUI A TOUT DESSINÉ : tenir derrière un sprite de 32 px sans le manger, et
+   derrière une carte sans en rendre le texte illisible. D'où trois décisions :
+
+   • le dégradé est SOMBRE et peu saturé — il occupe le fond du fond, jamais le premier plan ;
+   • les particules sont PETITES et peu nombreuses, entre sept et quatorze, et jamais au centre
+     plus qu'ailleurs : c'est là qu'est la bête ;
+   • sur la carte, le fond est enfermé dans la zone d'illustration. Le nom, l'effet et la
+     rareté vivent en dehors : aucun texte ne peut être traversé par une particule.
+
+   `prefers-reduced-motion` fige tout, et ce n'est pas une option : c'est le premier élément
+   animé du jeu hors du cinquième âge des merveilles. */
+.fond {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  background: linear-gradient(160deg, var(--f1) 0%, var(--f2) 100%);
+}
+.fond-p {
+  position: absolute; left: var(--x); bottom: -12%;
+  width: calc(3px * var(--s)); height: calc(3px * var(--s));
+  border-radius: 50%; background: var(--fp);
+  opacity: 0;
+  animation: fond-monte var(--t) linear var(--d) infinite;
+}
+.fond-tombe .fond-p { bottom: auto; top: -12%; animation-name: fond-tombe; }
+.fond-derive .fond-p { animation-name: fond-derive; }
+
+@keyframes fond-monte {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  12%  { opacity: 0.85; }
+  80%  { opacity: 0.5; }
+  100% { transform: translateY(-260%) translateX(14px); opacity: 0; }
+}
+@keyframes fond-tombe {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  12%  { opacity: 0.8; }
+  80%  { opacity: 0.45; }
+  100% { transform: translateY(260%) translateX(-10px); opacity: 0; }
+}
+/* la dérive ne traverse pas : elle flotte sur place, ce qui convient à ce qui ne tombe ni ne
+   monte — la poussière, le pollen, une aurore */
+@keyframes fond-derive {
+  0%   { transform: translateY(-90%) translateX(0); opacity: 0; }
+  20%  { opacity: 0.75; }
+  50%  { transform: translateY(-150%) translateX(18px); opacity: 0.55; }
+  80%  { opacity: 0.4; }
+  100% { transform: translateY(-90%) translateX(0); opacity: 0; }
+}
+
+/* Les huit. Trois valeurs chacun, et rien d'autre — c'est ce qui permet d'en écrire un
+   neuvième en quatre lignes. */
+.fond-braise { --f1: #2A1008; --f2: #0E0705; --fp: #F08A3C; }
+.fond-givre  { --f1: #0E1C28; --f2: #060C12; --fp: #B8E4F5; }
+.fond-nuee   { --f1: #241C10; --f2: #0D0A06; --fp: #D6B478; }
+.fond-abysse { --f1: #06202C; --f2: #030C12; --fp: #5FD8D0; }
+.fond-orage  { --f1: #16162A; --f2: #08080F; --fp: #9A96D8; }
+.fond-pollen { --f1: #16240F; --f2: #080D06; --fp: #E8D36A; }
+.fond-cendre { --f1: #1A1A1A; --f2: #070707; --fp: #B0AAA2; }
+.fond-aurore { --f1: #0A1E1A; --f2: #150A1E; --fp: #8FF0C0; }
+/* l'aurore est la seule qui éclaire vraiment : c'est la plus rare à la vente, elle a droit à
+   des particules plus larges et plus lentes */
+.fond-aurore .fond-p { width: calc(6px * var(--s)); height: calc(6px * var(--s)); filter: blur(1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fond-p { animation: none; opacity: 0.5; }
+}
+
+/* SUR LA SCÈNE, il vit dans le bouton du sujet, sous le halo et sous la bête. Il est arrondi
+   comme elle, et volontairement plus discret que sur la carte : la scène a déjà un halo de
+   rareté, et deux couches lumineuses derrière un sprite de 32 px, c'est une de trop. */
+#stage-fond { border-radius: 12px; opacity: 0.55; }
+
+/* SUR LA CARTE, le fond remplit la zone d'illustration et rien d'autre. Une carte qui en porte
+   un se signale par un cadre plus clair : c'est ce qui la distingue dans une grille de vingt. */
+.carte.a-fond { border-color: var(--rule-hi); }
+.carte.a-fond .carte-haut { background: none; }
+
 /* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────
    Un cadre en trois quarts, une zone d'illustration séparée du texte par une règle, et la
    rareté dite trois fois : un bandeau en haut, un halo derrière la bête, le mot en bas. Trois
