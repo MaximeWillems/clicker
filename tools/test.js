@@ -2581,6 +2581,56 @@ function equiper(jeu, motif, n) {
   jeu.oublierAlbum();
 }
 
+scenario('album — une carte ressemble à une carte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.poussiere = 5000; s.asc.n = 1;
+  s.album = [pave(jeu, 1, 'loup', 2), pave(jeu, 2, 'ouroboros', 3)];
+  s.slots = [1];
+  jeu.oublierAlbum();
+  jeu.refresh();
+
+  const cartes = [];
+  const marcher = e => {
+    if (e.classList && e.classList.contains('carte')) cartes.push(e);
+    e.children.forEach(marcher);
+  };
+  noeuds.get('album').children.forEach(marcher);
+  eq('deux cartes', cartes.length, 2);
+
+  const c = cartes[0];
+  const part = cls => c.children.find(x => (x.className || '').includes(cls));
+
+  /* QUATRE CHOSES FONT UNE CARTE, et aucune n'était là quand c'était une ligne. */
+  ok('un bandeau de rareté', !!part('carte-bande'));
+  ok('une zone d’illustration', !!part('carte-haut'));
+  ok('une place pour le fond', !!part('carte-fond'));
+  ok('un bloc de texte séparé', !!part('carte-bas'));
+
+  /* LA RARETÉ SE DIT TROIS FOIS : le bandeau, le halo, et le mot. Trois redondances plutôt
+     qu'une, parce que cinq cartes côte à côte se distinguent au coup d'œil ou pas du tout. */
+  ok('la carte porte sa classe de rareté', c.className.includes('rar-rare'), c.className);
+  eq('et le mot est écrit', part('carte-rar').textContent, 'rare');
+  eq('la merveilleuse aussi', (() => {
+    s.album = [pave(jeu, 9, 'kitsune', 1)];
+    s.slots = [];
+    jeu.oublierAlbum(); jeu.refresh();
+    const t = [];
+    const m = e => { if (e.classList && e.classList.contains('carte')) t.push(e); e.children.forEach(m); };
+    noeuds.get('album').children.forEach(m);
+    return t[0].children.find(x => (x.className || '').includes('carte-rar')).textContent;
+  })(), 'merveilleuse');
+
+  // les deux gestes et les étoiles n'ont pas bougé de rôle
+  s.album = [pave(jeu, 1, 'loup', 2)]; s.slots = [];
+  jeu.oublierAlbum(); jeu.refresh();
+  const d = []; const m2 = e => { if (e.classList && e.classList.contains('carte')) d.push(e); e.children.forEach(m2); };
+  noeuds.get('album').children.forEach(m2);
+  const p = cls => d[0].children.find(x => (x.className || '').includes(cls));
+  eq('deux étoiles sur trois', p('carte-etoiles').textContent, '★★☆');
+  ok('fondre annonce sa poussière', /✧/.test(p('fondre').textContent), p('fondre').textContent);
+  ok('fusionner annonce son coût', /★/.test(p('fusion').textContent), p('fusion').textContent);
+});
+
 scenario('album — chaque motif porte son effet, et chacun le sien', () => {
   const jeu = neuf();
   eq('un effet par motif', jeu.MOTIFS.length, Object.keys(jeu.MOTIF_BONUS).length);

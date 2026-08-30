@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.11.0';
+const VERSION = 'beta 1.12.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3861,21 +3861,54 @@ function effetCarte(k) {
   return MOTIFS[k.motif] + ' · ' + m.quoi + ' ' + montant;
 }
 
+/* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────
+   C'était une LIGNE : vignette à gauche, deux lignes de texte à droite, bordure teintée. Ça se
+   lisait, ça se triait, ça se glissait — et ça n'avait rien d'une carte. Le mot est employé
+   partout dans le jeu, y compris par les mécaniques qui en dépendent — les étoiles, la
+   poussière, la fusion — et l'objet ne le tenait pas.
+
+   QUATRE CHOSES FONT UNE CARTE, et aucune n'était là :
+
+   • UN CADRE. Un rapport hauteur/largeur assumé, trois quarts, et non une bande qui s'étire.
+     C'est lui qui fait qu'on reconnaît l'objet avant de lire quoi que ce soit.
+   • UNE ZONE D'ILLUSTRATION, séparée du texte par une règle. La bête y est grande — trois
+     rem, contre une et demie — parce qu'une carte se regarde d'abord.
+   • UNE SIGNATURE DE RARETÉ QUI SE VOIT DE LOIN : un bandeau coloré en haut, un halo derrière
+     la bête, et le mot en bas. Trois redondances plutôt qu'une, parce que cinq cartes côte à
+     côte se distinguent au coup d'œil ou pas du tout.
+   • UNE PLACE POUR LE FOND. `.carte-fond` est vide aujourd'hui et couvre exactement la zone
+     d'illustration : c'est là que les particules viendront, DERRIÈRE la bête et au-dessus de
+     rien d'autre. Le texte vit en dehors, donc rien de ce qui bougera ne peut le rendre
+     illisible — c'est la contrainte qui a dessiné ce découpage, et non l'inverse. */
 function carteEl(k) {
+  const rarete = LINE_BY_KEY[k.line].rarity;
   const el = document.createElement('div');
-  el.className = 'carte rar-' + LINE_BY_KEY[k.line].rarity;
+  el.className = 'carte rar-' + rarete;
   el.dataset.id = k.id;
-  el.innerHTML = '<span class="carte-bete"></span><span class="carte-txt">' +
-                 '<b class="carte-nom"></b><i class="carte-eff"></i>' +
-                 '<i class="carte-etoiles"></i></span>' +
-                 '<span class="carte-actes">' +
-                 '<button type="button" class="carte-acte fondre"></button>' +
-                 '<button type="button" class="carte-acte fusion"></button></span>';
+  el.innerHTML =
+    '<span class="carte-bande"></span>' +
+    '<span class="carte-haut">' +
+      '<span class="carte-fond"></span>' +
+      '<span class="carte-bete"></span>' +
+      '<i class="carte-etoiles"></i>' +
+    '</span>' +
+    '<span class="carte-bas">' +
+      '<b class="carte-nom"></b>' +
+      '<i class="carte-eff"></i>' +
+      '<i class="carte-rar"></i>' +
+    '</span>' +
+    '<span class="carte-actes">' +
+      '<button type="button" class="carte-acte fondre"></button>' +
+      '<button type="button" class="carte-acte fusion"></button>' +
+    '</span>';
+
   const bete = el.querySelector('.carte-bete');
   setCreature(bete, artAt(k.line, k.age), form(k.line, k.age)[1]);
   bete.style.filter = k.prodige ? PRODIGE_FILTER : (TINTS[k.tint] || TINTS[0]).filter;
+
   el.querySelector('.carte-nom').textContent = nomCarte(k);
   el.querySelector('.carte-eff').textContent = effetCarte(k);
+  el.querySelector('.carte-rar').textContent = RARITY[rarete].name;
   /* L'INFOBULLE DIT CE QUE L'EFFET FAIT, en mots. « rente +140 % » n'apprend rien à qui
      ignore ce qu'est une rente, et c'était le cas de la moitié de la table. */
   el.title = nomCarte(k) + ' — niveau ' + k.niv + ', ' + nomAge(k.age, k.rank) +

@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.11.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.12.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.11.0** | les seize menus des réglages deviennent des segments de boutons |
+| **beta 1.12.0** | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
+| beta 1.11.0 | les seize menus des réglages deviennent des segments de boutons |
 | beta 1.10.0 | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
 | beta 1.9.0 | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
 | beta 1.8.2 | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
@@ -607,6 +608,34 @@ décider quoi que ce soit. D'où le bouton plutôt qu'une seconde grille toujour
 Une prime conditionnée — les trois de la pension — n'entre pas dans le compte des cinq tant
 que son bâtiment n'existe pas. Et quand tout est pris, la grille bascule d'elle-même sur ce
 qu'on a, plutôt que de rester vide.
+
+### Une carte ressemble à une carte
+
+C'était une **ligne** : vignette à gauche, deux lignes de texte à droite, bordure teintée. Ça se
+lisait, ça se triait, ça se glissait — et ça n'avait rien d'une carte. Le mot est employé
+partout dans le jeu, y compris par les mécaniques qui en dépendent — les étoiles, la poussière,
+la fusion — et l'objet ne le tenait pas.
+
+**Quatre choses font une carte, et aucune n'était là :**
+
+- **un cadre** — un rapport hauteur/largeur assumé, trois quarts, et non une bande qui s'étire.
+  C'est lui qui fait qu'on reconnaît l'objet avant de lire quoi que ce soit ;
+- **une zone d'illustration**, séparée du texte par une règle. La bête y est grande — trois rem
+  contre une et demie — parce qu'une carte se regarde d'abord ;
+- **une signature de rareté qui se voit de loin** : un bandeau coloré en haut, un halo derrière
+  la bête, et le mot en bas. Trois redondances plutôt qu'une, parce que cinq cartes côte à
+  côte se distinguent au coup d'œil ou pas du tout ;
+- **une place pour le fond.** `.carte-fond` est vide aujourd'hui et couvre exactement la zone
+  d'illustration.
+
+**C'est cette dernière contrainte qui a dessiné le découpage, et non l'inverse.** Les particules
+viendront **derrière la bête**, dans une zone qui ne contient aucun texte ; le nom, l'effet et
+la rareté vivent en dehors. Rien de ce qui bougera ne peut donc rendre quoi que ce soit
+illisible — la question ne se posera même pas.
+
+Sur l'écran d'ascension, **fondre et fusionner disparaissent** : on y choisit des bêtes, pas de
+la poussière, et leurs boutons y étaient de toute façon inertes puisque l'écouteur vit sur le
+panneau de l'album.
 
 ### Les consignes, en segments
 

@@ -981,8 +981,8 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 /* Une zone de dépôt, pas une simple liste : elle garde une hauteur même vide, sinon on ne
    peut rien déposer dans un bloc qu'on vient de vider. */
 .album-zone {
-  display: grid; gap: 4px;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
   min-height: 3.4rem; padding: 3px;
   border: 1px dashed transparent; border-radius: 4px;
 }
@@ -992,30 +992,80 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-size: 0.78rem; color: var(--faint);
 }
 /* les équipées passent devant : c'est le seul bloc qui agit sur la partie en cours */
-.album .carte.active { background: var(--raised); box-shadow: inset 0 0 0 1px var(--jade-dim); }
+/* les équipées passent devant : c'est le seul bloc qui agit sur la partie en cours */
+.album .carte.active { box-shadow: inset 0 0 0 2px var(--jade-dim); }
 .album .carte { cursor: grab; }
 .album .carte:hover { border-color: var(--rule-hi); }
 .album .carte.porte { opacity: 0.4; cursor: grabbing; }
 
+/* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────
+   Un cadre en trois quarts, une zone d'illustration séparée du texte par une règle, et la
+   rareté dite trois fois : un bandeau en haut, un halo derrière la bête, le mot en bas. Trois
+   redondances plutôt qu'une, parce que cinq cartes côte à côte se distinguent au coup d'œil
+   ou pas du tout. */
 .carte {
-  display: flex; align-items: center; gap: 0.6rem;
+  position: relative;
+  display: grid; grid-template-rows: 3px minmax(0, 1fr) auto auto;
+  aspect-ratio: 3 / 4;
   background: var(--surface); border: 1px solid var(--rule);
-  border-left: 2px solid var(--rar, var(--rule-hi));
-  padding: 0.4rem 0.6rem; border-radius: 3px;
+  border-radius: 6px; overflow: hidden;
 }
-.carte.active { background: var(--raised); border-color: var(--rule-hi); border-left-color: var(--rar); }
-.carte-bete { font-size: 1.5rem; line-height: 1; flex: none; }
+.carte.active {
+  background: var(--raised);
+  border-color: color-mix(in srgb, var(--rar) 45%, var(--rule));
+}
+
+/* le bandeau : la seule chose qui se lise à deux mètres */
+.carte-bande { background: var(--rar, var(--rule-hi)); }
+.carte.rar-commune .carte-bande { background: var(--rule-hi); }
+
+/* LA ZONE D'ILLUSTRATION. `.carte-fond` la couvre exactement : c'est là que les particules
+   viendront, derrière la bête. Le texte vit en dehors, donc rien de ce qui bougera ne peut le
+   rendre illisible — c'est la contrainte qui a dessiné ce découpage. */
+.carte-haut {
+  position: relative; display: grid; place-items: center;
+  background: var(--sunken);
+  border-bottom: 1px solid var(--rule);
+  overflow: hidden;
+}
+.carte-fond { position: absolute; inset: 0; pointer-events: none; }
+/* le halo de rareté, sous la bête : discret sur une commune, franc sur une merveilleuse */
+.carte-haut::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 55%, var(--rar, transparent) 0%, transparent 62%);
+  opacity: 0.14;
+}
+.carte.rar-mythique .carte-haut::before { opacity: 0.24; }
+.carte.rar-merveilleuse .carte-haut::before { opacity: 0.3; }
+.carte-bete { position: relative; font-size: 3rem; line-height: 1; }
 .carte-bete img { width: 1em; height: 1em; display: block; object-fit: contain; }
-.carte-txt { display: flex; flex-direction: column; min-width: 0; }
+
+.carte-etoiles {
+  position: absolute; top: 4px; right: 6px;
+  font-style: normal; font-size: 0.72rem; letter-spacing: 0.05em;
+  color: var(--coin); text-shadow: 0 0 4px var(--ground);
+}
+
+.carte-bas {
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 0.4rem 0.5rem 0.35rem; min-width: 0;
+}
 .carte-nom {
-  font-family: var(--f-name); font-weight: 400; font-size: 0.82rem;
-  color: var(--ink); line-height: 1.25;
+  font-family: var(--f-name); font-weight: 400; font-size: 0.78rem;
+  color: var(--ink); line-height: 1.2;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .carte-eff {
-  font-family: var(--f-num); font-style: normal; font-size: 0.68rem;
-  color: var(--soft); line-height: 1.35;
+  font-family: var(--f-num); font-style: normal; font-size: 0.64rem;
+  color: var(--soft); line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.carte-rar {
+  font-family: var(--f-num); font-style: normal; font-size: 0.58rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--rar, var(--faint)); margin-top: 1px;
+}
+.carte.rar-commune .carte-rar { color: var(--faint); }
 
 /* ── l'écran d'ascension ─────────────────────────────────────────────── */
 .asc {
@@ -1360,12 +1410,15 @@ body.en-pause .subject { cursor: default; }
   font-style: normal; font-size: 0.7rem; letter-spacing: 0.1em;
   color: var(--coin);
 }
-.carte-actes { display: flex; flex-direction: column; gap: 3px; margin-left: auto; }
+.carte-actes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  padding: 0 0.4rem 0.4rem;
+}
 .carte-acte {
   font-family: var(--f-num); font-size: 0.6rem; white-space: nowrap;
   background: var(--sunken); color: var(--soft);
   border: 1px solid var(--rule); border-radius: 3px;
-  padding: 0.15rem 0.35rem; cursor: pointer;
+  padding: 0.2rem 0.2rem; cursor: pointer; overflow: hidden;
   font-variant-numeric: tabular-nums;
 }
 .carte-acte:hover:not(:disabled) { color: var(--ink); border-color: var(--rule-hi); }
@@ -1451,12 +1504,15 @@ body.en-pause .subject { cursor: default; }
 }
 .asc-slots { font-family: var(--f-num); font-size: 0.74rem; color: var(--jade); }
 
-.asc-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 4px; }
-.asc-choix .carte { cursor: pointer; opacity: 0.55; }
-.asc-choix .carte:hover { opacity: 0.85; border-color: var(--rule-hi); }
+.asc-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 6px; }
+/* ON Y CHOISIT DES BÊTES, pas de la poussière : fondre et fusionner n'ont rien à y faire, et
+   leurs boutons y étaient de toute façon inertes — l'écouteur vit sur le panneau de l'album. */
+.asc-choix .carte-actes { display: none; }
+.asc-choix .carte { cursor: pointer; opacity: 0.5; }
+.asc-choix .carte:hover { opacity: 0.85; }
 .asc-choix .carte.active {
   opacity: 1;
-  box-shadow: inset 0 0 0 1px var(--jade);
+  box-shadow: inset 0 0 0 2px var(--jade);
 }
 .asc-perte {
   margin-top: 1.6rem; padding-top: 0.9rem;
