@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.10.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.11.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.10.0** | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
+| **beta 1.11.0** | les seize menus des réglages deviennent des segments de boutons |
+| beta 1.10.0 | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
 | beta 1.9.0 | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
 | beta 1.8.2 | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
 | beta 1.8.1 | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
@@ -606,6 +607,37 @@ décider quoi que ce soit. D'où le bouton plutôt qu'une seconde grille toujour
 Une prime conditionnée — les trois de la pension — n'entre pas dans le compte des cinq tant
 que son bâtiment n'existe pas. Et quand tout est pris, la grille bascule d'elle-même sur ce
 qu'on a, plutôt que de rester vide.
+
+### Les consignes, en segments
+
+Les seize menus déroulants des réglages sont devenus **seize rangées de boutons**, comme le tri
+de l'enclos.
+
+    IL VEND LES COMMUNES
+    [ jamais ][ enfant ][ adolescent ][█ adulte █][ ancien ][ légende ]
+    Mûres à l'âge adulte et au-dessus — 6 000
+
+**Pourquoi.** Un menu **cache** ses options : il faut l'ouvrir pour savoir ce qu'on peut
+choisir, et le refermer pour voir ce qu'on a choisi. Deux gestes, et rien de visible entre les
+deux. Un segment montre les six possibilités et le choix actuel d'un seul coup d'œil — c'est
+l'argument qui avait déjà fait remplacer le menu de tri par le sien.
+
+**Ce que le menu portait et qu'une pastille ne peut pas : le prix.** « Mûres à l'âge adulte —
+6 000 » ne tient pas sur un bouton. Le chiffre passe donc **sous** le segment, pour le seul
+choix actif : six prix affichés d'un coup n'aidaient personne, celui qu'on vient de choisir
+aide vraiment.
+
+**Et il est enfin juste.** Le menu annonçait la valeur de *base* et ne bougeait jamais ; la
+phrase, elle, compte le négoce, le Renom et les cartes de l'album pour la vente, l'intendance
+et le péage pour l'évolution. Une consigne qui ment de trente pour cent ne se règle pas.
+
+« Jamais » se marque en **gris** là où les autres choix se marquent en vert : ce n'est pas un
+choix comme les autres, c'est l'absence de consigne — rien ne travaille.
+
+**La table décide de tout**, et c'est le second gain. Les libellés par rareté étaient écrits en
+dur dans `index.html`, quinze fois ; ajouter la cinquième rareté avait demandé d'y revenir à la
+main, ligne par ligne. Un rang de plus ne coûte plus rien, et la page n'a plus un seul
+`<select>`.
 
 ### Les trophées
 

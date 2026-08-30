@@ -50,6 +50,12 @@ function el(tag) {
     dataset: {}, hidden: false, disabled: false, title: '', value: '', alt: '', type: 'button',
     parent: null,
     _attrs: {},
+    /* UN IDENTIFIANT POSÉ EN JS ENREGISTRE SON NŒUD, comme dans un navigateur. Sans ça, tout
+       élément créé par le jeu et nommé après coup restait introuvable par `getElementById`, et
+       le banc le comptait comme un identifiant manquant — alors qu'il existe. C'est arrivé le
+       jour où les seize menus de réglage ont été générés au lieu d'être écrits dans index.html. */
+    get id() { return this._id || ''; },
+    set id(v) { this._id = String(v); noeuds.set(this._id, this); },
     get className() { return [...this.classList._s].join(' '); },
     set className(v) { this.classList._s = new Set(String(v).split(/\s+/).filter(Boolean)); },
     get textContent() { return this._text; },

@@ -1781,11 +1781,9 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   const rencontres = jeu.STATS.find(g => g[0] === 'Les rencontres')[1]();
   ok('aucune ligne ne les compte', !rencontres.some(l => /erveille/.test(l[0])),
      JSON.stringify(rencontres));
-  // 5 · les trois consignes du marchand
-  for (const quoi of ['vente', 'taille', 'evolution']) {
-    eq(quoi + ' caché', noeuds.get(quoi + '-merveilleuse').hidden, true);
-    eq(quoi + ' — son libellé aussi', noeuds.get(quoi + '-merveilleuse-l').hidden, true);
-  }
+  // 5 · les trois consignes du marchand — la rangée entière, intitulé et phrase compris
+  for (const quoi of ['vente', 'taille', 'evolution'])
+    eq(quoi + ' — la rangée est cachée', noeuds.get(quoi + '-merveilleuse-r').hidden, true);
 
   /* CE QUI RESTE VISIBLE, ET QUI SUFFIT : la phrase du nid promet quelque chose sans rien
      nommer. C'est le seul indice du jeu, et il ne se voit qu'en composant le bon couple. */
@@ -1810,7 +1808,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   ok('le trophée est pris', !!s.trophees.merveille);
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));
-  eq('et les consignes reviennent', noeuds.get('vente-merveilleuse').hidden, false);
+  eq('et les consignes reviennent', noeuds.get('vente-merveilleuse-r').hidden, false);
   ok('la réserve nomme enfin', /[Ww]ukong/.test(noeuds.get('pension-intro').textContent),
      noeuds.get('pension-intro').textContent);
 });
@@ -1929,6 +1927,72 @@ scenario('merveilles — une partie de v15 reçoit ses clés sans rien perdre', 
   eq('l’évolution aussi', k.state.evolveUpTo.merveilleuse, 0);
   eq('et la ferme est intacte', k.state.coins, 5e6);
   eq('avec ses enclos', k.state.pens, 4);
+});
+
+scenario('réglages — des segments plutôt que des menus', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  s.primes.marchand = true; s.primes.evolution = true; s.primes.acheteur = true;
+  jeu.refresh();
+
+  const seg = id => noeuds.get(id);
+  const choisi = id => (seg(id).children.find(b => b.getAttribute('aria-pressed') === 'true') || {}).dataset;
+  const dit = id => noeuds.get(id + '-d').textContent;
+
+  /* UN MENU CACHE SES OPTIONS : il faut l'ouvrir pour savoir ce qu'on peut choisir, et le
+     refermer pour voir ce qu'on a choisi. Un segment montre les deux d'un coup. */
+  eq('un segment par rareté et par consigne',
+     jeu.REGLAGES.length * Object.keys(jeu.RARITY).length, 15);
+  for (const r of jeu.REGLAGES)
+    for (const cle of Object.keys(jeu.RARITY)) {
+      const id = r.cle + '-' + cle;
+      ok(id + ' existe', !!seg(id));
+      eq(id + ' — une pastille par option', seg(id).children.length, r.options().length);
+      ok(id + ' — la première est « ne rien faire »', seg(id).children[0].dataset.v === '0');
+      eq(id + ' — rien de choisi hors zéro au départ', choisi(id).v, '0');
+    }
+
+  /* LA TABLE DÉCIDE DE TOUT : les libellés par rareté étaient écrits en dur quinze fois dans
+     index.html, et ajouter la cinquième rareté avait demandé d'y revenir à la main. */
+  ok('la merveilleuse a ses rangées sans qu’on les ait écrites',
+     !!seg('vente-merveilleuse') && !!seg('taille-merveilleuse') && !!seg('evolution-merveilleuse'));
+
+  // choisir se fait à l'état, et l'écran suit
+  s.sellAt.commune = 3;
+  jeu.refresh();
+  eq('la pastille suit l’état', choisi('vente-commune').v, '3');
+  ok('et la phrase dit le prix', /adulte/.test(dit('vente-commune')) && /6 000/.test(dit('vente-commune')),
+     dit('vente-commune'));
+
+  /* LE PRIX EST CELUI D'AUJOURD'HUI, primes comprises. Le menu annonçait la valeur de base et
+     ne bougeait jamais : une consigne qui ment de trente pour cent ne se règle pas. */
+  s.primes['negoce-commune'] = true; s.primes['valeur-4'] = true;
+  jeu.oublierPrimes();
+  jeu.refresh();
+  ok('le négoce et le renom entrent dans le chiffre', /9 000/.test(dit('vente-commune')),
+     dit('vente-commune'));
+
+  s.evolveUpTo.rare = 5;
+  jeu.refresh();
+  const avant = dit('evolution-rare');
+  s.primes.intendance = true;
+  jeu.oublierPrimes();
+  jeu.refresh();
+  ok('l’intendance baisse la facture affichée', dit('evolution-rare') !== avant,
+     avant + ' → ' + dit('evolution-rare'));
+
+  // l'acheteur a la sienne, sans rareté, et son « jamais » en tête
+  eq('cinq pastilles pour l’acheteur', seg('sel-acheteur').children.length, jeu.OEUFS_VENDUS.length + 1);
+  eq('la première est vide', seg('sel-acheteur').children[0].dataset.v, '');
+  s.buyKind = '';
+  jeu.refresh();
+  ok('arrêté, la phrase le dit', /arrêté/.test(dit('sel-acheteur')), dit('sel-acheteur'));
+  s.buyKind = 'rare';
+  jeu.refresh();
+  ok('et sinon elle nomme l’œuf', /rare/.test(dit('sel-acheteur')), dit('sel-acheteur'));
+
+  // plus un seul menu déroulant dans la page
+  ok('index.html n’a plus de select', !/<select/.test(lire('index.html')));
 });
 
 scenario('acheteur — il peut se taire, et la réserve continue sans lui', () => {

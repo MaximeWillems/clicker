@@ -740,13 +740,6 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   display: grid; place-items: center; font-size: 0.66rem;
   background: var(--sunken); color: var(--accent); border: 1px solid var(--rule-hi);
 }
-.config select + label { margin-top: 0.55rem; }
-.config label { display: block; font-size: 0.78rem; color: var(--soft); margin-bottom: 0.35rem; }
-.config select {
-  width: 100%; font-family: var(--f-num); font-size: 0.8rem;
-  background: var(--sunken); color: var(--ink);
-  border: 1px solid var(--rule-hi); border-radius: 3px; padding: 0.35rem 0.4rem;
-}
 
 .plier { font-size: 0.7rem; line-height: 1; width: 0.7em; }
 
@@ -889,12 +882,50 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-size: 0.78rem; color: var(--soft); margin: 0 0 0.55rem; line-height: 1.5;
 }
 .config-what b { color: var(--ink); font-weight: 500; }
-.cond { display: flex; flex-direction: column; gap: 0.15rem; }
-.cond label {
+/* ── LES CONSIGNES, EN SEGMENTS ────────────────────────────────────────
+   Seize menus déroulants sont devenus seize rangées de pastilles, comme le tri de l'enclos.
+   Un menu cache ses options ; un segment les montre toutes, et le choix avec.
+
+   LE PRIX PASSE SOUS LE SEGMENT. « Mûres à l'âge adulte — 6 000 » ne tient pas sur une
+   pastille : le chiffre s'écrit dessous, pour le seul choix actif. */
+.cond { display: flex; flex-direction: column; gap: 0.55rem; }
+.cond-bloc { margin-top: 0.7rem; }
+.cond-ligne { display: flex; flex-direction: column; gap: 0.2rem; }
+.cond-mot {
   font-family: var(--f-num); font-size: 0.68rem; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--faint); margin: 0.5rem 0 0.15rem;
+  text-transform: uppercase; color: var(--faint);
 }
-.cond label:first-child { margin-top: 0; }
+.cond-dit {
+  font-family: var(--f-num); font-size: 0.68rem; color: var(--soft);
+  margin: 0; font-variant-numeric: tabular-nums;
+}
+
+/* Le segment se replie sur plusieurs lignes plutôt que de déborder : six âges écrits en toutes
+   lettres ne tiennent pas sur vingt et un rem, et les abréger demanderait de les décoder. */
+.seg {
+  display: flex; flex-wrap: wrap; gap: 2px; padding: 2px;
+  background: var(--sunken); border: 1px solid var(--rule); border-radius: 5px;
+}
+.seg-opt {
+  font-family: var(--f-num); font-size: 0.64rem; letter-spacing: 0.04em;
+  color: var(--soft); background: none; border: 0; border-radius: 3px;
+  padding: 0.22rem 0.45rem; cursor: pointer; white-space: nowrap;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+.seg-opt:hover { color: var(--ink); background: var(--raised); }
+.seg-opt[aria-pressed="true"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.seg-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* « jamais » n'est pas un choix comme les autres : c'est l'absence de consigne, et elle se
+   marque en gris plutôt qu'en vert — rien ne travaille. */
+.seg-opt:first-child[aria-pressed="true"] {
+  color: var(--faint);
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--rule-hi);
+}
 .config-note {
   border-left: 2px solid var(--rule-hi); padding-left: 0.6rem; margin-top: 0.7rem;
 }

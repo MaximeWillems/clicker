@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.10.0';
+const VERSION = 'beta 1.11.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3292,57 +3292,113 @@ function setStageRarity(stage, cls) {
 
 /* Les menus qui listent des données du jeu sont construits depuis ces données, jamais
    écrits à la main : c'est la seule façon qu'ils ne mentent pas le jour où un prix bouge. */
-function remplirMenus() {
-  const option = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; };
+/* ── LES CONSIGNES DE LA FERME, EN SEGMENTS ────────────────────────────────────
+   Seize menus déroulants sont devenus seize rangées de boutons, comme le tri de l'enclos.
 
-  const ach = $('sel-acheteur');
-  ach.textContent = '';
-  // en tête, comme le « jamais » des deux autres automates : la consigne de ne rien faire
-  ach.appendChild(option('', 'jamais — je m’en occupe moi-même'));
-  for (const e of OEUFS_VENDUS) {
-    ach.appendChild(option(e.key, e.name.replace('Œuf ', 'Œufs ') + 's — ' +
-      fmt(prixOeuf(e)) + ', couve en ' + fmtTime(e.hatch)));
-  }
+   POURQUOI. Un menu CACHE ses options : il faut l'ouvrir pour savoir ce qu'on peut choisir, et
+   le refermer pour voir ce qu'on a choisi. Deux gestes, et rien de visible entre les deux. Un
+   segment montre les six possibilités et le choix actuel d'un seul coup d'œil — c'est ce qui
+   avait fait remplacer le menu de tri par le sien, et l'argument valait pareil ici.
 
-  for (const cle of Object.keys(RARITY)) {
-    const rang = $('taille-' + cle);
-    rang.textContent = '';
-    rang.appendChild(option(0, 'n’importe laquelle'));
-    RANKS.forEach((r, i) => {
-      if (!i) return;
-      rang.appendChild(option(i, r.fem + (i < RANKS.length - 1 ? ' ou plus' : '') +
-        ' — vaut ×' + dec(r.at)));
-    });
-  }
+   CE QUE LE MENU PORTAIT ET QUE LE SEGMENT NE PEUT PAS : le prix. « Mûres à l'âge adulte —
+   6 000 » ne tient pas sur une pastille. Le chiffre passe donc SOUS le segment, pour le seul
+   choix actif : six prix affichés d'un coup n'aidaient personne, celui qu'on vient de choisir
+   aide vraiment.
 
-  // un menu par rareté : même liste d'âges, réglée séparément
-  for (const cle of Object.keys(RARITY)) {
-    const sel = $('vente-' + cle);
-    sel.textContent = '';
-    sel.appendChild(option(0, 'jamais — je les garde'));
+   LA TABLE DÉCIDE DE TOUT, et c'est le second gain. Les libellés par rareté étaient écrits en
+   dur dans `index.html`, quinze fois ; ajouter la cinquième rareté avait demandé d'y revenir à
+   la main. Un rang de plus ne coûte plus rien. */
+const REGLAGES = [
+  { cle: 'vente', hote: 'reg-vente', champ: 'sellAt',
+    mot: (cle, i) => (i ? 'les ' : 'Il vend les ') + RARITY[cle].plur,
+    options: () => [{ v: 0, nom: 'jamais' }]
+      .concat(AGES.map((a, i) => ({ v: i + 1, nom: a.nom }))),
     /* « dès l'âge adolescent » se lit comme « dès qu'elle est adolescente », alors que le
-       marchand attend qu'elle soit MÛRE de cet âge — sinon il la braderait à 15 % de son
-       prix. Le montant affiché est justement celui d'une bête mûre : le libellé doit dire
-       la même chose que le chiffre qu'il porte. */
-    AGES.forEach((a, i) => {
-      sel.appendChild(option(i + 1, 'mûres à l’âge ' + a.nom +
-        (i < AGES.length - 1 ? ' et au-dessus' : ', la forme finale') +
-        ' — ' + fmt(a.value * RARITY[cle].mult)));
+       marchand attend qu'elle soit MÛRE de cet âge — sinon il la braderait à 15 % de son prix.
+       Le montant affiché est justement celui d'une bête mûre. */
+    dit: (cle, v) => !v ? 'Il n’y touche pas : tu les gardes.'
+      : 'Mûres à l’âge ' + AGES[v - 1].nom +
+        (v < AGES.length ? ' et au-dessus' : ', la forme finale') +
+        /* LE PRIX EST CELUI D'AUJOURD'HUI, primes et cartes comprises — c'est le chiffre
+           qu'on compare pour décider. Le menu déroulant annonçait la valeur de base et ne
+           bougeait jamais ; une consigne qui ment de trente pour cent ne se règle pas. */
+        ' — ' + fmt(AGES[v - 1].value * RARITY[cle].mult * (1 + bonusAlbum().valeur) *
+                     (prime('negoce-' + cle) ? 1.25 : 1) * coef('valeur')) },
+
+  { cle: 'taille', hote: 'reg-taille', champ: 'sellRank',
+    mot: (cle, i) => (i ? 'des ' : 'Taille exigée des ') + RARITY[cle].plur,
+    options: () => [{ v: 0, nom: 'toutes' }]
+      .concat(RANKS.slice(1).map((r, i) => ({ v: i + 1, nom: r.fem }))),
+    dit: (cle, v) => !v ? 'N’importe quelle taille fait l’affaire.'
+      : RANKS[v].fem[0].toUpperCase() + RANKS[v].fem.slice(1) +
+        (v < RANKS.length - 1 ? ' ou plus' : '') + ' — vaut ×' + dec(RANKS[v].at) },
+
+  { cle: 'evolution', hote: 'reg-evolution', champ: 'evolveUpTo',
+    mot: (cle, i) => (i ? 'les ' : 'Il fait monter les ') + RARITY[cle].plur,
+    // pas de premier âge : on ne fait pas monter une bête JUSQU'À l'âge où elle naît
+    options: () => [{ v: 0, nom: 'jamais' }]
+      .concat(AGES.slice(1).map((a, i) => ({ v: i + 2, nom: a.nom }))),
+    dit: (cle, v) => !v ? 'Il n’y touche pas : c’est toi qui décides.'
+      : 'Jusqu’à l’âge ' + AGES[v - 1].nom +
+        (v === AGES.length ? ', la forme finale' : '') + ' — ' +
+        fmt(EVOLVE.slice(0, v - 1).reduce((n, x) => n + (x || 0), 0) * RARITY[cle].mult *
+            evoRemise() * (1 - bonusAlbum().peage)) },
+];
+
+/* Une rangée : son intitulé, son segment, et la phrase du choix actif. Les identifiants
+   restent ceux d'avant — `vente-commune` désigne le segment, `vente-commune-d` sa phrase —
+   pour que `syncReglages` et le banc s'y retrouvent. */
+function batirSegment(hote, id, options, groupe) {
+  const ligne = document.createElement('div');
+  ligne.className = 'cond-ligne';
+  ligne.id = id + '-r';           // la rangée entière, pour la cacher d'un bloc
+
+  const mot = document.createElement('span');
+  mot.className = 'cond-mot';
+  mot.textContent = groupe;
+  ligne.appendChild(mot);
+
+  const seg = document.createElement('div');
+  seg.className = 'seg';
+  seg.id = id;
+  seg.setAttribute('role', 'group');
+  seg.setAttribute('aria-label', groupe);
+  for (const o of options) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'seg-opt';
+    b.dataset.v = String(o.v);
+    b.textContent = o.nom;
+    seg.appendChild(b);
+  }
+  ligne.appendChild(seg);
+
+  const dit = document.createElement('p');
+  dit.className = 'cond-dit';
+  dit.id = id + '-d';
+  ligne.appendChild(dit);
+
+  hote.appendChild(ligne);
+}
+
+function remplirMenus() {
+  for (const r of REGLAGES) {
+    const hote = $(r.hote);
+    hote.textContent = '';
+    Object.keys(RARITY).forEach((cle, i) => {
+      batirSegment(hote, r.cle + '-' + cle, r.options(), r.mot(cle, i));
     });
   }
 
-  // un menu par rareté, et le prix du chemin en clair : c'est lui qui fait la décision
-  for (const cle of Object.keys(RARITY)) {
-    const sel = $('evolution-' + cle);
-    sel.textContent = '';
-    sel.appendChild(option(0, 'jamais — je les fais monter moi-même'));
-    AGES.forEach((a, i) => {
-      if (!i) return;
-      const facture = EVOLVE.slice(0, i).reduce((n, v) => n + (v || 0), 0) * RARITY[cle].mult;
-      sel.appendChild(option(i + 1, 'jusqu’à l’âge ' + a.nom +
-        (i === AGES.length - 1 ? ', la forme finale' : '') + ' — ' + fmt(facture)));
-    });
-  }
+  /* L'ACHETEUR N'A PAS DE RARETÉ : une seule rangée, dont les choix sont les sortes d'œufs
+     qu'on peut acheter. « Jamais » en tête, à la place où les deux autres automates ont la
+     leur — c'est le seul des trois qui dépense. */
+  const ach = $('reg-acheteur');
+  ach.textContent = '';
+  batirSegment(ach, 'sel-acheteur',
+    [{ v: '', nom: 'jamais' }]
+      .concat(OEUFS_VENDUS.map(e => ({ v: e.key, nom: e.name.replace('Œuf ', '') }))),
+    'Ce qu’il rachète');
 }
 
 function buildChrome() {
@@ -4787,10 +4843,8 @@ function tickView() {
   for (const cle of Object.keys(RARITY)) {
     if (!RARITY[cle].secret) continue;
     const cache = !rareteConnue(cle);
-    for (const quoi of ['vente', 'taille', 'evolution']) {
-      $(quoi + '-' + cle).hidden = cache;
-      $(quoi + '-' + cle + '-l').hidden = cache;
-    }
+    // la rangée entière — son intitulé, son segment et sa phrase — disparaît d'un bloc
+    for (const quoi of ['vente', 'taille', 'evolution']) $(quoi + '-' + cle + '-r').hidden = cache;
   }
   $('cfg-marchand').hidden = !prime('marchand');
   $('cfg-evolution').hidden = !prime('evolution');
@@ -4946,6 +5000,7 @@ function refresh() {
   renderCollection();
   renderAlbum();
   renderStage();
+  syncReglages();
   renderEncyclopedie();
   renderPension();
   syncPanneaux();
@@ -5998,13 +6053,37 @@ function nomFichierSauvegarde() {
 
 /* Les menus reprennent leur valeur depuis l'état. Appelé au démarrage, et de nouveau après
    une ascension : les réglages traversent le saut, les éléments du DOM non. */
+/* Marque la pastille choisie et écrit la phrase sous le segment. Rien ne se reconstruit :
+   les rangées sont bâties une fois, et seul l'attribut bouge. */
+function poserSegment(id, valeur, phrase) {
+  const seg = $(id);
+  for (const b of seg.children)
+    b.setAttribute('aria-pressed', String(b.dataset.v === String(valeur)));
+  setText($(id + '-d'), phrase);
+}
+
+let reglagesSig = '';
+
+/* ELLE TOURNE AVEC LA BOUCLE, et se garde d'une signature. Avec des menus, la valeur affichée
+   ne bougeait qu'au geste du joueur ; un segment porte aussi la PHRASE du choix, dont le prix
+   dépend des primes de négoce et du Renom — elle doit donc suivre l'état, pas seulement le
+   clic. Cent pastilles repeintes dix fois par seconde ne coûteraient rien de visible, mais
+   c'est le genre de dépense qu'on ne remarque qu'une fois qu'il y en a dix. */
 function syncReglages() {
-  for (const cle of Object.keys(RARITY)) {
-    $('vente-' + cle).value = String(state.sellAt[cle] || 0);
-    $('taille-' + cle).value = String(state.sellRank[cle] || 0);
-    $('evolution-' + cle).value = String(state.evolveUpTo[cle] || 0);
-  }
-  $('sel-acheteur').value = state.buyKind;
+  const sig = REGLAGES.map(r => Object.keys(RARITY).map(c => state[r.champ][c] || 0).join()).join('|') +
+              '|' + state.buyKind + '|' + Object.keys(state.primes || {}).length;
+  if (sig === reglagesSig) return;
+  reglagesSig = sig;
+
+  for (const r of REGLAGES)
+    for (const cle of Object.keys(RARITY)) {
+      const v = state[r.champ][cle] || 0;
+      poserSegment(r.cle + '-' + cle, v, r.dit(cle, v));
+    }
+  const e = EN_VENTE[state.buyKind];
+  poserSegment('sel-acheteur', state.buyKind, e
+    ? e.name + ' — ' + fmt(prixOeuf(e)) + ', couve en ' + fmtTime(e.hatch)
+    : 'Il est arrêté : il ne dépense rien.');
 }
 
 function bindTools() {
@@ -6329,34 +6408,33 @@ function bindTools() {
     location.reload();
   });
 
-  // Un menu qui garde le focus détournerait la barre espace : on le relâche après usage.
-  for (const id of ['vente-commune', 'vente-rare', 'vente-epique', 'vente-mythique',
-                    'evolution-commune', 'evolution-rare', 'evolution-epique',
-                    'evolution-mythique', 'taille-commune', 'taille-rare', 'taille-epique',
-                    'taille-mythique', 'sel-acheteur']) {
-    $(id).addEventListener('change', e => e.target.blur());
-  }
+  /* UN SEUL ÉCOUTEUR PAR BLOC, posé sur l'hôte et non sur les cent pastilles : elles sont
+     bâties une fois pour toutes, mais un rang de rareté ajouté en poserait vingt de plus, et
+     une délégation ne se périme jamais.
 
-  for (const cle of Object.keys(RARITY)) {
-    $('vente-' + cle).addEventListener('change', e => {
-      state.sellAt[cle] = parseInt(e.target.value, 10) || 0;
+     LE FOCUS SE RELÂCHE APRÈS LE CLIC. Un bouton qui garde le focus détourne la barre espace,
+     et la barre espace est le clic du jeu — c'était déjà vrai des menus qu'il remplace. */
+  const choisir = (hote, quoi) => {
+    $(hote).addEventListener('click', e => {
+      const b = e.target.closest && e.target.closest('.seg-opt');
+      if (!b) return;
+      const seg = b.closest('.seg');
+      quoi(seg.id, b.dataset.v);
+      b.blur();
+      blip(440, 0.04, 'sine', 0.03);
+      syncReglages();
+      refresh();
+      save();
     });
-  }
+  };
 
-  for (const cle of Object.keys(RARITY)) {
-    $('taille-' + cle).addEventListener('change', e => {
-      state.sellRank[cle] = parseInt(e.target.value, 10) || 0;
+  for (const r of REGLAGES)
+    choisir(r.hote, (id, v) => {
+      state[r.champ][id.slice(r.cle.length + 1)] = parseInt(v, 10) || 0;
     });
-  }
 
-  for (const cle of Object.keys(RARITY)) {
-    $('evolution-' + cle).addEventListener('change', e => {
-      state.evolveUpTo[cle] = parseInt(e.target.value, 10) || 0;
-    });
-  }
-
-  $('sel-acheteur').addEventListener('change', e => {
-    state.buyKind = e.target.value === '' || EN_VENTE[e.target.value] ? e.target.value : 'commun';
+  choisir('reg-acheteur', (id, v) => {
+    state.buyKind = v === '' || EN_VENTE[v] ? v : 'commun';
   });
 
   $('tri').addEventListener('click', e => {
