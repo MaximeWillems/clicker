@@ -719,7 +719,95 @@ scenario('encyclopédie — une carte par lignée, et deux vues qui se réponden
   jeu.dexFiltre = 'tout';
   jeu.refresh();
 
-  /* ──────────────────────────────── les fonds ──────────────────────────────── */
+  /* LES DEUX VUES. La ferme d'un côté, l'encyclopédie de l'autre, et l'onglet ne se
+     sauvegarde pas : on ouvre le jeu sur sa ferme, toujours. */
+  eq('on démarre sur la ferme', jeu.vue, 'ferme');
+  eq('et la vue de l’encyclopédie est cachée', noeuds.get('vue-dex').hidden, true);
+  jeu.ouvrirVue('dex');
+  eq('la bascule marche', jeu.vue, 'dex');
+  eq('la vue s’ouvre', noeuds.get('vue-dex').hidden, false);
+  eq('l’onglet se marque', onglet('dex').getAttribute('aria-pressed'), 'true');
+  eq('et l’autre se relâche', onglet('ferme').getAttribute('aria-pressed'), 'false');
+  jeu.ouvrirVue('ferme');
+  eq('et retour', noeuds.get('vue-dex').hidden, true);
+
+  /* CLIQUER UNE CARTE DÉPLACE LE REGARD, elle n'ouvre plus un écran modal : la fiche vit à
+     côté de la liste. */
+  jeu.encyLignee = 'crapaud';
+  jeu.refresh();
+  eq('la fiche suit', noeuds.get('ency-title').textContent, 'Crapaud');
+  ok('et la carte se marque choisie',
+     cartes().find(c => c.dataset.lignee === 'crapaud').className.includes('choisie'));
+
+  // la collection n'est plus un panneau de la colonne : elle ne se replie plus
+  ok('elle a quitté la liste des panneaux', !jeu.PANNEAUX.includes('collection'));
+});
+
+/* ───────────────────────────────── les œufs ────────────────────────────────── */
+
+scenario('œufs — cinq dessins, cinq sortes, et l’emoji en repli', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+
+  /* UNE SORTE SANS DESSIN RETOMBERAIT SUR L'EMOJI SANS RIEN DIRE — c'est le propre d'un repli,
+     et c'est aussi pourquoi il faut le vérifier ici : rien à l'écran ne signalerait l'oubli. */
+  eq('autant de dessins que de sortes',
+     Object.keys(jeu.ART_OEUFS).length, jeu.EGG_KINDS.length);
+  ok('chaque sorte a le sien', jeu.EGG_KINDS.every(e => jeu.artOeuf(e.key)),
+     jeu.EGG_KINDS.filter(e => !jeu.artOeuf(e.key)).map(e => e.key).join(' '));
+  eq('et ce ne sont pas cinq fois le même fichier',
+     new Set(Object.values(jeu.ART_OEUFS)).size, jeu.EGG_KINDS.length);
+  for (const [sorte, f] of Object.entries(jeu.ART_OEUFS))
+    ok('le fichier de ' + sorte + ' existe', fs.existsSync(path.join(RACINE, f)), f);
+
+  // sur la scène : la coquille couvée, et son dessin
+  s.incub[0] = { line: 'crapaud', p: 10, kind: 'mythique' };
+  s.sel = 'i:0';
+  jeu.refresh();
+  const g = noeuds.get('stage-glyph');
+  eq('la scène porte une image', g.children.length, 1);
+  eq('celle de la sorte couvée', g.children[0].getAttribute('src'), jeu.ART_OEUFS.mythique);
+
+  s.incub[0] = { line: 'crapaud', p: 10, kind: 'commun' };
+  jeu.refresh();
+  eq('elle suit la sorte', noeuds.get('stage-glyph').children[0].getAttribute('src'),
+     jeu.ART_OEUFS.commun);
+
+  // un incubateur vide n'est pas un œuf : il garde son rond
+  s.incub[0] = null;
+  jeu.refresh();
+  eq('rien à couver, pas de coquille', noeuds.get('stage-glyph').textContent, '◌');
+});
+
+scenario('œufs — la vignette passe de la bête à la coquille et revient', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+
+  const glyphe = () => {
+    const v = noeuds.get('strip-incub').children[0];
+    return v.children.find(x => (x.className || '').includes('thumb-glyph'));
+  };
+
+  s.incub[0] = { line: 'crapaud', p: 10, kind: 'epique' };
+  jeu.refresh();
+  eq('la vignette montre la coquille', glyphe().children[0].getAttribute('src'),
+     jeu.ART_OEUFS.epique);
+
+  /* LE PIÈGE QUI A COÛTÉ CE SCÉNARIO : la branche œuf écrivait l'emoji par `textContent`, ce
+     qui vide l'élément sans prevenir le cache de `setCreature`. Le cache croyait donc que
+     l'image était toujours là et refusait de la reposer : une case qui avait montré un œuf
+     ne remontrait plus jamais de bête. Invisible tant que les œufs étaient des emojis. */
+  s.incub[0].p = 9999; jeu.hatchAll(); jeu.refresh();
+  s.incub[0] = { line: 'crapaud', p: 10, kind: 'rare' };
+  jeu.refresh();
+  eq('et après une éclosion elle en remontre une autre',
+     glyphe().children[0].getAttribute('src'), jeu.ART_OEUFS.rare);
+
+  // une teinte de bête ne doit pas repeindre une coquille
+  eq('sans filtre hérité', glyphe().style.filter || '', '');
+});
+
+/* ─────────────────────────────── les fonds ──────────────────────────────── */
 
 scenario('fonds — un sur huit cents, et seulement à la boutique', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -824,30 +912,6 @@ scenario('fonds — la carte emporte celui de la bête', () => {
   const zone = cartes[0].children.find(x => (x.className || '').includes('carte-fond'));
   ok('le décor est dans la zone d’illustration', zone.className.includes('fond-givre'), zone.className);
   ok('et il porte des particules', zone.children.length > 0, zone.children.length);
-});
-
-/* LES DEUX VUES. La ferme d'un côté, l'encyclopédie de l'autre, et l'onglet ne se
-     sauvegarde pas : on ouvre le jeu sur sa ferme, toujours. */
-  eq('on démarre sur la ferme', jeu.vue, 'ferme');
-  eq('et la vue de l’encyclopédie est cachée', noeuds.get('vue-dex').hidden, true);
-  jeu.ouvrirVue('dex');
-  eq('la bascule marche', jeu.vue, 'dex');
-  eq('la vue s’ouvre', noeuds.get('vue-dex').hidden, false);
-  eq('l’onglet se marque', onglet('dex').getAttribute('aria-pressed'), 'true');
-  eq('et l’autre se relâche', onglet('ferme').getAttribute('aria-pressed'), 'false');
-  jeu.ouvrirVue('ferme');
-  eq('et retour', noeuds.get('vue-dex').hidden, true);
-
-  /* CLIQUER UNE CARTE DÉPLACE LE REGARD, elle n'ouvre plus un écran modal : la fiche vit à
-     côté de la liste. */
-  jeu.encyLignee = 'crapaud';
-  jeu.refresh();
-  eq('la fiche suit', noeuds.get('ency-title').textContent, 'Crapaud');
-  ok('et la carte se marque choisie',
-     cartes().find(c => c.dataset.lignee === 'crapaud').className.includes('choisie'));
-
-  // la collection n'est plus un panneau de la colonne : elle ne se replie plus
-  ok('elle a quitté la liste des panneaux', !jeu.PANNEAUX.includes('collection'));
 });
 
 scenario('écran — les six panneaux se replient, et ça tient au rechargement', () => {

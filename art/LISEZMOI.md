@@ -100,6 +100,37 @@ node tools/pixel.js anim crabe --stade 5 --images 4       # la planche d'animati
 node tools/pixel.js formes crapaud                        # les formes géométriques → une grille
 ```
 
+## Une grille qui se calcule : les cinq œufs
+
+Les bêtes viennent de planches importées ; **les œufs, eux, se calculent**. `tools/oeufs.js`
+écrit `art/grilles/oeufs.txt` de bout en bout, et la suite est la filière ordinaire.
+
+```bash
+node tools/oeufs.js                          # → art/grilles/oeufs.txt
+node tools/pixel.js verifier oeufs           # 4 « dérives de style », voulues (voir plus bas)
+node tools/pixel.js rendre oeufs [--png]     # → art/oeufs-N-nom.svg
+```
+
+**Pourquoi calculer plutôt que taper.** Les cinq œufs partagent une silhouette, et trente-deux
+lignes de trente-deux caractères écrites au clavier se décalent d'un pixel sans qu'on le voie.
+Cinq fois de suite, ce sont cinq œufs qui n'ont plus la même forme — un défaut qui ne se voit
+qu'en les posant côte à côte, c'est-à-dire jamais, puisque le jeu ne les montre qu'un par un.
+
+**Ce qui les sépare est décidé à la main, et c'est deux choses** : la palette, reprise des
+couleurs de rareté, et un motif propre à chacun — taches, bandes, losanges, couronne, spirale.
+Une forme se lit là où une couleur ne se lit pas.
+
+**`vérifier` signale ici quatre dérives de style, et c'est voulu.** Le contrôle est écrit pour
+les cinq âges d'une même lignée, qui doivent se ressembler ; ces cinq stades sont cinq objets
+distincts, et leur couleur est justement ce qui les sépare. Les autres défauts, eux, sont
+corrigés à la source : le générateur reprend mot pour mot la règle des « cellules isolées » et
+les absorbe avant d'écrire, parce que la quantification de l'ombrage en fabrique autant que les
+motifs.
+
+Relancer `tools/oeufs.js` **écrase les retouches faites à la main** dans le .txt. Pour une
+correction ponctuelle, éditer la grille et relancer `rendre` seul ; pour un sixième œuf, passer
+par le générateur.
+
 **Le contour d'origine est jeté, puis reposé par `P.contour()`.** Réduire une illustration
 anti-aliasée à six couleurs détruit le trait : le noir ne survit que dans les zones les plus
 sombres et le reste se fond dans le corps. Sur `crabe-2-crabe.png`, la grille sortait avec

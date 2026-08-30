@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.13.0** | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
+| **beta 1.14.0** | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
+| beta 1.13.0 | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
 | beta 1.12.0 | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
 | beta 1.11.0 | les seize menus des réglages deviennent des segments de boutons |
 | beta 1.10.0 | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
@@ -713,6 +714,47 @@ illisible — la question ne se posera même pas.
 Sur l'écran d'ascension, **fondre et fusionner disparaissent** : on y choisit des bêtes, pas de
 la poussière, et leurs boutons y étaient de toute façon inertes puisque l'écouteur vit sur le
 panneau de l'album.
+
+### Les cinq œufs
+
+Ils étaient le **même 🥚 tous les cinq**, et c'était le pire endroit du jeu où économiser un
+dessin : un œuf est **l'objet qu'on regarde le plus longtemps**. Une bête reste à l'écran le
+temps de la vendre ; un œuf mythique couve quarante-cinq minutes, et pendant ces quarante-cinq
+minutes il occupe la scène à lui tout seul.
+
+| Œuf | Couleur | Motif |
+|---|---|---|
+| commun | terre | des taches |
+| rare | bleu | trois bandes |
+| épique | violet | des losanges |
+| mythique | or | une couronne de rayons |
+| merveille | ivoire | une spirale gravée |
+
+**Deux signes et non un.** La couleur vient de la rareté, comme partout ailleurs dans le jeu ;
+le motif est propre à chaque sorte. Une forme se lit là où une couleur ne se lit pas — à
+trente-deux pixels, de loin, ou pour qui distingue mal le violet du bleu. Le second signe ne
+coûtait rien à dessiner et double ce qui sépare les cinq coquilles.
+
+Ils sortent de **la même filière que les bêtes** : une grille de caractères dans
+`art/grilles/oeufs.txt`, et `node tools/pixel.js rendre oeufs` produit les SVG. La silhouette y
+est **calculée et non tapée** — trente-deux lignes de trente-deux caractères écrites à la main
+se décalent d'un pixel sans qu'on le voie, et cinq fois de suite ce sont cinq œufs qui n'ont
+plus la même forme.
+
+`vérifier` signale sur ce fichier une **« dérive de style » : c'est voulu**. Le contrôle est
+écrit pour les cinq âges d'une même lignée, qui doivent se ressembler ; ici les cinq stades sont
+cinq objets distincts, et leur couleur est justement ce qui les sépare. Les autres défauts, eux,
+ont été corrigés à la source : le générateur reprend mot pour mot la règle des « cellules
+isolées » et les absorbe avant d'écrire.
+
+**L'emoji reste en repli**, comme partout : `setCreature` le repose si le fichier manque, et
+rien dans le jeu ne dépend de la présence du dossier `art/`.
+
+Un piège a été trouvé en branchant les dessins : la vignette écrivait l'emoji de l'œuf par
+`textContent`, ce qui vide l'élément **sans prévenir le cache de `setCreature`**. Le cache
+croyait l'image encore là et refusait de la reposer — une case qui avait montré un œuf ne
+remontrait plus jamais de bête. Invisible tant que les œufs étaient des emojis, immédiat dès
+qu'ils ne l'ont plus été.
 
 ### Les consignes, en segments
 

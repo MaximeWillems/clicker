@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.13.0 · sauvegarde v19 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.14.0 · sauvegarde v19 · 10 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -124,11 +124,18 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **L'hérédité des fonds** — la pension n'en donne aucun tant qu'elle ne sait pas les transmettre | l'hérédité | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
 
-### Le chantier graphique
+### Le chantier graphique — **livré en beta 1.12.0, 1.13.0 et 1.14.0**
 
-Trois demandes, et elles vont ensemble : c'est **le même écran** qu'elles habillent. Le jeu a
-été construit en supposant que le dessin viendrait après ; il est venu pour dix lignées, et
-tout le reste — cartes, œufs, fonds — est encore de la typographie et des bordures.
+Trois demandes, et elles allaient ensemble : c'est **le même écran** qu'elles habillaient. Le
+jeu a été construit en supposant que le dessin viendrait après ; il est venu pour dix lignées,
+et tout le reste — cartes, œufs, fonds — n'était encore que de la typographie et des bordures.
+
+Les trois sont tombées à la file, et dans cet ordre exprès : la carte d'abord parce que les
+deux autres se posent dessus, le fond ensuite parce qu'il avait besoin d'une zone
+d'illustration où tenir, l'œuf en dernier parce qu'il ne dépendait de rien.
+
+Ce qui suit est la note d'intention d'origine, gardée telle quelle, avec ce que chacune est
+devenue.
 
 #### Les cartes doivent ressembler à des cartes
 
@@ -147,6 +154,10 @@ Ce qu'une carte demande, et qui n'existe nulle part :
 C'est le plus gros morceau de CSS du projet, et il touche trois écrans : l'album, l'écran
 d'ascension, et le choix des cartes actives.
 
+**Devenu la `beta 1.12.0`** : un cadre en 3/4, une zone d'illustration séparée du bas de carte,
+une bande de rareté en haut. Fondre et fusionner ont disparu de l'écran d'ascension au
+passage — on y choisit des bêtes, pas de la poussière.
+
 #### Les fonds, animés
 
 Les [fonds](#les-fonds--à-développer) étaient prévus comme une variante *visuelle et
@@ -164,6 +175,11 @@ Deux conséquences qui n'étaient pas dans la note d'origine :
 À faire en canvas ou en CSS pur ? La réponse dépend du nombre de fonds visibles à la fois : un
 seul en scène, mais potentiellement cinq cartes équipées côte à côte.
 
+**Devenu la `beta 1.13.0`**, et en CSS pur : cinq cartes plus la scène font six surfaces animées
+à la fois, et six contextes 2D redessinés en boucle auraient coûté plus que tout le reste du jeu
+réuni. Huit fonds, un sur huit cents, et **seulement dans les œufs de la boutique** — la pension
+n'en donne aucun tant qu'elle ne sait pas les hériter.
+
 #### Un dessin pour les œufs
 
 Les cinq sortes d'œufs partagent le même glyphe 🥚 et se distinguent par leur nom et leur
@@ -173,6 +189,22 @@ couvaison est une attente — et il n'a pas d'image.
 Cinq dessins : commun, rare, épique, mythique, merveille. Ils profitent du même outillage que
 les créatures (`tools/pixel.js`), et ils sont **le meilleur rapport travail/visibilité du
 projet** : cinq images pour l'écran que tout le monde voit en premier.
+
+**Devenu la `beta 1.14.0`.** Une décision s'est ajoutée en dessinant : les cinq se distinguent
+par **deux signes et non un** — la couleur de la rareté, et un motif propre à chacun (taches,
+bandes, losanges, couronne, spirale). Une forme se lit là où une couleur ne se lit pas, de loin
+ou pour qui distingue mal le violet du bleu ; le second signe ne coûtait rien à dessiner.
+
+Deux enseignements d'outillage en sont sortis :
+
+- la silhouette est **calculée et non tapée**. Trente-deux lignes de trente-deux caractères
+  écrites à la main se décalent d'un pixel sans qu'on le voie, et cinq fois de suite ce sont
+  cinq œufs qui n'ont plus la même forme ;
+- le générateur **reprend mot pour mot la règle des « cellules isolées »** de `vérifier` et les
+  absorbe avant d'écrire. Corriger à la source ce qu'un contrôle sait nommer vaut mieux que
+  chasser les pixels un par un — la quantification de l'ombrage en fabrique autant que les
+  motifs. Reste la « dérive de style », signalée et voulue : le contrôle est écrit pour les cinq
+  âges d'une lignée, or ces cinq stades sont cinq objets distincts.
 
 ### Ce que la 1.7 laisse derrière elle
 

@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.13.0';
+const VERSION = 'beta 1.14.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1553,6 +1553,27 @@ function artAt(lineKey, age) {
 // Un âge, une forme, un dessin. Le détour par « le dessin du palier précédent » n'existe
 // plus : c'était le pansement sur une bête qui redevenait enfant à chaque évolution.
 const artFor = c => artAt(c.line, c.age);
+
+/* LES CINQ ŒUFS. Ils étaient le même 🥚 tous les cinq, et c'était le pire endroit du jeu où
+   économiser un dessin : un œuf est l'objet qu'on REGARDE LE PLUS LONGTEMPS. Une bête reste
+   à l'écran le temps de la vendre ; un mythique couve quarante-cinq minutes.
+
+   La coquille sort donc de la même filière que les bêtes — une grille dans `art/grilles/`,
+   `rendre` produit le SVG — et les cinq se distinguent par DEUX choses à la fois, la couleur
+   de la rareté et un motif propre : des taches, des bandes, des losanges, une couronne, une
+   spirale. Une forme se lit là où une couleur ne se lit pas, de loin ou pour qui distingue
+   mal le violet du bleu.
+
+   L'emoji reste en repli, comme partout ailleurs : `setCreature` le repose si le fichier
+   manque, et rien dans le jeu ne dépend de la présence du dossier `art/`. */
+const ART_OEUFS = {
+  commun:    'art/oeufs-1-commun.svg',
+  rare:      'art/oeufs-2-rare.svg',
+  epique:    'art/oeufs-3-epique.svg',
+  mythique:  'art/oeufs-4-mythique.svg',
+  merveille: 'art/oeufs-5-merveille.svg',
+};
+const artOeuf = sorte => ART_OEUFS[sorte] || null;
 
 /* Pose un dessin ou un emoji dans le même élément, et par le même chemin de taille :
    l'image fait 1em, donc tout ce qui pilotait la taille de l'emoji pilote la sienne. */
@@ -3639,7 +3660,13 @@ function peindreVignette(t, s) {
   b.draggable = s.kind === 'creature';
   if (s.kind === 'egg') {
     const k = s.slot ? EGG_BY_KEY[s.slot.kind] || EGG_BY_KEY.commun : null;
-    t.glyph.textContent = s.slot ? k.glyph : '◌';
+    /* Par `setCreature` et non par `textContent` : le raccourci écrivait l'emoji par-dessus
+       une image sans prévenir le cache de `setCreature`, qui refusait ensuite de reposer
+       cette image-là. Une case qui passait de la bête à l'œuf gardait l'œuf pour toujours.
+       Le filtre se remet à zéro pour la même raison : une teinte de bête ne doit pas
+       repeindre une coquille. */
+    t.glyph.style.filter = '';
+    setCreature(t.glyph, s.slot ? artOeuf(k.key) : null, s.slot ? k.glyph : '◌');
     if (!s.slot) b.classList.add('empty'); else b.classList.add('egg-' + k.key);
     t.tag.textContent = s.slot ? (k.key === 'commun' ? 'œuf' : k.key) : 'libre';
   } else {
@@ -4469,7 +4496,7 @@ function renderOeuf(s) {
   const ratio = slot ? Math.min(1, slot.p / hatchTime(slot)) : 0;
   const kind = slot ? EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun : null;
   setVar(subject, '--sz', slot ? (0.8 + 0.25 * ratio).toFixed(3) : '0.9');
-  setCreature($('stage-glyph'), null, slot ? kind.glyph : '◌');
+  setCreature($('stage-glyph'), slot ? artOeuf(kind.key) : null, slot ? kind.glyph : '◌');
   setFilter($('stage-glyph'), '');
   stage.classList.remove('prodige');
   setText($('stage-name'), slot ? kind.name : 'Incubateur libre');
