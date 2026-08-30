@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.8.2
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.9.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 17` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 18` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.8.2** | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
+| **beta 1.9.0** | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
+| beta 1.8.2 | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
 | beta 1.8.1 | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
 | beta 1.8.0 | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
 | beta 1.7.1 | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
@@ -1881,6 +1882,58 @@ cassée, sans rien pour dire pourquoi. Au rechargement, la ferme tourne.
 donc une pause de deux heures ne se rattrape pas au retour. Mettre en pause n'est pas mettre de
 côté — c'est arrêter, et le temps arrêté est perdu. C'est ce qui l'empêche de devenir une façon
 de jouer.
+
+### L'encyclopédie
+
+**Un carnet, jamais un manuel.** On clique une case de la collection et la fiche de sa lignée
+s'ouvre par-dessus le jeu, comme les statistiques. Elle ne connaît **rien d'avance** : chaque
+ligne se remplit en rencontrant la chose.
+
+    LOUP
+    rare · 4 formes sur 5 rencontrées · 21 écloses
+
+    🐕 Louveteau  |  🐺 Loup  |  🐺 Loup des steppes  |  · ？  |  🌘 Fenrir, dévoreur
+
+    Teintes — 5 / 8
+      sans teinte ×13 · cendré ×3 · azur ×2 · doré ×2 · jade ×1
+
+    Caractères — 6 / 6
+      docile ×7 · nerveux ×3 · placide ×3 · farouche ×3 · rêveur ×3 · glouton ×2
+
+    Motifs — 8 / 10
+      tacheté ×4 · rayé ×4 · zébré ×3 · ocellé ×3 · uni ×2 · marbré ×2 · martelé ×2 · tigré ×1
+
+    À la pension — 1 couple connu
+      Loup × Ours    50 % · 1 h 00 m · sorti 62 fois
+
+#### Ce qu'elle montre, et ce qu'elle tait
+
+**Une teinte jamais croisée sur un loup n'apparaît pas** — pas même en silhouette. Seul le
+dénominateur (`5 / 8`) dit qu'il en reste. C'est le choix qui coûte le plus et qui rapporte le
+plus : une fiche à moitié vide ne dit pas *s'il* reste quelque chose à trouver, elle dit
+seulement *combien*. Un manuel répond une fois ; un carnet se remplit.
+
+Même règle pour les cinq âges : ceux qu'on n'a pas vus restent des silhouettes **sans nom**.
+Le nom d'une forme est la moitié de la trouvaille, et l'annoncer d'avance la dépenserait.
+
+Et une lignée jamais rencontrée n'a même pas de titre : la fiche affiche ？ et une phrase.
+
+#### La pension s'apprend ponte par ponte
+
+La table ne liste pas ce qui *pourrait* donner cette lignée — elle liste ce qui l'a **déjà
+donnée**. Chaque ponte inscrit son couple dans la fiche du résultat, et rien d'autre : croiser
+un crapaud avec un ouroboros cent fois n'apprend le couple à la fiche de l'ouroboros que le
+jour où le un pour cent tombe pour de vrai.
+
+**Les pourcentages se calculent, ils ne se stockent pas.** Le carnet retient *qu'un couple a
+donné cette lignée* ; le chiffre affiché est celui d'aujourd'hui, primes comprises. Un joueur
+qui achète le Sang dominant voit ses fiches se mettre à jour — ce qui est vrai — et ne voit
+toujours rien pour un couple qu'il n'a jamais essayé, ce qui l'est aussi.
+
+`chanceDe` **double** la logique du tirage, et c'est le vrai risque de la fonction : deux
+copies peuvent diverger en silence. Un scénario du banc tire donc soixante mille pontes par
+forme de couple — ordinaire, recette, joker — et compare la fréquence observée à ce que la
+fiche annonce.
 
 ### Tout se replie
 

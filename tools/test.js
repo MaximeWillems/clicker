@@ -2081,6 +2081,153 @@ scenario('primes — la grille ne montre que les cinq prochaines', () => {
      jeu.PRIMES.length + ' / ' + jeu.PRIMES.length);
 });
 
+/* ─────────────────────────────── l'encyclopédie ─────────────────────────────── */
+
+// ce que la fiche affiche, à plat : un texte par bloc
+function fiche(jeu, cle) {
+  jeu.encyLignee = cle;
+  jeu.renderEncyclopedie();
+  const plat = el => (el.textContent || '') +
+    el.children.map(c => ' ' + (c.textContent || '') + c.children.map(x => ' ' + x.textContent).join('')).join('');
+  return {
+    titre: noeuds.get('ency-title').textContent,
+    dit: noeuds.get('ency-dit').textContent,
+    blocs: noeuds.get('ency').children.map(plat),
+    tout: noeuds.get('ency').children.map(plat).join(' | '),
+  };
+}
+
+scenario('encyclopédie — un carnet, jamais un manuel', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15; s.pens = 40;
+
+  /* ELLE NE CONNAÎT RIEN D'AVANCE. Une lignée jamais rencontrée n'a pas de nom, pas de
+     formes, pas de variantes : la fiche le dit et s'arrête là. */
+  const vide = fiche(jeu, 'kraken');
+  eq('pas de nom', vide.titre, '？');
+  ok('la fiche le dit', /jamais rencontré/.test(vide.dit), vide.dit);
+  eq('et ne montre que les cinq silhouettes', vide.blocs.length, 1);
+  ok('aucun nom de forme ne fuit', !/Kraken|Poulpe/i.test(vide.tout), vide.tout);
+
+  /* UNE ÉCLOSION APPREND UNE VARIANTE, ET SEULEMENT CELLE-LÀ. */
+  const c = bete(jeu, 'loup', 1, 0);
+  const d = jeu.dexVu('loup');
+  ok('le carnet s’ouvre à la première éclosion', !!d);
+  eq('une éclosion comptée', d.nes, 1);
+  eq('sa teinte est notée', d.teintes[c.tint], 1);
+  eq('son caractère aussi', d.caracteres[c.temper], 1);
+  eq('son motif aussi', d.motifs[c.motif], 1);
+  eq('et rien d’autre en teintes', Object.keys(d.teintes).length, 1);
+
+  const f = fiche(jeu, 'loup');
+  eq('la lignée a un nom', f.titre, 'Loup');
+  ok('une seule forme rencontrée', /1 forme sur 5/.test(f.dit), f.dit);
+  ok('les quatre autres restent des points d’interrogation',
+     (f.tout.match(/？/g) || []).length >= 4, f.tout);
+  ok('la teinte croisée s’affiche',
+     f.tout.indexOf(jeu.TINTS[c.tint].name || 'sans teinte') !== -1, f.tout);
+  ok('et le compte des teintes dit ce qui manque', /Teintes — 1 \/ 8/.test(f.tout), f.tout);
+
+  /* DEUX ÉCLOSIONS DE LA MÊME TEINTE COMPTENT DEUX FOIS, elles ne se dédoublent pas. */
+  const avant = d.teintes[c.tint];
+  jeu.noterEclosion({ line: 'loup', tint: c.tint, temper: c.temper, motif: c.motif });
+  eq('le compte monte', jeu.dexVu('loup').teintes[c.tint], avant + 1);
+  eq('et l’éclosion aussi', jeu.dexVu('loup').nes, d.nes);
+});
+
+scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+
+  const avant = fiche(jeu, 'loup');
+  ok('aucun couple connu au départ', /0 couple connu/.test(avant.tout), avant.tout);
+  ok('et la fiche dit quoi faire', /Confie-en deux/.test(avant.tout), avant.tout);
+
+  jeu.accoupler(a, b);
+  jeu.avancePension(jeu.dureePension(a, b) * 3);
+  const apres = fiche(jeu, 'loup');
+
+  /* ON N'APPREND QUE CE QUI EST VRAIMENT SORTI. Le carnet ne déduit rien d'une table de
+     règles : un couple qui n'a jamais donné cette lignée n'y figure pas. */
+  const dLoup = jeu.dexVu('loup'), dOurs = jeu.dexVu('ours');
+  const total = (dLoup.couples['loup×ours'] || 0) + (dOurs.couples['loup×ours'] || 0);
+  eq('les trois pontes sont réparties entre les deux fiches', total, 3);
+  ok('la paire est triée, donc écrite une seule fois',
+     !dLoup.couples['ours×loup'] && !dOurs.couples['ours×loup']);
+
+  const qui = dLoup.couples['loup×ours'] ? 'loup' : 'ours';
+  const vue = fiche(jeu, qui);
+  ok('le couple apparaît', /Loup × Ours/.test(vue.tout), vue.tout);
+  ok('avec son pourcentage', /50 %/.test(vue.tout), vue.tout);
+  ok('sa durée', /1 h/.test(vue.tout), vue.tout);
+  ok('et le nombre de fois', /sorti \d+ fois/.test(vue.tout), vue.tout);
+
+  /* LE POURCENTAGE SE CALCULE, IL NE SE STOCKE PAS : une prime achetée après coup ne doit
+     pas laisser dans le carnet un nombre qui n'est plus vrai. */
+  const cr = bete(jeu, 'crapaud', 4, 20000), ou = bete(jeu, 'ouroboros', 4, 20000);
+  jeu.dexDe('crapaud').couples['crapaud×ouroboros'] = 1;
+  ok('sans le sang, la commune sort presque toujours',
+     /99 %/.test(fiche(jeu, 'crapaud').tout), fiche(jeu, 'crapaud').tout);
+  s.primes['pension-sang'] = true;
+  ok('avec, le chiffre a bougé tout seul',
+     /98 %/.test(fiche(jeu, 'crapaud').tout), fiche(jeu, 'crapaud').tout);
+});
+
+scenario('encyclopédie — la chance annoncée est celle du tirage', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15; s.pens = 40; s.primes.pension = true;
+
+  /* `chanceDe` DOUBLE la logique du tirage, et deux copies peuvent diverger en silence.
+     On tire donc pour de vrai et on compare, sur les trois formes de couple : ordinaire,
+     recette, joker. */
+  const N = 60000;
+  for (const [x, y] of [['loup', 'ours'], ['crapaud', 'ouroboros'],
+                        ['golem', 'golem'], ['chimere', 'chimere']]) {
+    const a = bete(jeu, x, 4, 20000), b = bete(jeu, y, 4, 20000);
+    const rec = jeu.recetteDe(a, b);
+    const compte = {};
+    for (let i = 0; i < N; i++) {
+      const r = rec && Math.random() < rec.chance ? rec.donne : jeu.ligneeDe(a, b);
+      compte[r] = (compte[r] || 0) + 1;
+    }
+    let somme = 0;
+    for (const [r, n] of Object.entries(compte)) {
+      const annonce = jeu.chanceDe(x, y, r), observe = n / N;
+      somme += annonce;
+      ok(x + ' × ' + y + ' → ' + r + ' : ' + (annonce * 100).toFixed(2) + ' % annoncé',
+         Math.abs(annonce - observe) < Math.max(0.006, annonce * 0.25),
+         'observé ' + (observe * 100).toFixed(2) + ' %');
+    }
+    ok(x + ' × ' + y + ' : les chances des issues vues font presque un',
+       somme > 0.9 && somme <= 1.001, somme.toFixed(3));
+  }
+});
+
+scenario('encyclopédie — elle traverse l’ascension, et une partie d’avant la reçoit vide', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8;
+  bete(jeu, 'loup', 1, 0);
+  eq('le carnet a une entrée', Object.keys(s.dex).length, 1);
+
+  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = ap.neuves.length ? [ap.neuves[0].id] : [];
+  jeu.ascensionner();
+  /* C'est une mémoire de FICHIER, comme la collection : l'ascension efface la ferme, jamais
+     ce qu'on a appris. */
+  eq('elle a traversé', Object.keys(jeu.state.dex).length, 1);
+  ok('avec son contenu', jeu.dexVu('loup').nes >= 1);
+
+  // une partie d'avant la 1.9 n'a pas de carnet : il naît vide, sans migration à écrire
+  const vieux = JSON.parse(JSON.stringify(jeu.state));
+  delete vieux.dex;
+  const k = neuf(vieux);
+  eq('le carnet naît vide', JSON.stringify(k.state.dex), '{}');
+  const c = bete(k, 'crapaud', 1, 0);
+  eq('et se remplit dès la première éclosion', k.dexVu('crapaud').nes, 1);
+});
+
 /* ────────────────────────── la poussière et la fusion ────────────────────────── */
 
 // une carte quelconque, pour peupler un album

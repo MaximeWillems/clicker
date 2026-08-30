@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.8.2 · sauvegarde v17 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.9.0 · sauvegarde v18 · 10 lignées illustrées sur 30
 
 ---
 
@@ -64,6 +64,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le nid et la pause** | beta 1.0, 1.8 | confier une bête est-il un geste ? | oui — et la pause n'est plus nécessaire depuis qu'une bête confiée quitte la bande |
 | **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
+| **L'encyclopédie** | beta 1.9 | la collection peut-elle dire autre chose que « combien m'en manque-t-il » ? | oui — une fiche par lignée, qui ne sait que ce qu'on a rencontré |
 
 ### La ligne d'arrivée de l'alpha
 
@@ -190,9 +191,10 @@ Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n
 - **Le plafond de la réserve devient le vrai frein.** Cinquante œufs par sorte se remplissent en
   trois minutes quand la pension tourne à mille œufs l'heure ; au-delà, tout dépend du nombre
   d'incubateurs qui la vident. Ce n'est pas un défaut — c'est un couplage qu'il faut avoir vu.
-- **La pension ne dit pas ce qu'elle a produit.** `nes` compte un total, et la réserve montre ce
-  qui attend, mais rien ne dit « tu as sorti quarante loups cette nuit ». À mille œufs l'heure,
-  c'est l'information qui manque le plus.
+- **La pension ne dit pas ce qu'elle a produit *cette nuit*.** La `beta 1.9.0` règle la moitié
+  de la dette : la fiche d'une lignée dit désormais quels couples l'ont donnée et combien de
+  fois, depuis toujours. Ce qui manque encore est le **journal récent** — « pendant ton absence,
+  la pension a sorti quarante loups » — qui relève du bandeau de retour, pas du carnet.
 
 **La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
 la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la

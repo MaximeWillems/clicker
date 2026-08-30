@@ -757,11 +757,17 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   padding-bottom: 0; margin-bottom: 0; border-bottom: 0;
 }
 .panel.plie { padding-bottom: 0.9rem; }
+/* UNE CASE EST UN BOUTON depuis qu'elle ouvre la fiche de sa lignée : il faut donc lui
+   retirer ce qu'un navigateur pose de lui-même — bordure, fond, police. Le surlignage passe
+   par `outline` et non par `border` : une bordure qui apparaît décalerait les cent cinquante
+   cases de la grille d'un pixel. */
 .cell {
   aspect-ratio: 1; display: grid; place-items: center;
-  background: var(--sunken); border-radius: 2px; font-size: 1.05rem;
-  color: var(--faint);
+  background: var(--sunken); border: 0; padding: 0; border-radius: 2px;
+  font: inherit; font-size: 1.05rem; color: var(--faint); cursor: pointer;
 }
+.cell:hover { outline: 1px solid var(--rule-hi); }
+.cell:focus-visible { outline: 1px solid var(--accent); }
 .cell.got { background: var(--raised); box-shadow: inset 0 0 0 1px var(--rar, transparent); }
 .cell.got.t5 { box-shadow: inset 0 0 0 1px var(--rar, transparent), inset 0 0 8px -3px var(--rar, transparent); }
 .cell.locked::after { content: "·"; font-family: var(--f-num); color: var(--rule-hi); }
@@ -1075,6 +1081,66 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .stats-val {
   font-family: var(--f-num); font-size: 0.9rem; color: var(--ink);
   font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
+}
+
+/* ── L'ENCYCLOPÉDIE ────────────────────────────────────────────────
+   Un carnet, jamais un manuel : tout ce qui s'affiche ici a été rencontré. D'où des blocs qui
+   peuvent être vides, et qui le disent — une fiche à moitié remplie est le sujet, pas un
+   accident de mise en page. */
+.ency { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.ency-ages {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: 5px; margin-bottom: 0.7rem;
+}
+.ency-age {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  background: var(--sunken); border: 1px solid var(--rule);
+  border-top: 2px solid var(--rar, var(--rule-hi));
+  border-radius: 4px; padding: 0.6rem 0.35rem 0.5rem; text-align: center;
+}
+.ency-age.locked { border-top-color: var(--rule); opacity: 0.5; }
+.ency-glyphe { font-size: 1.9rem; line-height: 1; }
+.ency-glyphe img { width: 1em; height: 1em; display: block; object-fit: contain; }
+.ency-age.locked .ency-glyphe { color: var(--faint); font-size: 1.9rem; }
+.ency-nom {
+  font-family: var(--f-name); font-weight: 400; font-size: 0.74rem;
+  color: var(--ink); line-height: 1.25; text-wrap: balance;
+}
+.ency-age.locked .ency-nom { color: var(--faint); }
+.ency-age-nom {
+  font-family: var(--f-num); font-style: normal; font-size: 0.6rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint);
+}
+
+.ency-titre {
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--faint);
+  margin: 0.7rem 0 0.3rem;
+}
+.ency-pastilles { display: flex; flex-wrap: wrap; gap: 4px; }
+.ency-pastille {
+  display: flex; align-items: baseline; gap: 0.3rem;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 3px; padding: 0.2rem 0.45rem;
+}
+.ency-pastille b { font-family: var(--f-ui); font-weight: 400; font-size: 0.74rem; color: var(--ink); }
+.ency-pastille i {
+  font-family: var(--f-num); font-style: normal; font-size: 0.64rem;
+  color: var(--soft); font-variant-numeric: tabular-nums;
+}
+.ency-vide { font-size: 0.74rem; color: var(--faint); margin: 0; }
+
+.ency-couple {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-left: 2px solid var(--jade);
+  border-radius: 3px; padding: 0.35rem 0.55rem; margin-bottom: 3px;
+}
+.ency-couple b { font-family: var(--f-name); font-weight: 400; font-size: 0.8rem; color: var(--ink); }
+.ency-couple i {
+  font-family: var(--f-num); font-style: normal; font-size: 0.68rem;
+  color: var(--soft); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 
 /* ── LA PENSION ──────────────────────────────────────────────────

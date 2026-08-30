@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.8.2';
+const VERSION = 'beta 1.9.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1535,7 +1535,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 17;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 18;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1575,6 +1575,19 @@ function freshState() {
     up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 },
     // les primes achetées, par clé. Elles ne traversent pas l'ascension.
     primes: {},
+    /* CE QUE L'ENCYCLOPÉDIE A APPRIS, lignée par lignée. Elle ne connaît RIEN d'avance :
+       chaque case se remplit en rencontrant la chose, jamais en la déduisant d'une table.
+       C'est la différence entre un carnet et un manuel — un manuel dit ce qui existe, un
+       carnet dit ce qu'on a vu, et seul le second se remplit.
+
+       Par lignée : `teintes`, `caracteres` et `motifs` comptent ce qu'on a croisé (indice →
+       nombre de fois), `prodiges` et `nes` comptent les éclosions, et `couples` retient quels
+       parents ont DÉJÀ donné cette lignée à la pension — la clé est la paire triée, la valeur
+       le nombre de fois. Les pourcentages, eux, ne sont pas stockés : ils se recalculent à
+       l'affichage, sinon une prime achetée après coup laisserait des chiffres périmés.
+
+       Elle traverse l'ascension, comme la collection : c'est une mémoire de fichier. */
+    dex: {},
     /* Ce qui est replié dans la collection : la clé `tout` pour la section entière, une clé
        par rareté pour les groupes. Du confort d'affichage, donc ça traverse l'ascension —
        comme l'ordre de la bande et la taille des lots. */
@@ -2036,6 +2049,36 @@ function pickWeighted(list) {
   let total = list.reduce((s, x) => s + x.poids, 0), r = Math.random() * total;
   for (let i = 0; i < list.length; i++) { r -= list[i].poids; if (r < 0) return i; }
   return 0;
+}
+
+/* ── L'ENCYCLOPÉDIE : CE QU'ELLE APPREND, ET QUAND ─────────────────────────────
+   Trois moments, et trois seulement : une éclosion apprend une variante, une ponte apprend un
+   couple, et rien d'autre n'écrit ici. Aucune fonction de cette section ne consulte une table
+   de règles — c'est ce qui garantit qu'une fiche ne montre jamais ce qu'on n'a pas vu. */
+const dexDe = cle => {
+  state.dex = state.dex || {};
+  return (state.dex[cle] = state.dex[cle] ||
+    { teintes: {}, caracteres: {}, motifs: {}, prodiges: 0, nes: 0, couples: {} });
+};
+const dexVu = cle => (state.dex && state.dex[cle]) || null;
+
+// Ce qu'une éclosion apprend. Une fois par bête, au moment où elle sort de l'œuf.
+function noterEclosion(c) {
+  const d = dexDe(c.line);
+  d.nes++;
+  d.teintes[c.tint] = (d.teintes[c.tint] || 0) + 1;
+  d.caracteres[c.temper] = (d.caracteres[c.temper] || 0) + 1;
+  d.motifs[c.motif] = (d.motifs[c.motif] || 0) + 1;
+  if (c.prodige) d.prodiges++;
+}
+
+/* Ce qu'une ponte apprend : que CE couple peut donner CETTE lignée. On ne retient que le
+   fait, jamais le chiffre — le pourcentage et la durée se recalculent à l'affichage, sinon
+   une prime achetée après coup laisserait dans le carnet des nombres qui ne sont plus vrais. */
+function noterPonte(a, b, ligne) {
+  const d = dexDe(ligne);
+  const cle = [lineOf(a).key, lineOf(b).key].sort().join('×');
+  d.couples[cle] = (d.couples[cle] || 0) + 1;
 }
 
 // Tiré une fois, à l'éclosion, et jamais retouché ensuite.
@@ -2687,6 +2730,7 @@ function hatchAll() {
     state.pen.push(c);
     state.incub[i] = null;
     markSeen(slot.line, 1);
+    noterEclosion(c);
     state.stats.eclos++;
     lastKey = 'c:' + c.id;
     // on retient la plus rare de la fournée pour la mettre en avant
@@ -3554,7 +3598,13 @@ function renderCollection() {
     const dedans = grille;
     AGES.forEach((age, i) => {
       const a = i + 1, got = !!state.seen[line.key + ':' + a];
-      const cell = document.createElement('div');
+      /* CHAQUE CASE OUVRE LA FICHE DE SA LIGNÉE. La grille répond depuis toujours à
+         « combien m'en manque-t-il » ; elle ne répondait à rien d'autre. Une case cliquable
+         est le seul endroit où la question « et celle-là, qu'est-ce que j'en sais ? » puisse
+         se poser sans ajouter un menu. */
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.dataset.lignee = line.key;
       cell.className = 'cell rar-' + line.rarity + (got ? ' got' : ' locked') +
                        (a === AGES.length ? ' t5' : '');
       cell.title = (got ? line.forms[i][0] : line.name + ' — ' + age.nom) +
@@ -4057,7 +4107,7 @@ function ascensionner() {
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
     // tous les jetons partent, employés ou non : c'est le prix de sauter trop tôt
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: 0 },
-    seen: state.seen, tri: state.tri, achat: state.achat, sound: state.sound,
+    seen: state.seen, dex: state.dex, tri: state.tri, achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
@@ -5033,6 +5083,34 @@ function ligneeDe(a, b) {
   return (Math.random() < chancePension(ecartRarete(a, b)) ? haut : bas).line;
 }
 
+/* LA CHANCE QU'AVAIT CE RÉSULTAT-LÀ, pour ce couple-là. C'est ce que l'encyclopédie affiche
+   sous un couple appris, et c'est calculé et non stocké : une prime achetée après coup ne
+   doit pas laisser dans le carnet un nombre qui n'est plus vrai.
+
+   Elle DOUBLE la logique de `ligneeDe` et de `ligneeAuHasard`, ce qui est le vrai risque de
+   cette fonction : les deux peuvent diverger en silence. Un scénario du banc tire donc dix
+   mille pontes et compare la fréquence observée à ce que celle-ci annonce, pour chaque forme
+   de couple — ordinaire, joker, recette. C'est la seule garde qui tienne. */
+const stubLignee = k => ({ line: k });
+function chanceDe(x, y, resultat) {
+  const a = stubLignee(x), b = stubLignee(y);
+  const rec = recetteDe(a, b);
+  if (rec && rec.donne === resultat) return rec.chance;
+  const reste = rec ? 1 - rec.chance : 1;   // ce qui n'est pas la merveille se partage le reste
+
+  if (couple2Jokers(a, b)) {
+    if (!RARITY[LINE_BY_KEY[resultat].rarity].secret)
+      return reste * (1 - JOKER_MERVEILLE) / poolJoker.length;
+    const autres = poolSecret.length - 1;
+    return reste * JOKER_MERVEILLE *
+           (resultat === EXCLUSIVE_JOKER ? 0.5 : autres > 0 ? 0.5 / autres : 0.5);
+  }
+  if (x === y) return reste;
+  const haut = RARITY[LINE_BY_KEY[x].rarity].rank >= RARITY[LINE_BY_KEY[y].rarity].rank ? x : y;
+  const c = chancePension(ecartRarete(a, b));
+  return reste * (resultat === haut ? c : 1 - c);
+}
+
 // La sorte d'œuf que cette lignée demande, pour la réserve.
 const sorteDe = ligne => {
   const r = LINE_BY_KEY[ligne].rarity;
@@ -5116,7 +5194,11 @@ function avancePension(dt) {
 
       for (let i = 0; i < portee; i++) {
         // la merveille occupe UNE place de la nichée, les autres se tirent normalement
-        if (pondre(i === 0 && rare ? rare : ligneeDe(a, b))) nes++;
+        const ligne = i === 0 && rare ? rare : ligneeDe(a, b);
+        if (!pondre(ligne)) continue;
+        nes++;
+        // le carnet n'apprend que ce qui est VRAIMENT sorti, jamais ce qui aurait pu sortir
+        noterPonte(a, b, ligne);
       }
       k.t -= k.duree;
     }
@@ -5587,6 +5669,140 @@ function renderPension() {
       'plus c’est rapide — et l’œuf prend la lignée de l’une des deux.');
 }
 
+/* ── LA FICHE D'UNE LIGNÉE ─────────────────────────────────────────────────────
+   Un carnet, jamais un manuel. Elle ne montre QUE ce qu'on a rencontré : les âges vus, les
+   teintes croisées, les caractères, les motifs, et les couples de pension qui ont déjà donné
+   cette lignée. Une teinte qu'on n'a jamais vue sur un loup n'apparaît pas — pas même en
+   silhouette, pas même en compte total.
+
+   C'est le choix qui coûte le plus et qui rapporte le plus : une fiche à moitié vide ne dit
+   pas s'il reste quelque chose à trouver, et c'est exactement ce qui donne envie de faire
+   éclore un œuf de plus. Un manuel répond une fois ; un carnet se remplit.
+
+   LES POURCENTAGES DE LA PENSION SE CALCULENT, ILS NE SE STOCKENT PAS. Le carnet retient
+   qu'un couple a donné cette lignée ; le chiffre affiché est celui d'aujourd'hui, primes
+   comprises. Un joueur qui achète le Sang dominant voit ses fiches se mettre à jour, ce qui
+   est vrai — et il ne voit rien pour un couple qu'il n'a jamais essayé, ce qui l'est aussi. */
+let encyLignee = null;
+
+// Une rangée de pastilles : ce qu'on a croisé, et combien de fois. Rien d'autre.
+function encyRangee(hote, titre, table, noms, vus) {
+  const cles = Object.keys(vus || {}).map(Number).filter(i => (vus[i] || 0) > 0)
+                     .sort((a, b) => vus[b] - vus[a]);
+  const h = document.createElement('p');
+  h.className = 'ency-titre';
+  h.textContent = titre + ' — ' + cles.length + ' / ' + table.length;
+  hote.appendChild(h);
+  const z = document.createElement('div');
+  z.className = 'ency-pastilles';
+  if (!cles.length) {
+    const v = document.createElement('i');
+    v.className = 'ency-vide';
+    v.textContent = 'rien de croisé pour l’instant';
+    z.appendChild(v);
+  }
+  for (const i of cles) {
+    const p = document.createElement('span');
+    p.className = 'ency-pastille';
+    const n = document.createElement('b');
+    n.textContent = noms(i);
+    const c = document.createElement('i');
+    c.textContent = '×' + vus[i];
+    p.append(n, c);
+    z.appendChild(p);
+  }
+  hote.appendChild(z);
+}
+
+function renderEncyclopedie() {
+  const cle = encyLignee;
+  if (!cle || !LINE_BY_KEY[cle]) return;
+  const ligne = LINE_BY_KEY[cle];
+  const d = dexVu(cle);
+  const ages = AGES.map((a, i) => !!state.seen[cle + ':' + (i + 1)]);
+  const vus = ages.filter(Boolean).length;
+
+  setText($('ency-title'), vus ? ligne.name : '？');
+  setText($('ency-dit'), !vus
+    ? 'Tu n’as jamais rencontré cette lignée. Cette page se remplira toute seule.'
+    : RARITY[ligne.rarity].name + ' · ' + vus + ' forme' + (vus > 1 ? 's' : '') +
+      ' sur ' + AGES.length + ' rencontrée' + (vus > 1 ? 's' : '') +
+      (d && d.nes ? ' · ' + fmt(d.nes) + ' éclose' + (d.nes > 1 ? 's' : '') : ''));
+
+  const hote = $('ency');
+  hote.textContent = '';
+
+  /* ── LES CINQ ÂGES ──
+     Ceux qu'on n'a pas vus restent des silhouettes SANS NOM : le nom d'une forme est la
+     moitié de la trouvaille, et l'annoncer d'avance la dépenserait pour rien. */
+  const rangee = document.createElement('div');
+  rangee.className = 'ency-ages';
+  AGES.forEach((age, i) => {
+    const a = i + 1, got = ages[i];
+    const el = document.createElement('div');
+    el.className = 'ency-age rar-' + ligne.rarity + (got ? ' got' : ' locked');
+    const g = document.createElement('span');
+    g.className = 'ency-glyphe';
+    if (got) setCreature(g, artAt(cle, a), ligne.forms[i][1]); else g.textContent = '·';
+    const n = document.createElement('b');
+    n.className = 'ency-nom';
+    n.textContent = got ? ligne.forms[i][0] : '？';
+    const t = document.createElement('i');
+    t.className = 'ency-age-nom';
+    t.textContent = age.nom;
+    el.append(g, n, t);
+    rangee.appendChild(el);
+  });
+  hote.appendChild(rangee);
+
+  if (!vus) return;
+
+  // ── ce qu'on a croisé sur cette lignée, et seulement sur elle ──
+  encyRangee(hote, 'Teintes', TINTS, i => TINTS[i].name || 'sans teinte', d && d.teintes);
+  encyRangee(hote, 'Caractères', TEMPERS, i => TEMPERS[i].name, d && d.caracteres);
+  encyRangee(hote, 'Motifs', MOTIFS, i => MOTIFS[i], d && d.motifs);
+  if (d && d.prodiges) {
+    const p = document.createElement('p');
+    p.className = 'ency-titre';
+    p.textContent = 'Chromatiques — ' + fmt(d.prodiges);
+    hote.appendChild(p);
+  }
+
+  /* ── LA PENSION, APPRISE PONTE PAR PONTE ──
+     On ne liste pas ce qui POURRAIT la donner : on liste ce qui l'a DÉJÀ donnée. La table se
+     découvre en élevant, et le pourcentage à côté est celui d'aujourd'hui. */
+  const h = document.createElement('p');
+  h.className = 'ency-titre';
+  const appris = Object.entries((d && d.couples) || {}).sort((x, y) => y[1] - x[1]);
+  h.textContent = 'À la pension — ' + appris.length +
+                  (appris.length > 1 ? ' couples connus' : ' couple connu');
+  hote.appendChild(h);
+
+  if (!appris.length) {
+    const v = document.createElement('p');
+    v.className = 'ency-vide';
+    v.textContent = prime('pension')
+      ? 'Aucun couple ne t’a encore donné cette lignée. Confie-en deux pour voir.'
+      : 'Tu n’as pas encore de pension.';
+    hote.appendChild(v);
+  }
+  for (const [paire, combien] of appris) {
+    const [x, y] = paire.split('×');
+    const el = document.createElement('div');
+    el.className = 'ency-couple';
+    const qui = document.createElement('b');
+    qui.textContent = LINE_BY_KEY[x].name + ' × ' + LINE_BY_KEY[y].name;
+    const dit = document.createElement('i');
+    const pc = chanceDe(x, y, cle) * 100;
+    const t = dureePension(stubLignee(x), stubLignee(y));
+    dit.textContent = dec(pc, pc < 1 ? 2 : pc < 10 ? 1 : 0) + ' %' +
+                      (t === null ? '' : ' · ' + fmtTime(t)) +
+                      ' · sorti ' + fmt(combien) + (combien > 1 ? ' fois' : ' fois');
+    el.append(qui, dit);
+    hote.appendChild(el);
+  }
+}
+
 /* Les trophées, sous les compteurs. Un décroché montre son nom et ce qu'il a fallu faire ;
    un objectif non décroché montre les deux aussi, c'est tout son intérêt ; une surprise non
    décrochée ne montre RIEN — l'annoncer la tuerait. */
@@ -5817,6 +6033,11 @@ function bindTools() {
     jugerSav('');
   };
   const ouvrirStats = v => { $('statistiques').hidden = !v; if (v) renderStats(); };
+  const ouvrirFiche = cle => {
+    encyLignee = cle || null;
+    $('encyclopedie').hidden = !cle;
+    if (cle) renderEncyclopedie();
+  };
   /* Un seul écouteur pour les six : le bouton porte sa clé, ce qui évite six lignes qui
      disent la même chose et une septième oubliée le jour où un panneau s'ajoute. */
   for (const b of document.querySelectorAll('.panel-plier')) {
@@ -5945,6 +6166,18 @@ function bindTools() {
   });
 
   $('btn-pause').addEventListener('click', () => basculerPause());
+
+  /* LA GRILLE OUVRE LES FICHES. L'écouteur vit sur le panneau et non sur les cases :
+     renderCollection les reconstruit dès qu'une forme est rencontrée, et rattacher cent
+     cinquante écouteurs à chaque redessin les multiplierait sans jamais les retirer. */
+  $('collection').addEventListener('click', e => {
+    const c = e.target.closest && e.target.closest('.cell');
+    if (c && c.dataset.lignee) ouvrirFiche(c.dataset.lignee);
+  });
+  $('ency-close').addEventListener('click', () => ouvrirFiche(null));
+  $('encyclopedie').addEventListener('click', e => {
+    if (e.target === $('encyclopedie')) ouvrirFiche(null);
+  });
 
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
   $('stat-close').addEventListener('click', () => ouvrirStats(false));

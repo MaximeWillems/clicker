@@ -349,6 +349,19 @@
 
 <!-- LES STATISTIQUES. Le contenu se fabrique en JS depuis une table : ajouter un compteur
      est une ligne, et la mise en page suit toute seule. -->
+<!-- L'ENCYCLOPÉDIE. Une fiche par lignée, ouverte depuis une case de la collection. Elle ne
+     sait RIEN d'avance : chaque ligne se remplit en rencontrant la chose. -->
+<div id="encyclopedie" class="asc" hidden>
+  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="ency-title">
+    <div class="asc-head">
+      <h2 id="ency-title"></h2>
+      <button type="button" class="asc-close" id="ency-close" title="Fermer">✕</button>
+    </div>
+    <p class="sav-dit" id="ency-dit"></p>
+    <div class="ency" id="ency"></div>
+  </div>
+</div>
+
 <div id="statistiques" class="asc" hidden>
   <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="stat-title">
     <div class="asc-head">
