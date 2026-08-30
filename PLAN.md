@@ -188,9 +188,10 @@ Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n
   (`beta 1.8.1`) et un DOM rebâti sous le curseur (`beta 1.8.2`, le même défaut que la bande
   avant la 2.14.0). **Tout écran neuf doit être relu contre les commentaires de `renderStrip`
   avant d'être écrit**, pas après.
-- **Le plafond de la réserve devient le vrai frein.** Cinquante œufs par sorte se remplissent en
-  trois minutes quand la pension tourne à mille œufs l'heure ; au-delà, tout dépend du nombre
-  d'incubateurs qui la vident. Ce n'est pas un défaut — c'est un couplage qu'il faut avoir vu.
+- **Le plafond de la réserve n'est pas un problème, vérifié en jouant.** Cinquante œufs par
+  sorte se remplissent en trois minutes quand la pension tourne à mille œufs l'heure, et le
+  couplage avec le nombre d'incubateurs est donc réel — mais il se joue bien. Il reste écrit
+  ici comme un fait à connaître, plus comme une inquiétude.
 - **La pension ne dit pas ce qu'elle a produit *cette nuit*.** La `beta 1.9.0` règle la moitié
   de la dette : la fiche d'une lignée dit désormais quels couples l'ont donnée et combien de
   fois, depuis toujours. Ce qui manque encore est le **journal récent** — « pendant ton absence,
@@ -574,9 +575,9 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
   parce qu'elle se répétait ; les épiques et les mythiques, elles, se traversent trop vite
   pour que le compte se voie. Au-delà, le contenu qui manque n'est pas le nombre de lignées,
   c'est le nombre de dessins — dix-sept sur vingt-sept n'en ont pas.
-- **Un deuxième axe de prestige.** Le premier cycle n'a pas encore été rejoué *après* une
-  ascension. Empiler un second prestige avant de savoir si le premier donne envie de
-  recommencer est la façon classique dont un idle devient illisible.
+- **Un deuxième axe de prestige.** L'argument d'origine — le premier cycle n'a pas encore été
+  rejoué après une ascension — est tombé : elle donne envie de recommencer, c'est vérifié. Il
+  reste écarté pour la seule raison qui vaille encore : rien ne le demande.
 - **Remonter les taux pour compenser.** Si l'éclosion paraît plate, la réponse est la couche
   d'événements, pas un retour en arrière qui redonnerait aux surprises leur banalité.
 - **Découper `game.js` en modules.** Le fichier fait 3 800 lignes et part à la poubelle au
@@ -678,35 +679,56 @@ se rendre injouable — c'est la seule faute dont un joueur ne revient pas. La d
 ici parce que la règle vaut pour tout ce qu'on ajoutera : **chaque nouvelle façon de dépenser
 doit être relue en se demandant si elle peut assécher la partie.**
 
-**Rien de visuel n'a jamais été vérifié.** C'est la dette qui grossit le plus vite : l'album,
-l'écran d'ascension, le sélecteur de lots, la boîte de dialogue, les trois colonnes d'axes, la
-ligne du bonheur, le panneau de pension avec ses deux menus et sa barre de couvaison, et
-maintenant la clarté de la merveilleuse et son halo de nom — tout ce CSS n'a été relu qu'à
-l'œil, dans le code. Le banc d'essai ne met
-rien en page et ne le dira jamais. Une demi-heure passée à ouvrir la page pour de vrai
-vaudrait plus que dix scénarios de plus.
+**Le visuel est vérifié en permanence — dette close.** Elle a été ouverte pendant vingt
+versions au motif que le banc ne met rien en page et ne le dira jamais. C'est toujours vrai du
+banc, et c'est faux du projet : **le jeu est joué en continu, et pas de nouvelle vaut bonne
+nouvelle.** Ce qui remonte, remonte vite — les huit Wukong d'une minute et le nid qui ne se
+laissait pas cliquer sont arrivés par là, pas par un scénario.
+
+Ce qui reste vrai, et qu'il faut garder : le banc ne peut PAS voir une mise en page. Tout ce
+qui touche au CSS se vérifie en jouant, et c'est le seul endroit du projet où ça se passe
+comme ça.
 
 **L'ascension ne donnait pas envie**, et la 2.20.0 attaque la moitié qu'on savait nommer : ses
 récompenses étaient huit pourcentages, invisibles au moment précis où elles devraient
 convaincre — le début du cycle suivant, avec un œuf et zéro pièce. L'ocellé et le martelé se
 voient à la première seconde. Reste à jouer un cycle entier pour savoir si ça suffit.
 
-**Ce qu'on ne sait toujours pas de l'ascension**, c'est si elle donne envie de recommencer.
-Elle a été jouée plusieurs fois — c'est comme ça que cinq de ses défauts sont sortis, de
-l'écran vide au mauvais choix de carte — donc la mécanique tient. Mais « est-ce qu'on veut
-recommencer ? » ne se répond pas en sautant une fois : il faut jouer le cycle d'après, et voir
-si l'album qu'on emporte change quelque chose à la façon dont on rejoue.
+**L'ascension donne envie de recommencer — question tranchée.** C'était la seule question du
+projet qu'aucune mesure ne pouvait résoudre : elle demandait de jouer le cycle d'après, et la
+réponse est venue en le jouant. La 2.20.0 avait attaqué la moitié qu'on savait nommer — des
+récompenses qui se voient à la première seconde plutôt que huit pourcentages — et ça a suffi.
 
-**La mesure du rythme est périmée, et l'outil pour la refaire existe maintenant.** La 2.29.0
-a produit un simulateur d'ouverture — un joueur qui clique quatre fois par seconde, mène ses
-bêtes à l'âge adulte et achète toujours le moins cher — qui a mesuré la première demi-heure et
-tranché deux fois : le début était trois fois trop rapide, et resserrer aussi l'adolescent le
-rendait trois fois trop lent.
+Ce que ça libère : **le second axe de prestige n'est plus bloqué.** Il était écarté au motif
+qu'empiler un second prestige avant de savoir si le premier donne envie est la façon classique
+dont un idle devient illisible. On sait maintenant. Ce n'est pas une raison de le faire, c'en
+est une de pouvoir en parler.
 
-Il vit dans `tools/rythme.js` : `node tools/rythme.js 180` rend les trois premières heures.
-Ce qui reste à mesurer avec lui : **quand tombe l'ère rare**, et **quand tombe le premier
-jeton**. « Ère rare à 3 h 34 » date d'avant la baisse des prix de la 1.5, et le resserrement de
-la 2.29.0 l'a déplacée encore.
+**La mesure du rythme est périmée — et elle l'a toujours été.** Ce n'est pas un retard qu'on
+rattrape, c'est l'état normal d'un chiffre d'équilibrage dans un jeu qui bouge : chaque version
+qui touche à un prix la périme. La noter comme une dette permanente vaut mieux que la refaire
+en croyant en avoir fini.
+
+L'outil vit dans `tools/rythme.js` : `node tools/rythme.js 180` rend les trois premières heures.
+Ce qu'il ne dira jamais : rien sur le plaisir. Il mesure un débit, pas un rythme ressenti — un
+joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même courbe.
+
+**Deux cibles sont posées, et elles ne le sont pas au hasard :**
+
+- **L'œuf rare doit s'acheter vers trente millions**, et non vers ses trois cent mille. Le prix
+  n'est pas la question — la question est à quelle FORTUNE le joueur franchit l'ère. Trois cent
+  mille tombent trop tôt pour que le passage se sente, et l'ère commune n'a alors pas eu le
+  temps de dire ce qu'elle avait à dire.
+- **Le péage d'évolution des rares doit être FORT sans casser une partie chanceuse.** Une rare
+  tirée à un sur mille dans un œuf commun ne doit pas se retrouver bloquée derrière un péage
+  que le joueur ne peut pas payer avant des heures : elle occuperait un enclos sans rien
+  rapporter, et le cadeau deviendrait une punition. C'est la même famille de faute que
+  l'impasse sèche, sous une autre forme — **une bonne surprise ne doit jamais coûter plus
+  qu'elle ne rapporte.**
+
+Les deux se tiennent : si le passage à l'ère rare est reculé à trente millions, une rare
+précoce arrive encore plus tôt par rapport à la courbe, et le second point devient plus aigu.
+À traiter ensemble, jamais l'un sans l'autre.
 
 Ce qu'il ne dira jamais : rien sur le plaisir. Il mesure un débit, pas un rythme ressenti — un
 joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même courbe.
