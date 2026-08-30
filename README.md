@@ -2662,8 +2662,9 @@ qui ne touchent au DOM que si la valeur a réellement changé.
 deux colonnes défilent en interne. Ce n'est pas cosmétique — une barre de défilement rend le
 martèlement à la **barre espace** impraticable, puisque l'espace ferait avancer la page au
 lieu de cliquer. L'espace est d'ailleurs branché sur la scène, avec `preventDefault`, sauf
-quand le focus est sur un vrai contrôle : un menu déroulant garde son comportement normal, et
-se relâche après usage pour ne pas détourner les touches suivantes. Sur mobile la page défile
+quand le focus est sur une zone de saisie — le champ où l’on colle une sauvegarde. Tout bouton
+cliqué relâche son focus après usage, pour ne pas détourner les touches suivantes : c’était vrai
+des menus, ça l’est resté des [segments](#les-consignes-en-segments) qui les remplacent. Sur mobile la page défile
 normalement — le clavier n'y est pas le sujet.
 
 **Les réglages ont leur propre panneau**, séparé des sept boutons d'amélioration sous lesquels
