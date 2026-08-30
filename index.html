@@ -26,6 +26,13 @@
     <span class="purse-rente" id="rente" hidden></span>
   </div>
 
+  <!-- LES DEUX VUES. La collection a quitté la colonne latérale : cent cinquante cases
+       n'ont jamais eu leur place dans une colonne de vingt et un rem. -->
+  <nav class="onglets" aria-label="Vues">
+    <button type="button" class="onglet" data-vue="ferme" aria-pressed="true">Ferme</button>
+    <button type="button" class="onglet" data-vue="dex" aria-pressed="false">Encyclopédie</button>
+  </nav>
+
   <button type="button" id="btn-asc" class="asc-call" hidden>Ascension</button>
 
   <div class="tools">
@@ -305,19 +312,24 @@
     </div>
   </section>
 
-  <!-- LA COLLECTION. 150 cases dont trois remplies au début : c'est le panneau le plus haut
-       de la colonne, et celui qu'on consulte le moins souvent. Tout s'y replie — la section
-       entière par son titre, et chaque rareté par le sien. -->
-  <section class="panel" id="panel-collection">
-    <div class="panel-head">
-      <button type="button" class="panel-plier" data-plie="collection"><span class="plier">▾</span>
-        <h2>Collection</h2></button>
-      <span class="panel-meta" id="coll-meta"></span>
+</aside>
+
+<!-- L'ENCYCLOPÉDIE, en pleine page. À gauche une carte par lignée, à droite la fiche de celle
+     qu'on regarde : on ne quitte plus la liste pour lire, et on ne perd plus sa place. -->
+<section id="vue-dex" class="dex" hidden aria-label="Encyclopédie">
+  <div class="dex-liste">
+    <div class="dex-tete">
+      <span class="dex-meta" id="coll-meta"></span>
+      <div class="dex-filtres" id="dex-filtres"></div>
     </div>
     <div class="collection" id="collection"></div>
-  </section>
-
-</aside>
+  </div>
+  <div class="dex-fiche">
+    <h2 id="ency-title"></h2>
+    <p class="sav-dit" id="ency-dit"></p>
+    <div class="ency" id="ency"></div>
+  </div>
+</section>
 
 <!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :
      ce que je gagne, ce que je perds, avec quoi je repars. -->
@@ -349,19 +361,6 @@
 
 <!-- LES STATISTIQUES. Le contenu se fabrique en JS depuis une table : ajouter un compteur
      est une ligne, et la mise en page suit toute seule. -->
-<!-- L'ENCYCLOPÉDIE. Une fiche par lignée, ouverte depuis une case de la collection. Elle ne
-     sait RIEN d'avance : chaque ligne se remplit en rencontrant la chose. -->
-<div id="encyclopedie" class="asc" hidden>
-  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="ency-title">
-    <div class="asc-head">
-      <h2 id="ency-title"></h2>
-      <button type="button" class="asc-close" id="ency-close" title="Fermer">✕</button>
-    </div>
-    <p class="sav-dit" id="ency-dit"></p>
-    <div class="ency" id="ency"></div>
-  </div>
-</div>
-
 <div id="statistiques" class="asc" hidden>
   <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="stat-title">
     <div class="asc-head">

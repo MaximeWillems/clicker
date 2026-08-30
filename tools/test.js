@@ -516,13 +516,14 @@ scenario('dévoilement — l’escalier suit les prix, pas l’ordre des tables'
 scenario('interface — elle se déplie au rythme du joueur', () => {
   const jeu = neuf(); const s = jeu.state;
   const vu = id => !noeuds.get(id).hidden;
+  const ongletDex = () => document.querySelectorAll('.onglet').find(b => b.dataset.vue === 'dex');
   bete(jeu);
   s.pens = 1; s.incubators = 1; s.seen = {}; s.up = { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 };
   jeu.refresh();
   ok('pas de tri pour un seul enclos', !vu('strip-tri'));
   ok('pas de compteur « 1 / 1 »', !vu('compte-pen'));
   ok('pas de ligne de boosts sans automate', !vu('stage-boost'));
-  ok('pas de collection vide', !vu('panel-collection'));
+  ok('pas d’encyclopédie vide', ongletDex().hidden);
 
   s.pens = 2; s.incubators = 2; s.up.couveuse = 3;
   s.seen = { a: 1, b: 1, c: 1 };
@@ -530,12 +531,12 @@ scenario('interface — elle se déplie au rythme du joueur', () => {
   ok('le tri arrive au deuxième enclos', vu('strip-tri'));
   ok('les compteurs aussi', vu('compte-pen') && vu('compte-incub'));
   ok('la ligne de boosts avec le premier automate', vu('stage-boost'));
-  ok('la collection avec trois formes', vu('panel-collection'));
+  ok('l’encyclopédie avec trois formes', !ongletDex().hidden);
 
   s.tuto = false; s.pens = 1; s.incubators = 1; s.seen = {}; s.up.couveuse = 0;
   jeu.refresh();
   ok('mode histoire éteint : tout se relève d’un coup',
-     vu('strip-tri') && vu('compte-pen') && vu('stage-boost') && vu('panel-collection'));
+     vu('strip-tri') && vu('compte-pen') && vu('stage-boost') && !ongletDex().hidden);
 });
 
 /* ────────────────────────── l'album et l'ascension ────────────────────────── */
@@ -666,40 +667,80 @@ scenario('jetons — un palier de fortune tous les ×1000, à partir du premier 
   eq('un palier ne paie qu’une fois', s.asc.jetons, apres);
 });
 
-scenario('collection — tout se replie, et le pliage tient au rechargement', () => {
+scenario('encyclopédie — une carte par lignée, et deux vues qui se répondent', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
-  s.seen = { 'crapaud:1': 1, 'crabe:1': 1, 'loup:1': 1 };
+  s.seen = { 'crapaud:1': 1, 'crapaud:2': 1, 'crabe:1': 1, 'loup:1': 1 };
   jeu.refresh();
-  const coll = noeuds.get('collection');
-  const grilles = () => coll.children.filter(n => (n.className || '').includes('coll-grille'));
-  const raretes = [...new Set(jeu.LINES.map(l => l.rarity))].filter(jeu.rareteConnue);
 
-  /* LE RANG SECRET N'A NI SECTION NI CASES tant qu'on n'en a pas vu une bête. Quatre
-     grilles et cent trente-cinq cases, pas cinq et cent quarante-cinq : dix cases grises
-     annonceraient le rang aussi sûrement qu'une phrase. */
-  eq('les merveilleuses sont invisibles', raretes.length, 4);
-  eq('une grille par rareté connue', grilles().length, raretes.length);
-  eq('toutes les cases sont là', grilles().reduce((n, g) => n + g.children.length, 0),
-     jeu.LINES.filter(l => jeu.rareteConnue(l.rarity)).length * jeu.AGES.length);
-  ok('et le compteur ne compte pas ce qu’il cache',
-     /\/ 135$/.test(noeuds.get('coll-meta').textContent), noeuds.get('coll-meta').textContent);
-  ok('rien n’est replié au départ', grilles().every(g => !g.hidden));
+  const host = noeuds.get('collection');
+  const cartes = () => host.children.filter(n => (n.className || '').includes('dex-carte'));
+  const sections = () => host.children.filter(n => (n.className || '').includes('coll-head'));
+  const nom = c => c.children.map(x => x.textContent + x.children.map(y => y.textContent).join('')).join(' ');
+  const onglet = v => document.querySelectorAll('.onglet').find(b => b.dataset.vue === v);
 
-  jeu.plier(raretes[0]);
-  eq('le premier groupe se replie', grilles().filter(g => g.hidden).length, 1);
-  ok('mais ses cases existent toujours', grilles()[0].children.length > 0);
+  /* UNE CARTE PAR LIGNÉE, ET NON PLUS UNE CASE PAR FORME. La grille de cent cinquante cases
+     répondait bien à « combien m'en manque-t-il », mais elle ne se cliquait pas : cinq cases
+     voisines menaient à la même fiche, et aucune ne portait de nom. */
+  eq('une carte par lignée connue', cartes().length,
+     jeu.LINES.filter(l => jeu.rareteConnue(l.rarity)).length);
+  eq('un intertitre par rareté', sections().length, jeu.raretesConnues().length);
+  ok('le compteur compte les formes', /4 \/ 135 formes/.test(noeuds.get('coll-meta').textContent),
+     noeuds.get('coll-meta').textContent);
 
-  jeu.plier('collection');
-  ok('le panneau entier se replie', noeuds.get('panel-collection').classList.contains('plie'));
-  ok('le compteur reste lisible', (noeuds.get('coll-meta').textContent || '').includes('/'));
+  const crapaud = cartes().find(c => c.dataset.lignee === 'crapaud');
+  ok('une lignée croisée porte son nom', /Crapaud/.test(nom(crapaud)), nom(crapaud));
+  eq('et ses cinq pastilles d’âge',
+     crapaud.children.filter(x => (x.className || '').includes('dex-txt'))[0]
+            .children.filter(x => (x.className || '').includes('dex-pips'))[0].children.length, 5);
+  const kraken = cartes().find(c => c.dataset.lignee === 'kraken');
+  ok('une lignée jamais vue n’a pas de nom', /？/.test(nom(kraken)), nom(kraken));
+  ok('et se marque inconnue', kraken.className.includes('inconnue'));
 
-  jeu.plier('collection');
-  ok('il se rouvre', !noeuds.get('panel-collection').classList.contains('plie'));
-  eq('et le pliage du groupe a tenu', grilles().filter(g => g.hidden).length, 1);
+  /* LES FILTRES REMPLACENT LE PLIAGE. Replier une rareté cachait ce qu'on ne voulait pas
+     voir ; un filtre montre ce qu'on cherche, ce qui n'est pas la même chose. */
+  const chips = () => noeuds.get('dex-filtres').children;
+  eq('deux filtres, plus un par rareté connue',
+     chips().length, 2 + jeu.raretesConnues().length);
+  eq('« tout » est actif au départ', chips()[0].getAttribute('aria-pressed'), 'true');
 
-  jeu.save(); jeu.load(); jeu.refresh();
-  ok('le pliage traverse un rechargement', jeu.state.plie[raretes[0]] === true);
+  jeu.dexFiltre = 'rare';
+  jeu.refresh();
+  ok('le filtre ne garde que sa rareté',
+     cartes().every(c => jeu.LINE_BY_KEY[c.dataset.lignee].rarity === 'rare'));
+  eq('et un seul intertitre', sections().length, 1);
+
+  jeu.dexFiltre = 'reste';
+  jeu.refresh();
+  ok('« incomplètes » écarte ce qui est plein',
+     cartes().every(c => jeu.formesVues(c.dataset.lignee) < jeu.AGES.length));
+  ok('et garde ce qui manque', cartes().some(c => c.dataset.lignee === 'crapaud'));
+
+  jeu.dexFiltre = 'tout';
+  jeu.refresh();
+
+  /* LES DEUX VUES. La ferme d'un côté, l'encyclopédie de l'autre, et l'onglet ne se
+     sauvegarde pas : on ouvre le jeu sur sa ferme, toujours. */
+  eq('on démarre sur la ferme', jeu.vue, 'ferme');
+  eq('et la vue de l’encyclopédie est cachée', noeuds.get('vue-dex').hidden, true);
+  jeu.ouvrirVue('dex');
+  eq('la bascule marche', jeu.vue, 'dex');
+  eq('la vue s’ouvre', noeuds.get('vue-dex').hidden, false);
+  eq('l’onglet se marque', onglet('dex').getAttribute('aria-pressed'), 'true');
+  eq('et l’autre se relâche', onglet('ferme').getAttribute('aria-pressed'), 'false');
+  jeu.ouvrirVue('ferme');
+  eq('et retour', noeuds.get('vue-dex').hidden, true);
+
+  /* CLIQUER UNE CARTE DÉPLACE LE REGARD, elle n'ouvre plus un écran modal : la fiche vit à
+     côté de la liste. */
+  jeu.encyLignee = 'crapaud';
+  jeu.refresh();
+  eq('la fiche suit', noeuds.get('ency-title').textContent, 'Crapaud');
+  ok('et la carte se marque choisie',
+     cartes().find(c => c.dataset.lignee === 'crapaud').className.includes('choisie'));
+
+  // la collection n'est plus un panneau de la colonne : elle ne se replie plus
+  ok('elle a quitté la liste des panneaux', !jeu.PANNEAUX.includes('collection'));
 });
 
 scenario('écran — les six panneaux se replient, et ça tient au rechargement', () => {
@@ -1722,9 +1763,9 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   eq('les quatre autres sont connues', jeu.raretesConnues().length, 4);
 
   // 1 · la collection
-  const grilles = () => noeuds.get('collection').children
-    .filter(n => (n.className || '').includes('coll-grille'));
-  eq('pas de cinquième section', grilles().length, 4);
+  const sections = () => noeuds.get('collection').children
+    .filter(n => (n.className || '').includes('coll-head'));
+  eq('pas de cinquième section', sections().length, 4);
   // 2 · le dénominateur
   eq('et le compte s’arrête à 135', jeu.formesVisibles(), 135);
   // 3 · le trophée
@@ -1764,7 +1805,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   jeu.verifierTrophees();
   jeu.refresh();
   eq('le rang est connu', jeu.rareteConnue('merveilleuse'), true);
-  eq('la cinquième section apparaît', grilles().length, 5);
+  eq('la cinquième section apparaît', sections().length, 5);
   eq('le compte monte à 150', jeu.formesVisibles(), 150);
   ok('le trophée est pris', !!s.trophees.merveille);
   ok('les statistiques les comptent',

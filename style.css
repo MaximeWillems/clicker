@@ -302,6 +302,29 @@ body.tenu .subject { animation: appel 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { body.tenu .subject { animation: none; } }
 
 body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "note" "main"; }
+
+/* ── LES DEUX VUES ─────────────────────────────────────────────────────────────
+   L'encyclopédie prend toute la largeur : elle n'a jamais eu sa place dans une colonne de
+   vingt et un rem. La ferme disparaît alors entièrement — pas de demi-écran partagé, on
+   regarde une chose à la fois. */
+body.vue-dex {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "top" "note" "main";
+}
+body.vue-dex .stage-col, body.vue-dex .side, body.vue-dex .dial { display: none; }
+#vue-dex { grid-area: main; }
+
+.onglets { display: flex; gap: 3px; }
+.onglet {
+  font-family: var(--f-ui); font-size: 0.8rem;
+  background: none; color: var(--soft);
+  border: 1px solid transparent; border-radius: 4px;
+  padding: 0.3rem 0.75rem; cursor: pointer;
+}
+.onglet:hover { color: var(--ink); }
+.onglet[aria-pressed="true"] {
+  color: var(--ink); background: var(--raised); border-color: var(--rule);
+}
 body.debut .side,
 body.debut .strip-wrap,
 body.debut .foot { display: none; }
@@ -725,19 +748,6 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   border: 1px solid var(--rule-hi); border-radius: 3px; padding: 0.35rem 0.4rem;
 }
 
-/* La collection n'est plus une grille unique : chaque rareté a la sienne, ce qui permet de
-   la replier d'un `hidden` plutôt qu'en cachant vingt cases une à une. */
-.collection { display: flex; flex-direction: column; }
-.coll-grille { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
-.coll-head {
-  display: flex; align-items: center; gap: 0.35rem; width: 100%;
-  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.11em;
-  text-transform: uppercase; margin: 0.55rem 0 0.25rem; padding: 0;
-  background: none; border: 0; cursor: pointer; text-align: left;
-  color: var(--rar, var(--faint));
-}
-.coll-head:first-child { margin-top: 0; }
-.coll-head:hover { color: var(--ink); }
 .plier { font-size: 0.7rem; line-height: 1; width: 0.7em; }
 
 /* LE TITRE D'UN PANNEAU EST UN BOUTON, et lui seul : le sélecteur de lots vit dans le même
@@ -757,20 +767,6 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   padding-bottom: 0; margin-bottom: 0; border-bottom: 0;
 }
 .panel.plie { padding-bottom: 0.9rem; }
-/* UNE CASE EST UN BOUTON depuis qu'elle ouvre la fiche de sa lignée : il faut donc lui
-   retirer ce qu'un navigateur pose de lui-même — bordure, fond, police. Le surlignage passe
-   par `outline` et non par `border` : une bordure qui apparaît décalerait les cent cinquante
-   cases de la grille d'un pixel. */
-.cell {
-  aspect-ratio: 1; display: grid; place-items: center;
-  background: var(--sunken); border: 0; padding: 0; border-radius: 2px;
-  font: inherit; font-size: 1.05rem; color: var(--faint); cursor: pointer;
-}
-.cell:hover { outline: 1px solid var(--rule-hi); }
-.cell:focus-visible { outline: 1px solid var(--accent); }
-.cell.got { background: var(--raised); box-shadow: inset 0 0 0 1px var(--rar, transparent); }
-.cell.got.t5 { box-shadow: inset 0 0 0 1px var(--rar, transparent), inset 0 0 8px -3px var(--rar, transparent); }
-.cell.locked::after { content: "·"; font-family: var(--f-num); color: var(--rule-hi); }
 
 /* ── rareté : une variable, portée par la classe de la lignée ── */
 .rar-commune  { --rar: var(--r-commune); }
@@ -913,15 +909,14 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
    Une image fait exactement 1em : tout ce qui pilotait la taille de l'emoji —
    font-size, niveau, âge, engraissement — pilote la sienne à l'identique.
    Un dessin remplace donc un emoji sans qu'aucun autre calcul ne bouge. */
-.subject-glyph img, .thumb-glyph img, .cell img {
+.subject-glyph img, .thumb-glyph img, .dex-glyphe img, .ency-glyphe img {
   width: 1em; height: 1em;
   display: block;
   object-fit: contain;
   image-rendering: auto;
 }
 /* pour du pixel art, décommenter :
-.subject-glyph img, .thumb-glyph img, .cell img { image-rendering: pixelated; } */
-.cell img { width: 1.05em; height: 1.05em; }
+.subject-glyph img, .thumb-glyph img, .dex-glyphe img { image-rendering: pixelated; } */
 
 /* ── l'album et l'ascension ──────────────────────────────────────────────
    Une carte est une capsule : la bête telle qu'elle était. On la regarde autant
@@ -1082,6 +1077,86 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-family: var(--f-num); font-size: 0.9rem; color: var(--ink);
   font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
 }
+
+/* ── LA VUE DE L'ENCYCLOPÉDIE ──────────────────────────────────────────
+   Maître-détail : la liste à gauche, la fiche à droite. On ne quitte plus la liste pour lire,
+   et on ne perd plus sa place — c'était tout le défaut de l'écran modal. Sous 62 rem les deux
+   s'empilent, la fiche passant devant. */
+.dex {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+  gap: 1.25rem; min-height: 0; overflow: hidden;
+}
+.dex-liste { display: flex; flex-direction: column; min-height: 0; }
+.dex-fiche {
+  overflow-y: auto; min-height: 0;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 0.9rem 1rem 1.2rem;
+}
+.dex-fiche h2 {
+  font-family: var(--f-name); font-weight: 400; font-size: 1.15rem;
+  color: var(--ink); margin: 0 0 0.2rem;
+}
+@media (max-width: 62rem) {
+  .dex { grid-template-columns: minmax(0, 1fr); overflow: visible; }
+  .dex-fiche { order: -1; }
+}
+
+.dex-tete {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.5rem 0.8rem;
+  padding-bottom: 0.6rem; margin-bottom: 0.2rem;
+  border-bottom: 1px solid var(--rule);
+}
+.dex-meta {
+  font-family: var(--f-num); font-size: 0.72rem; color: var(--soft);
+  font-variant-numeric: tabular-nums;
+}
+.dex-filtres { display: flex; flex-wrap: wrap; gap: 3px; margin-left: auto; }
+.dex-filtre {
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.04em;
+  background: none; color: var(--faint);
+  border: 1px solid var(--rule); border-radius: 3px;
+  padding: 0.12rem 0.45rem; cursor: pointer;
+}
+.dex-filtre:hover { color: var(--ink); border-color: var(--rule-hi); }
+.dex-filtre.actif { color: var(--accent); border-color: var(--jade-dim); background: var(--jade-dim); }
+
+/* LA LISTE elle-même : une grille de cartes, coupée par les intertitres de rareté. */
+.collection {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 4px; overflow-y: auto; min-height: 0; padding: 0.5rem 0.2rem 1rem 0;
+  align-content: start;
+}
+.collection .coll-head {
+  grid-column: 1 / -1; margin: 0.7rem 0 0.1rem;
+  font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--rar, var(--faint));
+}
+.collection .coll-head:first-child { margin-top: 0; }
+
+.dex-carte {
+  display: flex; align-items: center; gap: 0.55rem; text-align: left;
+  background: var(--surface); color: inherit; font: inherit;
+  border: 1px solid var(--rule); border-left: 2px solid var(--rar, var(--rule-hi));
+  border-radius: 4px; padding: 0.4rem 0.55rem; cursor: pointer;
+}
+.dex-carte:hover { border-color: var(--rule-hi); border-left-color: var(--rar, var(--rule-hi)); }
+.dex-carte:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dex-carte.inconnue { border-left-color: var(--rule); opacity: 0.45; }
+.dex-carte.choisie { background: var(--raised); border-color: var(--accent); }
+/* une lignée complète se voit sans qu'on compte : c'est la seule récompense de la page */
+.dex-carte.pleine { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rar) 30%, transparent); }
+.dex-glyphe { font-size: 1.45rem; line-height: 1; flex: none; }
+.dex-glyphe img { width: 1em; height: 1em; display: block; object-fit: contain; }
+.dex-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.dex-nom {
+  font-family: var(--f-name); font-weight: 400; font-size: 0.8rem; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dex-pips { display: flex; gap: 2px; }
+.dex-pip {
+  width: 9px; height: 3px; border-radius: 1px; background: var(--rule-hi);
+}
+.dex-pip.on { background: var(--rar, var(--accent)); }
 
 /* ── L'ENCYCLOPÉDIE ────────────────────────────────────────────────
    Un carnet, jamais un manuel : tout ce qui s'affiche ici a été rencontré. D'où des blocs qui

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.9.0 · sauvegarde v18 · 10 lignées illustrées sur 30
+    aujourd'hui : beta 1.10.0 · sauvegarde v18 · 10 lignées illustrées sur 30
 
 ---
 
@@ -64,7 +64,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le nid et la pause** | beta 1.0, 1.8 | confier une bête est-il un geste ? | oui — et la pause n'est plus nécessaire depuis qu'une bête confiée quitte la bande |
 | **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
-| **L'encyclopédie** | beta 1.9 | la collection peut-elle dire autre chose que « combien m'en manque-t-il » ? | oui — une fiche par lignée, qui ne sait que ce qu'on a rencontré |
+| **L'encyclopédie** | beta 1.9, 1.10 | la collection peut-elle dire autre chose que « combien m'en manque-t-il » ? | oui — une fiche par lignée, dans une vue à elle |
 
 ### La ligne d'arrivée de l'alpha
 

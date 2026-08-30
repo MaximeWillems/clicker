@@ -26,7 +26,7 @@
 
    Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
    remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.9.0';
+const VERSION = 'beta 1.10.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3547,73 +3547,124 @@ function peindreVignette(t, s) {
   }
 }
 
-/* Plie ou déplie une partie de la collection. `cle` vaut 'tout' pour la section entière, ou
-   une rareté pour un seul groupe. */
+/* Plie ou déplie un panneau de la colonne. La collection n'en fait plus partie depuis qu'elle
+   a sa propre vue : ses raretés se filtrent au lieu de se replier. */
 function plier(cle) {
   state.plie[cle] = !state.plie[cle];
-  collSig = null;               // la signature porte l'état de pliage : on force le redessin
   refresh();
   save();
 }
 const estPlie = cle => !!(state.plie && state.plie[cle]);
 
+/* ── L'ENCYCLOPÉDIE : LA LISTE ─────────────────────────────────────────────────
+   UNE CARTE PAR LIGNÉE, ET NON PLUS UNE CASE PAR FORME. La grille de cent cinquante cases
+   répondait à une seule question — « combien m'en manque-t-il » — et le faisait bien, mais
+   elle ne se cliquait pas : cinq cases voisines menaient à la même fiche, et aucune ne portait
+   de nom.
+
+   Trente cartes nommées, chacune avec ses cinq pastilles d'âge, répondent aux deux : la texture
+   du remplissage se lit toujours d'un coup d'œil, et chaque carte est une destination.
+
+   LES FILTRES REMPLACENT LE PLIAGE. Replier une rareté cachait ce qu'on ne voulait pas voir ;
+   un filtre montre ce qu'on cherche, ce qui n'est pas la même chose. « Incomplètes » est celui
+   qui sert vraiment — c'est la question qu'on se pose en ouvrant cette page. */
+let dexFiltre = 'tout';
+
+const DEX_FILTRES = () => [{ cle: 'tout', nom: 'tout' }, { cle: 'reste', nom: 'incomplètes' }]
+  .concat(raretesConnues().map(r => ({ cle: r, nom: RARITY[r].plur })));
+
+const formesVues = cle => AGES.reduce((n, a, i) => n + (state.seen[cle + ':' + (i + 1)] ? 1 : 0), 0);
+
 function renderCollection() {
-  /* La signature porte AUSSI le pliage : sans ça, replier un groupe ne redessinerait rien,
-     puisque le nombre de formes rencontrées n'a pas bougé. */
-  const sig = seenCount() + '|' + LINES.map(l => l.rarity)
-    .filter((r, i, t) => t.indexOf(r) === i).map(r => estPlie(r) ? 1 : 0).join('') +
-    '|' + raretesConnues().join(',');
+  const filtres = DEX_FILTRES();
+  if (!filtres.some(f => f.cle === dexFiltre)) dexFiltre = 'tout';
+
+  const visibles = LINES.filter(l => rareteConnue(l.rarity))
+    .filter(l => dexFiltre === 'tout' ? true
+               : dexFiltre === 'reste' ? formesVues(l.key) < AGES.length
+               : l.rarity === dexFiltre);
+
+  const sig = seenCount() + '|' + dexFiltre + '|' + raretesConnues().join(',') + '|' + encyLignee;
   if (sig === collSig) return;
   collSig = sig;
 
+  // les chips de filtre, rebâties avec la liste : un rang secret peut en ajouter une
+  const bandeau = $('dex-filtres');
+  bandeau.textContent = '';
+  for (const f of filtres) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'dex-filtre' + (f.cle === dexFiltre ? ' actif' : '');
+    b.dataset.filtre = f.cle;
+    b.setAttribute('aria-pressed', String(f.cle === dexFiltre));
+    b.textContent = f.nom;
+    bandeau.appendChild(b);
+  }
+
   const host = $('collection');
   host.textContent = '';
-  let rarity = null, grille = null;
-  for (const line of LINES) {
-    // un rang secret n'a ni section ni cases tant qu'on n'en a pas rencontré une bête
-    if (!rareteConnue(line.rarity)) continue;
+  let rarity = null;
+  for (const line of visibles) {
     // un intertitre à chaque changement de rareté : c'est la hiérarchie, rendue lisible
     if (line.rarity !== rarity) {
       rarity = line.rarity;
-      const cle = rarity;
-      const h = document.createElement('button');
-      h.type = 'button';
+      const h = document.createElement('p');
       h.className = 'coll-head rar-' + rarity;
-      h.setAttribute('aria-expanded', String(!estPlie(cle)));
-      h.innerHTML = '<span class="plier" aria-hidden="true"></span><span class="coll-nom"></span>';
-      h.querySelector('.plier').textContent = estPlie(cle) ? '▸' : '▾';
-      /* LE TITRE DIT CE QUI DISTINGUE LA SECTION, pas ce qu’elle a en commun avec la
-         voisine. La merveilleuse vaut autant qu’une mythique : afficher « ×15000 » deux
-         fois de suite ressemble à un bug, alors que ce qui la sépare tient en trois mots. */
+      /* LE TITRE DIT CE QUI DISTINGUE LA SECTION, pas ce qu'elle a en commun avec la voisine.
+         La merveilleuse vaut autant qu'une mythique : afficher « ×15000 » deux fois de suite
+         ressemble à un bug, alors que ce qui la sépare tient en trois mots. */
       const achetable = EGG_KINDS.some(e => e.price && e.rarity === rarity);
-      h.querySelector('.coll-nom').textContent = RARITY[rarity].name +
+      h.textContent = RARITY[rarity].name +
         (achetable ? ' · ×' + RARITY[rarity].mult : ' · ne s’achète pas');
-      h.addEventListener('click', () => plier(cle));
       host.appendChild(h);
-      grille = document.createElement('div');
-      grille.className = 'coll-grille';
-      grille.hidden = estPlie(cle);
-      host.appendChild(grille);
     }
-    const dedans = grille;
-    AGES.forEach((age, i) => {
-      const a = i + 1, got = !!state.seen[line.key + ':' + a];
-      /* CHAQUE CASE OUVRE LA FICHE DE SA LIGNÉE. La grille répond depuis toujours à
-         « combien m'en manque-t-il » ; elle ne répondait à rien d'autre. Une case cliquable
-         est le seul endroit où la question « et celle-là, qu'est-ce que j'en sais ? » puisse
-         se poser sans ajouter un menu. */
-      const cell = document.createElement('button');
-      cell.type = 'button';
-      cell.dataset.lignee = line.key;
-      cell.className = 'cell rar-' + line.rarity + (got ? ' got' : ' locked') +
-                       (a === AGES.length ? ' t5' : '');
-      cell.title = (got ? line.forms[i][0] : line.name + ' — ' + age.nom) +
-                   ' (' + RARITY[line.rarity].name + ')';
-      if (got) setCreature(cell, artAt(line.key, a), line.forms[i][1]);
-      dedans.appendChild(cell);
+
+    const vus = formesVues(line.key);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.lignee = line.key;
+    b.className = 'dex-carte rar-' + line.rarity + (vus ? ' connue' : ' inconnue') +
+                  (line.key === encyLignee ? ' choisie' : '') +
+                  (vus === AGES.length ? ' pleine' : '');
+    b.title = vus ? line.name + ' — ' + vus + ' / ' + AGES.length + ' formes'
+                  : 'Jamais rencontrée (' + RARITY[line.rarity].name + ')';
+
+    const g = document.createElement('span');
+    g.className = 'dex-glyphe';
+    /* LE GLYPHE EST CELUI DE LA DERNIÈRE FORME VUE, et non du premier âge : c'est celle qu'on
+       a le plus de mal à obtenir, donc celle dont on se souvient. */
+    if (vus) {
+      let dernier = 0;
+      AGES.forEach((a, i) => { if (state.seen[line.key + ':' + (i + 1)]) dernier = i; });
+      setCreature(g, artAt(line.key, dernier + 1), line.forms[dernier][1]);
+    } else g.textContent = '·';
+
+    const t = document.createElement('span');
+    t.className = 'dex-txt';
+    const n = document.createElement('b');
+    n.className = 'dex-nom';
+    n.textContent = vus ? line.name : '？';
+    const pips = document.createElement('i');
+    pips.className = 'dex-pips';
+    AGES.forEach((a, i) => {
+      const p = document.createElement('span');
+      p.className = 'dex-pip' + (state.seen[line.key + ':' + (i + 1)] ? ' on' : '');
+      pips.appendChild(p);
     });
+    t.append(n, pips);
+    b.append(g, t);
+    host.appendChild(b);
   }
-  $('coll-meta').textContent = seenCount() + ' / ' + formesVisibles();
+
+  if (!visibles.length) {
+    const v = document.createElement('p');
+    v.className = 'ency-vide';
+    v.textContent = dexFiltre === 'reste'
+      ? 'Tout est complet. Il ne te manque rien.' : 'Rien à montrer ici.';
+    host.appendChild(v);
+  }
+
+  setText($('coll-meta'), seenCount() + ' / ' + formesVisibles() + ' formes');
 }
 
 /* ─────────────────────────────────────────────
@@ -4857,7 +4908,7 @@ function renderTuto() {
 
   /* ── CE QUI N'A PAS ENCORE DE SENS NE S'AFFICHE PAS ────────────────────────
      La vue de l'œuf tombe à la première éclosion, et tout le reste arrivait d'un coup : trois
-     boutons de tri pour une seule bête, une collection de 135 cases vides, une ligne de boosts
+     boutons de tri pour une seule bête, une encyclopédie de trente fiches vides, une ligne de boosts
      qui annonce « rien sans toi » pendant que la professeure vient de le dire, et un pied de
      page sur la sauvegarde locale. Beaucoup de détails, aucun utilisable.
 
@@ -4876,10 +4927,14 @@ function renderTuto() {
      premier automate — c'est-à-dire au moment exact où elle a quelque chose à multiplier. */
   $('stage-boost').hidden = jeune && !lvl('couveuse') && !lvl('eleveur') && !lvl('mangeoire');
 
-  /* La collection montre l'échelle du jeu — 135 cases dont trois remplies — et c'est sa
-     valeur. Mais à la première seconde elle ne montre que du vide : on attend d'avoir
-     rencontré de quoi voir une progression. */
-  $('panel-collection').hidden = jeune && seenCount() < 3;
+  /* L'ONGLET DE L'ENCYCLOPÉDIE MONTRE L'ÉCHELLE DU JEU — trente lignées dont une rencontrée —
+     et c'est sa valeur. Mais à la première seconde il n'ouvre que sur du vide : on attend
+     d'avoir croisé de quoi voir une progression. Et s'il disparaît sous les pieds du joueur,
+     on le ramène à sa ferme plutôt que de le laisser sur une page qui n'existe plus. */
+  const dexPret = !jeune || seenCount() >= 3;
+  for (const b of document.querySelectorAll('.onglet'))
+    if (b.dataset.vue === 'dex') b.hidden = !dexPret;
+  if (!dexPret && vue === 'dex') ouvrirVue('ferme');
 
   // le pied de page parle du prototype, pas du jeu : il attend qu'on ait de quoi acheter
   $('foot').hidden = jeune && !estDevoile('egg-commun');
@@ -4891,6 +4946,7 @@ function refresh() {
   renderCollection();
   renderAlbum();
   renderStage();
+  renderEncyclopedie();
   renderPension();
   syncPanneaux();
   tickView();
@@ -4905,13 +4961,13 @@ function refresh() {
    par le jeu. Elles décrivent la forme du socle, pas encore son comportement. */
 
 /* LES PANNEAUX SE REPLIENT TOUS. Sur un portable — 768 pixels de haut — la colonne latérale
-   fait trois écrans à elle seule : boutique, améliorations, les primes, réglages, 145 cases
-   de collection, album. Aucune compaction ne rattrape ça, parce que le problème n'est pas la
+   fait trois écrans à elle seule : boutique, améliorations, les primes, pension, réglages,
+   album. Aucune compaction ne rattrape ça, parce que le problème n'est pas la
    densité mais le NOMBRE de choses affichées en même temps.
 
    Fermer ce qu'on ne regarde pas est la seule réponse qui tienne à toutes les tailles d'écran,
    et elle a un second mérite : c'est le joueur qui décide, pas un point de rupture. */
-const PANNEAUX = ['boutique', 'autos', 'primes', 'pension', 'reglages', 'collection', 'album'];
+const PANNEAUX = ['boutique', 'autos', 'primes', 'pension', 'reglages', 'album'];
 
 function syncPanneaux() {
   for (const cle of PANNEAUX) {
@@ -5443,6 +5499,28 @@ function poserAuNid(id, cote) {
   return true;
 }
 
+/* ── LES DEUX VUES ─────────────────────────────────────────────────────────────
+   La collection a quitté la colonne latérale. Cent cinquante cases n'ont jamais eu leur place
+   dans une colonne de vingt et un rem : elles y tenaient repliées, ce qui revient à dire
+   qu'elles n'y étaient pas. Et depuis la 1.9.0, chaque lignée a une FICHE — un objet qu'on
+   lit, pas une case qu'on compte, et qui n'entre dans aucune colonne.
+
+   D'où deux vues et un onglet. La ferme d'un côté, l'encyclopédie de l'autre, en pleine
+   largeur toutes les deux.
+
+   L'ONGLET NE SE SAUVEGARDE PAS. On ouvre le jeu sur sa ferme, toujours : revenir le lendemain
+   sur une page de collection serait revenir à côté de sa partie. */
+let vue = 'ferme';
+
+function ouvrirVue(v) {
+  vue = v === 'dex' ? 'dex' : 'ferme';
+  document.body.classList.toggle('vue-dex', vue === 'dex');
+  $('vue-dex').hidden = vue !== 'dex';
+  for (const b of document.querySelectorAll('.onglet'))
+    b.setAttribute('aria-pressed', String(b.dataset.vue === vue));
+  refresh();
+}
+
 let pensionSig = '', refsPension = null;
 
 /* LE PANNEAU SE BÂTIT UNE FOIS, ET SE REPEINT ENSUITE. Il se reconstruisait à chaque `refresh`,
@@ -5683,7 +5761,7 @@ function renderPension() {
    qu'un couple a donné cette lignée ; le chiffre affiché est celui d'aujourd'hui, primes
    comprises. Un joueur qui achète le Sang dominant voit ses fiches se mettre à jour, ce qui
    est vrai — et il ne voit rien pour un couple qu'il n'a jamais essayé, ce qui l'est aussi. */
-let encyLignee = null;
+let encyLignee = null, encySig = '';
 
 // Une rangée de pastilles : ce qu'on a croisé, et combien de fois. Rien d'autre.
 function encyRangee(hote, titre, table, noms, vus) {
@@ -5716,7 +5794,17 @@ function encyRangee(hote, titre, table, noms, vus) {
 
 function renderEncyclopedie() {
   const cle = encyLignee;
-  if (!cle || !LINE_BY_KEY[cle]) return;
+  if (!cle || !LINE_BY_KEY[cle]) { setText($('ency-title'), ''); setText($('ency-dit'), ''); return; }
+
+  /* MAÎTRE-DÉTAIL VEUT UNE SIGNATURE, comme partout ailleurs. La fiche vit dans la page depuis
+     qu'elle a quitté l'écran modal : sans garde, elle se rebâtirait dix fois par seconde — le
+     défaut de la 1.8.2, qu'on ne refait pas deux fois. Le carnet de la lignée y entre en
+     entier, ce qui est peu de chose pour une seule entrée, et le compte des primes avec :
+     les pourcentages de la pension se recalculent, donc ils bougent quand on achète. */
+  const sig = cle + '|' + seenCount() + '|' + Object.keys(state.primes || {}).length +
+              '|' + JSON.stringify(dexVu(cle) || 0);
+  if (sig === encySig) return;
+  encySig = sig;
   const ligne = LINE_BY_KEY[cle];
   const d = dexVu(cle);
   const ages = AGES.map((a, i) => !!state.seen[cle + ':' + (i + 1)]);
@@ -6033,11 +6121,10 @@ function bindTools() {
     jugerSav('');
   };
   const ouvrirStats = v => { $('statistiques').hidden = !v; if (v) renderStats(); };
-  const ouvrirFiche = cle => {
-    encyLignee = cle || null;
-    $('encyclopedie').hidden = !cle;
-    if (cle) renderEncyclopedie();
-  };
+  /* CHOISIR UNE LIGNÉE, PLUTÔT QU'OUVRIR UNE FICHE. La fiche vivait dans un écran modal ; elle
+     vit maintenant à côté de la liste, et cliquer une carte ne fait que déplacer le regard.
+     C'est la différence entre feuilleter et ouvrir-refermer trente fois. */
+  const choisirLignee = cle => { encyLignee = cle || null; refresh(); };
   /* Un seul écouteur pour les six : le bouton porte sa clé, ce qui évite six lignes qui
      disent la même chose et une septième oubliée le jour où un panneau s'ajoute. */
   for (const b of document.querySelectorAll('.panel-plier')) {
@@ -6171,13 +6258,18 @@ function bindTools() {
      renderCollection les reconstruit dès qu'une forme est rencontrée, et rattacher cent
      cinquante écouteurs à chaque redessin les multiplierait sans jamais les retirer. */
   $('collection').addEventListener('click', e => {
-    const c = e.target.closest && e.target.closest('.cell');
-    if (c && c.dataset.lignee) ouvrirFiche(c.dataset.lignee);
+    const c = e.target.closest && e.target.closest('.dex-carte');
+    if (c && c.dataset.lignee) choisirLignee(c.dataset.lignee);
   });
-  $('ency-close').addEventListener('click', () => ouvrirFiche(null));
-  $('encyclopedie').addEventListener('click', e => {
-    if (e.target === $('encyclopedie')) ouvrirFiche(null);
+  $('dex-filtres').addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.dex-filtre');
+    if (!b) return;
+    dexFiltre = b.dataset.filtre;
+    blip(440, 0.04, 'sine', 0.03);
+    refresh();
   });
+  for (const b of document.querySelectorAll('.onglet'))
+    b.addEventListener('click', () => ouvrirVue(b.dataset.vue));
 
   $('btn-stat').addEventListener('click', () => ouvrirStats(true));
   $('stat-close').addEventListener('click', () => ouvrirStats(false));

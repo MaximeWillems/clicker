@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.9.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 1.10.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.9.0** | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
+| **beta 1.10.0** | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
+| beta 1.9.0 | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
 | beta 1.8.2 | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
 | beta 1.8.1 | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
 | beta 1.8.0 | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
@@ -291,7 +292,7 @@ l'ascension, et elle ne peut pas revenir en arrière.
 #### Ce qui n'a pas encore de sens ne s'affiche pas
 
 La vue de l'œuf tombait à la première éclosion et **tout le reste arrivait d'un coup** : trois
-boutons de tri pour une seule bête, une collection de 150 cases dont une remplie, une ligne de
+boutons de tri pour une seule bête, une encyclopédie de trente fiches dont une remplie, une ligne de
 boosts annonçant des multiplicateurs qu'on n'a pas, des compteurs « 1 / 1 » qui ne comptent
 rien, et un pied de page sur la sauvegarde locale. Beaucoup de détails, aucun utilisable.
 
@@ -1906,6 +1907,49 @@ ligne se remplit en rencontrant la chose.
     À la pension — 1 couple connu
       Loup × Ours    50 % · 1 h 00 m · sorti 62 fois
 
+#### Deux vues, un onglet
+
+La collection a **quitté la colonne latérale**. Cent cinquante cases n'ont jamais eu leur place
+dans une colonne de vingt et un rem : elles y tenaient *repliées*, ce qui revient à dire
+qu'elles n'y étaient pas. Et depuis la 1.9.0 chaque lignée a une **fiche** — un objet qu'on
+lit, pas une case qu'on compte, et qui n'entre dans aucune colonne.
+
+D'où un onglet dans le bandeau : **Ferme** et **Encyclopédie**, chacune en pleine largeur. La
+ferme disparaît entièrement quand on passe à l'autre — pas de demi-écran partagé, on regarde
+une chose à la fois.
+
+**L'onglet ne se sauvegarde pas** : on ouvre le jeu sur sa ferme, toujours. Revenir le lendemain
+sur une page de collection serait revenir à côté de sa partie. Et il n'apparaît qu'après trois
+formes rencontrées, comme le panneau qu'il remplace — s'il disparaît sous les pieds du joueur,
+on le ramène à sa ferme plutôt que de le laisser sur une page qui n'existe plus.
+
+#### Une carte par lignée, et non plus une case par forme
+
+La grille de cent cinquante cases répondait bien à *« combien m'en manque-t-il »*, mais elle ne
+se cliquait pas : cinq cases voisines menaient à la même fiche, et **aucune ne portait de nom**.
+
+Trente cartes nommées, chacune avec ses cinq pastilles d'âge, répondent aux deux : la texture du
+remplissage se lit toujours d'un coup d'œil, et chaque carte est une destination.
+
+    COMMUNE · ×1
+      🐸 Crapaud         ●●●○○
+      ·  ？               ○○○○○
+      🦎 Lézard          ●○○○○
+
+Le glyphe est celui de la **dernière forme vue**, et non du premier âge : c'est celle qu'on a
+le plus de mal à obtenir, donc celle dont on se souvient. Une lignée complète se marque, sans
+qu'on ait à compter les pastilles.
+
+#### Les filtres remplacent le pliage
+
+Replier une rareté cachait ce qu'on ne voulait pas voir ; un filtre montre ce qu'on cherche, ce
+qui n'est pas la même chose. **« Incomplètes »** est celui qui sert vraiment — c'est la question
+qu'on se pose en ouvrant cette page.
+
+Et la fiche vit désormais **à côté de la liste**, en maître-détail : cliquer une carte déplace
+le regard au lieu d'ouvrir un écran modal. On ne quitte plus la liste pour lire, et on ne perd
+plus sa place. Sous 62 rem les deux s'empilent, la fiche passant devant.
+
 #### Ce qu'elle montre, et ce qu'elle tait
 
 **Une teinte jamais croisée sur un loup n'apparaît pas** — pas même en silhouette. Seul le
@@ -1937,17 +1981,17 @@ fiche annonce.
 
 ### Tout se replie
 
-**Les six panneaux de la colonne latérale se replient par leur titre** : boutique,
-améliorations, primes, réglages, collection, album. Et **dans la collection, chaque rareté se
-replie séparément**.
+**Les panneaux de la colonne latérale se replient par leur titre** : boutique, améliorations,
+primes, pension, réglages, album. La collection, elle, a quitté la colonne — elle a
+[sa propre vue](#deux-vues-un-onglet).
 
 C'est la réponse principale au défilement sur un petit écran, et la seule qui tienne à toutes
 les tailles : le problème n'est pas la densité mais le **nombre de choses affichées en même
-temps**, et aucune compaction ne rattrape six panneaux dont un porte 150 cases. Fermer ce
+temps**, et aucune compaction ne rattrape six panneaux d'affilée. Fermer ce
 qu'on ne regarde pas laisse la décision au joueur plutôt qu'à un point de rupture.
 
 Replié, il ne reste que la barre de titre — **et son compteur**, qui est justement ce qu'on
-vient lire du coin de l'œil sans ouvrir : `6 / 150` pour la collection, `5 / 36` pour les
+vient lire du coin de l'œil sans ouvrir : `5 / 45` pour les
 primes.
 
 Deux détails d'implémentation qui se voient dans le code : le bouton n'enveloppe **que le

@@ -125,6 +125,27 @@ for (const id of IDS) {
   noeuds.set(id, n);
 }
 
+/* CE QUE LE JEU CHERCHE PAR CLASSE, ET NON PAR IDENTIFIANT. `querySelectorAll` rendait
+   toujours une liste vide, si bien que les onglets — qui n'ont pas d'id — étaient invisibles
+   au banc : `ouvrirVue` ne faisait rien, et les deux vues n'étaient pas testables. Une
+   fonctionnalité qu'un banc ne voit pas est une fonctionnalité non vérifiée.
+
+   On enregistre donc tous les boutons de page qui portent une classe, indexés par chacune de
+   leurs classes, avec leurs `data-`. Ça suffit à ce que le jeu en fait : les désigner, lire
+   leur `dataset`, poser un attribut. */
+const parClasse = new Map();
+for (const m of html.matchAll(/<button[^>]*class="([^"]+)"[^>]*>/g)) {
+  const b = el('button');
+  b.className = m[1];
+  for (const d of m[0].matchAll(/data-(\w+)="([^"]+)"/g)) b.dataset[d[1]] = d[2];
+  const id = m[0].match(/id="([^"]+)"/);
+  if (id) noeuds.set(id[1], b);
+  for (const cls of m[1].split(/\s+/).filter(Boolean)) {
+    if (!parClasse.has(cls)) parClasse.set(cls, []);
+    parClasse.get(cls).push(b);
+  }
+}
+
 global.document = {
   createElement: el,
   getElementById(id) {
@@ -136,7 +157,7 @@ global.document = {
   hidden: false,
   body: el(),
   querySelector: () => el(),
-  querySelectorAll: () => [],
+  querySelectorAll: sel => parClasse.get(String(sel).replace(/^\./, '')) || [],
 };
 global.window = {
   addEventListener() {}, AudioContext: null,
