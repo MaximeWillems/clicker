@@ -207,12 +207,33 @@ de pousser à cliquer, elle rend le clic inutile en le déléguant. Trois issues
 La première est la plus simple et la plus honnête : *ce qui récompense la présence ne doit pas
 s'automatiser.*
 
-#### Les deux autres garde-fous
+#### Le seuil : trois plafonds à la fois
 
-**« Niveau max » doit vouloir dire le bout, pas la maturité de l'âge.** Une commune mûre à
-l'âge enfant est « au max de sa tranche » ; si elle paie aussi, c'est toute la ferme qui paie et
-la mécanique devient le cœur du jeu au lieu d'en être la fin. Le seuil est l'âge légende au
-niveau cent.
+**Âge légende, niveau cent, ET dernier rang de taille.** Les trois ensemble, pas le premier
+seul : une commune mûre à l'âge enfant est déjà « au max de sa tranche », et si elle paie, c'est
+toute la ferme qui paie — la mécanique deviendrait le cœur du jeu au lieu d'en être la fin.
+
+Le code sait déjà dire les trois : `c.age === AGES.length`, `niveau(c) === NIV_MAX`, et
+`rankOf(sizeFactor(c)).next === null`.
+
+**Et ce troisième plafond est un vrai bout.** L'embonpoint est logarithmique, donc il ne sature
+jamais en théorie — mais l'échelle des rangs, elle, s'arrête :
+
+    grand        0,7 × la croissance de l'âge
+    énorme       2,6 ×
+    colossal     9,6 ×
+    titanesque    54 ×
+    démesuré     579 ×
+    (le cran suivant, s'il existait)   7 400 ×
+
+Atteindre *démesuré* demande cinq cent soixante-dix-neuf fois la croissance d'un âge ; le cran
+d'après en demanderait treize fois plus. Personne n'ira. C'est donc bien la fin de la
+progression d'une bête, et pas une étape.
+
+**Ce qui manque aujourd'hui, c'est que rien ne le dit.** Au dernier rang, le nom cesse de
+changer, la taille à l'écran est plafonnée, et la valeur continue de grimper de façon
+imperceptible. La bête est finie et le jeu ne le reconnaît pas — c'est exactement ce que le
+clic payant viendrait réparer : **une récompense qui dit « celle-là, tu l'as menée au bout ».**
 
 **Le gain ne doit pas battre la rente ni la vente**, sinon l'optimum devient « garde une légende
 et clique pour toujours » — la même faute que la rente perpétuelle, sous une autre forme.
