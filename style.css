@@ -188,12 +188,20 @@ body {
 /* ── bandeau retour ──────────────────────────── */
 .offline-note {
   grid-area: note;
+  display: flex; align-items: flex-start; gap: 0.8rem;
   background: var(--jade-dim);
   border-left: 3px solid var(--jade);
   padding: 0.7rem 1rem;
   margin-top: 1.25rem;
   font-size: 0.85rem;
 }
+.offline-note > span { flex: 1; min-width: 0; }
+/* la croix est discrète mais atteignable : le bandeau reste sinon jusqu'au rechargement */
+.note-x {
+  flex: none; background: none; border: none; cursor: pointer;
+  color: var(--soft); font-size: 0.9rem; line-height: 1; padding: 0.1rem 0.3rem;
+}
+.note-x:hover { color: var(--ink); }
 .offline-note b { color: var(--jade); font-weight: 500; }
 
 /* ── le mode histoire : la boîte de dialogue ─────────────────────────────
@@ -653,6 +661,13 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   color: var(--soft); position: relative;
 }
 .thumb:hover { border-color: var(--rule-hi); }
+/* UNE CASE VIDE GARDE LA PLACE. Elle n'est pas un bouton : rien à cliquer, rien à survoler —
+   elle existe pour que la vignette d'à côté ne bouge pas quand une bête est vendue. */
+.thumb-vide {
+  border-style: dashed; background: none; cursor: default;
+  min-height: 5.4rem;
+}
+.thumb-vide:hover { border-color: var(--rule); }
 .thumb[aria-current="true"] { border-color: var(--accent); background: var(--sunken); }
 .thumb.apex[aria-current="true"] { border-color: var(--rar, var(--accent)); }
 .thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

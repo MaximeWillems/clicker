@@ -1401,7 +1401,11 @@ scenario('pension — une bête confiée quitte la bande, sans quitter son enclo
   const temoin = bete(jeu, 'cerf', 4, 20000);
   jeu.refresh();
 
-  const bande = () => noeuds.get('strip-pen').children.length;
+  /* LA BANDE DESSINE DES CASES D'ENCLOS depuis la 2.5.0, vides comprises : ce qu'on compte
+     ici, ce sont les cases OCCUPÉES. Une case libérée garde sa place au lieu de faire glisser
+     tout le reste d'un cran sous le curseur. */
+  const bande = () => noeuds.get('strip-pen').children
+    .filter(x => !x.classList.contains('thumb-vide')).length;
   const vivantes = () => jeu.subjects().filter(x => x.kind === 'creature').length;
   eq('trois bêtes dans la bande', bande(), 3);
   eq('et trois sujets', vivantes(), 3);
@@ -2723,6 +2727,78 @@ function pave(jeu, id, ligne, etoiles) {
   return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
            prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
 }
+
+scenario('enclos — une vente laisse un trou à sa place', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9; s.pens = 6;
+  const cases = () => noeuds.get('strip-pen').children;
+  const occupee = i => cases()[i] && !cases()[i].classList.contains('thumb-vide');
+  const qui = i => occupee(i) ? cases()[i].dataset.cle : null;
+
+  const a = bete(jeu, 'crapaud', 3, 20000);
+  const b = bete(jeu, 'loup', 3, 20000);
+  const c = bete(jeu, 'ours', 3, 20000);
+  jeu.refresh();
+
+  /* AUTANT DE CASES QUE D'ENCLOS POSSÉDÉS, occupées ou non : la bande cesse d'être une liste
+     et devient un enclos. */
+  eq('six cases pour six enclos', cases().length, 6);
+  eq('trois occupées', [0, 1, 2, 3, 4, 5].filter(occupee).length, 3);
+  const place = [qui(0), qui(1), qui(2)];
+
+  /* LE DÉFAUT QUE ÇA CORRIGE : en ×100 le marchand vide un enclos plus vite qu'on ne vise, et
+     entre le moment où l'œil choisit une vignette et celui où le doigt appuie, la bête sous le
+     curseur n'est plus la même. Vendre celle du milieu ne doit RIEN déplacer. */
+  jeu.sell(b);
+  jeu.refresh();
+  eq('la première n’a pas bougé', qui(0), place[0]);
+  ok('la case du milieu est vide', !occupee(1));
+  eq('et la troisième non plus', qui(2), place[2]);
+  eq('toujours six cases', cases().length, 6);
+
+  // le trou est repris par la suivante, et non ajouté au bout
+  const d = bete(jeu, 'chat', 3, 20000);
+  jeu.refresh();
+  eq('la nouvelle prend la case libérée', qui(1), 'c:' + d.id);
+  eq('sans rien pousser', qui(2), place[2]);
+
+  /* TRIER REDISTRIBUE, et c'est la seule chose qui le fasse : c'est un geste explicite, on
+     s'attend à ce que tout bouge. */
+  s.tri = 'rarete';
+  jeu.stripSig = '';
+  jeu.refresh();
+  eq('les trois survivantes sont regroupées en tête', [0, 1, 2].filter(occupee).length, 3);
+  ok('et la quatrième case est libre', !occupee(3));
+});
+
+scenario('vente — regarder une bête la protège trois secondes', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9; s.pens = 8;
+  s.primes.marchand = true;
+  const c = bete(jeu, 'crapaud', 3, 20000);
+  for (const cle of Object.keys(jeu.RARITY)) s.sellAt[cle] = 1;
+
+  /* EN ×100 LE MARCHAND VIDE UN ENCLOS PLUS VITE QU'ON NE VISE : on clique une bête pour la
+     garder ou la vendre soi-même, et elle est déjà partie. */
+  jeu.select('c:' + c.id);
+  jeu.runAutomations(1);
+  ok('celle qu’on vient de désigner tient', s.pen.some(x => x.id === c.id));
+
+  /* ET LE SURSIS EXPIRE — c'était le défaut commun aux deux exceptions retirées avant : une
+     immunité permanente laissait invendue pour toujours la bête qu'on venait d'évoluer. */
+  jeu.focusJusqu = Date.now() - 1;
+  jeu.runAutomations(1);
+  ok('trois secondes plus tard, elle part', !s.pen.some(x => x.id === c.id));
+
+  // et une bête qu'on ne regarde pas n'est jamais protégée
+  const d = bete(jeu, 'crapaud', 3, 20000);
+  jeu.select('c:' + d.id);
+  const e = bete(jeu, 'crapaud', 3, 20000);
+  jeu.select('c:' + e.id);
+  jeu.runAutomations(1);
+  ok('la précédente n’est plus couverte', !s.pen.some(x => x.id === d.id));
+  ok('seule la dernière désignée l’est', s.pen.some(x => x.id === e.id));
+});
 
 scenario('poussière — la rareté s’annule des deux côtés', () => {
   const jeu = neuf();

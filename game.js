@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.4.1';
+const VERSION = 'beta 2.5.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2690,8 +2690,33 @@ function current() {
   return list.find(s => s.key === state.sel) || fallback(list);
 }
 
+/* REGARDER UNE BÊTE LA PROTÈGE TROIS SECONDES. En ×100 le marchand vide un enclos plus vite
+   qu'on ne vise : on clique une bête pour la garder ou la vendre soi-même, et elle est déjà
+   partie. Trois secondes suffisent à faire le geste d'après.
+
+   TROIS EXCEPTIONS AVAIENT DÉJÀ ÉTÉ ESSAYÉES ET RETIRÉES, et celle-ci n'est aucune des trois.
+   L'immunité à vie pour la bête en scène laissait invendue pour toujours celle qu'on venait
+   d'évoluer à la main ; la protection tant que l'onglet est visible revenait au même ; et le
+   sursis de dix secondes depuis le dernier CLIC protégeait mal, parce que regarder une bête
+   n'est pas la cliquer.
+
+   Ici le déclencheur est la SÉLECTION — c'est-à-dire précisément le geste de regarder — et le
+   sursis EXPIRE. Aucune bête ne peut donc rester invendue, ce qui était le défaut commun aux
+   deux premières, et il se déclenche sur le bon geste, ce qui était le défaut de la troisième.
+
+   Le compte est en temps RÉEL et non en temps de jeu : c'est le temps de réaction du joueur
+   qu'on protège, et il ne va pas cent fois plus vite parce que la ferme, elle, y va. */
+const SURSIS_FOCUS = 3000;
+let focusJusqu = 0, focusQui = null;
+
+const protegee = c => !rattrapage && c.id === focusQui && Date.now() < focusJusqu;
+
 function select(key) {
   state.sel = key;
+  if (String(key).startsWith('c:')) {
+    focusQui = parseInt(String(key).slice(2), 10);
+    focusJusqu = Date.now() + SURSIS_FOCUS;
+  }
   refresh();
 }
 
@@ -3148,9 +3173,14 @@ function runAutomations(dt) {
        visible : « le marchand ne vend pas ». Puis une protection tant que l'onglet est
        visible, qui ramenait le même défaut dès qu'on laissait la page ouverte.
 
-       ☆ Garder est la seule protection, et c'est le bon endroit : elle est explicite, elle se
-       voit sur la vignette, et c'est le joueur qui la pose. */
-    const ready = state.pen.filter(c => !c.keep && !enPension(c) &&
+       IL EN EXISTE UNE DEPUIS LA 2.5.0, et elle tient précisément parce qu'elle EXPIRE :
+       trois secondes de sursis sur la bête qu'on vient de désigner. Le défaut commun aux deux
+       exceptions retirées était l'immunité PERMANENTE ; un sursis qui s'éteint tout seul ne
+       peut laisser aucune bête invendue. Voir `protegee`.
+
+       ☆ Garder reste la seule protection DURABLE, et c'est le bon endroit : elle est
+       explicite, elle se voit sur la vignette, et c'est le joueur qui la pose. */
+    const ready = state.pen.filter(c => !c.keep && !enPension(c) && !protegee(c) &&
                                         estMur(c) && venteAu(c) > 0 && c.age >= venteAu(c) &&
                                         rankOf(sizeFactor(c)).i >= tailleExigee(c));
     /* Le marchand ne déplace pas le regard, exactement comme une vente à la main : si on
@@ -3383,8 +3413,13 @@ function catchUp() {
     (bilanAuto.vendus > 1 ? ' bêtes pour ' : ' bête pour ') + fmt(bilanAuto.gagne) + ' pièces');
   if (rente >= 1) bits.push('tes bêtes gardées ont rapporté ' + fmt(rente) + ' pièces');
   const note = $('offline-note');
-  note.innerHTML = '<b>Pendant ton absence (' + fmtTime(elapsed) + ')</b> — ' +
-    (bits.length ? bits.join(', ') + '.' : 'rien de neuf, tout tournait déjà.');
+  /* IL SE FERME. Il s'affichait et n'était plus jamais caché — aucun bouton, aucun
+     écouteur — donc il restait à l'écran jusqu'au rechargement, à raconter une absence
+     vieille de trois heures. La croix est dans le HTML du bandeau et non à côté : le
+     contenu est réécrit à chaque retour, et un bouton posé une fois disparaîtrait avec. */
+  note.innerHTML = '<span><b>Pendant ton absence (' + fmtTime(elapsed) + ')</b> — ' +
+    (bits.length ? bits.join(', ') + '.' : 'rien de neuf, tout tournait déjà.') + '</span>' +
+    '<button type="button" class="note-x" title="Fermer">✕</button>';
   note.hidden = false;
 }
 
@@ -3685,7 +3720,11 @@ function renderStrip() {
      épique de crapaud — laissaient donc la vignette sur le dessin du premier. */
   const sig = list.map(s => s.kind === 'egg'
     ? 'i' + s.i + (s.slot ? ':' + s.slot.kind + ':' + s.slot.line : ':-')
-    : 'c' + s.c.id + ':' + s.c.age + (s.c.keep ? ':k' : '')).join(',');
+    : 'c' + s.c.id + ':' + s.c.age + (s.c.keep ? ':k' : '')).join(',') +
+    /* LE NOMBRE D'ENCLOS ENTRE DANS LA SIGNATURE depuis que la bande en dessine les cases :
+       acheter un enclos n'ajoute aucune bête, donc rien d'autre ne changerait, et la case
+       neuve n'apparaîtrait qu'à la prochaine éclosion. */
+    '|' + state.pens + '|' + state.tri;
   if (sig === stripSig) return;
   stripSig = sig;
 
@@ -3706,7 +3745,7 @@ function renderStrip() {
     thumbs.delete(key);
   }
 
-  peupler($('strip-pen'), list.filter(s => s.kind === 'creature'));
+  peuplerEnclos($('strip-pen'), list.filter(s => s.kind === 'creature'));
   peupler($('strip-incub'), list.filter(s => s.kind === 'egg'));
 }
 
@@ -3719,6 +3758,70 @@ function syncAchat() {
   for (const b of $('achat').children) {
     b.setAttribute('aria-pressed', String(b.dataset.achat === String(state.achat)));
   }
+}
+
+/* ── LES CASES DE L'ENCLOS ─────────────────────────────────────────────────────
+   UNE VENTE LAISSE UN TROU À SA PLACE, et ne fait plus glisser tout le reste d'un cran.
+
+   Le défaut se voyait en ×100 : le marchand vide un enclos plus vite qu'on ne vise, et
+   entre le moment où l'œil choisit une vignette et celui où le doigt appuie, deux ventes
+   ont eu lieu et la bête sous le curseur n'est plus la même. On clique alors sur une bête
+   qu'on n'a pas choisie — et sur une ferme qui tourne bien, ça arrive tout le temps.
+
+   La bande cesse donc d'être une LISTE et devient un ENCLOS : autant de cases que d'enclos
+   possédés, chacune gardée par sa bête tant qu'elle vit. Une case libérée reste vide et
+   attend la prochaine éclosion. Rien ne se déplace jamais tout seul.
+
+   CHANGER LE TRI REDISTRIBUE, et c'est la seule chose qui le fasse : trier est un geste
+   explicite, on s'attend à ce que tout bouge. Le reste du temps, l'enclos est stable.
+
+   `subjects()` n'a pas de trous, lui, et c'est voulu : tout le jeu — la sélection, le
+   marchand, l'évolution — raisonne sur des bêtes, pas sur des places. Les trous n'existent
+   qu'à l'affichage. */
+let casesPar = new Map(), triCases = null;
+const casesVides = [];
+
+function casesDe(list) {
+  if (triCases !== state.tri) { casesPar.clear(); triCases = state.tri; }
+  const vivants = new Set(list.map(s => s.c.id));
+  for (const id of [...casesPar.keys()]) if (!vivants.has(id)) casesPar.delete(id);
+  const prises = new Set(casesPar.values());
+  for (const s of list) {
+    if (casesPar.has(s.c.id)) continue;
+    let n = 0;
+    while (prises.has(n)) n++;
+    prises.add(n);
+    casesPar.set(s.c.id, n);
+  }
+  return casesPar;
+}
+
+function peuplerEnclos(host, sujets) {
+  const defilement = host.scrollTop;
+  const cases = casesDe(sujets);
+  let n = state.pens || 0;
+  for (const v of cases.values()) n = Math.max(n, v + 1);
+
+  const place = new Array(n).fill(null);
+  for (const s of sujets) {
+    let t = thumbs.get(s.key);
+    if (!t) { t = creerVignette(s.key); thumbs.set(s.key, t); }
+    peindreVignette(t, s);
+    place[cases.get(s.c.id)] = t.el;
+  }
+  for (let i = 0; i < n; i++) {
+    if (!place[i]) {
+      if (!casesVides[i]) {
+        const v = document.createElement('span');
+        v.className = 'thumb thumb-vide';
+        casesVides[i] = v;
+      }
+      place[i] = casesVides[i];
+    }
+    if (host.children[i] !== place[i]) host.insertBefore(place[i], host.children[i] || null);
+  }
+  while (host.children.length > n) host.children[host.children.length - 1].remove();
+  host.scrollTop = defilement;
 }
 
 // Poser les vignettes d'un groupe dans l'ordre voulu, en ne touchant qu'à ce qui a bougé.
@@ -6560,6 +6663,9 @@ function syncReglages() {
 
 function bindTools() {
   $('subject').addEventListener('click', tapStage);
+  $('offline-note').addEventListener('click', e => {
+    if (e.target.closest && e.target.closest('.note-x')) $('offline-note').hidden = true;
+  });
 
   $('btn-asc').addEventListener('click', ouvrirAscension);
   $('asc-close').addEventListener('click', fermerAscension);

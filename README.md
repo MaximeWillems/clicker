@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.4.1** | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
+| **beta 2.5.0** | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
+| beta 2.4.1 | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
 | beta 2.4.0 | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
 | beta 2.3.0 | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
 | beta 2.2.0 | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
@@ -1864,6 +1865,43 @@ sortir :
 Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour découvrir la règle.
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
+
+#### Les cases de l'enclos ne bougent pas
+
+La bande a cessé d'être une **liste** pour devenir un **enclos** : autant de cases que d'enclos
+possédés, chacune gardée par sa bête tant qu'elle vit. Une vente laisse un **trou à sa place**,
+repris par la prochaine éclosion.
+
+Le défaut se voyait en ×100. Le marchand vide un enclos plus vite qu'on ne vise : entre le
+moment où l'œil choisit une vignette et celui où le doigt appuie, deux ventes ont eu lieu et la
+bête sous le curseur n'est plus la même. **On clique alors sur une bête qu'on n'a pas choisie**
+— et sur une ferme qui tourne bien, ça arrive tout le temps.
+
+**Changer le tri redistribue**, et c'est la seule chose qui le fasse : trier est un geste
+explicite, on s'attend à ce que tout bouge. Le reste du temps, l'enclos est stable.
+
+`subjects()` n'a pas de trous, lui, et c'est voulu : tout le jeu — la sélection, le marchand,
+l'évolution — raisonne sur des bêtes, pas sur des places. Les trous n'existent qu'à l'affichage.
+
+#### Regarder une bête la protège trois secondes
+
+En ×100, on clique une bête pour la garder ou la vendre soi-même, et elle est déjà partie.
+Trois secondes suffisent à faire le geste d'après.
+
+**Trois exceptions à la vente avaient déjà été essayées et retirées, et celle-ci n'est aucune
+des trois.** L'immunité à vie pour la bête en scène laissait invendue pour toujours celle qu'on
+venait d'évoluer à la main ; la protection tant que l'onglet est visible revenait au même ; le
+sursis de dix secondes depuis le dernier *clic* protégeait mal, parce que regarder une bête
+n'est pas la cliquer.
+
+Ici le déclencheur est la **sélection** — précisément le geste de regarder — et le sursis
+**expire**. Aucune bête ne peut donc rester invendue, ce qui était le défaut commun aux deux
+premières, et il se déclenche sur le bon geste, ce qui était celui de la troisième.
+
+Le compte est en temps **réel** et non en temps de jeu : c'est le temps de réaction du joueur
+qu'on protège, et il ne va pas cent fois plus vite parce que la ferme, elle, y va.
+
+`☆ Garder` reste la seule protection **durable**.
 
 #### Une bête confiée quitte la bande
 
