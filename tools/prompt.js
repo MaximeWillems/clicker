@@ -492,6 +492,14 @@ function ecrire(ligne) {
     l.push('Both in the SAME flat technique: flat blocks of color, one hard outline, no shading,');
     l.push('no glow, no gradient, no background of any kind. If the two do not look like they');
     l.push('come from the same sheet, the image has failed.');
+    /* LES DEUX NE DOIVENT PAS SE TOUCHER, et ça vaut d'être exigé en toutes lettres : la
+       première planche à deux les a fait se chevaucher — pas UNE colonne de pixels vide entre
+       les deux sur toute la hauteur. Le découpage n'a alors rien à couper, et l'image entière
+       est perdue quelle que soit la qualité du dessin. */
+    l.push('');
+    l.push('CRITICAL — they must NOT touch or overlap: leave a clear EMPTY vertical gap between');
+    l.push('them, at least a tenth of the image wide, with nothing crossing it — no cloud, no');
+    l.push('tail, no plume, no cape. A single pixel bridging the two makes the image unusable.');
     l.push('', '', '--- une fois l’image enregistrée dans art/source-' + ligne.key + '-'
                  + stadeSeul + '.png ---', '');
     l.push('node tools/pixel.js importer art/source-' + ligne.key + '-' + stadeSeul + '.png '

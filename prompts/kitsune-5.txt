@@ -65,6 +65,10 @@ Both in the SAME flat technique: flat blocks of color, one hard outline, no shad
 no glow, no gradient, no background of any kind. If the two do not look like they
 come from the same sheet, the image has failed.
 
+CRITICAL — they must NOT touch or overlap: leave a clear EMPTY vertical gap between
+them, at least a tenth of the image wide, with nothing crossing it — no cloud, no
+tail, no plume, no cape. A single pixel bridging the two makes the image unusable.
+
 
 --- une fois l’image enregistrée dans art/source-kitsune-5.png ---
 
