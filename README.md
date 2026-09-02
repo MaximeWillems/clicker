@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.5.0** | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
+| **beta 3.0.0** | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
+| beta 2.5.0 | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
 | beta 2.4.1 | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
 | beta 2.4.0 | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
 | beta 2.3.0 | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
@@ -2776,10 +2777,30 @@ faire croire à une étape obligatoire.
 Et **une ascension sans carte est refusée** : sauter avec un enclos vide serait une perte sèche,
 pas un choix. Le panneau le dit et le bouton reste éteint, le jeton restant en poche.
 
-**On ne peut pas enchaîner deux sauts** sans avoir rejoué : l'ascension vide la bourse, et le
-palier suivant est **mille fois** plus haut — 1, mille, un million, un milliard, mille
-milliards, et ainsi de suite. *Ce document et le code annonçaient « un million de fois », faux
-d'un facteur mille ; corrigé après avoir heurté le mur en jouant.*
+**Les jetons se regagnent à chaque cycle** — c'est la `beta 3.0.0`, et elle remplace une règle
+qui posait un mur.
+
+Avant : chaque palier de fortune créditait **un** jeton, **une fois pour toute la partie**, et
+sauter les dépensait tous. Celui qui sautait avec cinq jetons repartait à zéro et devait alors
+**multiplier sa fortune par mille** pour pouvoir sauter à nouveau. Le mur a été rencontré en
+jouant, à mille milliards de pièces : plus de jeton, et le palier suivant à 10¹⁵ — de l'ordre
+de mille huit cents ventes maximales.
+
+Maintenant, ce qu'on emporte se lit sur le **sommet de fortune atteint depuis la dernière
+ascension**. Un cycle mené au milliard rend quatre cartes, un cycle mené à mille milliards en
+rend cinq, et le compte **se refait entièrement** à chaque fois.
+
+**La porte n'est plus une monnaie, c'est un déblocage** : avoir atteint le million une fois
+dans la partie ouvre l'ascension pour de bon. Sauter tôt reste permis, et rend peu — c'est le
+sommet qui décide, pas la permission.
+
+**Le sommet, et non la bourse du moment** : dépenser tout juste avant de sauter ne coûte aucune
+carte. Ce qu'on emporte se décide sur ce qu'on a *su gagner*.
+
+Ce que ça coûte, et c'est assumé : le nombre d'ascensions d'une partie n'est plus borné. La
+puissance de l'album reste bornée — par les cinq emplacements et les trois étoiles — mais plus
+par l'échelle. *Ce que l'échelle bornait vraiment, c'était le temps qu'il fallait pour y
+arriver, et ce n'était pas une borne : c'était un mur.*
 
 **Deux remises à zéro ne sont pas dans l'état sauvegardé**, et sans elles le saut ne se voit
 pas. La **vitesse** revient à ×1 : elle traversait le saut, alors que le bouton ⟲ la rend à ×1,

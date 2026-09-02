@@ -32,6 +32,14 @@ function ok(quoi, vrai, detail) {
 }
 const eq = (quoi, a, b) => ok(quoi + ' (' + a + ' attendu ' + b + ')', a === b);
 
+/* CE QU'ON EMPORTE SE LIT SUR LE SOMMET DU CYCLE depuis la 3.0.0 : poser « trois jetons »,
+   c'est poser une fortune qui a franchi trois paliers. `paliers` reste ce qui a ouvert
+   l'ascension une première fois. */
+function poserJetons(jeu, n) {
+  jeu.state.asc.sommet = n ? jeu.JETON_PALIERS[n - 1] : 0;
+  jeu.state.asc.paliers = jeu.RANG_PREMIER;
+}
+
 // une bête posée dans l'enclos, sans passer par la couvaison
 function bete(jeu, ligne, age, p) {
   const s = jeu.state;
@@ -548,7 +556,7 @@ scenario('ascension — un jeton, des cartes, et tout le reste repart de zéro',
   const gardee = bete(jeu, 'crapaud', 3, 3000);
   bete(jeu, 'crabe', 2, 400);
   bete(jeu, 'crapaud', 2, 400);
-  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 1);
   ok('le bouton d’ascension s’ouvre', jeu.peutAscensionner());
 
   jeu.ouvrirAscension();
@@ -587,24 +595,29 @@ scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
   /* ⚠ L'ALBUM ET LES CARTES ACTIVES SONT DEUX CHOSES. L'album n'a pas de limite ; SLOTS ne
      borne que les cinq cartes qui agissent. Le jeton borne donc ce qui ENTRE DANS L'ALBUM, et
      neuf jetons emportent bien neuf cartes. */
-  for (const n of [1, 2, 3, 5, 9, 14]) {
+  for (const n of [1, 2, 3, 5, 9, 11]) {
     const jeu = neuf(); const s = jeu.state;
     s.tuto = false; s.coins = 5e6; s.pens = 20;
     for (let i = 0; i < 16; i++) bete2(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
-    s.asc.jetons = n; s.asc.paliers = jeu.RANG_PREMIER;
+    poserJetons(jeu, n);
     eq(n + ' jeton(s) → ' + n + ' carte(s), sans plafond', jeu.apercuAscension().max, n);
   }
 
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 10;
   for (let i = 0; i < 6; i++) bete2(jeu, 'crapaud', 3, 3000);
-  s.asc.jetons = 5; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 5);
   const ap = jeu.apercuAscension();
   jeu.ascChoix = [ap.neuves[0].id, ap.neuves[1].id];   // il n'en emploie que deux
   jeu.ascensionner();
-  eq('les cinq jetons partent, employés ou non', jeu.state.asc.jetons, 0);
+  eq('le sommet repart à zéro', jeu.state.asc.sommet, 0);
   eq('deux cartes emportées', jeu.state.album.length, 2);
-  ok('et l’ascension se referme', !jeu.peutAscensionner());
+  /* L'ASCENSION NE SE REFERME PLUS. Elle demandait un jeton NON DÉPENSÉ, si bien qu'un joueur
+     qui venait de sauter devait multiplier sa fortune par mille pour pouvoir sauter à
+     nouveau — le mur rencontré en jouant à mille milliards. La porte est désormais un
+     déblocage : ce qui varie, c'est le nombre de cartes emportées. */
+  ok('mais la porte reste ouverte', jeu.peutAscensionner());
+  eq('sans rien à emporter pour l’instant', jeu.apercuAscension().max, 0);
   eq('les paliers déjà franchis restent franchis', jeu.state.asc.paliers, jeu.RANG_PREMIER);
 });
 
@@ -620,7 +633,7 @@ scenario('album — sans limite, et cinq cartes actives qui s’échangent', () 
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 12; i++) bete3(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
-  s.asc.jetons = 9; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 9);
 
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.slice(0, 9).map(k => k.id);
@@ -653,18 +666,26 @@ scenario('jetons — un palier de fortune tous les ×1000, à partir du premier 
   eq('la première ascension se mérite au million', premier, 1e6);
 
   s.coins = premier - 1; jeu.crediterJetons();
-  const avant = s.asc.jetons;
+  const avant = jeu.jetonsDus();
   ok('sous le million on a déjà des jetons', avant > 0, avant);
   ok('mais on ne peut pas encore ascensionner', !jeu.peutAscensionner());
 
   s.coins = premier; jeu.crediterJetons();
-  eq('le million en donne un de plus', s.asc.jetons, avant + 1);
-  eq('et c’est le troisième', s.asc.jetons, 3);
+  eq('le million en donne un de plus', jeu.jetonsDus(), avant + 1);
+  eq('et c’est le troisième', jeu.jetonsDus(), 3);
   ok('l’ascension s’ouvre alors', jeu.peutAscensionner());
 
-  const apres = s.asc.jetons;
+  /* LE COMPTE SE LIT, IL NE S'ACCUMULE PAS : il vient du sommet de fortune du cycle, donc
+     repasser sur le même palier ne donne rien de plus. */
+  const apres = jeu.jetonsDus();
   jeu.crediterJetons();
-  eq('un palier ne paie qu’une fois', s.asc.jetons, apres);
+  eq('un palier ne paie qu’une fois', jeu.jetonsDus(), apres);
+
+  /* ET IL SE REFAIT À CHAQUE CYCLE. C'est tout le changement de la 3.0.0 : le sommet repart à
+     zéro avec la ferme, et le prochain saut se paie sur ce qu'on aura regagné. */
+  s.asc.sommet = 0;
+  eq('après un saut, le compte est à refaire', jeu.jetonsDus(), 0);
+  ok('mais la porte reste ouverte', jeu.peutAscensionner());
 });
 
 scenario('encyclopédie — une carte par lignée, et deux vues qui se répondent', () => {
@@ -925,7 +946,7 @@ scenario('fonds — la carte emporte celui de la bête', () => {
   const c = bete(jeu, 'loup', 3, 20000);
   c.fond = 'givre'; c.keep = true;
 
-  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 1);
   const neuve = jeu.apercuAscension().neuves.find(x => x.line === 'loup');
   ok('la capsule existe', !!neuve);
   eq('et elle emporte le fond', neuve.fond, 'givre');
@@ -1098,7 +1119,7 @@ scenario('trophées — ils ne donnent rien, et traversent l’ascension', () =>
   eq('et pas une pièce n’a été donnée', s.coins, sous);
 
   bete(jeu, 'crapaud', 3, 3000);
-  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 1);
   const pris = jeu.tropheesPris();
   const ap = jeu.apercuAscension();
   jeu.ascChoix = [ap.neuves[0].id];
@@ -2637,7 +2658,7 @@ scenario('encyclopédie — elle traverse l’ascension, et une partie d’avant
   bete(jeu, 'loup', 1, 0);
   eq('le carnet a une entrée', Object.keys(s.dex).length, 1);
 
-  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 1);
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.length ? [ap.neuves[0].id] : [];
   jeu.ascensionner();
@@ -2727,6 +2748,45 @@ function pave(jeu, id, ligne, etoiles) {
   return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
            prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
 }
+
+scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20;
+  for (let i = 0; i < 4; i++) bete(jeu, 'crapaud', 3, 3000);
+
+  /* LE MUR, RENCONTRÉ EN JOUANT À MILLE MILLIARDS : plus de jeton en poche, et le palier
+     suivant mille fois plus haut. La porte demandait un jeton NON DÉPENSÉ ; elle ne demande
+     plus que d'avoir atteint le million une fois. */
+  s.coins = 1e9; jeu.crediterJetons();
+  eq('un milliard vaut quatre paliers', jeu.jetonsDus(), 4);
+  ok('l’ascension est ouverte', jeu.peutAscensionner());
+  eq('et elle emporte quatre cartes', jeu.apercuAscension().max, 4);
+
+  jeu.ascChoix = jeu.apercuAscension().neuves.slice(0, 4).map(k => k.id);
+  jeu.ascensionner();
+  /* `ascensionner` RÉASSIGNE `state` : tout ce qui suit doit relire `jeu.state`, sinon on
+     interroge l'ancienne partie et tout paraît inchangé. */
+  const n = jeu.state;
+  eq('le saut a eu lieu', n.asc.n, 1);
+  eq('quatre cartes dans l’album', n.album.length, 4);
+
+  /* CE QUI A CHANGÉ : la porte reste ouverte, et le compte se refait sur le cycle suivant.
+     Avant, il aurait fallu multiplier sa fortune par mille pour pouvoir sauter à nouveau. */
+  ok('la porte reste ouverte', jeu.peutAscensionner());
+  eq('mais le sommet est reparti à zéro', n.asc.sommet, 0);
+  eq('donc rien à emporter tout de suite', jeu.apercuAscension().max, 0);
+
+  n.coins = 1e9; jeu.crediterJetons();
+  eq('refaire le milliard rend les quatre cartes', jeu.jetonsDus(), 4);
+  /* L'ÉCHELLE, ELLE, NE SE REFRANCHIT PAS : `paliers` compte la partie entière et sert au
+     déblocage, pas à ce qu'on emporte. */
+  eq('sans refranchir l’échelle', n.asc.paliers, 4);
+
+  /* LE SOMMET, ET NON LA BOURSE DU MOMENT : dépenser juste avant de sauter ne coûte pas de
+     carte. */
+  n.coins = 0;
+  eq('dépenser ne retire rien', jeu.jetonsDus(), 4);
+});
 
 scenario('enclos — une vente laisse un trou à sa place', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -3073,7 +3133,7 @@ scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () =>
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 10; i++) bete3(jeu, 'crapaud', 3, 3000);
-  s.asc.jetons = 2; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 2);
 
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.slice(0, 2).map(k => k.id);
@@ -3215,7 +3275,7 @@ scenario('primes — elles ne traversent pas l’ascension, la migration ne perd
   jeu.buyPrime(jeu.PRIME_BY_CLE.soin);
   jeu.buyPrime(jeu.PRIME_BY_CLE.acheteur);
   bete(jeu, 'crapaud', 3, 3000);
-  s.asc.jetons = 1; s.asc.paliers = jeu.RANG_PREMIER;
+  poserJetons(jeu, 1);
   const ap = jeu.apercuAscension();
   jeu.ascChoix = [ap.neuves[0].id];
   jeu.ascensionner();

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 2.5.0 · sauvegarde v19 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 3.0.0 · sauvegarde v20 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -116,7 +116,11 @@ Deux leçons payées cher, à ne pas réapprendre :
   contredit tout seul. Neuf formes ont dû être renommées en 2.15.0. Le scénario
   `noms` de `tools/test.js` monte la garde.
 
-### Le mur de l'ascension, rencontré en jouant
+### Le mur de l'ascension — **abattu en `beta 3.0.0`**
+
+> Les jetons se regagnent désormais à chaque cycle, sur le sommet de fortune atteint depuis la
+> dernière ascension, et la porte n'est plus qu'un déblocage. Ce qui suit décrit le mur tel
+> qu'il a été rencontré, et reste écrit parce qu'il explique la règle qui l'a remplacé.
 
 **Constaté à mille milliards de pièces : plus de jeton, et le palier suivant à 10¹⁵.** Ce n'est
 pas un défaut de code — c'est l'échelle qui fait ce qu'elle a été écrite pour faire — mais c'est
@@ -138,16 +142,17 @@ jeton, et doit alors **multiplier sa fortune par mille** pour pouvoir sauter à 
 million à chaque cran » quand `JETON_PAS` vaut mille. Corrigé. Ça n'avait l'air de rien tant
 que personne n'était monté assez haut : *un mur ne se voit qu'en le heurtant.*
 
-#### Trois façons d'en sortir, aucune tranchée
+#### La sortie retenue
 
-- **Ne dépenser qu'un jeton par saut** plutôt que tous. Le nombre de cartes emportées se
-  découplerait alors du nombre de jetons — il faudrait le faire dire par autre chose, sans quoi
-  attendre ne servirait plus à rien.
-- **Resserrer l'échelle en fin de parcours** : des paliers de mille en mille jusqu'au milliard,
-  puis de dix en dix. La courbe des gains ralentit en fin de partie, l'échelle devrait ralentir
-  avec elle plutôt que d'accélérer.
-- **Rendre l'ascension possible sans jeton**, contre autre chose — une ferme complète, un
-  nombre de lignées menées au bout. Le jeton cesserait d'être la seule porte.
+Une quatrième, qui n'était dans aucune des trois envisagées : **le compte se refait à chaque
+cycle**. Ce qu'on emporte n'est plus un crédit qu'on dépense mais une lecture du sommet de
+fortune atteint depuis la dernière ascension. La porte, elle, devient un simple déblocage —
+avoir atteint le million une fois.
+
+Les deux problèmes tombent ensemble : on peut toujours sauter, et ce qu'on gagne à attendre
+reste entier puisque le sommet monte avec le cycle. Ce qui disparaît, c'est la borne sur le
+nombre d'ascensions — assumé : elle ne bornait pas la puissance de l'album, qui tient aux cinq
+emplacements, mais le temps qu'il fallait pour l'atteindre.
 
 À traiter avec la **rente** et l'**absence** : les trois décident ensemble de ce que vaut une
 fin de partie, et la rente perpétuelle est précisément ce qui permet d'atteindre 10¹² sans

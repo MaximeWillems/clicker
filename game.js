@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.5.0';
+const VERSION = 'beta 3.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -640,17 +640,30 @@ const MOTIF_BONUS = {
    d'un facteur mille, et ça n'a pas eu l'air grave tant que personne n'était monté assez
    haut : le mur ne se voit qu'en le heurtant. Il se heurte vers mille milliards.
 
-   UN PALIER FRANCHI EST FRANCHI POUR TOUJOURS. Il crédite son jeton une fois, puis il est
-   mort : l'ascension remet la bourse à zéro, mais elle ne rend pas les paliers déjà passés.
-   Le nombre total d'ascensions d'une partie est donc borné par cette échelle, et par elle
-   seule — et comme les emplacements le sont aussi, la puissance maximale de l'album reste un
-   nombre qu'on peut calculer avant d'avoir joué.
+LES JETONS SE REGAGNENT À CHAQUE CYCLE, et c'est la 3.0.0 qui l'a changé. Ils étaient
+   crédités UNE FOIS par palier, pour toute la partie : sauter avec cinq jetons en poche
+   laissait à zéro, et il fallait alors multiplier sa fortune par mille pour pouvoir sauter à
+   nouveau. Le mur a été rencontré en jouant, à mille milliards de pièces — plus de jeton, et
+   le palier suivant à 10^15, soit de l'ordre de mille huit cents ventes maximales.
+
+   Le compte se refait donc à chaque cycle, sur le SOMMET de fortune atteint depuis la
+   dernière ascension : `asc.sommet`. Un cycle mené au milliard rend quatre cartes, un cycle
+   mené à mille milliards en rend cinq, et repartir n'efface plus rien de définitif.
+
+   CE QUE ÇA COÛTE, ET C'EST ASSUMÉ : le nombre d'ascensions d'une partie n'est plus borné, et
+   la puissance de l'album n'est donc plus un nombre calculable avant d'avoir joué. Elle reste
+   BORNÉE, mais par les cinq emplacements et les trois étoiles, pas par l'échelle — ce que
+   l'échelle bornait vraiment, c'était le temps qu'il fallait pour y arriver, et ce n'était pas
+   une borne, c'était un mur.
+
+   `asc.paliers` continue de compter l'échelle franchie pour toute la partie. Il ne donne plus
+   de jeton : il sert au déblocage — voir plus bas — et à la ligne de statistiques.
 
    RIEN N'OBLIGE JAMAIS À ASCENSIONNER. C'est un sacrifice qu'on choisit : on perd sa ferme
    entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et
    n'expire pas — il attend.
 
-   LE PREMIER TOMBE EN MILIEU DE PARTIE, pas avant. Un million de pièces suppose d'avoir mené
+LE PREMIER SAUT TOMBE EN MILIEU DE PARTIE, pas avant. Un million de pièces suppose d'avoir mené
    des bêtes au bout et d'en avoir vendu ; on n'y arrive pas en cliquant des têtards. La
    version d'avant ouvrait l'ascension sur « mener une bête à l'âge ancien », soit dix-huit
    minutes sans rien avoir automatisé : elle arrivait avant qu'on ait une ferme à sacrifier.
@@ -1654,7 +1667,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 19;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 20;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1774,7 +1787,9 @@ function freshState() {
        Ces trois-là et `seen` sont recopiés tels quels au moment du saut. */
     album: [],
     slots: [],
-    asc: { n: 0, paliers: 0, jetons: 0 },
+    /* `sommet` : la plus grosse bourse tenue DEPUIS la dernière ascension. C'est lui qui dit
+       combien de cartes le prochain saut emporte, et il repart à zéro avec la ferme. */
+    asc: { n: 0, paliers: 0, jetons: 0, sommet: 0 },
     speed: 1,
     sound: true,
     t: Date.now(),
@@ -1919,11 +1934,11 @@ function load() {
        de jalons qui n'existent plus ; on le jette et on repart de paliers vides. Le nombre
        d'ascensions déjà faites, lui, ne bouge pas — c'est lui qui porte les emplacements.
        Une partie en cours regagnera son premier jeton dès qu'elle repassera le million. */
-    merged.asc = Object.assign({ n: 0, paliers: 0, jetons: 0 }, merged.asc || {});
+    merged.asc = Object.assign({ n: 0, paliers: 0, jetons: 0, sommet: 0 }, merged.asc || {});
     delete merged.asc.done;
     merged.asc.n = merged.asc.n || 0;
     merged.asc.paliers = merged.asc.paliers || 0;
-    merged.asc.jetons = merged.asc.jetons || 0;
+    merged.asc.sommet = merged.asc.sommet || 0;
     /* Les capsules d'avant portaient `palier`. Aucune n'a jamais dépassé 1 — la fusion n'existe
        pas encore — donc la conversion ne peut rien perdre, et `|| 1` suffirait ; on nettoie
        quand même pour qu'aucune sauvegarde ne traîne les deux noms. */
@@ -1968,6 +1983,16 @@ function load() {
        précisément ce que les trois tiers suivants coûtaient. Le reste de la division est
        perdu — au plus deux tiers de seconde, jamais entamés. */
     if ((s.v || 0) < 12) merged.up.clic = Math.floor((merged.up.clic || 0) / GRAIN);
+
+    /* v19 → v20 : les jetons cessent d'être un crédit unique et deviennent le compte des
+       paliers franchis DANS LE CYCLE. Une partie d'avant n'a pas de sommet enregistré : on
+       prend la bourse actuelle, ce qui rend immédiatement à qui était riche les cartes que sa
+       fortune justifie. On ne retire donc rien à personne, et le joueur bloqué contre le mur
+       — plus de jeton, palier suivant mille fois trop haut — peut sauter à la prochaine
+       image. */
+    if ((s.v || 0) < 20 && merged.asc) {
+      merged.asc.sommet = Math.max(merged.asc.sommet || 0, merged.coins || 0);
+    }
 
     /* v12 → v13 : quatre améliorations quittent la liste à niveaux pour devenir des primes.
        On ne retire jamais rien à qui avait payé — les trois achats uniques se transposent tels
@@ -4124,8 +4149,13 @@ function essaiNote(n) {
 
 /* La seule porte de l'ascension. Un jeton en poche, et — pour le tout premier saut — le
    million déjà franchi. Tout ce qui montre ou ouvre l'écran passe par ici. */
-const peutAscensionner = () => (state.asc.jetons || 0) > 0 &&
-  ((state.asc.n || 0) > 0 || (state.asc.paliers || 0) >= RANG_PREMIER);
+/* LA PORTE EST UN DÉBLOCAGE, PLUS UNE MONNAIE. Elle demandait un jeton NON DÉPENSÉ, si bien
+   qu'un joueur qui venait de sauter ne pouvait plus jamais sauter avant d'avoir multiplié sa
+   fortune par mille. Elle ne demande plus que d'avoir atteint le million une fois dans la
+   partie : après quoi l'ascension est toujours possible, et c'est le SOMMET du cycle qui
+   décide de ce qu'on emporte. Sauter tôt reste permis, et rend peu. */
+const peutAscensionner = () => (state.asc.n || 0) > 0 ||
+  (state.asc.paliers || 0) >= RANG_PREMIER;
 
 // Le prochain palier à franchir, null quand l'échelle est épuisée.
 const prochainPalier = () => (state.asc.paliers < JETON_PALIERS.length
@@ -4135,11 +4165,24 @@ const prochainPalier = () => (state.asc.paliers < JETON_PALIERS.length
    rattrapage d'une absence : un palier franchi pendant qu'on n'était pas là est franchi quand
    même. La boucle `while` traite le cas d'une vente qui saute deux paliers d'un coup. */
 function crediterJetons() {
+  /* LE SOMMET DU CYCLE VIT ICI, avec l'échelle qu'il sert à lire : c'est la seule fonction qui
+     compare déjà la bourse aux paliers, et deux endroits qui la comparent finiraient par
+     diverger. Le sommet, et non la bourse du moment — ce qu'on emporte se décide sur ce qu'on
+     a SU gagner, pas sur ce qu'il en reste : sans ça, acheter un enclos juste avant de sauter
+     coûterait une carte. */
+  if (state.coins > (state.asc.sommet || 0)) state.asc.sommet = state.coins;
   let seuil;
-  while ((seuil = prochainPalier()) !== null && state.coins >= seuil) {
-    state.asc.paliers++;
-    state.asc.jetons++;
-  }
+  // le compteur d'échelle avance encore : c'est lui qui ouvre l'ascension la première fois
+  while ((seuil = prochainPalier()) !== null && state.coins >= seuil) state.asc.paliers++;
+}
+
+/* CE QU'ON EMPORTE : un jeton par palier franchi DEPUIS LA DERNIÈRE ASCENSION. Le compte se
+   lit sur le sommet du cycle, donc il se refait entièrement à chaque fois — c'est ce qui
+   remplace le crédit unique et supprime le mur. */
+function jetonsDus() {
+  let n = 0;
+  while (n < JETON_PALIERS.length && (state.asc.sommet || 0) >= JETON_PALIERS[n]) n++;
+  return n;
 }
 
 
@@ -4670,7 +4713,7 @@ let ascChoix = [];
    cartes ; cinq d'entre elles s'équipent, les quatre autres attendent leur tour. Plafonner à
    SLOTS revenait à jeter quatre cartes gagnées, et confondait la vitrine avec la collection. */
 function apercuAscension() {
-  const jetons = state.asc.jetons || 0;
+  const jetons = jetonsDus();
   const neuves = subjects().filter(s => s.kind === 'creature')
     .map(s => Object.assign(capsuleBrute(s.c), { id: -s.c.id }));
   return { jetons, neuves, max: jetons };
@@ -4835,7 +4878,7 @@ function ascensionner() {
     /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
     // tous les jetons partent, employés ou non : c'est le prix de sauter trop tôt
-    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: 0 },
+    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: 0, sommet: 0 },
     seen: state.seen, dex: state.dex, tri: state.tri, achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
@@ -5246,7 +5289,7 @@ function tickView() {
      sacrifice qu'on choisit — on perd sa ferme entière — et un bouton qui réclame ferait
      croire à une étape obligatoire. Son infobulle dit ce qui l'a ouvert, et qu'on peut
      l'ignorer. */
-  const jetons = peutAscensionner() ? (state.asc.jetons || 0) : 0;
+  const jetons = peutAscensionner() ? jetonsDus() : 0;
   $('btn-asc').hidden = !jetons;
   if (jetons) {
     setText($('btn-asc'), 'Ascension' + (jetons > 1 ? ' · ' + jetons : ''));
@@ -6681,7 +6724,7 @@ function bindTools() {
     const ap = apercuAscension();
     const prises = Math.min(ascChoix.length, ap.max);
     const perdues = n - prises;
-    const dorment = Math.max(0, (state.asc.jetons || 0) - prises);
+    const dorment = Math.max(0, jetonsDus() - prises);
     if (!confirm('Ascensionner ?\n\n' + prises + ' bête' + (prises > 1 ? 's deviennent' : ' devient') +
         ' une carte.' +
         (perdues ? '\nLes ' + perdues + ' autre' + (perdues > 1 ? 's sont perdues' : ' est perdue') + '.' : '') +
