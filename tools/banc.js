@@ -152,6 +152,27 @@ for (const m of html.matchAll(/<button[^>]*class="([^"]+)"[^>]*>/g)) {
   }
 }
 
+/* ET CE QUI N'EST PAS UN BOUTON. Le jeu cache des PARAGRAPHES par classe — l'aide des
+   réglages depuis la 2.3.0 — et le banc ne voyait que les boutons : la boucle qui les replie
+   parcourait une liste vide, et rien n'aurait signalé qu'elle ne repliait rien.
+
+   Deuxième passe, donc, sur tout ce qui porte une classe. Un élément qui a DÉJÀ un nœud sous
+   son identifiant réutilise celui-là : sans ça, deux objets décriraient le même élément et
+   `$('reglages-intro').hidden` ne parlerait pas du même que `querySelectorAll`. */
+for (const m of html.matchAll(/<(p|div|section|span|nav|ul|li)[^>]*class="([^"]+)"[^>]*>/g)) {
+  const id = m[0].match(/id="([^"]+)"/);
+  let n;
+  if (id && noeuds.has(id[1])) n = noeuds.get(id[1]);
+  else { n = el(m[1]); if (id) noeuds.set(id[1], n); }
+  n.className = m[2];
+  if (/\shidden(\s|>|=)/.test(m[0])) n.hidden = true;
+  for (const d of m[0].matchAll(/data-(\w+)="([^"]+)"/g)) n.dataset[d[1]] = d[2];
+  for (const cls of m[2].split(/\s+/).filter(Boolean)) {
+    if (!parClasse.has(cls)) parClasse.set(cls, []);
+    parClasse.get(cls).push(n);
+  }
+}
+
 global.document = {
   createElement: el,
   getElementById(id) {

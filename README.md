@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.2.0** | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
+| **beta 2.3.0** | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
+| beta 2.2.0 | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
 | beta 2.1.0 | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |
 | beta 2.0.0 | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
 | beta 1.14.0 | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
@@ -835,6 +836,61 @@ Un piège a été trouvé en branchant les dessins : la vignette écrivait l'emo
 croyait l'image encore là et refusait de la reposer — une case qui avait montré un œuf ne
 remontrait plus jamais de bête. Invisible tant que les œufs étaient des emojis, immédiat dès
 qu'ils ne l'ont plus été.
+
+### La colonne se calme
+
+Trois défauts se ressemblaient sans qu'on les ait rapprochés : **du texte qui change tout seul
+fait sauter ce qui est en dessous.**
+
+    « … En réserve : 3. »        au bout d'une description qui se replie
+    « 3 loups, 2 ours, un… »     l'énumération de la pension, à chaque ponte
+    « … un clic vaut 8 s »       la ligne des boosts, à chaque image
+
+Aucun de ces textes n'est faux ; ils sont tous **dans un bloc qui se replie**, si bien que
+gagner ou perdre un mot fait gagner ou perdre une ligne — et tout ce qui suit descend d'un
+cran. La colonne clignotait plusieurs fois par minute, toute seule.
+
+#### Ce qui bouge sort du flux
+
+**La réserve d'œufs a sa propre case**, en chiffres tabulaires, à côté du prix : `×3`,
+`×47`. Elle ne pousse plus rien.
+
+**La pension annonce un nombre**, pas une liste : « En réserve : 12 œufs promis. » Le détail
+— quelles lignées, en quelles quantités — passe à l'infobulle : il se consulte, il ne se
+surveille pas. *La règle du secret a suivi le texte* : une lignée d'un rang jamais rencontré
+ne se nomme pas davantage dans une infobulle que dans une ligne.
+
+**La ligne des boosts réserve deux lignes** et n'en change plus.
+
+#### Et beaucoup de texte disparaît
+
+**Une rangée de boutique tient sur une ligne.** « C'est par là que tout le monde commence »
+est une jolie phrase, et elle occupait une ligne de la colonne pour toujours. Elle est à
+l'infobulle ; la rangée d'un œuf montre son nom, ce qu'on en a, son prix. Les descriptions qui
+restent — l'incubateur, l'enclos, les améliorations — tiennent sur **une seule ligne coupée par
+des points de suspension**, le reste dans l'infobulle : la colonne devient une liste qu'on
+parcourt au lieu d'un texte qu'on relit.
+
+**L'aide des réglages est repliée par défaut.** Six paragraphes expliquaient les trois
+automates — une trentaine de lignes, en permanence, pour des règles qu'on comprend à la
+première lecture et qu'on relit ensuite tous les jours sans le vouloir. Un bouton « à quoi ça
+sert ? » les rouvre.
+
+Le drapeau est **inversé exprès** : `aide` vrai veut dire *montrée*. Un booléen absent vaut
+faux, donc toutes les parties déjà commencées ouvrent sur la colonne calme sans qu'on ait à
+migrer quoi que ce soit — et le seul joueur qui voit les explications est celui qui les
+demande.
+
+Ce qui **ne** se replie pas : les consignes elles-mêmes, et la note calculée sous chacune.
+L'une est ce qu'on règle, l'autre ce que ça donne ; aucune des deux n'est de la documentation.
+
+#### Le banc ne voyait que les boutons
+
+`querySelectorAll` n'indexait que les `<button>` de `index.html`. La boucle qui replie l'aide
+parcourt des **paragraphes** : elle tournait donc à vide dans le banc, et rien n'aurait signalé
+qu'elle ne repliait rien. Le banc indexe maintenant tout ce qui porte une classe — et un
+élément qui a déjà un nœud sous son identifiant réutilise celui-là, sans quoi deux objets
+décriraient le même élément.
 
 ### Les consignes, en segments
 

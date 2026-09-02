@@ -720,7 +720,7 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   background: var(--raised); border: 1px solid var(--rule); border-radius: 4px;
   color: var(--ink); font-family: var(--f-ui); font-size: 0.85rem;
   padding: 0.55rem 0.7rem;
-  display: grid; grid-template-columns: 1fr auto; gap: 0.15rem 0.7rem; align-items: baseline;
+  display: grid; grid-template-columns: 1fr auto auto; gap: 0.15rem 0.5rem; align-items: baseline;
 }
 .buy:hover:not(:disabled) { border-color: var(--accent); }
 .buy:disabled { opacity: 0.42; cursor: not-allowed; }
@@ -729,7 +729,22 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
   font-family: var(--f-num); font-size: 0.8rem; color: var(--coin);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.buy .d { grid-column: 1 / -1; font-size: 0.76rem; color: var(--faint); line-height: 1.4; }
+/* LA RÉSERVE A SA PROPRE CASE, en chiffres tabulaires : elle vivait au bout de la description
+   et la faisait changer de hauteur plusieurs fois par minute. */
+.buy .s {
+  font-family: var(--f-num); font-size: 0.72rem; color: var(--soft);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* UNE RANGÉE, UNE HAUTEUR. La description se repliait sur deux ou trois lignes selon le texte
+   du moment, et tout ce qui était en dessous sautait avec elle. Une seule ligne, coupée par
+   des points de suspension, et le détail dans l'infobulle : la colonne devient une liste
+   qu'on parcourt au lieu d'un texte qu'on relit. */
+.buy .d {
+  grid-column: 1 / -1; font-size: 0.76rem; color: var(--faint); line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* et quand il n'y a rien à dire, la ligne n'existe pas */
+.buy .d:empty { display: none; }
 .buy.owned { border-color: var(--jade-dim); }
 .buy.owned .p { color: var(--jade); }
 
@@ -886,6 +901,14 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .config-what {
   font-size: 0.78rem; color: var(--soft); margin: 0 0 0.55rem; line-height: 1.5;
 }
+/* le bouton qui déplie l'aide : un mot, pas une icône — c'est une question qu'on se pose */
+.panel-aide {
+  font-family: var(--f-ui); font-size: 0.68rem; color: var(--faint);
+  background: none; border: 1px solid transparent; border-radius: 4px;
+  padding: 0.1rem 0.4rem; cursor: pointer; white-space: nowrap;
+}
+.panel-aide:hover { color: var(--soft); border-color: var(--rule); }
+.panel-aide[aria-pressed="true"] { color: var(--accent); }
 .config-what b { color: var(--ink); font-weight: 500; }
 /* ── LES CONSIGNES, EN SEGMENTS ────────────────────────────────────────
    Seize menus déroulants sont devenus seize rangées de pastilles, comme le tri de l'enclos.
@@ -936,9 +959,14 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 }
 
 /* le détail des boosts : discret, mais toujours là */
+/* LA LIGNE DES BOOSTS RÉSERVE SA PLACE. Elle se recompose à chaque image — « un clic vaut
+   8 s » suit la croissance — et elle se replie sur deux lignes selon les facteurs en cours :
+   un mot de plus et toute la scène descendait d'un cran. Deux lignes réservées coûtent un
+   blanc quand il n'y en a qu'une, et ça ne bouge plus jamais. */
 .stage-boost {
   font-family: var(--f-num); font-size: 0.7rem; letter-spacing: 0.04em;
   color: var(--faint); margin: -0.1rem 0 0; text-align: center;
+  line-height: 1.45; min-height: 2.9em;
 }
 
 /* ── illustrations ───────────────────────────────────────────────────────

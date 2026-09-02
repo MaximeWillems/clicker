@@ -226,9 +226,14 @@
     <div class="panel-head">
       <button type="button" class="panel-plier" data-plie="reglages"><span class="plier">▾</span>
         <h2>Réglages de la ferme</h2></button>
+      <!-- L'AIDE EST REPLIÉE PAR DÉFAUT. Six paragraphes expliquaient les trois automates —
+           une trentaine de lignes, en permanence, pour des règles qu'on comprend à la
+           première lecture. Ce qui reste, ce sont les consignes et la note calculée sous
+           chacune : l'une est ce qu'on règle, l'autre ce que ça donne. -->
+      <button type="button" class="panel-aide" id="reglages-aide" aria-pressed="false"></button>
     </div>
-    <p class="panel-intro">Tes automates travaillent en boucle, toujours dans cet ordre.
-      Chacun ne fait rien tant que tu ne lui as pas dit quoi.</p>
+    <p class="panel-intro" id="reglages-intro" hidden>Tes automates travaillent en boucle,
+      toujours dans cet ordre. Chacun ne fait rien tant que tu ne lui as pas dit quoi.</p>
 
     <div class="config" id="cfg-acheteur" hidden>
       <p class="config-step"><span class="step-n">1</span> L'acheteur remplit</p>

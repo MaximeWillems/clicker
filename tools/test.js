@@ -1271,7 +1271,11 @@ scenario('pension — elle tourne pendant une absence, et l’écran suit', () =
 
   jeu.refresh();
   eq('le panneau est ouvert', noeuds.get('panel-pension').hidden, false);
-  ok('et il dit ce qui attend', /loup|ours/.test(noeuds.get('pension-intro').textContent),
+  ok('et il compte ce qui attend', /1 œuf promis/.test(noeuds.get('pension-intro').textContent),
+     noeuds.get('pension-intro').textContent);
+  /* LE DÉTAIL EST PARTI À L'INFOBULLE : l'énumération changeait à chaque ponte et faisait
+     sauter le panneau. Ce qu'elle disait n'est pas perdu, il ne se surveille plus. */
+  ok('et le détail nomme les lignées', /loup|ours/.test(noeuds.get('pension-intro').title),
      noeuds.get('pension-intro').textContent);
 });
 
@@ -2085,8 +2089,10 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   // et une lignée promise en réserve ne se nomme pas non plus
   s.pension.dus = { merveille: ['wukong'] };
   jeu.refresh();
-  ok('la réserve reste muette', !/[Ww]ukong/.test(noeuds.get('pension-intro').textContent),
-     noeuds.get('pension-intro').textContent);
+  /* LA RÈGLE DU SECRET A SUIVI LE TEXTE. Le détail est passé à l'infobulle en 2.3.0, et
+     une infobulle se lit : elle ne doit pas nommer davantage que la ligne. */
+  ok('la réserve reste muette', !/[Ww]ukong/.test(noeuds.get('pension-intro').title),
+     noeuds.get('pension-intro').title);
 
   /* À LA PREMIÈRE ÉCLOSION, TOUT S'OUVRE D'UN COUP. */
   s.seen['kitsune:1'] = 1;
@@ -2099,8 +2105,8 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));
   eq('et les consignes reviennent', noeuds.get('vente-merveilleuse-r').hidden, false);
-  ok('la réserve nomme enfin', /[Ww]ukong/.test(noeuds.get('pension-intro').textContent),
-     noeuds.get('pension-intro').textContent);
+  ok('la réserve nomme enfin', /[Ww]ukong/.test(noeuds.get('pension-intro').title),
+     noeuds.get('pension-intro').title);
 });
 
 scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte', () => {
@@ -2621,6 +2627,78 @@ scenario('encyclopédie — elle traverse l’ascension, et une partie d’avant
   eq('le carnet naît vide', JSON.stringify(k.state.dex), '{}');
   const c = bete(k, 'crapaud', 1, 0);
   eq('et se remplit dès la première éclosion', k.dexVu('crapaud').nes, 1);
+});
+
+/* ───────────────────────────────── la colonne ───────────────────────────────── */
+
+scenario('colonne — la réserve ne pousse plus le texte de la boutique', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  jeu.refresh();
+
+  const r = jeu.refs.shop['egg-commun'];
+  ok('la rangée existe', !!r);
+
+  /* CE QUI CLIGNOTAIT. « En réserve : 3. » vivait au bout de la DESCRIPTION, une ligne qui se
+     replie : passer de 2 à 3 œufs pouvait faire gagner ou perdre une ligne au bouton, donc
+     décaler tout ce qui est en dessous. Le compte change plusieurs fois par minute. */
+  s.eggs.commun = 0;
+  jeu.refresh();
+  const desc0 = r.desc.textContent;
+  eq('la réserve vide n’affiche rien', r.reserve.textContent, '');
+
+  s.eggs.commun = 3;
+  jeu.refresh();
+  eq('la réserve a sa propre case', r.reserve.textContent, '×3');
+  eq('et la description n’a pas bougé', r.desc.textContent, desc0);
+
+  s.eggs.commun = 47;
+  jeu.refresh();
+  eq('même à deux chiffres', r.reserve.textContent, '×47');
+  eq('la description ne bouge toujours pas', r.desc.textContent, desc0);
+
+  /* CE QU'UN ŒUF RACONTE NE SE RACONTE QU'UNE FOIS : la phrase de saveur occupait une ligne
+     de la colonne pour toujours. Elle est à l'infobulle, la rangée tient sur une ligne. */
+  eq('la rangée d’un œuf n’a plus de description', desc0, '');
+  ok('mais elle est toujours lisible', /commence/.test(r.el.title), r.el.title);
+
+  // une rangée qui n'est pas un œuf garde la sienne : elle ne porte aucun compteur
+  const inc = jeu.refs.shop.incub;
+  ok('l’incubateur garde sa description', inc.desc.textContent.length > 0, inc.desc.textContent);
+  eq('et n’affiche aucune réserve', inc.reserve.textContent, '');
+});
+
+scenario('colonne — l’aide des réglages est repliée par défaut', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  s.primes.acheteur = true; s.primes.evolution = true; s.primes.marchand = true;
+  jeu.refresh();
+
+  const aides = () => document.querySelectorAll('.config-what');
+  ok('il y a bien des explications', aides().length >= 5, aides().length);
+
+  /* SIX PARAGRAPHES EXPLIQUAIENT LES TROIS AUTOMATES — une trentaine de lignes, en permanence,
+     pour des règles qu'on comprend à la première lecture et qu'on relit ensuite tous les jours
+     sans le vouloir. Le drapeau est inversé exprès : `aide` vrai veut dire MONTRÉE, donc une
+     partie déjà commencée ouvre sur la colonne calme sans qu'on ait à migrer quoi que ce soit. */
+  ok('toutes repliées au départ', aides().every(p => p.hidden));
+  eq('l’intro aussi', noeuds.get('reglages-intro').hidden, true);
+  eq('et le bouton propose de les voir', noeuds.get('reglages-aide').getAttribute('aria-pressed'), 'false');
+
+  jeu.plier('aide');
+  ok('un clic les montre toutes', aides().every(p => !p.hidden));
+  eq('l’intro revient', noeuds.get('reglages-intro').hidden, false);
+  eq('et le bouton se marque', noeuds.get('reglages-aide').getAttribute('aria-pressed'), 'true');
+
+  jeu.plier('aide');
+  ok('et se replie', aides().every(p => p.hidden));
+
+  /* CE QUI NE SE REPLIE PAS : les consignes elles-mêmes, et la note calculée sous chacune.
+     L'une est ce qu'on règle, l'autre ce que ça donne — aucune des deux n'est de la
+     documentation. */
+  ok('les segments restent', noeuds.get('reg-acheteur').children.length > 0);
+  ok('et la note calculée aussi', noeuds.get('note-acheteur').textContent.length > 0,
+     noeuds.get('note-acheteur').textContent);
 });
 
 /* ────────────────────────── la poussière et la forge ────────────────────────── */

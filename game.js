@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.2.0';
+const VERSION = 'beta 2.3.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3591,7 +3591,13 @@ function buildChrome() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'buy';
-    b.innerHTML = '<span class="t"></span><span class="p"></span><span class="d"></span>';
+    /* LA RÉSERVE A SA PROPRE CASE. Elle vivait au bout de la description — « … En réserve :
+       3. » — et la description est une ligne QUI SE REPLIE : passer de 2 à 3 œufs pouvait
+       faire gagner ou perdre une ligne au bouton, donc décaler tout ce qui est en dessous.
+       Le compte change plusieurs fois par minute, si bien que la colonne clignotait toute
+       seule. Une case à part, en chiffres tabulaires, ne pousse plus rien. */
+    b.innerHTML = '<span class="t"></span><span class="s"></span>' +
+                  '<span class="p"></span><span class="d"></span>';
     b.querySelector('.t').textContent = it.title;
     b.querySelector('.d').textContent = it.desc;
     b.addEventListener('click', it.run);
@@ -3599,6 +3605,7 @@ function buildChrome() {
     li.appendChild(b);
     shop.appendChild(li);
     refs.shop[it.key] = { li, el: b, price: b.querySelector('.p'), desc: b.querySelector('.d'),
+                          reserve: b.querySelector('.s'),
                           cost: it.cost, base: it.desc, stock: it.rarity };
   }
 
@@ -3630,7 +3637,13 @@ function buildChrome() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'buy';
-    b.innerHTML = '<span class="t"></span><span class="p"></span><span class="d"></span>';
+    /* LA RÉSERVE A SA PROPRE CASE. Elle vivait au bout de la description — « … En réserve :
+       3. » — et la description est une ligne QUI SE REPLIE : passer de 2 à 3 œufs pouvait
+       faire gagner ou perdre une ligne au bouton, donc décaler tout ce qui est en dessous.
+       Le compte change plusieurs fois par minute, si bien que la colonne clignotait toute
+       seule. Une case à part, en chiffres tabulaires, ne pousse plus rien. */
+    b.innerHTML = '<span class="t"></span><span class="s"></span>' +
+                  '<span class="p"></span><span class="d"></span>';
     b.addEventListener('click', () => buyUpgrade(u));
     li.appendChild(b);
     autos.appendChild(li);
@@ -3775,6 +3788,17 @@ function plier(cle) {
   save();
 }
 const estPlie = cle => !!(state.plie && state.plie[cle]);
+
+/* L'AIDE DES RÉGLAGES SE REPLIE, ET ELLE EST REPLIÉE PAR DÉFAUT. Six paragraphes expliquaient
+   les trois automates — une trentaine de lignes, en permanence, pour des règles qu'on
+   comprend à la première lecture et qu'on relit ensuite tous les jours sans le vouloir.
+
+   LE SENS DU DRAPEAU EST INVERSÉ EXPRÈS : `aide` vrai veut dire MONTRÉE. Un booléen absent
+   vaut faux, donc toutes les parties déjà commencées ouvrent sur la colonne calme sans qu'on
+   ait à migrer quoi que ce soit — et le seul joueur qui verra les explications est celui qui
+   les demande. Ce qui reste visible, ce sont les CONSIGNES elles-mêmes et la note calculée
+   sous chacune : l'une est ce qu'on règle, l'autre ce que ça donne. */
+const aideOuverte = () => !!(state.plie && state.plie.aide);
 
 /* ── L'ENCYCLOPÉDIE : LA LISTE ─────────────────────────────────────────────────
    UNE CARTE PAR LIGNÉE, ET NON PLUS UNE CASE PAR FORME. La grille de cent cinquante cases
@@ -5290,11 +5314,16 @@ function tickView() {
     const cost = r.cost();
     setText(r.price, fmt(cost));
     r.el.disabled = verrou || state.coins < cost;
-    if (verrou) setText(r.desc, 'Bientôt.');
-    else if (r.stock) {
-      const n = eggStock(r.stock);
-      setText(r.desc, r.base + (n ? ' En réserve : ' + n + '.' : ''));
-    } else setText(r.desc, r.base);
+    /* CE QU'UN ŒUF RACONTE NE SE RACONTE QU'UNE FOIS. « C'est par là que tout le monde
+       commence » est une jolie phrase, et elle occupe une ligne de la colonne pour toujours.
+       Elle passe à l'infobulle ; la rangée d'un œuf tient alors sur une seule ligne — le nom,
+       ce qu'on en a, le prix — et se lit d'un coup d'œil au lieu de se lire. */
+    if (r.reserve) {
+      const n = r.stock ? eggStock(r.stock) : 0;
+      setText(r.reserve, n ? '×' + n : '');
+    }
+    setText(r.desc, verrou ? 'Bientôt.' : r.stock ? '' : r.base);
+    r.el.title = r.base;
   }
 
   for (const u of UPGRADES) {
@@ -5520,6 +5549,13 @@ function refresh() {
 const PANNEAUX = ['boutique', 'autos', 'primes', 'pension', 'reglages', 'album'];
 
 function syncPanneaux() {
+  const aide = aideOuverte();
+  for (const p of document.querySelectorAll('.config-what')) p.hidden = !aide;
+  const bAide = $('reglages-aide');
+  bAide.setAttribute('aria-pressed', String(aide));
+  setText(bAide, aide ? 'moins' : 'à quoi ça sert ?');
+  $('reglages-intro').hidden = !aide;
+
   for (const cle of PANNEAUX) {
     const p = $('panel-' + cle);
     p.classList.toggle('plie', estPlie(cle));
@@ -6347,9 +6383,14 @@ function renderPension() {
   const parLignee = new Map();
   for (const l of promis) parLignee.set(l, (parLignee.get(l) || 0) + 1);
   const resume = [...parLignee].map(([l, n]) => (n > 1 ? n + ' ' : '') + nommer(l));
+  /* UN NOMBRE, PAS UNE LISTE. L'énumération — « 3 loups, 2 ours, un crapaud » — changeait à
+     chaque ponte et à chaque éclosion, c'est-à-dire plusieurs fois par minute sur une pension
+     qui tourne. Elle occupe une, deux ou trois lignes selon les noms tirés, et le panneau
+     entier sautait à chaque fois. Le détail part à l'infobulle : il se consulte, il ne se
+     surveille pas. */
+  $('pension-intro').title = resume.length ? 'En réserve : ' + liste(resume) + '.' : '';
   setText($('pension-intro'), promis.length
-    ? 'En réserve : ' + liste(resume.slice(0, 6)) +
-      (resume.length > 6 ? ', et ' + (resume.length - 6) + ' de plus' : '') + '.'
+    ? 'En réserve : ' + promis.length + (promis.length > 1 ? ' œufs promis.' : ' œuf promis.')
     : nes
     ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus. ' +
       nes + (nes > 1 ? ' œufs pondus' : ' œuf pondu') + ' depuis le début.'
@@ -6775,6 +6816,7 @@ function bindTools() {
      disent la même chose et une septième oubliée le jour où un panneau s'ajoute. */
   for (const b of document.querySelectorAll('.panel-plier')) {
     b.addEventListener('click', () => plier(b.dataset.plie));
+  $('reglages-aide').addEventListener('click', () => plier('aide'));
   }
 
   /* ── LA PENSION : glisser une bête de la bande jusqu'au nid ──────────────────
