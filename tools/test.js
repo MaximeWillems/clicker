@@ -2749,6 +2749,54 @@ function pave(jeu, id, ligne, etoiles) {
            prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
 }
 
+scenario('clic — une bête menée au bout paie, et seulement sous ta main', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 8; s.coins = 0;
+  const c = bete(jeu, 'golem', 5, 0);
+  c.p = jeu.bandTo(c);
+
+  /* TROIS PLAFONDS À LA FOIS, jamais un seul : une commune mûre à l'âge enfant est déjà « au
+     max de sa tranche », et si elle comptait, c'est toute la ferme qui compterait. */
+  eq('au niveau cent mais pas au dernier rang', jeu.estFinie(c), false);
+  ok('et le clic la fait encore grossir',
+     (jeu.select('c:' + c.id), jeu.tapStage(), (c.over || 0) > 0));
+
+  c.over = jeu.ageGrow(c) * 580;
+  eq('au dernier rang, elle est finie', jeu.estFinie(c), true);
+  ok('rankOf le dit déjà', jeu.rankOf(jeu.sizeFactor(c)).next === null);
+
+  // un âge plus bas ne compte pas, quel que soit l'embonpoint
+  const jeune = bete(jeu, 'golem', 4, 0);
+  jeune.p = jeu.bandTo(jeune);
+  jeune.over = jeu.ageGrow(jeune) * 580;
+  eq('un âge en dessous n’est jamais fini', jeu.estFinie(jeune), false);
+
+  /* CE QU'UN CLIC REND ALORS : de la monnaie, et plus de l'embonpoint. */
+  jeu.select('c:' + c.id);
+  const avant = s.coins, gras = c.over;
+  jeu.tapStage();
+  ok('le clic paie', s.coins > avant, s.coins - avant);
+  eq('et n’engraisse plus', c.over, gras);
+  eq('c’est bien le montant annoncé', s.coins - avant,
+     jeu.gainClicFini(c, { kind: 'creature', c }));
+
+  /* IL RESTE UNE RÉCOMPENSE DE PRÉSENCE : de l'ordre de mille cinq cents clics pour égaler
+     une vente. S'il en fallait dix, vendre n'aurait plus de sens. */
+  ok('mille clics ne valent pas une vente',
+     (s.coins - avant) * 1000 < jeu.sellValue(c),
+     Math.round(jeu.sellValue(c) / (s.coins - avant)) + ' clics par vente');
+
+  /* ET SEULEMENT SOUS LA MAIN DU JOUEUR. La carte ocellée clique à ta place : si elle
+     encaissait, elle deviendrait une machine à monnaie automatique, et la mécanique
+     produirait l'inverse de son intention. */
+  const avant2 = s.coins, gras2 = c.over;
+  jeu.mainDeCarte = true;
+  jeu.tapStage();
+  jeu.mainDeCarte = false;
+  eq('l’ocellée n’encaisse rien', s.coins, avant2);
+  ok('elle retombe sur l’embonpoint', c.over > gras2);
+});
+
 scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 20;

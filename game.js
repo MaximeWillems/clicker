@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 3.0.0';
+const VERSION = 'beta 3.1.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2484,6 +2484,42 @@ const autoReel = s => autoRate(s) * albumVitesse(s);
    un automate en route, le produit redonne exactement la vitesse réelle de la machine. */
 const clickGain = s => clickPower() * albumVitesse(s) * Math.max(1, autoRate(s));
 
+/* ── UNE BÊTE FINIE ────────────────────────────────────────────────────────────
+   TROIS PLAFONDS À LA FOIS : l'âge légende, le niveau cent, et le dernier rang de taille.
+   Les trois ensemble, jamais un seul — une commune mûre à l'âge enfant est déjà « au max de
+   sa tranche », et si elle comptait, c'est toute la ferme qui compterait.
+
+   LE TROISIÈME EST UN VRAI BOUT, et c'est ce qui rend la notion honnête. L'embonpoint est
+   logarithmique donc il ne sature jamais en théorie, mais l'échelle des rangs, elle, s'arrête :
+   atteindre `démesuré` demande 579 fois la croissance d'un âge, et le cran suivant — s'il
+   existait — en demanderait 7 400, treize fois plus. Personne n'irait. `rankOf` le dit déjà en
+   ne rendant plus de suivant.
+
+   CE QUI MANQUAIT : rien ne le disait. Au dernier rang le nom cesse de changer, la taille à
+   l'écran est plafonnée, et la valeur continue de grimper de façon imperceptible. La bête était
+   finie et le jeu ne le reconnaissait pas — on cliquait dessus sans que rien n'arrive. */
+const estFinie = c => c.age === AGES.length && niveau(c) === NIV_MAX &&
+                      rankOf(sizeFactor(c)).next === null;
+
+/* CE QU'UN CLIC REND ALORS : les secondes qu'il aurait fait grandir, converties en rente, au
+   cinq-centième. Le taux n'est pas décoratif, il est calé sur un rapport :
+
+   Sans lui, un clic de fin de partie — 408 secondes, primes et martelé compris — vaudrait
+   408 secondes de rente, soit ONZE POUR CENT de la valeur de la bête. Neuf clics égaleraient
+   une vente, et vendre n'aurait plus de sens.
+
+   MESURÉ AU BANC, au cinq-centième, sur une légende mythique chromatique menée au dernier
+   rang : un clic vaut 2,45 secondes de sa rente, et il faut environ MILLE CINQ CENTS clics
+   pour égaler une vente — trois minutes de clic continu. Cliquer cette seule bête rapporte
+   alors à peu près autant que la rente passive de vingt enclos pleins : l'actif égale le
+   passif sans l'écraser, ce qui est exactement le point visé.
+
+   IL PASSE PAR `clickGain`, donc la force du clic, le martelé et la frénésie le nourrissent
+   tous les trois — c'est précisément ce qui leur manquait en fin de partie, où le clic cessait
+   de peser. Et par `renteOf`, donc le tigré et les primes de rente aussi. */
+const RENTE_CLIC = 1 / 500;
+const gainClicFini = (c, s) => Math.max(1, Math.round(renteOf(c) * clickGain(s) * RENTE_CLIC));
+
 /* La taille se mesure en durées de croissance avalées EN PLUS de ce que son âge demandait.
    Le diviseur est la tranche courante, quatre à six fois plus longue à chaque cran : c'est
    ce qui fait qu'on peut conserver l'embonpoint à travers l'évolution sans rien offrir. */
@@ -2880,6 +2916,26 @@ function tapStage() {
     flash(el, 'shake');
     return;
   }
+  /* UNE BÊTE FINIE PAIE, ET SEULEMENT SOUS LA MAIN DU JOUEUR. La carte ocellée clique à ta
+     place : si elle encaissait, elle deviendrait une machine à monnaie automatique et cette
+     mécanique produirait l'inverse de son intention — au lieu de pousser à cliquer, elle
+     rendrait le clic inutile en le déléguant. `mainDeCarte` est déjà levé pendant ses clics,
+     et la plonge s'en sert déjà pour se refuser à elle : le précédent existe.
+
+     Sous sa main à elle, on retombe donc sur l'embonpoint, comme avant. Ce n'est pas perdu,
+     c'est seulement imperceptible — et c'était déjà le cas. */
+  if (estFinie(c) && !mainDeCarte) {
+    const gain = gainClicFini(c, s);
+    state.coins += gain;
+    state.stats.gagne += gain;
+    state.stats.clics++;
+    flash(el, 'shake');
+    floatText(jitter(), pt.y - 20, '+' + fmt(gain), 'gain');
+    blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
+    refresh();
+    return;
+  }
+
   const avantNiv = niveau(c), avantMur = estMur(c);
   const avantRang = rankOf(sizeFactor(c)).i, avantValeur = sellValue(c);
   /* Un clic ajoute de la vie avant comme après la maturité : la créature ne cesse jamais de
@@ -5112,10 +5168,16 @@ function renderBete(s) {
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');
-      setText($('stage-timer'), 'plus aucun rang au-dessus');
+      setText($('stage-timer'), estFinie(c) ? 'menée au bout' : 'plus aucun rang au-dessus');
     }
     $('stage-timer').classList.add('done');
-    setText($('stage-hint'), c.age < AGES.length
+    /* LA BÊTE FINIE LE DIT, et dit ce que le clic lui rapporte. C'est le seul endroit du jeu
+       où l'on n'a plus rien à faire grandir : sans cette phrase, on clique sur une bête au
+       bout en croyant qu'il ne se passe rien. */
+    setText($('stage-hint'), estFinie(c)
+      ? 'Elle est au bout : plus de niveau, plus de rang. Chaque clic te rapporte ' +
+        fmt(gainClicFini(c, s)) + ' — c’est ta main seule qui compte, pas une carte ocellée.'
+      : c.age < AGES.length
       ? 'Elle est mûre : son niveau ne montera plus tant que tu ne l’auras pas fait évoluer. ' +
         (r ? 'En attendant, elle rapporte ' + fmtRente(r) + ' / s et s’engraisse.'
            : 'En attendant, ce qu’elle avale part dans sa taille — et ce n’est pas perdu.')
@@ -5279,7 +5341,8 @@ function tickView() {
          et le plafond de l'âge — donc la distance à la maturité — tient dans le même espace
          que le mot « niv. » qu'il remplace. */
       setText(t.tag, niveau(s.c) + '/' + (nivBase(s.c.age) + nivDansAge(s.c.age)) +
-                     (mur ? ' ✦' : ''));
+                     (estFinie(s.c) ? ' ✹' : mur ? ' ✦' : ''));
+      t.el.classList.toggle('finie', estFinie(s.c));
       setFont(t.glyph, (0.9 + 0.75 * Math.min(2.25, visualScale(s.c))).toFixed(2) + 'rem');
     }
   }

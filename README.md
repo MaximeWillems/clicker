@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 3.0.0** | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
+| **beta 3.1.0** | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
+| beta 3.0.0 | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
 | beta 2.5.0 | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
 | beta 2.4.1 | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
 | beta 2.4.0 | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
@@ -1371,6 +1372,55 @@ espèce réelle ou à un nom propre, ce qui est le registre du reste du bestiair
 
 **Rien à migrer.** Une sauvegarde ne stocke que des clés de lignée et des numéros d'âge, jamais
 un nom affiché : la collection d'une partie en cours traverse le renommage sans rien perdre.
+
+### Une bête menée au bout paie au clic
+
+**Trois plafonds à la fois** : l'âge légende, le niveau cent, et le dernier rang de taille.
+Les trois ensemble, jamais un seul — une commune mûre à l'âge enfant est déjà « au max de sa
+tranche », et si elle comptait, c'est toute la ferme qui compterait.
+
+Le troisième est un vrai bout. L'embonpoint est logarithmique, donc il ne sature jamais en
+théorie ; mais l'échelle des rangs, elle, s'arrête :
+
+| Rang | Ce qu'il coûte |
+|---|---|
+| grand | 0,7 × la croissance de l'âge |
+| énorme | 2,6 × |
+| colossal | 9,6 × |
+| titanesque | 54 × |
+| **démesuré** | **579 ×** |
+| *(le cran d'après, s'il existait)* | *7 400 ×* |
+
+Treize fois plus pour un cran de plus : personne n'irait. C'est la fin de la progression d'une
+bête, et `rankOf` le dit déjà en ne rendant plus de suivant.
+
+**Ce qui manquait, c'est que rien ne le disait.** Au dernier rang le nom cesse de changer, la
+taille à l'écran est plafonnée, et la valeur continue de grimper de façon imperceptible : on
+cliquait sur une bête finie sans que rien n'arrive.
+
+#### Ce qu'un clic rend alors
+
+Les secondes qu'il aurait fait grandir, converties en rente, **au cinq-centième**. Le taux n'est
+pas décoratif : sans lui, un clic de fin de partie — 408 secondes, primes et martelé compris —
+vaudrait onze pour cent de la valeur de la bête, et **neuf clics égaleraient une vente**.
+
+Mesuré au banc sur une légende mythique chromatique menée au dernier rang : un clic vaut
+**2,45 secondes de sa rente**, et il faut environ **mille cinq cents clics pour égaler une
+vente** — trois minutes de clic continu. Cliquer cette seule bête rapporte alors à peu près
+autant que la rente passive de vingt enclos pleins : *l'actif égale le passif sans l'écraser.*
+
+Le gain passe par `clickGain`, donc **la force du clic, le martelé et la frénésie le
+nourrissent tous les trois** — c'est précisément ce qui leur manquait en fin de partie, où le
+clic cessait de peser. Et par `renteOf`, donc le tigré et les primes de rente aussi.
+
+#### Seulement sous la main du joueur
+
+**La carte ocellée clique à ta place.** Si elle encaissait, elle deviendrait une machine à
+monnaie automatique et la mécanique produirait l'inverse de son intention : au lieu de pousser
+à cliquer, elle rendrait le clic inutile en le déléguant.
+
+`mainDeCarte` est déjà levé pendant ses clics, et la plonge s'en sert déjà pour se refuser à
+elle — le précédent existait. Sous sa main à elle, on retombe sur l'embonpoint, comme avant.
 
 ### Le bonheur et la frénésie
 

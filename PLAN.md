@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 3.0.0 · sauvegarde v20 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 3.1.0 · sauvegarde v20 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -178,7 +178,7 @@ minute (`FRENESIE_MAX`) empêche même de compenser par le volume.
 et le bonheur d'une bête disparaît avec elle quand on la vend. Rien ne s'accumule, rien ne se
 collectionne, rien ne se vise.
 
-#### Au niveau max, le clic devrait payer
+#### Au niveau max, le clic devrait payer — **fait en `beta 3.1.0`**
 
 L'idée : **une bête arrivée au bout rend des pièces à chaque clic**, pour qu'on ait encore une
 raison de cliquer sur un rentier en fin de partie.
