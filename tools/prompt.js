@@ -276,6 +276,49 @@ const STADES = {
     'reef crab, the same thick asymmetric pincers held close to the body, same stalked eyes, the domed carapace now TALL and humped, crusted with small round coral bumps, drowsy eyes',
     'karkinos, enormous crab much WIDER than tall, the same asymmetric pincers now massive and raised high on each side, same stalked eyes, a low broad carapace covered in round coral bumps and a few small round star marks, tiny sleepy face in the middle'],
 
+  /* LE FIL DE WUKONG : LE MASQUE D'OPÉRA, et l'armure qui n'arrive qu'au quatrième âge. Les
+     quatre premiers stades sont ceux de la planche d'origine, recopiés tels quels — ils sont
+     bons et on n'y retouche pas.
+
+     LE CINQUIÈME A ÉTÉ REFAIT, et pour une raison qui se lit dans la charte elle-même : elle
+     exige cinq masses sans collision, et l'ancien stade 5 était « vertical sur socle » quand
+     le stade 2 est « vertical et étroit ». Deux fois la même silhouette à vingt-quatre
+     pixels — le climax ressemblait à la deuxième forme. Le bâton planté, les deux plumes
+     hautes et l'armure complète en faisaient de surcroît une grappe verticale illisible.
+
+     Il prend donc la seule masse que personne n'occupe : LARGE. Le seul des cinq plus large
+     que haut, bâton en travers et non planté, nuage étalé bien au-delà des épaules.
+
+     Et le dessin porte sa CONTRAINTE D'ANIMATION : c'est le stade qu'on animera, avec un
+     budget d'une quarantaine de cellules qui bougent. Tout ce qui doit bouger est donc aux
+     BORDS — le nuage et la pointe des plumes — et le corps reste immobile au centre. Une pose
+     dont le mouvement serait au milieu ne s'animerait pas dans ce budget. */
+  wukong: [
+    'a SMALL monkey, just out of the stone. He is crouched low and compact, and the broken stone egg is still around him — two or three large flat shards, clearly separate from his body. Bare, no armour, no staff, no cap. The pale opera mask is ALREADY there and already large: it is his identity from the first frame. Narrow eyes. Nothing behind him',
+    'STANDING, and the mass changes completely: upright, weight on one leg, a plain cape or a fur wrap across one shoulder, a simple flat circlet. No armour yet, no staff. He is a king of animals, not of heaven. Nothing behind him',
+    'AIRBORNE, and this is the ONLY stage with no support under him. He has just learned the cloud somersault: the body is on a clear DIAGONAL, legs folded up, one arm extended forward, the tail streaming out behind, and one small flat wisp of cloud under his feet — a wisp, not a base. Still no armour, still no staff, still the plain circlet. The mask stays calm: he is travelling, not straining',
+    'UNDER THE MOUNTAIN, AND HE IS PUSHING. The silhouette inverts and this is the only stage where he is not upright. The mountain fills the TOP of the frame — one big flat mass with two or three plane changes, no texture, no drawn rocks. He occupies the LOWER HALF and he is unmistakably present: one shoulder and BOTH arms out from under the stone, the body visibly straining upward, the pale mask high in the frame and perfectly calm. He is trapped, never buried. This is where the ARMOUR first appears: one flat shoulder plate and the phoenix-feather cap show from beneath the mountain. One flat gold seal shape on the stone',
+    'AT REST AND WIDE OPEN, and it reads as the release of stage 4. This one is clearly WIDER THAN TALL — the only one of the five, and that is what makes it a climax instead of a fifth pose. Both arms are open and level, the staff held HORIZONTALLY across the full width at chest height, never planted upright. Under him ONE WIDE FLAT CLOUD drawn as a single simple shape, spreading well past his shoulders on both sides. Armour and cap complete, the two long plumes sweeping OUT sideways, not up. The body is perfectly still and centered; everything that could read as motion sits at the EDGES — the cloud and the plume tips. No roar, no raised weapon, no threat',
+  ],
+
+  /* LE FIL DU KITSUNE : LE MASQUE ET LES QUEUES. Le piège de cette lignée est écrit dans son
+     nom — cinq formes qui ne diffèrent que par le NOMBRE de queues se ressemblent toutes, et
+     c'est exactement la faute du crapaud : cinq bêtes qui ne diffèrent que par leur décor.
+
+     Le compte de queues est donc le signe SECONDAIRE. Ce qui sépare les cinq, c'est la masse :
+     ramassée, triangle, diagonale, éventail, colonne. Aucune ne se répète, et la dernière est
+     la seule qui MONTE — c'est ce qui en fait un climax et non une cinquième pose.
+
+     Le fil continu, présent dès le premier âge : le museau fin, les oreilles hautes et
+     pointues, et une marque pâle sur le front. Jamais un renard réaliste. */
+  kitsune: [
+    'a young kitsune LYING DOWN and curled, a low rounded mass, one single tail wrapped around the front paws. Narrow half-lidded eyes, a slender pointed muzzle, two tall pointed ears, one pale flame-shaped mark on the forehead. Already composed, never a cub',
+    'the same kitsune now SITTING UPRIGHT, forming a clear TRIANGLE — wide at the haunches, narrowing to the head. THREE tails held close together behind it in a single tight bundle, never spread. Same muzzle, same tall ears, same forehead mark. One flat pale collar of fur at the chest',
+    'the same kitsune RUNNING, the body stretched into a clear DIAGONAL across the frame, front legs reaching forward and hind legs pushed back. FIVE tails streaming behind in one flowing trail, all pointing the same way. Same muzzle and ears laid back by the speed. The only one with no ground contact',
+    'the same kitsune SEATED FACING THE VIEWER, and SEVEN tails spread WIDE behind it like an open fan, evenly spaced in a half circle. This one is clearly WIDER THAN TALL — the widest of the five. The body itself is small and centered at the bottom of the fan, same muzzle, same ears, same mark',
+    'the same kitsune STANDING TALL on its hind legs before a plain torii gate, and NINE tails rising BEHIND AND ABOVE it in a tall crown, never sideways. This one is clearly TALLER THAN WIDE — the only one that goes UP. Same slender muzzle, same tall ears, the forehead mark now a small flat disc of light. Calm and still',
+  ],
+
   /* Le fil de l'ouroboros : LA MORSURE. Il se mord la queue dès le premier âge et ne lâche
      jamais — la silhouette est un anneau FERMÉ du début à la fin, jamais une ligne, jamais une
      courbe ouverte. C'est ce qui le sépare du serpent-plume et du ver d'un seul coup d'œil,
@@ -393,6 +436,14 @@ const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
   .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const cle = process.argv[2];
+/* REFAIRE UN SEUL STADE. Une planche de cinq coûte un jeton, et un climax raté n'en gâche
+   qu'un cinquième : demander les cinq pour en corriger un ferait DÉRIVER les quatre autres,
+   qui vont bien. Le mode rend le même prompt, la même charte, le même fil de lignée, mais
+   n'en décrit qu'un — et la ligne de découpe qui va avec, en `--stades 1`. */
+const stadeSeul = (() => {
+  const i = process.argv.indexOf('--stade');
+  return i === -1 ? 0 : parseInt(process.argv[i + 1], 10) || 0;
+})();
 
 /* Le prompt est TOUJOURS écrit dans un fichier, en plus du terminal. Lancée depuis un
    bouton de la conversation, une commande n'affiche pas forcément son retour — et un
@@ -412,11 +463,33 @@ function ecrire(ligne) {
     vus.add(su);
     return su;
   });
-  // une mythique naît accomplie : elle ne suit pas la charte des bêtes qui grandissent
-  const entete = ligne.rarity === 'mythique' || ligne.rarity === 'merveilleux'
+  /* Une mythique naît accomplie : elle ne suit pas la charte des bêtes qui grandissent.
+     LA CLÉ EST « merveilleuse », PAS « merveilleux » — le test ne pouvait donc jamais être
+     vrai pour le rang qui en avait le plus besoin, et les trois merveilles auraient reçu la
+     charte mascotte. Personne ne s'en est aperçu : aucune des trois n'était décrite ici. */
+  const entete = ligne.rarity === 'mythique' || ligne.rarity === 'merveilleuse'
                ? ENTETE_REVELATION : ENTETE;
   const l = [entete];
   if (NOTES[ligne.key]) l.push('', NOTES[ligne.key]);
+  if (stadeSeul) {
+    const i = stadeSeul - 1;
+    l.push('', 'ONE creature only, alone on the image, centered — not a sheet, not a row:');
+    l.push(stades[i]);
+    l.push('', '', '--- une fois l’image enregistrée dans art/source-' + ligne.key + '-'
+                 + stadeSeul + '.png ---', '');
+    l.push('node tools/pixel.js importer art/source-' + ligne.key + '-' + stadeSeul + '.png '
+           + ligne.key + '-' + stadeSeul + ' --stades 1 --grille 64');
+    l.push('', '  Puis la grille remplace le stade ' + stadeSeul + ' de art/grilles/'
+             + ligne.key + '.txt.');
+    l.push('  ATTENTION : une image seule fait calculer SA palette, qui ne sera pas celle des');
+    l.push('  quatre autres. Recopier la ligne « palette: » du stade 1 sur le stade neuf avant');
+    l.push('  de relancer « rendre » — sinon la lignée change de couleurs au dernier âge.');
+    const texte0 = l.join('\n');
+    if (!fs.existsSync('prompts')) fs.mkdirSync('prompts');
+    const chemin0 = 'prompts/' + ligne.key + '-' + stadeSeul + '.txt';
+    fs.writeFileSync(chemin0, texte0);
+    return { chemin: chemin0, texte: texte0 };
+  }
   l.push('', 'The 5 stages, in order:');
   ligne.forms.forEach((f, i) => l.push((i + 1) + '. ' + stades[i]));
   l.push('', '', '--- une fois la planche enregistrée dans art/source-' + ligne.key + '.png ---', '');

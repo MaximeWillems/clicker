@@ -1,0 +1,67 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+FLAT CARTOON, NEVER AN ILLUSTRATION — read this before anything else:
+this is the SAME drawing technique as every other sheet in this game. Only the
+REGISTER changes — solemn instead of cute. The technique does not change at all.
+- flat blocks of color with one hard outline. Every color is ONE solid tone
+- NO shading, NO soft light, NO airbrush, NO glossy highlight, NO reflection
+- NO drawn scales, NO surface texture, NO engraved detail, NO fine linework
+- hard pixel edges, no anti-aliasing, no blur
+- never a painting, never concept art, never a realistic or photographic object
+
+IDOL REGISTER — what the creature IS:
+- ALREADY ACCOMPLISHED at stage 1: not a baby, not a hatchling. A small complete god
+- adult proportions, calm and settled. The head is a normal head
+- NO blush marks. NO wide smile. NO kawaii. This is NOT a mascot
+- eyes are NARROW and half-lidded, almond or slit-shaped, calm and aware —
+  never huge round eyes, at most one small highlight
+- mouth closed and neutral, or simply doing what the creature does
+- expression: composed, ancient, faintly imperious. Serene, never friendly, never sleepy
+- shapes may be ANGULAR where it means something — a defined jaw, a crown, a fin —
+  but they stay flat and FEW. Angular never means detailed. Never gore, never fangs
+- the pose is ALIVE, never heraldic: the weight sits on one side, the body turns,
+  the head is set off the centre line. Never a flat symmetrical emblem, never a logo
+- ornament is INSIGNIA, not decoration: rings, bands, glyphs, banded marks — drawn
+  as a FEW LARGE FLAT SHAPES, never fine engraving, never polka dots, never confetti
+- palette: deep and rich, with ONE metallic accent used sparingly — gold, jade or bone.
+  Never a bright candy palette
+
+REVELATION — the five stages are ONE being waking up, not one growing up:
+- what is already right at stage 1 is its IDENTITY: same species, same face, same
+  attributes. NOT its pose
+- the POSE CHANGES AT EVERY STAGE, and visibly: the body turns, coils, rises, leans.
+  If stage 3 could be stage 1 scaled up, the sheet has failed — redraw it
+- what the being GAINS is an attribute, a mark, a flat glow, sheer size
+- same palette, same outline color, same eye shape throughout
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must be overwhelming in SCALE and COMPOSITION, never in menace:
+  no snarl, no weapon, no threat. The awe comes from what surrounds it
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients. Simple geometric shapes.
+
+Centered, full body, seen at a slight three-quarter angle — never flat-on.
+Depth comes from parts of the body passing IN FRONT of and BEHIND other parts,
+with a clean outline at every crossing. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+Light and glow are allowed ONLY as one extra FLAT pale shape with a clean edge —
+never a blur, never a gradient, and it still counts toward the 6 colors.
+
+Last instruction, and it overrides every word above: 6 flat colors, hard outline,
+no shading, no texture. Between grandeur and flatness, choose FLATNESS.
+
+ONE creature only, alone on the image, centered — not a sheet, not a row:
+AT REST AND WIDE OPEN, and it reads as the release of stage 4. This one is clearly WIDER THAN TALL — the only one of the five, and that is what makes it a climax instead of a fifth pose. Both arms are open and level, the staff held HORIZONTALLY across the full width at chest height, never planted upright. Under him ONE WIDE FLAT CLOUD drawn as a single simple shape, spreading well past his shoulders on both sides. Armour and cap complete, the two long plumes sweeping OUT sideways, not up. The body is perfectly still and centered; everything that could read as motion sits at the EDGES — the cloud and the plume tips. No roar, no raised weapon, no threat
+
+
+--- une fois l’image enregistrée dans art/source-wukong-5.png ---
+
+node tools/pixel.js importer art/source-wukong-5.png wukong-5 --stades 1 --grille 64
+
+  Puis la grille remplace le stade 5 de art/grilles/wukong.txt.
+  ATTENTION : une image seule fait calculer SA palette, qui ne sera pas celle des
+  quatre autres. Recopier la ligne « palette: » du stade 1 sur le stade neuf avant
+  de relancer « rendre » — sinon la lignée change de couleurs au dernier âge.
