@@ -15,6 +15,12 @@ tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
 ## Le plan de versions — ce qu'on fait maintenant
 
+**Comment lire ce document.** Ce qui est à faire vient en premier : où on en est, ce qui tombe
+ensuite, puis les analyses qui portent chacun de ces chantiers. Ce qui est livré est gardé plus
+bas, sous « Ce qui est derrière » — non par nostalgie, mais parce que la moitié des décisions
+du jeu ne se comprennent qu'en sachant contre quoi elles ont été prises, et que deux d'entre
+elles ont déjà été renversées.
+
 Le numéro suit la règle écrite en haut de `game.js` : majeur pour un morceau de jeu qui
 n'existait pas, mineur pour une nouveauté qui tient dans le jeu tel qu'il est, correctif pour
 le reste. Chaque version répond à une question, et c'est la question qui décide si elle est
@@ -66,48 +72,84 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
 | **L'encyclopédie** | beta 1.9, 1.10 | la collection peut-elle dire autre chose que « combien m'en manque-t-il » ? | oui — une fiche par lignée, dans une vue à elle |
 
-### La ligne d'arrivée de l'alpha
+### Ce qui vient ensuite
 
-**Le mot « alpha » tombe quand la pension, la fusion des cartes et les premières merveilleuses
-sont en place ensemble.** C'est la seule définition de la bêta qu'on se donne, et elle a le
-mérite de ne dépendre d'aucune date.
+La colonne du milieu dit **ce qu'il faut avoir fait avant**, ce qui est plus utile qu'un ordre :
+deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 
-Elle tient parce que ces trois-là **forment une boucle**, ce qu'aucune ne fait seule :
+| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
+|---|---|---|
+| **Les dix-sept dessins** | rien | — |
+| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
+| **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
+| **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
+| **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
+| **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
+| **Les fonds à la pension** — au hasard comme les teintes, ET transmis par les parents | rien pour le hasard, l'hérédité pour le reste | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
 
-- la **pension** donne une raison d'élever plutôt que de vendre ;
-- les **merveilleuses** donnent une raison d'utiliser la pension — c'est la seule rareté qui
-  ne s'achète pas, et elle n'existe nulle part ailleurs ;
-- la **fusion** donne une raison de garder les doublons que tout ça produit, au lieu de les
-  laisser dormir en réserve.
+### Le chantier qui barre la route : les dessins
 
-Sans la fusion, l'album se remplit de cartes qu'on n'équipera jamais. Sans les merveilleuses,
-la pension n'offre qu'un raccourci vers ce qu'on pouvait déjà acheter. Sans la pension, les
-merveilleuses n'ont pas de porte. **Le jeu est aujourd'hui un très bon prototype de sa moitié
-d'avant**, et ces trois pièces sont ce qui manque pour qu'il soit un jeu.
+C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
+affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**Les trois sont tombés.** La fusion en 2.32.0, la pension en 3.0.0, les merveilleuses en
-3.1.0 — et la boucle est fermée : on élève pour reproduire, on reproduit pour obtenir ce qui ne
-s'achète nulle part, l'album donne une raison de garder les doublons.
+**17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
+serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
+sphinx, cheval) et les trois mythiques (chimère, béhémoth, ouroboros). Ce n'est pas une
+version, c'est une voie de fond qui avance entre les autres. Rien n'en dépend, tout en
+bénéficie.
 
-L'ordre a changé deux fois en route, et les deux fois pour la même raison : **ne pas rester
-bloqué derrière les dessins.** La pension a ouvert sur les vingt-sept lignées existantes,
-dessinées ou non — le jeu n'en montre que le glyphe. Les merveilleuses ont suivi à deux sur
-huit, par les deux seules dont les recettes se lisaient sans rien ajouter au bestiaire.
+C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
+poubelle au jalon 1, les PNG resteront tels quels dans le vrai jeu. Chaque heure passée là est
+acquise, contrairement à tout le reste.
 
-Ce que ça coûte, et il faut le dire : **six merveilles sur huit sont écrites et pas écloses**,
-et le rang le plus haut du jeu tient aujourd'hui sur deux bêtes en glyphe. Ce n'est pas une
-dette de code — il n'y a rien à écrire pour les six autres, seulement des recettes et des PNG.
+Les 28 fiches de `prompts/` portent chacune le brief, la commande de découpe et la ligne à
+coller dans la table `ART`. La charte a deux registres : **mascotte** pour les communes, les
+rares et les épiques, **idole** pour les mythiques et les merveilleuses — le second est né en
+2.7.1, quand l'Ouroboros mignon a été rejeté.
 
-**Le mot « alpha » est tombé avec la `beta 1.0.0`** : la définition demandait « les premières
-merveilleuses », elle ne disait pas combien.
+Deux leçons payées cher, à ne pas réapprendre :
 
-**Et les nombres sont repartis de 1**, contre ce que ce document annonçait. Le raisonnement
-d'origine — « la bêta ne remet rien à zéro » — traitait le mot comme une étiquette posée sur
-une série continue. Mais la série `alpha 3.x` racontait l'histoire de l'alpha : ses trois
-majeurs sont les trois chantiers qui manquaient au prototype. `beta 1.0.0` dit ce que la
-version est, une première version d'un jeu complet, là où `beta 3.2.0` aurait continué à
-compter les corrections d'un prototype. Le mot et le nombre repartent ensemble, une seule fois
-— il n'y aura pas de `gamma`.
+- Le crabe a dormi cinq jours dans `art/` sans être branché dans la table `ART`, et la lignée
+  s'affichait en emoji alors qu'elle était prête. **Poser les fichiers ne suffit pas.**
+- Un nom de forme ne doit reprendre **aucun des cinq noms d'âge ni des six noms de taille** :
+  ils s'affichent à un centimètre du nom, et « Rongeur colossal · taille normale » se
+  contredit tout seul. Neuf formes ont dû être renommées en 2.15.0. Le scénario
+  `noms` de `tools/test.js` monte la garde.
+
+### Le bonheur et la frénésie, à revoir
+
+Le seul système du jeu qui récompense la **présence** plutôt qu'une décision. Il marche, et
+trois choses ne vont pas.
+
+**Il récompense de ne rien faire.** Le bonheur monte sur la bête EN SCÈNE — `tickJoie` lit
+`current()`. Autrement dit il s'accumule sur celle qu'on regarde, et changer de bête remet le
+compteur de celle qu'on quitte à l'arrêt. Le geste récompensé est donc « ne touche à rien »,
+ce qui est l'inverse de ce qu'un jeu veut encourager.
+
+**La récompense s'éteint au moment où on la mérite.** Un cadeau donne `clic ×2` pendant dix à
+trente secondes. Or plus la partie avance, moins le clic pèse : la ferme tourne aux automates,
+à la rente et à la pension. Les deux primes qui nourrissent le système — *Soins attentifs* et
+*Générosité* — s'achètent donc pour un bonus qui vaut de moins en moins, et le plafond d'une
+minute (`FRENESIE_MAX`) empêche même de compenser par le volume.
+
+**Le système est presque invisible.** Quatre-vingt-dix secondes de présence, un tirage à 35 %,
+et le bonheur d'une bête disparaît avec elle quand on la vend. Rien ne s'accumule, rien ne se
+collectionne, rien ne se vise.
+
+#### Les trois directions possibles
+
+- **Rendre le bonheur collectif** — il monte sur l'enclos entier plutôt que sur la bête
+  regardée. La présence reste récompensée, mais on redevient libre de bouger.
+- **Changer la nature de la récompense** — le `×2` sur le clic ne survit pas à la partie ; un
+  bonus qui touche ce qui tourne (couvaison, croissance, ponte) survit. Le clic reste le verbe
+  du joueur au début, il ne l'est plus à la fin, et la récompense devrait suivre.
+- **Lui donner une trace** — le bonheur d'une bête gardée pourrait devenir un attachement qui
+  se voit : un compteur, un titre, un petit bonus permanent à cette bête. C'est le seul moyen
+  que le système existe pour le joueur autrement que par un éclair toutes les quatre minutes.
+
+**À traiter avec la rente**, pas avant : les deux répondent à la même question — qu'est-ce
+qu'on gagne à garder une bête plutôt qu'à la vendre — et les corriger séparément reviendrait à
+tirer sur les deux bouts de la même corde.
 
 ### Les fonds à la pension — les deux voies, et non plus aucune
 
@@ -311,20 +353,67 @@ qui bloque » · les cartes équipées visibles depuis la ferme · une courbe de
 bête · un tableau d'honneur des ventes · un journal des ascensions · l'œuf mystère · un effet
 aux teintes · le clic maintenu.
 
-### Ce qui vient ensuite
+### Deux pièges de migration à ne pas oublier
 
-La colonne du milieu dit **ce qu'il faut avoir fait avant**, ce qui est plus utile qu'un ordre :
-deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
+Les nouvelles teintes s'ajoutent **à la fin** de `TINTS`. Une bête stocke sa teinte par
+indice ; en insérer une au milieu repeindrait tout le bestiaire déjà éclos.
 
-| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
-|---|---|---|
-| **Les dix-sept dessins** | rien | — |
-| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
-| **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
-| **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
-| **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
-| **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
-| **Les fonds à la pension** — au hasard comme les teintes, ET transmis par les parents | rien pour le hasard, l'hérédité pour le reste | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
+La réserve d'œufs devait prendre son plafond **avant** la pension, et elle l'a pris : cinquante
+par sorte, posés dans la même version. C'était le seul frein du hors-ligne, et une partie qui
+aurait déjà tourné sans lui serait rentrée sur des centaines d'œufs le jour de l'ajout. Le
+piège reste écrit ici parce qu'il vaut pour tout robinet futur : **le plafond se pose avec le
+robinet, jamais après.**
+
+---
+
+## Ce qui est derrière
+
+Les sections qui suivent décrivent des chantiers **livrés**. Elles restent parce qu'elles
+portent le raisonnement, et parce que deux d'entre elles ont été renversées depuis : on ne
+comprend une règle du jeu qu'en sachant ce qu'elle a remplacé.
+
+### La ligne d'arrivée de l'alpha
+
+**Le mot « alpha » tombe quand la pension, la fusion des cartes et les premières merveilleuses
+sont en place ensemble.** C'est la seule définition de la bêta qu'on se donne, et elle a le
+mérite de ne dépendre d'aucune date.
+
+Elle tient parce que ces trois-là **forment une boucle**, ce qu'aucune ne fait seule :
+
+- la **pension** donne une raison d'élever plutôt que de vendre ;
+- les **merveilleuses** donnent une raison d'utiliser la pension — c'est la seule rareté qui
+  ne s'achète pas, et elle n'existe nulle part ailleurs ;
+- la **fusion** donne une raison de garder les doublons que tout ça produit, au lieu de les
+  laisser dormir en réserve.
+
+Sans la fusion, l'album se remplit de cartes qu'on n'équipera jamais. Sans les merveilleuses,
+la pension n'offre qu'un raccourci vers ce qu'on pouvait déjà acheter. Sans la pension, les
+merveilleuses n'ont pas de porte. **Le jeu est aujourd'hui un très bon prototype de sa moitié
+d'avant**, et ces trois pièces sont ce qui manque pour qu'il soit un jeu.
+
+**Les trois sont tombés.** La fusion en 2.32.0, la pension en 3.0.0, les merveilleuses en
+3.1.0 — et la boucle est fermée : on élève pour reproduire, on reproduit pour obtenir ce qui ne
+s'achète nulle part, l'album donne une raison de garder les doublons.
+
+L'ordre a changé deux fois en route, et les deux fois pour la même raison : **ne pas rester
+bloqué derrière les dessins.** La pension a ouvert sur les vingt-sept lignées existantes,
+dessinées ou non — le jeu n'en montre que le glyphe. Les merveilleuses ont suivi à deux sur
+huit, par les deux seules dont les recettes se lisaient sans rien ajouter au bestiaire.
+
+Ce que ça coûte, et il faut le dire : **six merveilles sur huit sont écrites et pas écloses**,
+et le rang le plus haut du jeu tient aujourd'hui sur deux bêtes en glyphe. Ce n'est pas une
+dette de code — il n'y a rien à écrire pour les six autres, seulement des recettes et des PNG.
+
+**Le mot « alpha » est tombé avec la `beta 1.0.0`** : la définition demandait « les premières
+merveilleuses », elle ne disait pas combien.
+
+**Et les nombres sont repartis de 1**, contre ce que ce document annonçait. Le raisonnement
+d'origine — « la bêta ne remet rien à zéro » — traitait le mot comme une étiquette posée sur
+une série continue. Mais la série `alpha 3.x` racontait l'histoire de l'alpha : ses trois
+majeurs sont les trois chantiers qui manquaient au prototype. `beta 1.0.0` dit ce que la
+version est, une première version d'un jeu complet, là où `beta 3.2.0` aurait continué à
+compter les corrections d'un prototype. Le mot et le nombre repartent ensemble, une seule fois
+— il n'y aura pas de `gamma`.
 
 ### Le chantier graphique — **livré en beta 1.12.0, 1.13.0 et 1.14.0**
 
@@ -408,64 +497,6 @@ Deux enseignements d'outillage en sont sortis :
   motifs. Reste la « dérive de style », signalée et voulue : le contrôle est écrit pour les cinq
   âges d'une lignée, or ces cinq stades sont cinq objets distincts.
 
-### Ce que la 1.7 laisse derrière elle
-
-Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n'est réglée :
-
-- **Huit couples se composent à la main, un par un.** Le nid marche pour un couple et pour deux ;
-  à huit, désigner seize bêtes dans une bande de quarante devient la corvée que le glisser-déposer
-  devait supprimer. La `beta 1.8.0` a retiré les confiées de la bande, ce qui l'allège à mesure
-  qu'on remplit la pension — mais ne règle pas le problème : c'est le CHOIX des seize qui est
-  long, pas leur affichage.
-- **Le panneau de pension a coûté deux défauts d'affichage en deux versions**, et les deux
-  étaient déjà documentés ailleurs dans le fichier : un tirage dans une branche morte
-  (`beta 1.8.1`) et un DOM rebâti sous le curseur (`beta 1.8.2`, le même défaut que la bande
-  avant la 2.14.0). **Tout écran neuf doit être relu contre les commentaires de `renderStrip`
-  avant d'être écrit**, pas après.
-- **Le plafond de la réserve n'est pas un problème, vérifié en jouant.** Cinquante œufs par
-  sorte se remplissent en trois minutes quand la pension tourne à mille œufs l'heure, et le
-  couplage avec le nombre d'incubateurs est donc réel — mais il se joue bien. Il reste écrit
-  ici comme un fait à connaître, plus comme une inquiétude.
-- **La pension ne dit pas ce qu'elle a produit *cette nuit*.** La `beta 1.9.0` règle la moitié
-  de la dette : la fiche d'une lignée dit désormais quels couples l'ont donnée et combien de
-  fois, depuis toujours. Ce qui manque encore est le **journal récent** — « pendant ton absence,
-  la pension a sorti quarante loups » — qui relève du bandeau de retour, pas du carnet.
-
-**La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
-la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la
-pension, parce qu'aucune d'elles n'avait de sens séparément — une pension sans règle de
-compatibilité, c'est un bouton qui attend.
-
-**Les six merveilles restantes ne coûtent aucun code.** La 3.1.0 a posé la rareté, la sorte
-d'œuf qui ne s'achète pas, la table `RECETTES` et la phrase qui les annonce sans les nommer.
-Ajouter Surtr, c'est cinq PNG et une ligne de recette. C'est le meilleur endroit où la dette du
-projet pouvait se déplacer : elle est entièrement dans le dessin.
-
-**La place unique n'a pas tenu, et c'était le bon abandon.** Elle était là pour forcer à choisir
-*quel* couple confier, et l'argument valait tant que la pension était un outil de collection.
-Du jour où elle a dû concurrencer l'acheteur, une place unique ne posait plus une question mais
-un plafond : on ne choisissait pas mieux, on produisait moins. Les huit places se paient
-maintenant six cent milliards, et seize enclos qui ne rapportent plus rien — le choix a
-simplement changé de monnaie.
-
-**Une ligne a disparu sans être faite, parce qu'elle l'était déjà.** « Les automates par âge —
-l'éleveur aux jeunes, la mangeoire aux grandes bêtes » décrivait mot pour mot ce que le jeu
-fait depuis les cinq âges : l'éleveur pousse jusqu'à `bandTo` et s'arrête à la maturité, la
-mangeoire ne touche qu'aux bêtes mûres. Vérifié au banc — avec les deux à fond, une jeune gagne
-de la croissance et zéro embonpoint ; une fois mûre, l'inverse exactement.
-
-La ligne avait survécu à sa propre implémentation, et personne ne l'avait rayée. C'est le
-risque d'un plan qui décrit une intention plutôt qu'un état : **une ligne qu'on n'a pas
-rayée finit par ressembler à du travail restant.** Il vaut la peine, de temps en temps, de
-relire ce qui reste en se demandant non pas « est-ce qu'on veut le faire ? » mais « est-ce que
-ce n'est pas déjà fait ? ».
-
-L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
-passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
-le construire d'abord leur donne un endroit où atterrir. Le prix de l'inversion est connu et
-accepté : l'album est sorti sans son cran le plus haut, la merveilleuse ne s'obtenant qu'en
-pension.
-
 ### L'atelier de forge — **livré en beta 2.0.0**
 
 La section suivante décrit la fusion telle qu'elle a été conçue en 2.30, et **elle a été
@@ -539,7 +570,10 @@ Trois décisions de détail sont tombées avec :
 
 ---
 
-### La fusion et la poussière de carte — *renversée en 2.0.0, gardée pour mémoire*
+### La fusion et la poussière de carte
+
+> *Renversée en `beta 2.0.0`, gardée pour mémoire.* Le titre ne porte pas la mention : un
+> intitulé qui bouge casse les liens qui pointent dessus, et celui du README l'était depuis.
 
 Une carte porte des **étoiles**. Elle naît à **une**, la fusion la monte à **deux**, puis à
 **trois**, et ça s'arrête là — `ETOILES = [1, 1.8, 3]`, deux fusions au plus dans la vie d'une
@@ -650,47 +684,63 @@ supposait que la pension ait besoin des merveilleuses pour valoir quelque chose.
 elles, à condition de dire ce qu'elle est : un outil pour **viser** une lignée, pas une porte.
 Les dessins manquants ne la gênent pas ; le jeu affiche un glyphe et joue pareil.
 
-### Le chantier qui barre la route : les dessins
+### Ce que la 1.7 laisse derrière elle
 
-C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
-affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
+Trois choses sont apparues en mesurant la pension contre l'acheteur, et aucune n'est réglée :
 
-**17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
-serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
-sphinx, cheval) et les trois mythiques (chimère, béhémoth, ouroboros). Ce n'est pas une
-version, c'est une voie de fond qui avance entre les autres. Rien n'en dépend, tout en
-bénéficie.
+- **Huit couples se composent à la main, un par un.** Le nid marche pour un couple et pour deux ;
+  à huit, désigner seize bêtes dans une bande de quarante devient la corvée que le glisser-déposer
+  devait supprimer. La `beta 1.8.0` a retiré les confiées de la bande, ce qui l'allège à mesure
+  qu'on remplit la pension — mais ne règle pas le problème : c'est le CHOIX des seize qui est
+  long, pas leur affichage.
+- **Le panneau de pension a coûté deux défauts d'affichage en deux versions**, et les deux
+  étaient déjà documentés ailleurs dans le fichier : un tirage dans une branche morte
+  (`beta 1.8.1`) et un DOM rebâti sous le curseur (`beta 1.8.2`, le même défaut que la bande
+  avant la 2.14.0). **Tout écran neuf doit être relu contre les commentaires de `renderStrip`
+  avant d'être écrit**, pas après.
+- **Le plafond de la réserve n'est pas un problème, vérifié en jouant.** Cinquante œufs par
+  sorte se remplissent en trois minutes quand la pension tourne à mille œufs l'heure, et le
+  couplage avec le nombre d'incubateurs est donc réel — mais il se joue bien. Il reste écrit
+  ici comme un fait à connaître, plus comme une inquiétude.
+- **La pension ne dit pas ce qu'elle a produit *cette nuit*.** La `beta 1.9.0` règle la moitié
+  de la dette : la fiche d'une lignée dit désormais quels couples l'ont donnée et combien de
+  fois, depuis toujours. Ce qui manque encore est le **journal récent** — « pendant ton absence,
+  la pension a sorti quarante loups » — qui relève du bandeau de retour, pas du carnet.
 
-C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
-poubelle au jalon 1, les PNG resteront tels quels dans le vrai jeu. Chaque heure passée là est
-acquise, contrairement à tout le reste.
+**La compatibilité et la rareté de l'enfant ont été absorbées par la 3.0.0** : les étiquettes,
+la stérilité de la pierre, la durée par distance et le tirage entre parents sont tombés avec la
+pension, parce qu'aucune d'elles n'avait de sens séparément — une pension sans règle de
+compatibilité, c'est un bouton qui attend.
 
-Les 28 fiches de `prompts/` portent chacune le brief, la commande de découpe et la ligne à
-coller dans la table `ART`. La charte a deux registres : **mascotte** pour les communes, les
-rares et les épiques, **idole** pour les mythiques et les merveilleuses — le second est né en
-2.7.1, quand l'Ouroboros mignon a été rejeté.
+**Les six merveilles restantes ne coûtent aucun code.** La 3.1.0 a posé la rareté, la sorte
+d'œuf qui ne s'achète pas, la table `RECETTES` et la phrase qui les annonce sans les nommer.
+Ajouter Surtr, c'est cinq PNG et une ligne de recette. C'est le meilleur endroit où la dette du
+projet pouvait se déplacer : elle est entièrement dans le dessin.
 
-Deux leçons payées cher, à ne pas réapprendre :
+**La place unique n'a pas tenu, et c'était le bon abandon.** Elle était là pour forcer à choisir
+*quel* couple confier, et l'argument valait tant que la pension était un outil de collection.
+Du jour où elle a dû concurrencer l'acheteur, une place unique ne posait plus une question mais
+un plafond : on ne choisissait pas mieux, on produisait moins. Les huit places se paient
+maintenant six cent milliards, et seize enclos qui ne rapportent plus rien — le choix a
+simplement changé de monnaie.
 
-- Le crabe a dormi cinq jours dans `art/` sans être branché dans la table `ART`, et la lignée
-  s'affichait en emoji alors qu'elle était prête. **Poser les fichiers ne suffit pas.**
-- Un nom de forme ne doit reprendre **aucun des cinq noms d'âge ni des six noms de taille** :
-  ils s'affichent à un centimètre du nom, et « Rongeur colossal · taille normale » se
-  contredit tout seul. Neuf formes ont dû être renommées en 2.15.0. Le scénario
-  `noms` de `tools/test.js` monte la garde.
+**Une ligne a disparu sans être faite, parce qu'elle l'était déjà.** « Les automates par âge —
+l'éleveur aux jeunes, la mangeoire aux grandes bêtes » décrivait mot pour mot ce que le jeu
+fait depuis les cinq âges : l'éleveur pousse jusqu'à `bandTo` et s'arrête à la maturité, la
+mangeoire ne touche qu'aux bêtes mûres. Vérifié au banc — avec les deux à fond, une jeune gagne
+de la croissance et zéro embonpoint ; une fois mûre, l'inverse exactement.
 
-### Deux pièges de migration à ne pas oublier
+La ligne avait survécu à sa propre implémentation, et personne ne l'avait rayée. C'est le
+risque d'un plan qui décrit une intention plutôt qu'un état : **une ligne qu'on n'a pas
+rayée finit par ressembler à du travail restant.** Il vaut la peine, de temps en temps, de
+relire ce qui reste en se demandant non pas « est-ce qu'on veut le faire ? » mais « est-ce que
+ce n'est pas déjà fait ? ».
 
-Les nouvelles teintes s'ajoutent **à la fin** de `TINTS`. Une bête stocke sa teinte par
-indice ; en insérer une au milieu repeindrait tout le bestiaire déjà éclos.
-
-La réserve d'œufs devait prendre son plafond **avant** la pension, et elle l'a pris : cinquante
-par sorte, posés dans la même version. C'était le seul frein du hors-ligne, et une partie qui
-aurait déjà tourné sans lui serait rentrée sur des centaines d'œufs le jour de l'ajout. Le
-piège reste écrit ici parce qu'il vaut pour tout robinet futur : **le plafond se pose avec le
-robinet, jamais après.**
-
----
+L'ordre a été **inversé en cours de route** : la pension devait venir avant l'album, elle
+passe après. L'album est la clé de voûte vers laquelle les deux autres chantiers pointent, et
+le construire d'abord leur donne un endroit où atterrir. Le prix de l'inversion est connu et
+accepté : l'album est sorti sans son cran le plus haut, la merveilleuse ne s'obtenant qu'en
+pension.
 
 ## L'outillage
 
