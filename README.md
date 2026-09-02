@@ -44,7 +44,7 @@ Les nombres continuent — la bêta ne remet rien à zéro. La pension est le **
 ouvre la série 3.
 
 **Les trois sont tombés**, et le mot a changé. La
-[fusion des cartes](#la-fusion-et-la-poussière) en 2.32.0, la [pension](#la-pension) en 3.0.0,
+[fusion des cartes](#latelier-de-forge) en 2.32.0, la [pension](#la-pension) en 3.0.0,
 les [merveilleuses](#les-merveilleuses) en 3.1.0 — puis **`beta 1.0.0`**. La boucle est fermée :
 on élève pour reproduire, on reproduit pour obtenir ce qui ne s'achète nulle part, et l'album
 donne une raison de garder les doublons.
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 1.14.0** | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
+| **beta 2.0.0** | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
+| beta 1.14.0 | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
 | beta 1.13.0 | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
 | beta 1.12.0 | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
 | beta 1.11.0 | les seize menus des réglages deviennent des segments de boutons |
@@ -503,21 +504,68 @@ Deux détails de structure. La plonge est un **état du jeu, pas un sujet de la 
 `renderRien()`, qui n'était **atteignable par personne** pour cette même raison, sert enfin :
 c'est l'écran de l'impasse avant qu'elle parle.
 
-### La fusion et la poussière
+### L'atelier de forge
 
-Une carte porte des **étoiles** : elle naît à une, la fusion la monte à deux puis à trois, et
-ça s'arrête là. Ce qu'on paie pour le faire est une monnaie qui n'existe que pour l'album — la
-**poussière**, `✧`.
+Une carte porte des **étoiles** : elle naît à une, la forge la monte à deux puis à trois, et ça
+s'arrête là. **Trois cartes semblables entrent, une seule sort** — et les trois disparaissent.
+Ça coûte en plus une monnaie qui n'existe que pour l'album, la **poussière** `✧`.
 
-#### Pourquoi une monnaie et pas des doublons
+#### Similaire n'est pas identique
 
-Une fusion classique demande deux cartes identiques. Ici c'est **impossible** : une carte porte
-une lignée, un âge, un niveau, un motif, une teinte, un rang et un chromatique — près de
-**treize millions de combinaisons**. Deux exemplaires identiques n'arriveront jamais.
+Pendant vingt versions, « fusionner » voulait dire **payer une étoile avec de la monnaie** :
+rien ne disparaissait, rien ne se mariait, et le mot mentait sur ce qu'il faisait. Une fusion,
+ce sont des cartes **qui fusionnent**.
 
-Le problème réel n'est donc pas le doublon, c'est **la carte médiocre**. Une ferme de vingt
-bêtes en produit vingt à chaque saut, dont trois valent la peine. La poussière transforme les
-dix-sept autres en carburant.
+L'objection qui avait fait naître la monnaie seule était mal posée : « une fusion classique
+demande deux cartes *identiques*, or une carte porte une lignée, un âge, un niveau, un motif,
+une teinte, un rang et un chromatique — treize millions de combinaisons, deux exemplaires
+identiques n'arriveront jamais ». C'est vrai, et **ça ne conclut rien**.
+
+Deux cartes se marient quand elles partagent **la lignée et le motif** — exactement les deux
+champs qui décident de *ce que* la carte fait. Tout le reste — âge, niveau, teinte, rang — ne
+dit que *combien*, et **se moyenne**. Trois Béhémoths unis se réunissent donc, quel que soit
+leur âge.
+
+| Ce qui doit correspondre | Pourquoi |
+|---|---|
+| **la lignée** | elle décide du plafond de puissance |
+| **le motif** | il décide de la famille de bonus — les mélanger fabriquerait un effet choisi par personne |
+| **le nombre d'étoiles** | une trois-étoiles avalée par une fusion de une-étoile serait un gâchis invisible |
+
+L'**âge n'en est pas**, et c'est délibéré : il ne dit que la puissance, et la puissance se
+moyenne. Sans ça il faudrait trois bêtes menées au même âge, et la forge ne s'ouvrirait qu'à
+qui joue déjà parfaitement.
+
+#### Trois entrent, une sort
+
+Le compte décide de tout le reste : **neuf cartes** d'une même lignée et d'un même motif pour
+une seule à trois étoiles. Deux rendait la troisième étoile presque gratuite pour qui joue une
+lignée ; quatre la rendait inatteignable avant la dixième ascension.
+
+**On ne choisit pas lesquelles** : la forge prend les **trois plus fortes** du groupe, parce
+qu'une fusion doit rendre la meilleure carte possible et que l'arbitrage est ailleurs — il est
+dans *« est-ce que je forge »*. Pour en protéger une, on l'**équipe** : une carte équipée
+n'entre pas dans la forge, exactement comme elle ne se fond pas. Un seul geste sert deux fois,
+et il existait déjà.
+
+#### Ce que la carte hérite
+
+Tout ce qui ne dit que la puissance **se moyenne** : l'âge, le niveau, la teinte, le rang.
+C'est la règle la plus simple qui soit juste dans les deux sens — elle ne punit pas de
+sacrifier une bonne carte, et elle n'efface pas non plus le prix d'en sacrifier une mauvaise.
+
+**La teinte se moyenne comme le reste, ce qui la dilue** : albâtre plus deux ordinaires ne
+redonne pas albâtre. C'est la seule façon de garder une belle teinte rare — il en faut trois
+pour en sortir une — et ça fait de la forge une décision au lieu d'un automatisme.
+
+**Le chromatique et le fond se décident à la majorité**, deux sur trois. Ils ne sont pas des
+nombres : on ne peut pas être aux deux tiers chromatique. Deux fonds *différents* n'en font
+donc aucun.
+
+Et le résultat **se voit avant d'être fabriqué** : l'atelier montre les trois cartes qui vont
+entrer, une flèche, et la carte qui va sortir. C'est ce qui rend « la moyenne des trois »
+compréhensible sans l'expliquer — sans quoi un joueur qui perd une belle teinte dans une
+fusion ne le comprendrait qu'après coup.
 
 #### Ce qu'une carte rend, ce qu'une fusion coûte
 
@@ -532,9 +580,14 @@ dix-sept autres en carburant.
 | mythique | ✧ 300 | 3 000 | 12 000 |
 
 **La rareté est du même côté des deux équations, et elle s'annule** : monter une commune ou une
-mythique demande le **même nombre de cartes de sa propre rareté** — dix pour la deuxième
-étoile, quarante pour la troisième. Personne n'a intérêt à fondre ses mythiques pour nourrir
-ses communes, et l'arbitrage reste dans la lignée qu'on aime.
+mythique coûte le **même nombre de cartes de sa propre rareté** en poussière — dix pour la
+deuxième étoile, quarante pour la troisième. Personne n'a intérêt à fondre ses mythiques pour
+nourrir ses communes, et l'arbitrage reste dans la lignée qu'on aime.
+
+**Le barème de la poussière n'a pas bougé en passant à la vraie fusion.** Il aurait pu baisser,
+puisqu'une fusion coûte désormais trois cartes en plus ; il ne l'a pas fait, parce que ce que
+la monnaie mesure n'a pas changé — c'est le prix de l'étoile, pas celui du mariage. Les trois
+cartes, elles, mesurent autre chose : la patience de réunir trois fois la même bête.
 
 **La qualité n'entre pas.** Niveau, teinte et rang décident déjà de la puissance : les faire
 entrer aussi punirait deux fois d'avoir une bonne carte, et rendrait « garder ou fondre »
@@ -557,15 +610,21 @@ carte aurait rendu. Les bêtes non retenues disparaissaient jusque-là sans rien
 n'est pas grand-chose, et c'est voulu : ça récompense d'ascensionner sur une ferme pleine sans
 rendre le sacrifice indolore.
 
-#### Les deux gestes portent leur prix
+#### Il ne reste qu'un geste sur la carte
 
-Chaque carte affiche deux boutons : `✧ 10` pour ce qu'elle rend, `★ 100` pour ce que l'étoile
-suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible — et c'est le seul
-arbitrage que l'album propose.
+Chaque carte affiche `✧ 10` : ce qu'elle rend si on la fond. Le bouton `★ 100` a disparu —
+il montait une étoile contre de la monnaie sans rien consommer, et **la vraie fusion demande
+trois cartes, donc elle ne peut pas tenir sur une seule**. Elle a son atelier.
 
-Un défaut a été trouvé en câblant tout ça : la signature de `renderAlbum` lisait encore
-`k.palier`, laissé derrière par le renommage de la 2.30.2. Elle valait donc `undefined` pour
-toutes les cartes, et **l'album ne se serait jamais repeint après une fusion**.
+Fondre reste sur la carte, parce que fondre est bien une décision qui ne regarde qu'une carte.
+
+Deux défauts ont été trouvés en câblant tout ça, à deux versions d'écart. La signature de
+`renderAlbum` lisait encore `k.palier`, laissé derrière par le renommage de la 2.30.2 : elle
+valait `undefined` pour toutes les cartes, et **l'album ne se serait jamais repeint après une
+fusion**. Et la signature de `renderStrip` portait la **lignée** de l'œuf mais pas sa
+**sorte** : deux œufs de suite de la même lignée laissaient la vignette sur le dessin du
+premier. Invisible tant que les cinq sortes partageaient le même emoji — c'est la deuxième
+fois qu'un dessin révèle un défaut que l'emoji cachait.
 
 ### Les trois globales
 
@@ -2087,21 +2146,28 @@ ligne se remplit en rencontrant la chose.
     À la pension — 1 couple connu
       Loup × Ours    50 % · 1 h 00 m · sorti 62 fois
 
-#### Deux vues, un onglet
+#### Trois vues, un onglet
 
 La collection a **quitté la colonne latérale**. Cent cinquante cases n'ont jamais eu leur place
 dans une colonne de vingt et un rem : elles y tenaient *repliées*, ce qui revient à dire
 qu'elles n'y étaient pas. Et depuis la 1.9.0 chaque lignée a une **fiche** — un objet qu'on
 lit, pas une case qu'on compte, et qui n'entre dans aucune colonne.
 
-D'où un onglet dans le bandeau : **Ferme** et **Encyclopédie**, chacune en pleine largeur. La
-ferme disparaît entièrement quand on passe à l'autre — pas de demi-écran partagé, on regarde
-une chose à la fois.
+D'où un onglet dans le bandeau : **Ferme**, **Encyclopédie** et, depuis la 2.0.0,
+**Forge** — chacune en pleine largeur. La ferme disparaît entièrement quand on passe à une
+autre : pas de demi-écran partagé, on regarde une chose à la fois.
+
+L'atelier de forge a la même raison d'être en pleine page que l'encyclopédie : il montre des
+cartes côte à côte, sept à la fois, et sept cartes n'entrent pas dans une colonne de vingt et
+un rem.
 
 **L'onglet ne se sauvegarde pas** : on ouvre le jeu sur sa ferme, toujours. Revenir le lendemain
-sur une page de collection serait revenir à côté de sa partie. Et il n'apparaît qu'après trois
-formes rencontrées, comme le panneau qu'il remplace — s'il disparaît sous les pieds du joueur,
-on le ramène à sa ferme plutôt que de le laisser sur une page qui n'existe plus.
+sur une page de collection serait revenir à côté de sa partie.
+
+**Aucune des deux n'apparaît avant d'avoir quelque chose à montrer** : l'encyclopédie après
+trois formes rencontrées, la forge à la première carte — on ne montre pas la porte d'une pièce
+vide. Et si l'une disparaît sous les pieds du joueur, on le ramène à sa ferme plutôt que de le
+laisser sur une page qui n'existe plus.
 
 #### Une carte par lignée, et non plus une case par forme
 
@@ -2163,7 +2229,7 @@ fiche annonce.
 
 **Les panneaux de la colonne latérale se replient par leur titre** : boutique, améliorations,
 primes, pension, réglages, album. La collection, elle, a quitté la colonne — elle a
-[sa propre vue](#deux-vues-un-onglet).
+[sa propre vue](#trois-vues-un-onglet).
 
 C'est la réponse principale au défilement sur un petit écran, et la seule qui tienne à toutes
 les tailles : le problème n'est pas la densité mais le **nombre de choses affichées en même

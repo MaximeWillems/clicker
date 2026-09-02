@@ -24,9 +24,11 @@
 
    Tant qu'il en manque une, le jeu est un très bon prototype de sa moitié avant.
 
-   Les nombres, eux, continuent : `alpha` n'a jamais été un quatrième nombre, et la bêta ne
-   remet rien à zéro. La pension est le majeur qui ouvrira la série 3. */
-const VERSION = 'beta 1.14.0';
+   `alpha` n'a jamais été un quatrième nombre. Les nombres sont repartis de 1 avec la bêta —
+   une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
+   une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
+   trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
+const VERSION = 'beta 2.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -486,14 +488,26 @@ const ETOILES = [1, 1.8, 3];
    Une monnaie qui n'existe que pour l'album. On l'obtient en DÉSINTÉGRANT une carte, un peu à
    chaque ascension pour les bêtes qu'on n'emporte pas, et elle ne sert qu'à FUSIONNER.
 
-   POURQUOI UNE MONNAIE ET PAS DES DOUBLONS. Une fusion classique demande deux cartes
-   identiques ; ici c'est impossible. Une carte porte une lignée, un âge, un niveau, un motif,
-   une teinte, un rang et un chromatique — près de treize millions de combinaisons. Deux
-   exemplaires identiques n'arriveront jamais.
+   LA POUSSIÈRE SEULE NE FAISAIT PAS UNE FUSION. Pendant vingt versions, « fusionner » voulait
+   dire payer une étoile avec de la monnaie : rien ne disparaissait, rien ne se mariait, et le
+   mot mentait sur ce qu'il faisait. Une fusion, c'est des cartes QUI FUSIONNENT — elles entrent
+   à trois et il en sort une.
 
-   Le problème réel n'est donc pas le doublon, c'est LA CARTE MÉDIOCRE : une ferme de vingt
-   bêtes en produit vingt à chaque saut, dont trois valent la peine. La poussière transforme
-   les dix-sept autres en carburant.
+   L'OBJECTION D'ORIGINE ÉTAIT MAL POSÉE, et c'est ce qui avait fait naître la monnaie seule :
+   « une fusion classique demande deux cartes IDENTIQUES, or une carte porte une lignée, un âge,
+   un niveau, un motif, une teinte, un rang et un chromatique — treize millions de combinaisons,
+   deux exemplaires identiques n'arriveront jamais. » C'est vrai, et ça ne conclut rien :
+   SIMILAIRE N'EST PAS IDENTIQUE.
+
+   Deux cartes se marient quand elles partagent LA LIGNÉE ET LE MOTIF — exactement les deux
+   champs qui décident de CE QUE la carte fait. Tout le reste — âge, niveau, teinte, rang — ne
+   dit que COMBIEN, et se moyenne. Trois béhémoths unis se réunissent donc, quel que soit leur
+   âge, et le résultat vaut ce que valaient les trois, plus une étoile.
+
+   La poussière ne disparaît pas pour autant, et son barème ne bouge pas : une fusion coûte
+   TROIS CARTES ET DE LA POUSSIÈRE. Ce qu'on fond sert toujours à ça, et le problème que la
+   monnaie résolvait reste résolu — une ferme de vingt bêtes rend vingt cartes par saut, dont
+   trois valent la peine, et les dix-sept autres redeviennent du carburant.
 
    LA RARETÉ EST DU MÊME CÔTÉ DES DEUX ÉQUATIONS, et c'est délibéré : elle multiplie ce qu'une
    carte rend ET ce qu'une fusion coûte, donc elle s'annule. Monter une commune ou une mythique
@@ -505,7 +519,9 @@ const ETOILES = [1, 1.8, 3];
    insoluble. Une carte vaut sa puissance, OU sa poussière, et les deux ne se ressemblent pas.
 
    ET ON NE DÉFAIT PAS UNE FUSION : les étoiles n'entrent pas dans ce qu'une carte rend. Sinon
-   fusionner puis désintégrer fabriquerait de la poussière à l'infini. */
+   fusionner puis désintégrer fabriquerait de la poussière à l'infini. La règle vaut d'autant
+   plus maintenant que trois cartes entrent pour une : sans elle, forger puis fondre rendrait
+   une partie de ce qu'on vient de payer. */
 const POUSSIERE_BASE    = 10;
 const POUSSIERE_RARETE  = { commune: 1, rare: 3, epique: 10, mythique: 30, merveilleuse: 90 };
 const POUSSIERE_PRODIGE = 3;
@@ -514,6 +530,19 @@ const POUSSIERE_FOND    = 2;      // les fonds n'existent pas encore : le facteu
 const POUSSIERE_SAUT    = 0.1;
 // pour aller à la deuxième étoile, puis à la troisième — multiplié par la rareté
 const FUSION_COUT       = [0, 100, 400];
+
+/* TROIS ENTRENT, UNE SORT. Le compte décide de tout le reste : neuf cartes d'une même lignée
+   et d'un même motif pour une seule à trois étoiles, contre trois si le compte était deux.
+   Deux rendait la troisième étoile presque gratuite pour qui joue une lignée ; quatre la
+   rendait inatteignable avant la dixième ascension. Trois est le seul compte qui fasse de la
+   deuxième étoile une décision et de la troisième un objectif.
+
+   ON NE CHOISIT PAS LESQUELLES : la forge prend LES TROIS PLUS FORTES du groupe, parce qu'une
+   fusion doit rendre la meilleure carte possible et que l'arbitrage est ailleurs — il est dans
+   « est-ce que je forge ». Pour en protéger une, on l'ÉQUIPE : une carte équipée n'entre pas
+   dans la forge, exactement comme elle ne se fond pas. Un seul geste sert deux fois, et il
+   existait déjà. */
+const FUSION_N          = 3;
 
 /* LE MOTIF DÉCIDE DE CE QUE LA CARTE ACCÉLÈRE. Il ne servait à rien, il est déjà tiré à
    l'éclosion et gardé à vie : lui confier le bonus ne demande aucune mécanique neuve, et il
@@ -2048,6 +2077,17 @@ function qualiteDe(k) {
 }
 const puissanceDe = k => plafondDe(k) * ETOILES[(k.etoiles || 1) - 1] * qualiteDe(k);
 
+/* CE QUI REND DEUX CARTES MARIABLES : la lignée, le motif, et le nombre d'étoiles. Les deux
+   premiers sont ce qui décide de CE QUE la carte fait — sa famille de bonus et son plafond ;
+   les mélanger fabriquerait une carte que personne n'a choisie. Le troisième tient l'escalier :
+   une trois-étoiles avalée par une fusion de une-étoile serait un gâchis invisible.
+
+   L'ÂGE N'EN EST PAS, et c'est délibéré. Il ne dit que la puissance, et la puissance se
+   moyenne : trois béhémoths unis se réunissent, qu'ils soient enfants ou primordiaux, et le
+   résultat vaut exactement leur moyenne. Sans quoi il faudrait trois bêtes menées au même âge,
+   et la forge ne s'ouvrirait qu'à qui joue déjà parfaitement. */
+const cleForge = k => k.line + ':' + k.motif + ':' + (k.etoiles || 1);
+
 const rareteDe    = k => LINE_BY_KEY[k.line].rarity;
 // Ce qu'une carte rend si on la fond. Les étoiles n'entrent pas : on ne défait pas une fusion.
 const poussiereDe = k => Math.round(POUSSIERE_BASE * POUSSIERE_RARETE[rareteDe(k)]
@@ -3568,8 +3608,12 @@ function renderStrip() {
      quatre fois par vie. Le niveau, lui, monte cent fois — le mettre ici ferait redessiner
      la bande sans arrêt. Ce qui bouge à chaque niveau (le numéro, la taille du glyphe, la
      barre) est repeint par tickView, qui ne touche au DOM que si la valeur a changé. */
+  /* LA SORTE DE L'ŒUF ENTRE DANS LA SIGNATURE depuis que les cinq coquilles sont dessinées.
+     Elle n'y était pas, et ça ne se voyait pas : les cinq sortes partageaient le même emoji.
+     Deux œufs de suite de la MÊME LIGNÉE mais de sortes différentes — un commun puis un
+     épique de crapaud — laissaient donc la vignette sur le dessin du premier. */
   const sig = list.map(s => s.kind === 'egg'
-    ? 'i' + s.i + (s.slot ? ':' + s.slot.line : ':-')
+    ? 'i' + s.i + (s.slot ? ':' + s.slot.kind + ':' + s.slot.line : ':-')
     : 'c' + s.c.id + ':' + s.c.age + (s.c.keep ? ':k' : '')).join(',');
   if (sig === stripSig) return;
   stripSig = sig;
@@ -3998,7 +4042,10 @@ function effetCarte(k) {
      d'illustration : c'est là que les particules viendront, DERRIÈRE la bête et au-dessus de
      rien d'autre. Le texte vit en dehors, donc rien de ce qui bougera ne peut le rendre
      illisible — c'est la contrainte qui a dessiné ce découpage, et non l'inverse. */
-function carteEl(k) {
+/* `actes` : la forge montre des cartes qu'on ne peut ni fondre ni déplacer — celles qui vont
+   entrer, et celle qui va sortir et n'existe pas encore. Des boutons y seraient des mensonges
+   cliquables. */
+function carteEl(k, actes) {
   const rarete = LINE_BY_KEY[k.line].rarity;
   const el = document.createElement('div');
   el.className = 'carte rar-' + rarete;
@@ -4015,10 +4062,10 @@ function carteEl(k) {
       '<i class="carte-eff"></i>' +
       '<i class="carte-rar"></i>' +
     '</span>' +
+    (actes === false ? '' :
     '<span class="carte-actes">' +
       '<button type="button" class="carte-acte fondre"></button>' +
-      '<button type="button" class="carte-acte fusion"></button>' +
-    '</span>';
+    '</span>');
 
   peindreFond(el.querySelector('.carte-fond'), k);
   if (fondDe(k)) el.classList.add('a-fond');
@@ -4038,22 +4085,114 @@ function carteEl(k) {
   const e = k.etoiles || 1;
   el.querySelector('.carte-etoiles').textContent = '★'.repeat(e) + '☆'.repeat(ETOILES.length - e);
 
-  /* Les deux gestes portent leur PRIX sur eux. Une carte se fond ou se fusionne, et les deux
-     décisions se prennent en regardant le même nombre : ce qu'elle rend, ce que l'étoile
-     suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible. */
-  const fondre = el.querySelector('.fondre'), fusion = el.querySelector('.fusion');
-  const equipee = state.slots.indexOf(k.id) !== -1;
-  fondre.textContent = '✧ ' + fmt(poussiereDe(k));
-  fondre.disabled = equipee;
-  fondre.title = equipee ? 'Retire-la de tes cartes actives avant de la fondre.'
-                         : 'Fondre : + ' + fmt(poussiereDe(k)) + ' de poussière. Sans retour.';
-  const cout = coutFusion(k);
-  fusion.textContent = cout === null ? '★★★' : '★ ' + fmt(cout);
-  fusion.disabled = cout === null || (state.poussiere || 0) < cout;
-  fusion.title = cout === null ? 'Elle est au bout : trois étoiles.'
-               : 'Fusionner : ' + fmt(cout) + ' de poussière pour la ' +
-                 (e + 1) + 'e étoile. Tu en as ' + fmt(state.poussiere || 0) + '.';
+  /* IL NE RESTE QU'UN GESTE SUR LA CARTE. « Fusionner » y était un bouton qui montait une
+     étoile contre de la monnaie, sans rien consommer ; la vraie fusion demande trois cartes et
+     ne peut donc pas tenir sur une seule — elle a son atelier. Fondre reste ici, parce que
+     fondre est bien une décision qui ne regarde qu'une carte. */
+  if (actes !== false) {
+    const fondre = el.querySelector('.fondre');
+    const equipee = state.slots.indexOf(k.id) !== -1;
+    fondre.textContent = '✧ ' + fmt(poussiereDe(k));
+    fondre.disabled = equipee;
+    fondre.title = equipee ? 'Retire-la de tes cartes actives avant de la fondre.'
+                           : 'Fondre : + ' + fmt(poussiereDe(k)) + ' de poussière. Sans retour.';
+  }
   return el;
+}
+
+/* L'ATELIER, EN PLEINE PAGE. Un groupe par mariage possible : ce qui entre à gauche, ce qui
+   sort à droite, le prix sur le bouton. Le résultat se voit AVANT d'être fabriqué — c'est la
+   seule façon de rendre « la moyenne des trois » lisible sans l'expliquer, et sans ça un
+   joueur qui perd une belle teinte dans une fusion ne comprendrait qu'après coup.
+
+   Signature, comme partout : l'écran se rebâtit quand l'album, les emplacements ou la
+   poussière changent, et pas dix fois par seconde. Un bouton détruit entre l'appui et le
+   relâchement n'émet aucun « click » — la bande et le nid l'ont appris avant lui. */
+let forgeSig = '';
+function renderForge() {
+  const sig = state.album.map(k => k.id + ':' + (k.etoiles || 1)).join(',') + '|' +
+              state.slots.join(',') + '|' + (state.poussiere || 0);
+  if (sig === forgeSig) return;
+  forgeSig = sig;
+
+  setText($('forge-poussiere'), '✧ ' + fmt(state.poussiere || 0));
+  const host = $('forge-liste');
+  host.textContent = '';
+
+  const groupes = groupesForge();
+  if (!groupes.length) {
+    const vide = document.createElement('p');
+    vide.className = 'forge-vide';
+    vide.textContent = state.album.length
+      ? 'Rien à marier pour l’instant. Une fusion demande TROIS cartes de la même lignée et du ' +
+        'même motif — l’âge, lui, n’a pas d’importance. Garde les doublons que l’ascension te ' +
+        'donne au lieu de les fondre : c’est ici qu’ils servent.'
+      : 'Ton album est vide. Les cartes viennent de l’ascension.';
+    host.appendChild(vide);
+    return;
+  }
+
+  for (const g of groupes) {
+    const base = g.cartes[0];
+    const bloc = document.createElement('section');
+    bloc.className = 'forge-groupe' + (g.prete ? ' prete' : '');
+    bloc.dataset.cle = g.cle;
+
+    const tete = document.createElement('h3');
+    tete.className = 'forge-nom';
+    tete.textContent = LINE_BY_KEY[base.line].name + ' · ' + MOTIFS[base.motif] +
+                       ' · ' + '★'.repeat(base.etoiles || 1);
+    bloc.appendChild(tete);
+
+    const rang = document.createElement('div');
+    rang.className = 'forge-rang';
+
+    const entrees = document.createElement('div');
+    entrees.className = 'forge-in';
+    for (const k of g.entrantes) entrees.appendChild(carteEl(k, false));
+    /* LES CASES MANQUANTES SE MONTRENT VIDES. Dire « il t'en manque une » sans montrer où
+       oblige à compter ; une case creuse se lit sans lire. */
+    for (let i = g.entrantes.length; i < FUSION_N; i++) {
+      const trou = document.createElement('div');
+      trou.className = 'carte carte-trou';
+      trou.textContent = '?';
+      entrees.appendChild(trou);
+    }
+    rang.appendChild(entrees);
+
+    const fleche = document.createElement('span');
+    fleche.className = 'forge-fleche';
+    fleche.textContent = '→';
+    rang.appendChild(fleche);
+
+    const sortie = document.createElement('div');
+    sortie.className = 'forge-out';
+    if (g.sortie) sortie.appendChild(carteEl(g.sortie, false));
+    else {
+      const trou = document.createElement('div');
+      trou.className = 'carte carte-trou';
+      trou.textContent = '★'.repeat((base.etoiles || 1) + 1);
+      sortie.appendChild(trou);
+    }
+    rang.appendChild(sortie);
+    bloc.appendChild(rang);
+
+    const acte = document.createElement('button');
+    acte.type = 'button';
+    acte.className = 'forge-acte';
+    acte.dataset.cle = g.cle;
+    acte.disabled = !g.prete;
+    acte.textContent = g.complet ? 'Forger  ·  ✧ ' + fmt(g.cout)
+                                 : 'Il en manque ' + (FUSION_N - g.cartes.length);
+    acte.title = !g.complet
+      ? 'Il faut ' + FUSION_N + ' cartes de cette lignée et de ce motif. Tu en as ' +
+        g.cartes.length + '.'
+      : g.prete ? 'Les trois disparaissent. Il en sort une, d’une étoile de plus.'
+                : 'Il te faut ' + fmt(g.cout) + ' de poussière. Tu en as ' +
+                  fmt(state.poussiere || 0) + '.';
+    bloc.appendChild(acte);
+    host.appendChild(bloc);
+  }
 }
 
 let albumSig = '';
@@ -4130,17 +4269,105 @@ function desintegrer(id) {
   return true;
 }
 
-// Monter une carte d'une étoile. Deux fusions au plus : ETOILES n'a que trois entrées.
-function fusionner(id) {
-  const k = carteDe(id);
-  if (!k) return false;
-  const cout = coutFusion(k);
-  if (cout === null || (state.poussiere || 0) < cout) return false;
-  state.poussiere -= cout;
-  k.etoiles = (k.etoiles || 1) + 1;
+/* ── L'ATELIER DE FORGE ────────────────────────────────────────────────────────
+   Trois cartes de la même lignée, du même motif et du même rang d'étoiles entrent ; une seule
+   en sort, une étoile de plus. Les trois disparaissent — c'est ce que « fusionner » veut dire,
+   et ce que le geste ne faisait pas.
+
+   CE QUE LA CARTE HÉRITE. Tout ce qui ne dit que la puissance se MOYENNE : l'âge, le niveau,
+   la teinte, le rang. C'est la règle la plus simple qui soit juste dans les deux sens — elle
+   ne punit pas de sacrifier une bonne carte, et elle n'efface pas non plus le prix d'en
+   sacrifier une mauvaise. Trois primordiaux donnent un primordial ; deux primordiaux et un
+   enfant donnent une bête entre les deux, et le joueur l'a vu venir puisque la forge montre
+   le résultat avant de le fabriquer.
+
+   LA TEINTE SE MOYENNE COMME LE RESTE, ce qui la DILUE : albâtre plus deux ordinaires ne
+   redonne pas albâtre. C'est la seule façon de garder une belle teinte rare — il faut trois
+   belles teintes pour en sortir une — et ça fait de la forge une décision au lieu d'un
+   automatisme.
+
+   LE CHROMATIQUE ET LE FOND SE DÉCIDENT À LA MAJORITÉ, deux sur trois. Ils ne sont pas des
+   nombres : on ne peut pas être aux deux tiers chromatique. La majorité est la seule
+   traduction honnête d'une moyenne pour ce qui n'a que deux états, et elle dit la bonne chose
+   — un chromatique perdu au milieu de deux ordinaires ne se transmet pas. */
+function fusionDe(cartes) {
+  const moy = f => cartes.reduce((n, k) => n + f(k), 0) / cartes.length;
+  const majorite = f => cartes.filter(f).length * 2 > cartes.length;
+  const base = cartes[0];
+
+  const age = Math.max(1, Math.min(AGES.length, Math.round(moy(k => k.age))));
+  /* Le niveau se replie DANS SA TRANCHE : la moyenne de trois âges différents tombe volontiers
+     hors des bornes de l'âge retenu, et une bête de niveau 12 à l'âge légende n'existe pas. */
+  const niv = Math.max(nivBase(age) + 1,
+                       Math.min(AGES[age - 1].niv, Math.round(moy(k => k.niv || 1))));
+
+  // le fond ne survit que si deux cartes portent LE MÊME : deux fonds différents n'en font pas un
+  const fonds = {};
+  for (const k of cartes) if (k.fond) fonds[k.fond] = (fonds[k.fond] || 0) + 1;
+  const fond = Object.keys(fonds).find(f => fonds[f] * 2 > cartes.length) || null;
+
+  const temps = {};
+  for (const k of cartes) temps[k.temper] = (temps[k.temper] || 0) + 1;
+  const temper = +Object.keys(temps).sort((a, b) => temps[b] - temps[a])[0];
+
+  return {
+    line: base.line, motif: base.motif, age, niv, temper, fond,
+    tint: Math.round(moy(k => k.tint || 0)),
+    rank: Math.round(moy(k => k.rank || 0)),
+    prodige: majorite(k => k.prodige),
+    etoiles: (base.etoiles || 1) + 1,
+  };
+}
+
+/* LES GROUPES DE LA FORGE. Une entrée par mariage possible, les plus fortes cartes devant :
+   ce sont elles qui entreront. Une carte ÉQUIPÉE n'y figure pas — elle s'évaporerait d'un
+   emplacement et changerait le build en silence, exactement ce qu'on interdit déjà à
+   « fondre ». C'est aussi comme ça qu'on protège une carte de la forge.
+
+   Les groupes d'UNE SEULE carte sont écartés : ils ne disent rien qu'un joueur puisse suivre.
+   À deux, il manque une carte et ça vaut la peine de le dire. */
+function groupesForge() {
+  const par = new Map();
+  for (const k of state.album) {
+    if (state.slots.indexOf(k.id) !== -1) continue;
+    if ((k.etoiles || 1) >= ETOILES.length) continue;
+    const cle = cleForge(k);
+    if (!par.has(cle)) par.set(cle, []);
+    par.get(cle).push(k);
+  }
+  const groupes = [];
+  for (const [cle, cartes] of par) {
+    if (cartes.length < 2) continue;
+    cartes.sort((a, b) => puissanceDe(b) - puissanceDe(a));
+    const entrantes = cartes.slice(0, FUSION_N);
+    const cout = coutFusion(cartes[0]);
+    groupes.push({
+      cle, cartes, entrantes, cout,
+      prete: cartes.length >= FUSION_N && (state.poussiere || 0) >= cout,
+      complet: cartes.length >= FUSION_N,
+      sortie: cartes.length >= FUSION_N ? fusionDe(entrantes) : null,
+    });
+  }
+  /* Les prêtes d'abord, puis celles qui coûtent le plus cher : ce qui se fait maintenant se
+     lit en haut, et ce qu'on vise ensuite juste après. */
+  groupes.sort((a, b) => (b.prete - a.prete) || (b.complet - a.complet) || (b.cout - a.cout));
+  return groupes;
+}
+
+// Forger. Trois cartes et de la poussière entrent, une carte sort.
+function forger(cle) {
+  const g = groupesForge().find(x => x.cle === cle);
+  if (!g || !g.complet || g.cout === null) return false;
+  if ((state.poussiere || 0) < g.cout) return false;
+
+  state.poussiere -= g.cout;
+  const mangees = g.entrantes.map(k => k.id);
+  state.album = state.album.filter(k => mangees.indexOf(k.id) === -1);
+  state.album.push(Object.assign(g.sortie, { id: nextCard++ }));
   state.stats.fusions = (state.stats.fusions || 0) + 1;
+
   oublierAlbum();
-  albumSig = '';
+  albumSig = ''; forgeSig = '';
   chord([523, 659, 784, 1046], 80);
   refresh();
   save();
@@ -5144,9 +5371,16 @@ function renderTuto() {
      d'avoir croisé de quoi voir une progression. Et s'il disparaît sous les pieds du joueur,
      on le ramène à sa ferme plutôt que de le laisser sur une page qui n'existe plus. */
   const dexPret = !jeune || seenCount() >= 3;
-  for (const b of document.querySelectorAll('.onglet'))
+  /* LA FORGE N'EXISTE PAS AVANT LA PREMIÈRE CARTE. Elle ne s'achète pas — c'est un atelier,
+     pas un bâtiment — mais elle suit la même règle que tout le reste : on ne montre pas la
+     porte d'une pièce vide. La première ascension l'ouvre. */
+  const forgePret = state.album.length > 0;
+  for (const b of document.querySelectorAll('.onglet')) {
     if (b.dataset.vue === 'dex') b.hidden = !dexPret;
+    if (b.dataset.vue === 'forge') b.hidden = !forgePret;
+  }
   if (!dexPret && vue === 'dex') ouvrirVue('ferme');
+  if (!forgePret && vue === 'forge') ouvrirVue('ferme');
 
   // le pied de page parle du prototype, pas du jeu : il attend qu'on ait de quoi acheter
   $('foot').hidden = jeune && !estDevoile('egg-commun');
@@ -5157,6 +5391,7 @@ function refresh() {
   renderStrip();
   renderCollection();
   renderAlbum();
+  renderForge();
   renderStage();
   syncReglages();
   renderEncyclopedie();
@@ -5567,10 +5802,10 @@ const TROPHEES = [
 
   // ── l'album, et ce qu'on en fait ──
   { cle: 'deuxEtoiles', glyphe: '★', montre: true, nom: 'Deux étoiles',
-    dit: 'Fusionner une carte. Il faut dix cartes de sa rareté, fondues pour leur poussière.',
+    dit: 'Forger une carte. Trois de la même lignée et du même motif, et la poussière avec.',
     test: () => state.album.some(k => (k.etoiles || 1) >= 2) || state.stats.fusions > 0 },
   { cle: 'troisEtoiles', glyphe: '✦', montre: true, nom: 'Trois étoiles',
-    dit: 'Mener une carte au bout. Cinquante cartes de sa rareté, et il n’y a pas de quatrième.',
+    dit: 'Mener une carte au bout. Neuf cartes d’une même lignée, et il n’y a pas de quatrième.',
     test: () => state.album.some(k => (k.etoiles || 1) >= ETOILES.length) },
   { cle: 'poussiere', glyphe: '✧', nom: 'Poussière',
     dit: 'Fondre sa première carte. Une carte ratée n’est pas une carte perdue.',
@@ -5732,12 +5967,19 @@ function poserAuNid(id, cote) {
 
    L'ONGLET NE SE SAUVEGARDE PAS. On ouvre le jeu sur sa ferme, toujours : revenir le lendemain
    sur une page de collection serait revenir à côté de sa partie. */
+/* TROIS VUES DEPUIS L'ATELIER DE FORGE, et la règle ne change pas : chacune prend toute la
+   page, aucune ne se sauvegarde. La forge a la même raison d'être pleine page que
+   l'encyclopédie — elle montre des cartes côte à côte, six à la fois, et six cartes n'entrent
+   pas dans une colonne de vingt et un rem. */
+const VUES = ['ferme', 'dex', 'forge'];
 let vue = 'ferme';
 
 function ouvrirVue(v) {
-  vue = v === 'dex' ? 'dex' : 'ferme';
+  vue = VUES.indexOf(v) === -1 ? 'ferme' : v;
   document.body.classList.toggle('vue-dex', vue === 'dex');
+  document.body.classList.toggle('vue-forge', vue === 'forge');
   $('vue-dex').hidden = vue !== 'dex';
+  $('vue-forge').hidden = vue !== 'forge';
   for (const b of document.querySelectorAll('.onglet'))
     b.setAttribute('aria-pressed', String(b.dataset.vue === vue));
   refresh();
@@ -6631,6 +6873,16 @@ function bindTools() {
      glisser-déposer n'existe pas au doigt sur un téléphone, et pas davantage au clavier. Un
      geste qui n'a qu'une seule façon de s'exécuter est un geste que la moitié des joueurs
      ne peut pas faire. */
+  /* LE BOUTON PORTE SA CLÉ DE GROUPE et non un identifiant de carte : c'est le groupe qui
+     est forgé, pas une carte, et les trois qui entrent sont recalculées au moment du clic.
+     Une liste d'identifiants figée dans le DOM aurait vieilli entre deux images — il suffit
+     d'équiper une carte pour que le trio change. */
+  $('forge-liste').addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.forge-acte');
+    if (!b) return;
+    if (!forger(b.dataset.cle)) blip(300, 0.05, 'sine', 0.03);
+  });
+
   const albumHote = $('album');
 
   albumHote.addEventListener('dragstart', e => {
@@ -6674,8 +6926,7 @@ function bindTools() {
     if (acte) {
       const carte = acte.closest('.carte');
       const quoi = parseInt(carte.dataset.id, 10);
-      const fait = acte.classList.contains('fondre') ? desintegrer(quoi) : fusionner(quoi);
-      if (!fait) blip(300, 0.05, 'sine', 0.03);
+      if (!desintegrer(quoi)) blip(300, 0.05, 'sine', 0.03);
       return;
     }
     const c = e.target.closest && e.target.closest('.carte');

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 1.14.0 · sauvegarde v19 · 10 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 2.0.0 · sauvegarde v19 · 10 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -264,7 +264,57 @@ le construire d'abord leur donne un endroit où atterrir. Le prix de l'inversion
 accepté : l'album est sorti sans son cran le plus haut, la merveilleuse ne s'obtenant qu'en
 pension.
 
-### La fusion et la poussière de carte
+### L'atelier de forge — **livré en beta 2.0.0**
+
+La section suivante décrit la fusion telle qu'elle a été conçue en 2.30, et **elle a été
+renversée**. Elle reste écrite parce qu'elle explique pourquoi le jeu a vécu vingt versions
+avec une fusion qui ne fusionnait rien, et parce que l'erreur qu'elle contient est instructive.
+
+**Ce qui n'allait pas : le mot mentait.** « Fusionner » désignait un bouton qui montait une
+étoile contre de la monnaie. Rien ne disparaissait, rien ne se mariait. Une fusion, ce sont des
+cartes **qui fusionnent** — elles entrent à trois et il en sort une.
+
+**L'objection d'origine était mal posée**, et c'est elle qui avait fait naître la monnaie
+seule : *« une fusion classique demande deux cartes identiques, or treize millions de
+combinaisons — deux exemplaires identiques n'arriveront jamais »*. C'est exact, et ça ne
+conclut rien. **Similaire n'est pas identique.** Il suffisait de choisir quels champs doivent
+correspondre :
+
+| Ce qui doit correspondre | Pourquoi |
+|---|---|
+| **la lignée** | elle décide du plafond de puissance |
+| **le motif** | il décide de la famille de bonus |
+| **le rang d'étoiles** | une trois-étoiles avalée par une fusion de une-étoile serait un gâchis invisible |
+
+L'**âge n'en est pas** : il ne dit que la puissance, et la puissance se moyenne. C'est ce qui
+rend la forge atteignable — sinon il faudrait trois bêtes menées au même âge, et l'atelier ne
+s'ouvrirait qu'à qui joue déjà parfaitement.
+
+**Trois entrent, une sort**, et ce compte décide de tout : neuf cartes d'une même lignée pour
+une seule à trois étoiles. Deux rendait la troisième étoile presque gratuite ; quatre la
+rendait inatteignable avant la dixième ascension.
+
+**Ce que la carte hérite se moyenne** — âge, niveau, teinte, rang — et la teinte s'en trouve
+diluée : albâtre plus deux ordinaires ne redonne pas albâtre. C'est ce qui fait de la forge une
+décision. Le chromatique et le fond, qui n'ont que deux états, se décident à la majorité.
+
+**La poussière ne bouge pas d'un chiffre**, et c'était la consigne. Elle aurait pu baisser
+puisqu'une fusion coûte désormais trois cartes en plus ; elle ne l'a pas fait, parce que ce
+qu'elle mesure n'a pas changé — c'est le prix de l'étoile, pas celui du mariage.
+
+**Un atelier, en pleine page**, troisième vue après la ferme et l'encyclopédie. La raison est
+la même que pour l'encyclopédie : sept cartes côte à côte n'entrent pas dans une colonne de
+vingt et un rem. Il montre les trois cartes qui vont entrer, une flèche, et **la carte qui va
+sortir avant qu'elle existe** — c'est la seule façon de rendre « la moyenne des trois » lisible
+sans l'expliquer.
+
+**Ce qui n'a pas eu besoin d'être inventé** : pour protéger une carte de la forge, on
+l'**équipe**. Une carte équipée n'y entre pas, exactement comme elle ne se fond pas. Le geste
+existait, la règle aussi.
+
+---
+
+### La fusion et la poussière de carte — *renversée en 2.0.0, gardée pour mémoire*
 
 Une carte porte des **étoiles**. Elle naît à **une**, la fusion la monte à **deux**, puis à
 **trois**, et ça s'arrête là — `ETOILES = [1, 1.8, 3]`, deux fusions au plus dans la vie d'une

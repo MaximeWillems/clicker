@@ -805,6 +805,15 @@ scenario('œufs — la vignette passe de la bête à la coquille et revient', ()
 
   // une teinte de bête ne doit pas repeindre une coquille
   eq('sans filtre hérité', glyphe().style.filter || '', '');
+
+  /* DEUX ŒUFS DE SUITE DE LA MÊME LIGNÉE, de sortes différentes. La signature de la bande
+     portait la lignée et pas la sorte, si bien que la vignette restait sur le dessin du
+     premier. Invisible tant que les cinq sortes partageaient le même emoji — c'est la
+     deuxième fois dans cette version qu'un dessin révèle un défaut que l'emoji cachait. */
+  s.incub[0] = { line: 'crapaud', p: 10, kind: 'commun' };
+  jeu.refresh();
+  eq('la même lignée dans une autre coquille se repeint',
+     glyphe().children[0].getAttribute('src'), jeu.ART_OEUFS.commun);
 });
 
 /* ─────────────────────────────── les fonds ──────────────────────────────── */
@@ -2504,7 +2513,7 @@ scenario('encyclopédie — elle traverse l’ascension, et une partie d’avant
   eq('et se remplit dès la première éclosion', k.dexVu('crapaud').nes, 1);
 });
 
-/* ────────────────────────── la poussière et la fusion ────────────────────────── */
+/* ────────────────────────── la poussière et la forge ────────────────────────── */
 
 // une carte quelconque, pour peupler un album
 function pave(jeu, id, ligne, etoiles) {
@@ -2534,7 +2543,7 @@ scenario('poussière — la rareté s’annule des deux côtés', () => {
   ok('mais elle est bien plus faible', jeu.puissanceDe(bacle) < jeu.puissanceDe(nu));
 });
 
-scenario('poussière — fondre, fusionner, et ne jamais défaire', () => {
+scenario('poussière — fondre, et ne jamais défaire une fusion', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3)];
@@ -2548,26 +2557,184 @@ scenario('poussière — fondre, fusionner, et ne jamais défaire', () => {
   eq('l’album en perd une', s.album.length, 2);
   eq('le compteur suit', s.stats.fondues, 1);
 
-  const cout = jeu.coutFusion(s.album[0]);
-  ok('sans poussière, pas de fusion', !jeu.fusionner(1));
-  s.poussiere = cout;
-  ok('avec juste assez, elle passe', jeu.fusionner(1));
-  eq('la carte gagne une étoile', s.album[0].etoiles, 2);
-  eq('et la poussière est dépensée', s.poussiere, 0);
-
-  s.poussiere = 1e6;
-  ok('la deuxième fusion passe', jeu.fusionner(1));
-  eq('trois étoiles', s.album[0].etoiles, jeu.ETOILES.length);
-  eq('il n’y a pas de quatrième', jeu.coutFusion(s.album[0]), null);
-  ok('et fusionner encore est refusé', !jeu.fusionner(1));
-
   /* ON NE DÉFAIT PAS UNE FUSION : les étoiles n'entrent pas dans ce qu'une carte rend. Sinon
-     fusionner puis fondre fabriquerait de la poussière à l'infini. */
-  jeu.deplacerCarte(1, false);
+     forger puis fondre rendrait une partie de ce qu'on vient de payer — et depuis que trois
+     cartes entrent pour une, ce serait bien pire qu'une fuite de monnaie. */
+  s.album = [pave(jeu, 1, 'crapaud', 3)];
+  s.slots = [];
   const avant = s.poussiere;
   jeu.desintegrer(1);
   eq('une carte à trois étoiles rend autant qu’une neuve',
      s.poussiere - avant, jeu.poussiereDe(pave(jeu, 9)));
+});
+
+scenario('forge — trois entrent, une sort, et les trois disparaissent', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  // des numéros hauts EXPRÈS : le compteur des cartes neuves part de 1, et une carte forgée
+  // qui reprendrait le numéro d'une mangée rendrait l'assertion d'en dessous muette
+  s.album = [pave(jeu, 11), pave(jeu, 12), pave(jeu, 13)];
+  s.slots = [];
+  s.poussiere = 0;
+
+  const cle = jeu.cleForge(s.album[0]);
+  const cout = jeu.coutFusion(s.album[0]);
+
+  ok('sans poussière, la forge refuse', !jeu.forger(cle));
+  eq('et rien n’a disparu', s.album.length, 3);
+
+  s.poussiere = cout;
+  ok('avec juste assez, elle passe', jeu.forger(cle));
+  /* C'EST TOUTE LA DIFFÉRENCE AVEC L'ANCIEN GESTE : trois cartes entraient dans le compte et
+     aucune n'en sortait. « Fusionner » montait une étoile contre de la monnaie, sans rien
+     consommer — le mot mentait sur ce qu'il faisait. */
+  eq('trois cartes n’en font qu’une', s.album.length, 1);
+  eq('elle porte deux étoiles', s.album[0].etoiles, 2);
+  eq('et la poussière est dépensée', s.poussiere, 0);
+  ok('la carte qui sort est neuve', [11, 12, 13].indexOf(s.album[0].id) === -1, s.album[0].id);
+  eq('le compteur suit', s.stats.fusions, 1);
+
+  eq('et il n’y a plus de groupe', jeu.groupesForge().length, 0);
+});
+
+scenario('forge — même lignée, même motif, même rang, et rien d’équipé', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.poussiere = 1e9;
+  const complet = () => jeu.groupesForge().filter(g => g.complet).length;
+
+  // LA LIGNÉE : deux crapauds et un loup ne se marient pas
+  s.album = [pave(jeu, 1, 'crapaud'), pave(jeu, 2, 'crapaud'), pave(jeu, 3, 'loup')];
+  s.slots = [];
+  eq('trois lignées mêlées ne font pas un groupe', complet(), 0);
+
+  // LE MOTIF : il décide de ce que la carte FAIT, les mélanger fabriquerait un effet choisi
+  // par personne
+  s.album = [pave(jeu, 1), pave(jeu, 2), Object.assign(pave(jeu, 3), { motif: 1 })];
+  eq('un motif différent non plus', complet(), 0);
+
+  // LE RANG D'ÉTOILES : une trois-étoiles avalée par une fusion de une-étoile serait un
+  // gâchis invisible
+  s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3, 'crapaud', 2)];
+  eq('un rang différent non plus', complet(), 0);
+
+  /* L'ÂGE, LUI, N'EN EST PAS : il ne dit que la puissance, et la puissance se moyenne. Sans
+     ça il faudrait trois bêtes menées au même âge, et la forge ne s'ouvrirait qu'à qui joue
+     déjà parfaitement. */
+  s.album = [Object.assign(pave(jeu, 1), { age: 2, niv: 30 }),
+             Object.assign(pave(jeu, 2), { age: 4, niv: 80 }),
+             pave(jeu, 3)];
+  eq('trois âges différents se marient', complet(), 1);
+
+  /* UNE CARTE ÉQUIPÉE N'ENTRE PAS DANS LA FORGE, exactement comme elle ne se fond pas : elle
+     s'évaporerait d'un emplacement et changerait le build en silence. C'est aussi comme ça
+     qu'on protège une carte — équiper est le seul geste nécessaire, et il existait déjà. */
+  s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3)];
+  s.slots = [2];
+  eq('l’équipée manque à l’appel', complet(), 0);
+  ok('et forger est refusé', !jeu.forger(jeu.cleForge(s.album[0])));
+  eq('l’album est intact', s.album.length, 3);
+
+  // une carte au bout n'a plus de groupe : il n'y a pas de quatrième étoile
+  s.album = [pave(jeu, 1, 'crapaud', 3), pave(jeu, 2, 'crapaud', 3), pave(jeu, 3, 'crapaud', 3)];
+  s.slots = [];
+  eq('trois étoiles est le bout', jeu.groupesForge().length, 0);
+});
+
+scenario('forge — ce qui entre se moyenne, et la teinte se dilue', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.poussiere = 1e9; s.slots = [];
+
+  s.album = [
+    Object.assign(pave(jeu, 1), { age: 5, niv: 100, tint: 7, rank: 5, prodige: true }),
+    Object.assign(pave(jeu, 2), { age: 1, niv: 15,  tint: 0, rank: 0 }),
+    Object.assign(pave(jeu, 3), { age: 5, niv: 100, tint: 2, rank: 3 }),
+  ];
+  const vu = jeu.groupesForge()[0].sortie;
+  eq('l’âge est la moyenne', vu.age, 4);
+  eq('la teinte aussi', vu.tint, 3);
+  eq('le rang aussi', vu.rank, 3);
+  /* LE NIVEAU SE REPLIE DANS SA TRANCHE : la moyenne de trois âges différents tombe volontiers
+     hors des bornes de l'âge retenu, et une bête de niveau 12 à l'âge légende n'existe pas. */
+  ok('le niveau tient dans son âge', vu.niv > 65 && vu.niv <= 85, vu.niv);
+  ok('l’étoile monte', vu.etoiles === 2);
+
+  /* LA TEINTE SE DILUE, et c'est la seule façon de garder une belle teinte rare : il en faut
+     trois pour en sortir une. Sinon la forge serait un automatisme au lieu d'une décision. */
+  ok('albâtre ne survit pas à deux ordinaires', vu.tint < 7, vu.tint);
+
+  /* LE CHROMATIQUE SE DÉCIDE À LA MAJORITÉ : on ne peut pas être aux deux tiers chromatique,
+     et un chromatique perdu au milieu de deux ordinaires ne se transmet pas. */
+  eq('un chromatique sur trois ne passe pas', vu.prodige, false);
+  s.album[1].prodige = true;
+  eq('deux sur trois, oui', jeu.groupesForge()[0].sortie.prodige, true);
+
+  // même règle pour le fond, et deux fonds DIFFÉRENTS n'en font pas un
+  s.album[0].fond = 'braise'; s.album[1].fond = 'givre'; s.album[2].fond = null;
+  eq('deux fonds différents ne se marient pas', jeu.groupesForge()[0].sortie.fond, null);
+  s.album[1].fond = 'braise';
+  eq('deux fois le même, oui', jeu.groupesForge()[0].sortie.fond, 'braise');
+
+  // ce que l'écran montrait est bien ce qui sort
+  const promis = jeu.groupesForge()[0].sortie;
+  jeu.forger(jeu.cleForge(s.album[0]));
+  eq('la carte forgée est celle qu’on avait vue', s.album[0].tint, promis.tint);
+  eq('et son âge aussi', s.album[0].age, promis.age);
+});
+
+scenario('forge — l’atelier montre ce qui entre, ce qui sort, et ce qui manque', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.poussiere = 1e9; s.slots = [];
+
+  const groupes = () => noeuds.get('forge-liste').children;
+  const dans = (e, cls) => {
+    const t = [];
+    const m = x => { if ((x.className || '').includes(cls)) t.push(x); x.children.forEach(m); };
+    e.children.forEach(m);
+    return t;
+  };
+
+  // L'ONGLET N'EXISTE PAS AVANT LA PREMIÈRE CARTE : on ne montre pas la porte d'une pièce vide
+  s.album = [];
+  jeu.refresh();
+  const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
+  eq('pas de forge sans album', onglet('forge').hidden, true);
+
+  s.album = [pave(jeu, 1), pave(jeu, 2)];
+  jeu.forgeSig = '';
+  jeu.refresh();
+  eq('l’onglet s’ouvre avec la première carte', onglet('forge').hidden, false);
+
+  // À DEUX, IL MANQUE UNE CARTE, et la case creuse le dit sans qu'on ait à compter
+  eq('un groupe incomplet s’affiche quand même', groupes().length, 1);
+  eq('trois cases d’entrée', dans(groupes()[0], 'forge-in')[0].children.length, 3);
+  eq('dont une creuse', dans(groupes()[0], 'carte-trou').length, 2);
+  const acte = dans(groupes()[0], 'forge-acte')[0];
+  eq('et le bouton dit ce qui manque', acte.disabled, true);
+  ok('en toutes lettres', /manque/.test(acte.textContent), acte.textContent);
+
+  // à trois, la sortie se montre AVANT d'être fabriquée
+  s.album.push(pave(jeu, 3));
+  jeu.forgeSig = '';
+  jeu.refresh();
+  eq('plus aucune case creuse', dans(groupes()[0], 'carte-trou').length, 0);
+  eq('la sortie est là', dans(groupes()[0], 'forge-out')[0].children.length, 1);
+  ok('et elle porte deux étoiles',
+     dans(groupes()[0], 'carte-etoiles').some(e => e.textContent === '★★☆'),
+     dans(groupes()[0], 'carte-etoiles').map(e => e.textContent).join(' '));
+  eq('le bouton est prêt', dans(groupes()[0], 'forge-acte')[0].disabled, false);
+
+  /* LES CARTES DE LA FORGE NE PORTENT AUCUN GESTE : celle qui va sortir n'existe pas encore,
+     et un bouton dessus serait un mensonge cliquable. */
+  eq('aucun bouton sur les cartes montrées', dans(groupes()[0], 'carte-acte').length, 0);
+
+  eq('la poussière est annoncée', noeuds.get('forge-poussiere').textContent.slice(0, 1), '✧');
+
+  // et l'onglet se referme si l'album se vide sous les pieds du joueur
+  jeu.ouvrirVue('forge');
+  eq('on y est', jeu.vue, 'forge');
+  s.album = [];
+  jeu.refresh();
+  eq('un album vide ramène à la ferme', jeu.vue, 'ferme');
 });
 
 scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () => {
@@ -2606,11 +2773,18 @@ scenario('trophées — quatre de plus pour l’album', () => {
   jeu.verifierTrophees();
   ok('rien de décroché au départ', !pris('deuxEtoiles') && !pris('poussiere'));
 
-  jeu.fusionner(1); jeu.verifierTrophees();
-  ok('« Deux étoiles » tombe à la première fusion', pris('deuxEtoiles'));
+  // NEUF CARTES POUR UNE TROIS-ÉTOILES : trois fusions à une étoile, puis une à deux
+  s.album = [];
+  for (let i = 1; i <= 9; i++) s.album.push(pave(jeu, i));
+  const cle1 = jeu.cleForge(s.album[0]);
+  jeu.forger(cle1); jeu.verifierTrophees();
+  ok('« Deux étoiles » tombe à la première forge', pris('deuxEtoiles'));
   ok('« Trois étoiles » pas encore', !pris('troisEtoiles'));
-  jeu.fusionner(1); jeu.verifierTrophees();
-  ok('et tombe à la seconde', pris('troisEtoiles'));
+  jeu.forger(cle1); jeu.forger(cle1);
+  eq('les neuf ont fait trois cartes', s.album.length, 3);
+  jeu.forger(jeu.cleForge(s.album[0])); jeu.verifierTrophees();
+  ok('et « Trois étoiles » tombe à la quatrième', pris('troisEtoiles'));
+  eq('il n’en reste qu’une', s.album.length, 1);
 
   s.album.push(pave(jeu, 2));
   jeu.desintegrer(2); jeu.verifierTrophees();
@@ -2799,7 +2973,10 @@ scenario('album — une carte ressemble à une carte', () => {
   const p = cls => d[0].children.find(x => (x.className || '').includes(cls));
   eq('deux étoiles sur trois', p('carte-etoiles').textContent, '★★☆');
   ok('fondre annonce sa poussière', /✧/.test(p('fondre').textContent), p('fondre').textContent);
-  ok('fusionner annonce son coût', /★/.test(p('fusion').textContent), p('fusion').textContent);
+  /* IL N'Y A PLUS QU'UN GESTE SUR LA CARTE. « Fusionner » y montait une étoile contre de la
+     monnaie sans rien consommer ; la vraie fusion demande trois cartes et ne peut pas tenir
+     sur une seule — elle a son atelier. */
+  ok('et fusionner a quitté la carte', p('fusion') === undefined);
 });
 
 scenario('album — chaque motif porte son effet, et chacun le sien', () => {

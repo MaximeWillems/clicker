@@ -31,6 +31,7 @@
   <nav class="onglets" aria-label="Vues">
     <button type="button" class="onglet" data-vue="ferme" aria-pressed="true">Ferme</button>
     <button type="button" class="onglet" data-vue="dex" aria-pressed="false">Encyclopédie</button>
+    <button type="button" class="onglet" data-vue="forge" aria-pressed="false" hidden>Forge</button>
   </nav>
 
   <button type="button" id="btn-asc" class="asc-call" hidden>Ascension</button>
@@ -287,6 +288,20 @@
     <p class="sav-dit" id="ency-dit"></p>
     <div class="ency" id="ency"></div>
   </div>
+</section>
+
+<!-- L'ATELIER DE FORGE, en pleine page. Un groupe par mariage possible : ce qui entre à
+     gauche, ce qui sort à droite, le prix sur le bouton. Six cartes côte à côte n'entrent pas
+     dans une colonne de vingt et un rem — c'est la même raison qui a sorti l'encyclopédie. -->
+<section id="vue-forge" class="forge" hidden aria-label="Atelier de forge">
+  <div class="forge-tete">
+    <h2>L'atelier de forge</h2>
+    <p class="forge-dit">Trois cartes de la même lignée et du même motif n'en font qu'une, d'une
+      étoile de plus. Les trois y disparaissent. Ce qu'elles valaient se moyenne — âge, niveau,
+      teinte, taille — et une carte équipée n'entre jamais dans la forge.</p>
+    <span class="forge-poussiere" id="forge-poussiere"></span>
+  </div>
+  <div class="forge-liste" id="forge-liste"></div>
 </section>
 
 <!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :

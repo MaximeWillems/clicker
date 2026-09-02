@@ -311,8 +311,13 @@ body.vue-dex {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "top" "note" "main";
 }
-body.vue-dex .stage-col, body.vue-dex .side, body.vue-dex .dial { display: none; }
-#vue-dex { grid-area: main; }
+body.vue-forge {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "top" "note" "main";
+}
+body.vue-dex .stage-col, body.vue-dex .side, body.vue-dex .dial,
+body.vue-forge .stage-col, body.vue-forge .side, body.vue-forge .dial { display: none; }
+#vue-dex, #vue-forge { grid-area: main; }
 
 .onglets { display: flex; gap: 3px; }
 .onglet {
@@ -1077,6 +1082,75 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
    un se signale par un cadre plus clair : c'est ce qui la distingue dans une grille de vingt. */
 .carte.a-fond { border-color: var(--rule-hi); }
 .carte.a-fond .carte-haut { background: none; }
+
+/* ── L'ATELIER DE FORGE ────────────────────────────────────────────────────────────────
+   Une rangée par mariage : trois cartes, une flèche, la carte qui en sortira. La flèche fait
+   tout le travail d'explication — on voit ce qui entre et ce qui sort sans lire une ligne, et
+   c'est ce qui rend « la moyenne des trois » compréhensible sans la dire.
+
+   LA RANGÉE DÉFILE HORIZONTALEMENT sur un écran étroit plutôt que de se replier en colonne :
+   quatre cartes empilées perdent justement le sens de lecture qui porte l'idée. */
+.forge {
+  display: flex; flex-direction: column; gap: 1rem;
+  min-height: 0; overflow-y: auto;
+}
+.forge-tete { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: baseline; }
+.forge-tete h2 {
+  font-family: var(--f-name); font-weight: 400; font-size: 1.15rem;
+  color: var(--ink); margin: 0;
+}
+.forge-dit { grid-column: 1; margin: 0; max-width: 46rem; color: var(--soft); font-size: 0.82rem; line-height: 1.5; }
+.forge-poussiere {
+  grid-column: 2; grid-row: 1 / span 2;
+  font-family: var(--f-ui); font-size: 1rem; color: var(--ink);
+}
+.forge-vide { color: var(--soft); font-size: 0.85rem; max-width: 40rem; line-height: 1.6; }
+
+.forge-liste { display: flex; flex-direction: column; gap: 0.9rem; }
+.forge-groupe {
+  display: grid; gap: 0.6rem;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 0.8rem 0.9rem;
+}
+/* une rangée prête se signale par son cadre, pas par une couleur de fond : le fond porte déjà
+   la rareté des cartes qui sont dessus */
+.forge-groupe.prete { border-color: var(--rule-hi); }
+.forge-nom {
+  grid-column: 1 / -1; margin: 0;
+  font-family: var(--f-ui); font-size: 0.8rem; font-weight: 400;
+  color: var(--soft); letter-spacing: 0.04em;
+}
+.forge-rang {
+  grid-column: 1; display: flex; align-items: center; gap: 0.7rem;
+  overflow-x: auto; padding-bottom: 0.2rem;
+}
+.forge-in, .forge-out { display: flex; gap: 0.5rem; flex: 0 0 auto; }
+.forge-in .carte, .forge-out .carte { width: 7.5rem; }
+.forge-fleche { flex: 0 0 auto; color: var(--soft); font-size: 1.4rem; }
+
+/* la case creuse dit « il en manque une » sans qu'on ait à compter */
+.carte-trou {
+  display: flex; align-items: center; justify-content: center;
+  border-style: dashed; color: var(--soft); font-size: 1.1rem;
+  background: none;
+}
+
+.forge-acte {
+  grid-column: 2; align-self: center;
+  font-family: var(--f-ui); font-size: 0.85rem;
+  padding: 0.55rem 1rem; border-radius: 5px;
+  border: 1px solid var(--rule-hi); background: var(--raised); color: var(--ink);
+  cursor: pointer; white-space: nowrap;
+}
+.forge-acte:hover:not(:disabled) { background: var(--rule); }
+.forge-acte:disabled { opacity: 0.45; cursor: default; }
+
+@media (max-width: 52rem) {
+  .forge-groupe { grid-template-columns: minmax(0, 1fr); }
+  .forge-acte { grid-column: 1; justify-self: stretch; }
+}
 
 /* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────
    Un cadre en trois quarts, une zone d'illustration séparée du texte par une règle, et la
