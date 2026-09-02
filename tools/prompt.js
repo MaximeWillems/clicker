@@ -471,42 +471,36 @@ function ecrire(ligne) {
                ? ENTETE_REVELATION : ENTETE;
   const l = [entete];
   if (NOTES[ligne.key]) l.push('', NOTES[ligne.key]);
-  /* UN STADE REFAIT NE SE DEMANDE JAMAIS SEUL. La première tentative l'a demandé isolé, et
-     la technique a dérivé en une seule génération : fond dégradé, halo, ombrages, alors que
-     les quatre autres stades sont plats sur fond vide. Une planche porte sa charte dans ses
-     propres images ; une image seule n'a rien à quoi se tenir.
+  /* UN STYLE NE VOYAGE PAS DANS DU TEXTE — il vit dans les pixels. Deux tentatives l'ont
+     prouvé : le cinquième Wukong demandé seul a dérivé en une génération (fond dégradé, halo,
+     ombrages), et le redemander avec son voisin DÉCRIT EN MOTS n'a rien changé, parce que le
+     modèle redessine l'ancre depuis les mots — les deux dérivent alors ensemble.
 
-     Le voisin part donc avec, INCHANGÉ et annoncé comme tel : il ancre la technique, et il met
-     les deux masses côte à côte — ce qui est exactement le contrôle qu'elles doivent passer. */
+     Ce qui a marché pour le kitsune, c'est que les cinq stades étaient DANS LA MÊME IMAGE :
+     la cohérence était garantie par construction, pas par des phrases.
+
+     Le prompt s'appuie donc sur une IMAGE JOINTE, et ne décrit plus que ce qui change. C'est
+     la seule façon de refaire un seul stade sans refaire les autres. */
   if (stadeSeul) {
     const i = stadeSeul - 1;
-    const ancre = i > 0 ? i - 1 : i + 1;
-    l.push('', 'TWO creatures on ONE row, side by side, evenly spaced, on plain empty background.');
-    l.push('The FIRST one already exists and must be redrawn EXACTLY as described — it is here');
-    l.push('only to anchor the technique. All the effort goes into the SECOND one.');
+    l.push('', 'JOINDRE À CE MESSAGE : art/apercu-' + ligne.key + '-grille.png');
+    l.push('  (la produire avec : node tools/pixel.js planche ' + ligne.key + ')');
     l.push('');
-    l.push('LEFT (reference, unchanged): ' + stades[ancre]);
+    l.push('The attached image shows the five stages of this creature as they exist today.');
+    l.push('Draw ONE creature only, alone, centered, on plain empty background — a REPLACEMENT');
+    l.push('for stage ' + stadeSeul + ', the ' + (stadeSeul === 5 ? 'last' : stadeSeul + 'th') + ' one.');
     l.push('');
-    l.push('RIGHT (the one that matters): ' + stades[i]);
+    l.push('MATCH THE ATTACHED IMAGE EXACTLY — this matters more than anything written below:');
+    l.push('the same palette, the same outline weight, the same flat blocks of color, the same');
+    l.push('pixel size, the same absence of shading, glow, gradient and background. If your');
+    l.push('drawing cannot be dropped into that row without anyone noticing, it has failed.');
     l.push('');
-    l.push('Both in the SAME flat technique: flat blocks of color, one hard outline, no shading,');
-    l.push('no glow, no gradient, no background of any kind. If the two do not look like they');
-    l.push('come from the same sheet, the image has failed.');
-    /* LES DEUX NE DOIVENT PAS SE TOUCHER, et ça vaut d'être exigé en toutes lettres : la
-       première planche à deux les a fait se chevaucher — pas UNE colonne de pixels vide entre
-       les deux sur toute la hauteur. Le découpage n'a alors rien à couper, et l'image entière
-       est perdue quelle que soit la qualité du dessin. */
-    l.push('');
-    l.push('CRITICAL — they must NOT touch or overlap: leave a clear EMPTY vertical gap between');
-    l.push('them, at least a tenth of the image wide, with nothing crossing it — no cloud, no');
-    l.push('tail, no plume, no cape. A single pixel bridging the two makes the image unusable.');
+    l.push('What changes, and it is the ONLY thing that changes:');
+    l.push(stades[i]);
     l.push('', '', '--- une fois l’image enregistrée dans art/source-' + ligne.key + '-'
                  + stadeSeul + '.png ---', '');
     l.push('node tools/pixel.js importer art/source-' + ligne.key + '-' + stadeSeul + '.png '
-           + ligne.key + '-' + stadeSeul + ' --stades 2 --grille 64');
-    l.push('', '  Deux grilles en sortent : on ne garde que la SECONDE, la première n’était');
-    l.push('  qu’une ancre. La palette, elle, est calculée sur les deux ensemble — c’est');
-    l.push('  justement ce qui la rapproche de celle de la lignée.');
+           + ligne.key + '-' + stadeSeul + ' --stades 1 --grille 64');
     l.push('', '  Puis la grille remplace le stade ' + stadeSeul + ' de art/grilles/'
              + ligne.key + '.txt.');
     l.push('  ATTENTION : une image seule fait calculer SA palette, qui ne sera pas celle des');

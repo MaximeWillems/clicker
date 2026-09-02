@@ -53,30 +53,25 @@ never a blur, never a gradient, and it still counts toward the 6 colors.
 Last instruction, and it overrides every word above: 6 flat colors, hard outline,
 no shading, no texture. Between grandeur and flatness, choose FLATNESS.
 
-TWO creatures on ONE row, side by side, evenly spaced, on plain empty background.
-The FIRST one already exists and must be redrawn EXACTLY as described — it is here
-only to anchor the technique. All the effort goes into the SECOND one.
+JOINDRE À CE MESSAGE : art/apercu-kitsune-grille.png
+  (la produire avec : node tools/pixel.js planche kitsune)
 
-LEFT (reference, unchanged): the same kitsune SEATED FACING THE VIEWER, and SEVEN tails spread WIDE behind it like an open fan, evenly spaced in a half circle. This one is clearly WIDER THAN TALL — the widest of the five. The body itself is small and centered at the bottom of the fan, same muzzle, same ears, same mark
+The attached image shows the five stages of this creature as they exist today.
+Draw ONE creature only, alone, centered, on plain empty background — a REPLACEMENT
+for stage 5, the last one.
 
-RIGHT (the one that matters): the same kitsune STANDING on her hind legs and seen FROM THE FRONT, and the NINE tails now form ONE SINGLE CLOSED RING all around her — a flat halo of even thickness, like a mandorla. The nine tails are only suggested by NINE SHALLOW NOTCHES on the outer edge of that ring: never nine separate tails, never a bush, never a fan. Inside the ring the fox is LARGE and fills it — head, chest and forelegs, not a small figure lost in fur. One small plain torii gate at her feet, low and clearly IN FRONT of the ring. Same slender muzzle, same tall ears, the forehead mark now a small flat disc. The mass is a CIRCLE, and no other stage is round
+MATCH THE ATTACHED IMAGE EXACTLY — this matters more than anything written below:
+the same palette, the same outline weight, the same flat blocks of color, the same
+pixel size, the same absence of shading, glow, gradient and background. If your
+drawing cannot be dropped into that row without anyone noticing, it has failed.
 
-Both in the SAME flat technique: flat blocks of color, one hard outline, no shading,
-no glow, no gradient, no background of any kind. If the two do not look like they
-come from the same sheet, the image has failed.
-
-CRITICAL — they must NOT touch or overlap: leave a clear EMPTY vertical gap between
-them, at least a tenth of the image wide, with nothing crossing it — no cloud, no
-tail, no plume, no cape. A single pixel bridging the two makes the image unusable.
+What changes, and it is the ONLY thing that changes:
+the same kitsune STANDING on her hind legs and seen FROM THE FRONT, and the NINE tails now form ONE SINGLE CLOSED RING all around her — a flat halo of even thickness, like a mandorla. The nine tails are only suggested by NINE SHALLOW NOTCHES on the outer edge of that ring: never nine separate tails, never a bush, never a fan. Inside the ring the fox is LARGE and fills it — head, chest and forelegs, not a small figure lost in fur. One small plain torii gate at her feet, low and clearly IN FRONT of the ring. Same slender muzzle, same tall ears, the forehead mark now a small flat disc. The mass is a CIRCLE, and no other stage is round
 
 
 --- une fois l’image enregistrée dans art/source-kitsune-5.png ---
 
-node tools/pixel.js importer art/source-kitsune-5.png kitsune-5 --stades 2 --grille 64
-
-  Deux grilles en sortent : on ne garde que la SECONDE, la première n’était
-  qu’une ancre. La palette, elle, est calculée sur les deux ensemble — c’est
-  justement ce qui la rapproche de celle de la lignée.
+node tools/pixel.js importer art/source-kitsune-5.png kitsune-5 --stades 1 --grille 64
 
   Puis la grille remplace le stade 5 de art/grilles/kitsune.txt.
   ATTENTION : une image seule fait calculer SA palette, qui ne sera pas celle des

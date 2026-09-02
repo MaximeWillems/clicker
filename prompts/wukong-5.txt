@@ -53,30 +53,25 @@ never a blur, never a gradient, and it still counts toward the 6 colors.
 Last instruction, and it overrides every word above: 6 flat colors, hard outline,
 no shading, no texture. Between grandeur and flatness, choose FLATNESS.
 
-TWO creatures on ONE row, side by side, evenly spaced, on plain empty background.
-The FIRST one already exists and must be redrawn EXACTLY as described — it is here
-only to anchor the technique. All the effort goes into the SECOND one.
+JOINDRE À CE MESSAGE : art/apercu-wukong-grille.png
+  (la produire avec : node tools/pixel.js planche wukong)
 
-LEFT (reference, unchanged): UNDER THE MOUNTAIN, AND HE IS PUSHING. The silhouette inverts and this is the only stage where he is not upright. The mountain fills the TOP of the frame — one big flat mass with two or three plane changes, no texture, no drawn rocks. He occupies the LOWER HALF and he is unmistakably present: one shoulder and BOTH arms out from under the stone, the body visibly straining upward, the pale mask high in the frame and perfectly calm. He is trapped, never buried. This is where the ARMOUR first appears: one flat shoulder plate and the phoenix-feather cap show from beneath the mountain. One flat gold seal shape on the stone
+The attached image shows the five stages of this creature as they exist today.
+Draw ONE creature only, alone, centered, on plain empty background — a REPLACEMENT
+for stage 5, the last one.
 
-RIGHT (the one that matters): AT REST, STANDING, seen from the front, and it reads as the release of stage 4. He stands on ONE WIDE FLAT CLOUD drawn as a single simple shape — the cloud is the widest thing here and spreads well past his shoulders on both sides, making the whole stage wider than tall. Both arms are open and low, palms out. The staff is held DIAGONALLY across his body from hip to shoulder and it is SHORT: both ends stop well INSIDE his silhouette, it never spans the image and it is never planted upright. Armour and cap complete, the two plumes curving OUT sideways, not up. The body is still and centered; everything that could read as motion sits at the EDGES — the cloud and the plume tips. NOTHING behind him: no background, no glow, no halo, no light, no gradient — plain empty space, exactly like the other four stages
+MATCH THE ATTACHED IMAGE EXACTLY — this matters more than anything written below:
+the same palette, the same outline weight, the same flat blocks of color, the same
+pixel size, the same absence of shading, glow, gradient and background. If your
+drawing cannot be dropped into that row without anyone noticing, it has failed.
 
-Both in the SAME flat technique: flat blocks of color, one hard outline, no shading,
-no glow, no gradient, no background of any kind. If the two do not look like they
-come from the same sheet, the image has failed.
-
-CRITICAL — they must NOT touch or overlap: leave a clear EMPTY vertical gap between
-them, at least a tenth of the image wide, with nothing crossing it — no cloud, no
-tail, no plume, no cape. A single pixel bridging the two makes the image unusable.
+What changes, and it is the ONLY thing that changes:
+AT REST, STANDING, seen from the front, and it reads as the release of stage 4. He stands on ONE WIDE FLAT CLOUD drawn as a single simple shape — the cloud is the widest thing here and spreads well past his shoulders on both sides, making the whole stage wider than tall. Both arms are open and low, palms out. The staff is held DIAGONALLY across his body from hip to shoulder and it is SHORT: both ends stop well INSIDE his silhouette, it never spans the image and it is never planted upright. Armour and cap complete, the two plumes curving OUT sideways, not up. The body is still and centered; everything that could read as motion sits at the EDGES — the cloud and the plume tips. NOTHING behind him: no background, no glow, no halo, no light, no gradient — plain empty space, exactly like the other four stages
 
 
 --- une fois l’image enregistrée dans art/source-wukong-5.png ---
 
-node tools/pixel.js importer art/source-wukong-5.png wukong-5 --stades 2 --grille 64
-
-  Deux grilles en sortent : on ne garde que la SECONDE, la première n’était
-  qu’une ancre. La palette, elle, est calculée sur les deux ensemble — c’est
-  justement ce qui la rapproche de celle de la lignée.
+node tools/pixel.js importer art/source-wukong-5.png wukong-5 --stades 1 --grille 64
 
   Puis la grille remplace le stade 5 de art/grilles/wukong.txt.
   ATTENTION : une image seule fait calculer SA palette, qui ne sera pas celle des
