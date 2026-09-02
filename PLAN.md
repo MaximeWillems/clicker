@@ -154,6 +154,109 @@ de quel rythme un fond cesse d'être une rencontre ? »**
 À mesurer avant de figer les taux : le débit réel d'une pension de milieu de partie, qui est
 très loin du plafond théorique — c'est lui qui décide, pas le sommet.
 
+### Vingt idées relues, huit retenues
+
+Ce qui suit vient d'une passe où vingt propositions hors plan ont été mises sur la table. Huit
+ont été retenues, et deux d'entre elles RENVERSENT une règle déjà écrite — c'est pour ça
+qu'elles sont analysées ici plutôt que listées dans le tableau.
+
+#### La forge prend aussi les cartes équipées
+
+**La règle s'inverse.** « Une carte équipée n'entre pas dans la forge, exactement comme elle ne
+se fond pas » : c'était faux par analogie. Les deux gestes ne se ressemblent pas.
+
+*Fondre* est un bouton sur une carte : un clic, et elle disparaît. Une carte équipée qui
+s'évapore ainsi change le build en silence, et le joueur découvre la perte à l'effet. D'où
+l'interdiction, qui est bonne.
+
+*Forger* est un geste en deux temps où l'on DÉSIGNE les trois cartes et où l'on voit le
+résultat avant de le fabriquer. Rien n'y est silencieux. Interdire les cartes équipées n'y
+protège de rien — ça oblige seulement à les déséquiper d'abord, un aller-retour sans décision.
+
+Ce qu'il faut prévoir : la carte qui sort **reprend l'emplacement libéré**. Forger trois cartes
+dont une était équipée doit rendre le build immédiatement complet, sinon on a déplacé la
+corvée au lieu de la supprimer.
+
+**Le verrou reste, mais il ne sert qu'à fondre.** Un cran sur une carte pour dire « celle-là,
+jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui montre tout.
+
+#### La garde illimitée est trop forte, et le vivier l'aggraverait
+
+Le constat vient du jeu : une bête gardée rapporte **sa propre valeur de vente toutes les
+heures, indéfiniment, sans rien coûter** (`renteOf`, `RENTE_H = 3600`). Une mythique à
+180 millions rend donc 180 millions par heure, pour toujours, et `☆ garder` la met à l'abri du
+marchand. La stratégie optimale de fin de partie est donc : remplir tous les enclos de bêtes
+gardées et ne plus jamais rien vendre. **La seule limite est le nombre d'enclos.**
+
+C'est ce qui condamne le **vivier** — garer une bête hors enclos contre un coût. L'idée
+supprimerait précisément la seule limite qui tient encore le système. Elle est donc EN ATTENTE,
+pas rejetée : elle redeviendra bonne le jour où la rente ne sera plus une rente perpétuelle.
+
+Trois pistes pour la rente, à mesurer avant de choisir :
+
+- **un coût d'entretien** par bête gardée, qui monte avec la rareté — garder devient une
+  décision qu'on refait, pas un état acquis ;
+- **une rente qui décroît** avec le temps passé dans l'enclos — la bête « produit » puis se
+  tarit, et vendre redevient la sortie normale ;
+- **un plafond de rente par enclos**, indépendant de la valeur de la bête — la place cesse
+  d'être le seul arbitrage.
+
+La première est la plus lisible, la deuxième la plus juste, la troisième la plus brutale.
+
+#### L'absence est trop généreuse, et son bandeau ne se ferme pas
+
+Deux choses distinctes, et la seconde est un défaut simple : `#offline-note` est affiché et
+**plus jamais caché** — aucun bouton, aucun écouteur. Il reste à l'écran jusqu'au rechargement.
+
+Le fond est plus sérieux. Une absence de vingt-quatre heures (`OFFLINE_CAP`) rejoue à plein
+régime la rente, la pension et l'éclosion automatique. Comme la rente est déjà perpétuelle, une
+nuit vaut vingt-quatre fois une heure de jeu — et le joueur qui revient n'a rien à décider.
+**Le rééquilibrage de l'absence et celui de la rente sont le même chantier**, dans cet ordre :
+la rente d'abord, l'absence ensuite, parce qu'un plafond posé sur l'absence ne corrigerait
+qu'un symptôme.
+
+#### Compléter une lignée donne un bonus
+
+Les cinq âges d'une lignée rencontrés donnent un petit bonus permanent. Ça donne
+**rétroactivement une raison à tout ce qui est déjà construit** : l'encyclopédie cesse d'être
+décorative, et les lignées qu'on ne croise jamais deviennent des objectifs.
+
+Le point de vigilance est le seul qui compte : la collection TRAVERSE l'ascension. Le bonus est
+donc un cliquet permanent qui ne redescend jamais — il doit être petit, et se cumuler de façon
+à ce que trente lignées complètes ne rendent pas la deuxième partie triviale.
+
+#### Les tempéraments méritent mieux qu'un seul effet
+
+Six caractères pour une seule statistique — la vitesse de croissance, plus la prise de taille.
+Ce qui a été évoqué : **précoce** (grandit plus vite), **difficile** (exigeant sur quelque
+chose), **gourmand** (mange beaucoup), **précieux** (vaut plus cher).
+
+La contrainte qui décide de tout : **un tempérament ne se choisit pas**, il se tire à
+l'éclosion. Un effet purement négatif est donc une punition pour un coup de malchance, sur une
+bête qu'on a déjà payée. Chacun doit être un ÉCHANGE — gourmand grossit vite et coûte, difficile
+rapporte plus mais refuse quelque chose, précieux vaut plus et pousse lentement.
+
+C'est aussi ce qui donnerait aux tempéraments une place dans la pension, où ils n'en ont
+aucune aujourd'hui.
+
+#### Trois autres, sans discussion
+
+- **Les raccourcis clavier** — suivante, précédente, vendre, faire monter. C'est un clicker et
+  il n'y en a aucun. Attention à la zone de collage de la sauvegarde, qui ne doit pas les voir.
+- **Les recettes découvertes, dans l'encyclopédie** — on croyait que ça existait, ce qui est le
+  meilleur argument possible. Même règle que le reste du carnet : seulement ce qu'on a
+  découvert.
+- **Un marché qui fluctue** — un multiplicateur du jour par rareté, qui récompense de vendre au
+  bon moment. Une seule contrainte, et elle est absolue : ça ne doit pas punir l'absent. Un
+  jeu d'attente où il faut être là à la bonne heure est un piège, pas une mécanique.
+
+#### Les douze autres, notées sans être tranchées
+
+Filtrer l'enclos · vente en lot · un chemin tactile pour le glisser-déposer · une ligne « ce
+qui bloque » · les cartes équipées visibles depuis la ferme · une courbe des gains · nommer une
+bête · un tableau d'honneur des ventes · un journal des ascensions · l'œuf mystère · un effet
+aux teintes · le clic maintenu.
+
 ### Ce qui vient ensuite
 
 La colonne du milieu dit **ce qu'il faut avoir fait avant**, ce qui est plus utile qu'un ordre :
