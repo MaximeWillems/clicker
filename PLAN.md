@@ -116,6 +116,43 @@ Deux leçons payées cher, à ne pas réapprendre :
   contredit tout seul. Neuf formes ont dû être renommées en 2.15.0. Le scénario
   `noms` de `tools/test.js` monte la garde.
 
+### Le mur de l'ascension, rencontré en jouant
+
+**Constaté à mille milliards de pièces : plus de jeton, et le palier suivant à 10¹⁵.** Ce n'est
+pas un défaut de code — c'est l'échelle qui fait ce qu'elle a été écrite pour faire — mais c'est
+le point où la partie s'arrête, et personne n'y était encore monté.
+
+Le mécanisme, en trois lignes :
+
+- les paliers de fortune vont **de mille en mille** : 1, 10³, 10⁶, 10⁹, 10¹², … jusqu'à 10³⁰ ;
+- chaque palier franchi crédite **un** jeton, une fois pour toutes dans la partie ;
+- **ascensionner dépense tous les jetons en poche** — c'est voulu, chaque jeton est une carte
+  qu'on emporte, et attendre trois jetons pour en emporter trois est la décision du système.
+
+La conséquence n'avait pas été tirée : celui qui saute avec plusieurs jetons repart à zéro
+jeton, et doit alors **multiplier sa fortune par mille** pour pouvoir sauter à nouveau. Entre
+10¹² et 10¹⁵, avec une légende mythique chromatique à 5,6·10¹¹ l'unité, il faut de l'ordre de
+**mille huit cents ventes maximales** — ou l'équivalent en rente. C'est un mur, pas une pente.
+
+**Le chiffre était faux partout où il était écrit.** Le code et le README annonçaient « un
+million à chaque cran » quand `JETON_PAS` vaut mille. Corrigé. Ça n'avait l'air de rien tant
+que personne n'était monté assez haut : *un mur ne se voit qu'en le heurtant.*
+
+#### Trois façons d'en sortir, aucune tranchée
+
+- **Ne dépenser qu'un jeton par saut** plutôt que tous. Le nombre de cartes emportées se
+  découplerait alors du nombre de jetons — il faudrait le faire dire par autre chose, sans quoi
+  attendre ne servirait plus à rien.
+- **Resserrer l'échelle en fin de parcours** : des paliers de mille en mille jusqu'au milliard,
+  puis de dix en dix. La courbe des gains ralentit en fin de partie, l'échelle devrait ralentir
+  avec elle plutôt que d'accélérer.
+- **Rendre l'ascension possible sans jeton**, contre autre chose — une ferme complète, un
+  nombre de lignées menées au bout. Le jeton cesserait d'être la seule porte.
+
+À traiter avec la **rente** et l'**absence** : les trois décident ensemble de ce que vaut une
+fin de partie, et la rente perpétuelle est précisément ce qui permet d'atteindre 10¹² sans
+jamais rien décider.
+
 ### Le bonheur et la frénésie, à revoir
 
 Le seul système du jeu qui récompense la **présence** plutôt qu'une décision. Il marche, et

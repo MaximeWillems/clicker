@@ -2777,7 +2777,9 @@ Et **une ascension sans carte est refusée** : sauter avec un enclos vide serait
 pas un choix. Le panneau le dit et le bouton reste éteint, le jeton restant en poche.
 
 **On ne peut pas enchaîner deux sauts** sans avoir rejoué : l'ascension vide la bourse, et le
-palier suivant est un million de fois plus haut.
+palier suivant est **mille fois** plus haut — 1, mille, un million, un milliard, mille
+milliards, et ainsi de suite. *Ce document et le code annonçaient « un million de fois », faux
+d'un facteur mille ; corrigé après avoir heurté le mur en jouant.*
 
 **Deux remises à zéro ne sont pas dans l'état sauvegardé**, et sans elles le saut ne se voit
 pas. La **vitesse** revient à ×1 : elle traversait le saut, alors que le bouton ⟲ la rend à ×1,

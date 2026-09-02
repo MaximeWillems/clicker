@@ -633,9 +633,12 @@ const MOTIF_BONUS = {
 };
 
 /* LES JETONS D'ASCENSION. Un jeton s'obtient en franchissant un palier de fortune, et
-   l'ascension en dépense un. Les paliers montent d'un MILLION à chaque cran — un million de
-   pièces, puis mille milliards, puis un trillion — de sorte que le suivant ne se rattrape
-   jamais par accident : il demande de refaire toute l'économie une fois de plus.
+   l'ascension les dépense TOUS. Les paliers montent de MILLE à chaque cran — `JETON_PAS` —
+   soit 1, mille, un million, un milliard, mille milliards, et ainsi de suite jusqu'à 10^30.
+
+   CE PARAGRAPHE ANNONÇAIT « UN MILLION À CHAQUE CRAN » et le README avec lui. C'était faux
+   d'un facteur mille, et ça n'a pas eu l'air grave tant que personne n'était monté assez
+   haut : le mur ne se voit qu'en le heurtant. Il se heurte vers mille milliards.
 
    UN PALIER FRANCHI EST FRANCHI POUR TOUJOURS. Il crédite son jeton une fois, puis il est
    mort : l'ascension remet la bourse à zéro, mais elle ne rend pas les paliers déjà passés.
