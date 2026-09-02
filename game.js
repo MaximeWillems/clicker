@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.3.0';
+const VERSION = 'beta 2.4.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -173,10 +173,6 @@ const RARETES_HAUT_EN_BAS = Object.keys(RARITY).sort((a, b) => RARITY[b].rank - 
 const parRarete = v => Object.fromEntries(Object.keys(RARITY).map(k => [k, v]));
 
 // « a, b et c » plutôt que « a, b, c » : les notes doivent se lire à voix haute.
-function liste(mots) {
-  if (mots.length <= 1) return mots[0] || '';
-  return mots.slice(0, -1).join(', ') + ' et ' + mots[mots.length - 1];
-}
 
 /* Un œuf par rareté, et chacun ne peut donner QUE sa rareté ou celle juste au-dessus.
    C'est ce qui rend la progression séquentielle : on n'atteint une mythique qu'en achetant
@@ -3789,16 +3785,6 @@ function plier(cle) {
 }
 const estPlie = cle => !!(state.plie && state.plie[cle]);
 
-/* L'AIDE DES RÉGLAGES SE REPLIE, ET ELLE EST REPLIÉE PAR DÉFAUT. Six paragraphes expliquaient
-   les trois automates — une trentaine de lignes, en permanence, pour des règles qu'on
-   comprend à la première lecture et qu'on relit ensuite tous les jours sans le vouloir.
-
-   LE SENS DU DRAPEAU EST INVERSÉ EXPRÈS : `aide` vrai veut dire MONTRÉE. Un booléen absent
-   vaut faux, donc toutes les parties déjà commencées ouvrent sur la colonne calme sans qu'on
-   ait à migrer quoi que ce soit — et le seul joueur qui verra les explications est celui qui
-   les demande. Ce qui reste visible, ce sont les CONSIGNES elles-mêmes et la note calculée
-   sous chacune : l'une est ce qu'on règle, l'autre ce que ça donne. */
-const aideOuverte = () => !!(state.plie && state.plie.aide);
 
 /* ── L'ENCYCLOPÉDIE : LA LISTE ─────────────────────────────────────────────────
    UNE CARTE PAR LIGNÉE, ET NON PLUS UNE CASE PAR FORME. La grille de cent cinquante cases
@@ -5088,113 +5074,11 @@ function valeurAu(c, age) {
                     * (1 + bonusAlbum().valeur));
 }
 
-function noteAcheteur() {
-  if (!EN_VENTE[state.buyKind])
-    return 'Il est arrêté : il ne dépense plus rien. Les œufs de ta réserve continuent de se ' +
-           'placer seuls dans les incubateurs libres — ça, c’est gratuit et ça ne s’arrête pas.';
-  const e = EN_VENTE[state.buyKind];
-  const parHeure = Math.floor(3600 / (e.hatch / Math.max(1, force('couveuse'))));
-  return 'Environ ' + parHeure + ' éclosion' + (parHeure > 1 ? 's' : '') +
-    ' par heure et par incubateur, à ta couveuse actuelle. ' +
-    (prixOeuf(e) > 12
-      ? 'S’il ne peut pas payer les ' + fmt(prixOeuf(e)) + ', il laisse l’incubateur vide et attend.'
-      : 'Il ne s’arrêtera jamais faute de moyens.');
-}
-
-function noteEvolution() {
-  if (!evolueQuelqueChose()) return 'Elle ne touche à rien : c’est toi qui décides quand faire monter.';
-  /* Chaque rareté annonce SA facture, calculée là où elle s'arrête vraiment — son propre
-     plafond, rabattu sur son âge de vente si le marchand doit prendre le relais avant. */
-  const cible = cle => {
-    const monte = state.evolveUpTo[cle] || 0;
-    return state.sellAt[cle] ? Math.min(monte, state.sellAt[cle]) : monte;
-  };
-  const facture = cle => EVOLVE.slice(0, cible(cle) - 1).reduce((a, b) => a + (b || 0), 0)
-                       * RARITY[cle].mult * evoRemise();
-  const phrase = ([cle, r]) => cible(cle) <= 1
-    ? 'les ' + r.plur + ' ne montent pas'
-    : 'les ' + r.plur + ' montent jusqu’à l’âge ' + AGES[cible(cle) - 1].nom +
-      ' pour ' + fmt(facture(cle));
-  return 'En clair : ' + liste(Object.entries(RARITY).map(phrase)) +
-    '. Elle passe avant le marchand, donc une bête qui peut encore monter n’est jamais ' +
-    'vendue au prix de l’âge d’en dessous.';
-}
-
-function noteMarchand() {
-  const reglees = Object.entries(RARITY).filter(([cle]) => state.sellAt[cle] > 0);
-  const gardees = Object.entries(RARITY).filter(([cle]) => !state.sellAt[cle]).map(([, r]) => r.plur);
-  if (!reglees.length) return 'Il ne vend rien : les bêtes s’accumulent dans l’enclos jusqu’à ce que tu les vendes toi-même.';
-
-  // la taille s'accroche à la rareté qu'elle concerne, plus à la fin de la phrase entière
-  const taille = cle => (tailleDe(cle) ? ' et ' + RANKS[tailleDe(cle)].fem + 's ou plus' : '');
-  /* Le menu annonce « dès l'âge adulte et au-dessus » ; cette phrase-ci doit dire la même
-     chose. La condition est un seuil : une bête déjà au-dessus part aussi. */
-  const seuil = a => 'mûres à l’âge ' + AGES[a - 1].nom;
-  let txt = 'En clair : il vend ' +
-    liste(reglees.map(([cle, r]) => 'les ' + r.plur + ' ' + seuil(state.sellAt[cle]) + taille(cle))) + '. ';
-  txt += gardees.length
-    ? 'Les ' + liste(gardees) + ' restent dans l’enclos. '
-    : 'Rien n’est épargné : attention, un œuf cher ne se rembourse qu’à l’âge '
-      + AGES[3].nom + '. ';
-
-  /* Le piège de la combinaison : une consigne au-dessus de ce que l'évolution sait atteindre,
-     et cette rareté-là ne part jamais. On nomme les raretés concernées, sinon le joueur voit
-     l'enclos s'engorger sans savoir laquelle de ses quatre consignes est en cause. */
-  // le plafond qui compte est celui de SA rareté ; sans évolution du tout, rien ne dépasse l'âge 1
-  const plafond = cle => (prime('evolution') ? (state.evolveUpTo[cle] || 0) : 0) || 1;
-  const bloquees = reglees.filter(([cle]) => state.sellAt[cle] > plafond(cle)).map(([, r]) => r.plur);
-  if (bloquees.length) {
-    /* Nommer le blocage ne suffit pas : sans la sortie, le joueur relit la même phrase et
-       reste coincé. Chaque avertissement dit donc quoi faire, et l'ordre des remèdes va du
-       gratuit au payant. */
-    txt += prime('evolution') && evolueQuelqueChose()
-      ? '⚠ Ton évolution ne mène pas les ' + liste(bloquees) + ' assez haut : elles ' +
-        'n’atteindront jamais leur âge de vente, et tes enclos vont s’engorger. ' +
-        'Monte leur plafond d’évolution, ou redescends leur âge de vente.'
-      : '⚠ Rien ne fait vieillir tes bêtes : les ' + liste(bloquees) +
-        ' n’atteindront jamais leur âge de vente toutes seules, et tes enclos vont s’engorger. ' +
-        'Fais-les évoluer à la main avec le bouton Évoluer, redescends-les à l’âge ' +
-        AGES[0].nom + ', ou achète l’évolution automatique.';
-  } else if (lvl('mangeoire') && !Object.keys(RARITY).some(cle => tailleDe(cle))) {
-    txt += 'Ta mangeoire n’aura jamais le temps de les engraisser.';
-  }
-
-  /* Un marchand qui ne vend pas est indiscernable d'un marchand cassé. Les avertissements
-     ci-dessus sont THÉORIQUES — ils lisent les réglages. Celui-ci lit l'enclos tel qu'il est,
-     et nomme ce qui coince vraiment, bête par bête. C'est la question que le joueur se pose,
-     et le panneau doit y répondre sans qu'on ait à deviner. */
-  let jeunes = 0, petites = 0;
-  const parRarete = {};
-  for (const c of state.pen) {
-    if (c.keep || !venteAu(c) || !estMur(c)) continue;      // gardée, non réglée, ou encore en croissance
-    if (c.age < venteAu(c)) jeunes++;
-    else if (rankOf(sizeFactor(c)).i < tailleExigee(c)) {
-      petites++;
-      parRarete[lineOf(c).rarity] = true;
-    }
-  }
-  if (petites) {
-    // les seuils diffèrent d'une rareté à l'autre : on nomme les raretés, pas un rang unique
-    const noms = Object.keys(parRarete).map(cle => RARITY[cle].plur);
-    txt += petites > 1
-      ? ' ⚠ ' + petites + ' bêtes sont mûres et assez âgées mais attendent encore leur taille : ' +
-        'ce sont les ' + liste(noms) + ' qui sont retenues.'
-      : ' ⚠ Une bête est mûre et assez âgée mais attend encore sa taille : c’est une ' +
-        RARITY[Object.keys(parRarete)[0]].name + '.';
-  } else if (jeunes && !bloquees.length) {
-    txt += jeunes > 1
-      ? ' ' + jeunes + ' bêtes sont mûres et attendent d’avoir l’âge : c’est l’évolution qui doit les faire monter.'
-      : ' Une bête est mûre et attend d’avoir l’âge : c’est l’évolution qui doit la faire monter.';
-  }
-  // Toute bête vendue à partir de l'âge adulte est une bête qui rapportait déjà : le
-  // marchand et la rente visent le même animal, et ☆ Garder est la parade.
-  if (reglees.some(([cle]) => state.sellAt[cle] >= AGE_RENTE)) {
-    txt += ' À partir de l’âge adulte, il vend aussi celles qui rapportaient : protège ' +
-           'celles que tu veux garder.';
-  }
-  // les clauses se terminent toutes par un point suivi d’une espace : la dernière la garderait
-  return txt.trimEnd();
-}
+/* LES TROIS NOTES CALCULÉES ONT ÉTÉ RETIRÉES. Elles disaient, sous chaque consigne, ce que
+   le réglage en cours allait produire — « environ 80 éclosions par heure », « il vend aussi
+   celles qui rapportaient ». C'était juste, et c'était trois paragraphes de plus dans une
+   colonne qu'on voulait calme : le panneau des réglages garde ses trois titres, ses segments,
+   et la seule explication qui ne se devine pas — celle de la revente. */
 
 function tickView() {
   $('coins').textContent = fmt(state.coins);
@@ -5367,16 +5251,6 @@ function tickView() {
   $('cfg-acheteur').hidden = !prime('acheteur');
   $('panel-reglages').hidden = !prime('marchand') && !prime('evolution') && !prime('acheteur');
 
-  // Chaque réglage dit en clair ce qu'il produit. Une phrase qu'on relit après avoir
-  // bougé un menu vaut mieux qu'un mode d'emploi qu'on lit une fois.
-  if (prime('acheteur')) setText($('note-acheteur'), noteAcheteur());
-  if (prime('evolution')) setText($('note-evolution'), noteEvolution());
-  if (prime('marchand')) {
-    const txt = noteMarchand();
-    setText($('note-marchand'), txt);
-    // un ⚠ en gris pâle de 0,72 rem ne prévient personne : la note entière passe au rouge
-    $('note-marchand').classList.toggle('alerte', txt.indexOf('⚠') !== -1);
-  }
 }
 
 /* Le bandeau des notes. Il ne remplace jamais une note non lue par une autre : si le joueur
@@ -5549,13 +5423,6 @@ function refresh() {
 const PANNEAUX = ['boutique', 'autos', 'primes', 'pension', 'reglages', 'album'];
 
 function syncPanneaux() {
-  const aide = aideOuverte();
-  for (const p of document.querySelectorAll('.config-what')) p.hidden = !aide;
-  const bAide = $('reglages-aide');
-  bAide.setAttribute('aria-pressed', String(aide));
-  setText(bAide, aide ? 'moins' : 'à quoi ça sert ?');
-  $('reglages-intro').hidden = !aide;
-
   for (const cle of PANNEAUX) {
     const p = $('panel-' + cle);
     p.classList.toggle('plie', estPlie(cle));
@@ -6221,17 +6088,20 @@ function batirPension(a, b, ouvert, portee) {
 
   /* ── LE NID ──
      Deux cases côte à côte, et un signe entre les deux. Chacune est à la fois une zone de
-     dépôt, une poignée et un bouton : c'est ce qui donne les trois gestes sur un seul élément. */
+     dépôt, une poignée et un bouton : c'est ce qui donne les trois gestes sur un seul élément.
+
+     IL N'EXISTE PAS QUAND IL N'Y A PLUS DE PLACE. Il s'affichait alors en grisé, avec « le nid
+     est occupé » et « attends que le couple ait fini » : un emplacement proposé qu'on ne peut
+     pas remplir, et deux phrases pour s'en excuser. Une place qui n'existe pas ne se dessine
+     pas — les lignes de couples au-dessus disent déjà pourquoi. */
+  if (!ouvert) return;
   const nid = document.createElement('div');
   nid.className = 'nid';
   const case_ = (cote, c) => {
     const z = document.createElement('button');
     z.type = 'button';
-    z.className = 'nid-case' + (c ? ' pleine rar-' + lineOf(c).rarity
-                                  : ouvert ? ' vide' : ' vide fermee');
+    z.className = 'nid-case' + (c ? ' pleine rar-' + lineOf(c).rarity : ' vide');
     z.dataset.cote = cote;
-    // une case qu'on ne peut pas remplir ne se laisse ni cliquer ni survoler
-    z.disabled = !c && !ouvert;
     if (c) {
       /* UNE BÊTE POSÉE SE REPREND À LA MAIN. La case pleine est une poignée : on la glisse
          sur l'autre côté pour échanger les deux parents, ou on la clique pour la sortir. Sans
@@ -6258,11 +6128,10 @@ function batirPension(a, b, ouvert, portee) {
     } else {
       const v = document.createElement('span');
       v.className = 'nid-vide-mot';
-      v.textContent = ouvert ? 'glisse une bête ici' : 'le nid est occupé';
+      v.textContent = 'glisse une bête ici';
       const v2 = document.createElement('i');
       v2.className = 'nid-vide-sous';
-      v2.textContent = ouvert ? 'ou clique pour y mettre celle en scène'
-                              : 'attends que le couple ait fini';
+      v2.textContent = 'ou clique pour y mettre celle en scène';
       z.append(v, v2);
     }
     return z;
@@ -6313,8 +6182,6 @@ function renderPension() {
               portee + '|' + placesPension();
   if (sig !== pensionSig) { pensionSig = sig; batirPension(a, b, ouvert, portee); }
 
-  setText($('pension-meta'), couples().length + ' / ' + placesPension());
-
   // ── ce qui coule : la barre et le temps restant, repeints sans rien reconstruire ──
   for (const r of refsPension.couples) {
     setWidth(r.jauge, Math.min(100, r.k.t / r.k.duree * 100).toFixed(1) + '%');
@@ -6323,14 +6190,15 @@ function renderPension() {
       : fmtTime(r.k.duree - r.k.t) + (portee > 1 ? ' · ×' + portee : ''));
   }
 
-  /* ── CE QUE LE COUPLE DONNERAIT ── */
+  /* ── CE QUE LE COUPLE DONNERAIT ──
+     Rien à dire quand le nid n'est pas là : il n'y a plus de place, donc plus de couple à
+     composer, donc plus de phrase à écrire sous une chose qui n'existe pas. */
+  if (!refsPension.dit) return;
   const dit = refsPension.dit;
   dit.classList.remove('refus', 'recette');
   const refus = refusPension(a, b);
   if (!a || !b) {
-    setText(dit, couples().length >= placesPension()
-      ? 'La place est prise. Attends que le couple ait fini.'
-      : 'Deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.');
+    setText(dit, 'Deux bêtes adultes. Elles garderont leur enclos et cesseront de rapporter.');
   } else if (refus) {
     setText(dit, refus);
     dit.classList.add('refus');
@@ -6366,39 +6234,12 @@ function renderPension() {
   }
   refsPension.go.disabled = !!refus || !a || !b;
 
-  /* LE DÉBIT DE LA PENSION ENTIÈRE, en œufs par heure. C'est le seul chiffre qui se compare à
-     l'acheteur automatique, et c'est la question que la pension pose en fin de partie :
-     acheter ses œufs, ou les produire. */
-  const debit = couples().reduce((n, k) => n + portee / (k.duree / 3600), 0);
-  /* UNE LIGNÉE INCONNUE D'UN RANG SECRET NE SE NOMME PAS ICI. Lire « sun wukong » dans une
-     liste de réserve, c'est apprendre la nouvelle par une note de bas de page une heure et
-     demie avant l'éclosion, qui est le seul moment où elle valait quelque chose. */
-  const promis = [].concat(...Object.values((state.pension && state.pension.dus) || {}));
-  const nes = state.pension.nes || 0;
-  const nommer = l => rareteConnue(LINE_BY_KEY[l].rarity)
-    ? LINE_BY_KEY[l].name.toLowerCase() : 'quelque chose que tu n’as jamais vu';
-  /* GROUPÉ ET COMPTÉ, jamais énuméré. Une pension nue rendait un œuf toutes les seize heures
-     et la liste tenait ; une pension complète en rend cinquante, et « loup, ours, ours, loup,
-     ours… » cinquante fois de suite n'est plus une phrase. */
-  const parLignee = new Map();
-  for (const l of promis) parLignee.set(l, (parLignee.get(l) || 0) + 1);
-  const resume = [...parLignee].map(([l, n]) => (n > 1 ? n + ' ' : '') + nommer(l));
-  /* UN NOMBRE, PAS UNE LISTE. L'énumération — « 3 loups, 2 ours, un crapaud » — changeait à
-     chaque ponte et à chaque éclosion, c'est-à-dire plusieurs fois par minute sur une pension
-     qui tourne. Elle occupe une, deux ou trois lignes selon les noms tirés, et le panneau
-     entier sautait à chaque fois. Le détail part à l'infobulle : il se consulte, il ne se
-     surveille pas. */
-  $('pension-intro').title = resume.length ? 'En réserve : ' + liste(resume) + '.' : '';
-  setText($('pension-intro'), promis.length
-    ? 'En réserve : ' + promis.length + (promis.length > 1 ? ' œufs promis.' : ' œuf promis.')
-    : nes
-    ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus. ' +
-      nes + (nes > 1 ? ' œufs pondus' : ' œuf pondu') + ' depuis le début.'
-    : couples().length
-    ? 'Deux bêtes confiées gardent leur enclos et ne rapportent plus — indéfiniment : ' +
-      'un couple ne se défait que si tu le romps. ' + dec(debit, debit < 10 ? 2 : 0) + ' œufs à l’heure.'
-    : 'Glisse deux bêtes adultes dans le nid : elles pondront un œuf. Plus elles se ressemblent, ' +
-      'plus c’est rapide — et l’œuf prend la lignée de l’une des deux.');
+  /* LE COMPTEUR ET LA PHRASE D'INTRODUCTION ONT ÉTÉ RETIRÉS. Le premier disait « 1 / 4 » dans
+     l'en-tête, le second annonçait ce qui attendait en réserve : deux chiffres de plus à
+     surveiller dans une colonne qu'on voulait calme, et le second changeait à chaque ponte.
+
+     Ce qui les remplace était déjà là : les lignes de couples disent ce qui travaille, le nid
+     dit ce qu'on peut encore composer, et la réserve d'œufs se lit en boutique. */
 }
 
 /* ── LA FICHE D'UNE LIGNÉE ─────────────────────────────────────────────────────
@@ -6816,7 +6657,6 @@ function bindTools() {
      disent la même chose et une septième oubliée le jour où un panneau s'ajoute. */
   for (const b of document.querySelectorAll('.panel-plier')) {
     b.addEventListener('click', () => plier(b.dataset.plie));
-  $('reglages-aide').addEventListener('click', () => plier('aide'));
   }
 
   /* ── LA PENSION : glisser une bête de la bande jusqu'au nid ──────────────────

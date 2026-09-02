@@ -167,6 +167,18 @@ for (const m of html.matchAll(/<(p|div|section|span|nav|ul|li)[^>]*class="([^"]+
   n.className = m[2];
   if (/\shidden(\s|>|=)/.test(m[0])) n.hidden = true;
   for (const d of m[0].matchAll(/data-(\w+)="([^"]+)"/g)) n.dataset[d[1]] = d[2];
+  /* ET CE QU'ILS DISENT. Un paragraphe dont le banc ne lit pas le texte est un paragraphe
+     qu'aucun scénario ne peut vérifier : on saurait qu'il est là, jamais ce qu'il raconte.
+     Seules les balises SANS enfants de mise en page sont lues — un `div` avalerait tout ce
+     qu'il contient, et « le texte de la section » ne veut rien dire. */
+  if (/^(p|span|i|b|h2|h3)$/.test(m[1])) {
+    const bout = html.indexOf('</' + m[1] + '>', m.index + m[0].length);
+    if (bout > 0) {
+      const dedans = html.slice(m.index + m[0].length, bout)
+        .replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+      if (dedans) n.textContent = dedans;
+    }
+  }
   for (const cls of m[2].split(/\s+/).filter(Boolean)) {
     if (!parClasse.has(cls)) parClasse.set(cls, []);
     parClasse.get(cls).push(n);

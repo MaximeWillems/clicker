@@ -836,7 +836,6 @@ button.act.evo:hover:not(:disabled)  { color: var(--jade);  border-color: var(--
 .buy.egg-epique:hover:not(:disabled),
 .buy.egg-mythique:hover:not(:disabled) { border-color: var(--rar); }
 
-.config-note { font-size: 0.72rem; color: var(--faint); margin: 0.4rem 0 0; line-height: 1.45; }
 
 /* ── pied ────────────────────────────────────── */
 .foot {
@@ -892,7 +891,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .stage-hint.alerte { color: var(--red); }
 /* Une note de réglage qui porte un ⚠ annonce un enclos qui va s'engorger : elle doit se voir
    sans qu'on la lise. */
-.config-note.alerte { color: var(--red); border-left-color: var(--red); }
 
 /* ── réglages : des conditions lisibles, pas des phrases à trous ─────────── */
 .panel-intro {
@@ -901,14 +899,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .config-what {
   font-size: 0.78rem; color: var(--soft); margin: 0 0 0.55rem; line-height: 1.5;
 }
-/* le bouton qui déplie l'aide : un mot, pas une icône — c'est une question qu'on se pose */
-.panel-aide {
-  font-family: var(--f-ui); font-size: 0.68rem; color: var(--faint);
-  background: none; border: 1px solid transparent; border-radius: 4px;
-  padding: 0.1rem 0.4rem; cursor: pointer; white-space: nowrap;
-}
-.panel-aide:hover { color: var(--soft); border-color: var(--rule); }
-.panel-aide[aria-pressed="true"] { color: var(--accent); }
 .config-what b { color: var(--ink); font-weight: 500; }
 /* ── LES CONSIGNES, EN SEGMENTS ────────────────────────────────────────
    Seize menus déroulants sont devenus seize rangées de pastilles, comme le tri de l'enclos.
@@ -953,9 +943,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   color: var(--faint);
   background: var(--raised);
   box-shadow: inset 0 0 0 1px var(--rule-hi);
-}
-.config-note {
-  border-left: 2px solid var(--rule-hi); padding-left: 0.6rem; margin-top: 0.7rem;
 }
 
 /* le détail des boosts : discret, mais toujours là */
@@ -1563,10 +1550,8 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .nid-case:hover { border-color: var(--rule-hi); }
 .nid-case.pleine:hover { border-color: var(--red); }
 /* pendant qu'on porte une bête, les cases vides s'allument : le nid dit où déposer */
-body.glisse .nid-case.vide:not(.fermee) { border-color: var(--jade-dim); background: var(--raised); }
+body.glisse .nid-case.vide { border-color: var(--jade-dim); background: var(--raised); }
 /* une case fermée se voit fermée : elle ne réagit ni au survol ni au glisser */
-.nid-case.fermee { opacity: 0.45; cursor: not-allowed; border-style: dotted; }
-.nid-case.fermee:hover { border-color: var(--rule-hi); }
 .nid-case.survol { border-color: var(--jade); background: var(--jade-dim); }
 
 /* une case pleine est une poignée : on la glisse sur l’autre pour échanger les deux parents */

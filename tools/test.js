@@ -1271,12 +1271,11 @@ scenario('pension — elle tourne pendant une absence, et l’écran suit', () =
 
   jeu.refresh();
   eq('le panneau est ouvert', noeuds.get('panel-pension').hidden, false);
-  ok('et il compte ce qui attend', /1 œuf promis/.test(noeuds.get('pension-intro').textContent),
-     noeuds.get('pension-intro').textContent);
-  /* LE DÉTAIL EST PARTI À L'INFOBULLE : l'énumération changeait à chaque ponte et faisait
-     sauter le panneau. Ce qu'elle disait n'est pas perdu, il ne se surveille plus. */
-  ok('et le détail nomme les lignées', /loup|ours/.test(noeuds.get('pension-intro').title),
-     noeuds.get('pension-intro').textContent);
+  /* LE PANNEAU NE COMPTE PLUS RIEN. Le compteur « 1 / 4 » et la phrase qui annonçait la
+     réserve ont été retirés en 2.4.0 : deux chiffres de plus à surveiller dans une colonne
+     qu'on voulait calme, et le second changeait à chaque ponte. Ce que la pension a produit se
+     lit là où on va le chercher — dans la réserve, en boutique. */
+  eq('l’œuf est bien en réserve', jeu.eggStock('commun') + jeu.eggStock('rare') >= 1, true);
 });
 
 scenario('pension — c’est un bâtiment : il faut l’acheter', () => {
@@ -1636,13 +1635,16 @@ scenario('pension — un nid sans place ne se laisse pas remplir', () => {
   eq('des deux côtés', jeu.poserAuNid(d.id, 'b'), false);
   eq('et rien n’est entré', jeu.pensionA, null);
 
+  /* ET IL NE SE DESSINE PLUS DU TOUT. Il s'affichait en grisé, avec « le nid est occupé » et
+     « attends que le couple ait fini » : un emplacement proposé qu'on ne peut pas remplir, et
+     deux phrases pour s'en excuser. Une place qui n'existe pas ne se dessine pas — les lignes
+     de couples au-dessus disent déjà pourquoi. */
   jeu.refresh();
-  const cases = casesNid(jeu);
-  ok('les deux cases sont fermées', cases.every(z => z.classList.contains('fermee')));
-  ok('et désactivées', cases.every(z => z.disabled));
-  ok('elles disent pourquoi',
-     cases.every(z => /occupé/.test(z.children.map(x => x.textContent).join(' '))),
-     cases.map(z => z.children.map(x => x.textContent).join(' ')).join(' | '));
+  eq('le nid n’est pas là', casesNid(jeu).length, 0);
+  ok('ni le bouton qui le valide',
+     !noeuds.get('pension').children.some(x => x.id === 'pension-go'));
+  ok('mais les couples en cours restent',
+     noeuds.get('pension').children.some(x => x.classList.contains('couple')));
 
   // la place ne se libère plus toute seule : il faut rompre le couple
   jeu.avancePension(1e6);
@@ -1652,7 +1654,7 @@ scenario('pension — un nid sans place ne se laisse pas remplir', () => {
   ok('le nid se rouvre', jeu.nidOuvert());
   ok('et poser remarche', jeu.poserAuNid(c.id, 'a'));
   jeu.refresh();
-  ok('les cases aussi', casesNid(jeu).every(z => !z.classList.contains('fermee')));
+  eq('les deux cases sont revenues', casesNid(jeu).length, 2);
 
   // sans la prime non plus, le nid ne se remplit pas
   s.primes = {};
@@ -2086,13 +2088,12 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   ok('le nid promet', /peut-être autre chose/.test(ditPension(jeu)), ditPension(jeu));
   ok('sans rien nommer', !/[Kk]itsune|erveille/.test(ditPension(jeu)), ditPension(jeu));
 
-  // et une lignée promise en réserve ne se nomme pas non plus
+  /* LA LIGNE DE RÉSERVE DE LA PENSION A DISPARU en 2.4.0, et avec elle le seul endroit qui
+     nommait une lignée promise. La règle du secret n'a plus de surface à protéger ici : ce
+     qui la vérifie encore, ce sont les consignes du marchand et les sections de
+     l'encyclopédie, juste au-dessus et juste en dessous. */
   s.pension.dus = { merveille: ['wukong'] };
   jeu.refresh();
-  /* LA RÈGLE DU SECRET A SUIVI LE TEXTE. Le détail est passé à l'infobulle en 2.3.0, et
-     une infobulle se lit : elle ne doit pas nommer davantage que la ligne. */
-  ok('la réserve reste muette', !/[Ww]ukong/.test(noeuds.get('pension-intro').title),
-     noeuds.get('pension-intro').title);
 
   /* À LA PREMIÈRE ÉCLOSION, TOUT S'OUVRE D'UN COUP. */
   s.seen['kitsune:1'] = 1;
@@ -2105,8 +2106,6 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));
   eq('et les consignes reviennent', noeuds.get('vente-merveilleuse-r').hidden, false);
-  ok('la réserve nomme enfin', /[Ww]ukong/.test(noeuds.get('pension-intro').title),
-     noeuds.get('pension-intro').title);
 });
 
 scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte', () => {
@@ -2314,9 +2313,14 @@ scenario('acheteur — il peut se taire, et la réserve continue sans lui', () =
   jeu.runAutomations(1);
   eq('arrêté, il ne remplit rien', s.incub.filter(Boolean).length, 0);
   eq('et ne dépense rien', s.coins, garde);
+  /* LA NOTE QUI LE DISAIT A ÉTÉ RETIRÉE en 2.4.0 avec les deux autres : le panneau des
+     réglages garde ses titres, ses segments et la seule explication qui ne se devine pas.
+     Le SEGMENT, lui, montre toujours quel choix est actif — c'est ce qu'on règle. */
   jeu.refresh();
-  ok('la note le dit', /arrêté/.test(noeuds.get('note-acheteur').textContent),
-     noeuds.get('note-acheteur').textContent);
+  const seg = noeuds.get('sel-acheteur');
+  ok('le segment montre « jamais » retenu',
+     seg.children.some(b => b.dataset.v === '' && b.getAttribute('aria-pressed') === 'true'),
+     seg.children.map(b => b.dataset.v + ':' + b.getAttribute('aria-pressed')).join(' '));
 
   /* LA RÉSERVE SE VIDE QUAND MÊME : elle est déjà payée, et c'est justement ce qu'on veut
      quand la pension produit. */
@@ -2668,42 +2672,35 @@ scenario('colonne — la réserve ne pousse plus le texte de la boutique', () =>
   eq('et n’affiche aucune réserve', inc.reserve.textContent, '');
 });
 
-scenario('colonne — l’aide des réglages est repliée par défaut', () => {
+scenario('colonne — les réglages gardent leurs titres et la revente', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
   s.primes.acheteur = true; s.primes.evolution = true; s.primes.marchand = true;
   jeu.refresh();
 
-  const aides = () => document.querySelectorAll('.config-what');
-  ok('il y a bien des explications', aides().length >= 5, aides().length);
+  /* CE QUI RESTE DANS LE PANNEAU. Trois titres, trois rangées de segments, et la seule
+     explication qui ne se devine pas — celle de la revente. Tout le reste a été retiré :
+     l'introduction, les explications de l'acheteur et de l'évolution, et les trois notes
+     calculées qui disaient sous chaque consigne ce qu'elle allait produire. C'était juste,
+     et c'était une trentaine de lignes dans une colonne qu'on voulait calme. */
+  const titres = document.querySelectorAll('.config-step');
+  eq('trois titres', titres.length, 3);
 
-  /* SIX PARAGRAPHES EXPLIQUAIENT LES TROIS AUTOMATES — une trentaine de lignes, en permanence,
-     pour des règles qu'on comprend à la première lecture et qu'on relit ensuite tous les jours
-     sans le vouloir. Le drapeau est inversé exprès : `aide` vrai veut dire MONTRÉE, donc une
-     partie déjà commencée ouvre sur la colonne calme sans qu'on ait à migrer quoi que ce soit. */
-  ok('toutes repliées au départ', aides().every(p => p.hidden));
-  eq('l’intro aussi', noeuds.get('reglages-intro').hidden, true);
-  eq('et le bouton propose de les voir', noeuds.get('reglages-aide').getAttribute('aria-pressed'), 'false');
+  const quoi = document.querySelectorAll('.config-what');
+  ok('il ne reste que l’explication de la revente', quoi.length <= 3, quoi.length);
+  ok('et elle parle bien de vendre',
+     quoi.every(p => /vend|vente|mûres|engraissée/i.test(p.textContent)),
+     quoi.map(p => p.textContent.slice(0, 40)).join(' | '));
 
-  jeu.plier('aide');
-  ok('un clic les montre toutes', aides().every(p => !p.hidden));
-  eq('l’intro revient', noeuds.get('reglages-intro').hidden, false);
-  eq('et le bouton se marque', noeuds.get('reglages-aide').getAttribute('aria-pressed'), 'true');
-
-  jeu.plier('aide');
-  ok('et se replie', aides().every(p => p.hidden));
-
-  /* CE QUI NE SE REPLIE PAS : les consignes elles-mêmes, et la note calculée sous chacune.
-     L'une est ce qu'on règle, l'autre ce que ça donne — aucune des deux n'est de la
-     documentation. */
-  ok('les segments restent', noeuds.get('reg-acheteur').children.length > 0);
-  ok('et la note calculée aussi', noeuds.get('note-acheteur').textContent.length > 0,
-     noeuds.get('note-acheteur').textContent);
+  // les segments restent : c'est ce qu'on règle, et ce n'est pas du texte
+  ok('l’acheteur garde son segment', noeuds.get('reg-acheteur').children.length > 0);
+  ok('l’évolution aussi', noeuds.get('reg-evolution').children.length > 0);
+  ok('le marchand aussi', noeuds.get('reg-vente').children.length > 0);
 });
 
 /* ────────────────────────── la poussière et la forge ────────────────────────── */
 
-// une carte quelconque, pour peupler un album
+/* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
 function pave(jeu, id, ligne, etoiles) {
   return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
            prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };

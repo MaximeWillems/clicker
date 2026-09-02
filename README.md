@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.3.0** | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
+| **beta 2.4.0** | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
+| beta 2.3.0 | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
 | beta 2.2.0 | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
 | beta 2.1.0 | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |
 | beta 2.0.0 | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
@@ -871,26 +872,51 @@ restent — l'incubateur, l'enclos, les améliorations — tiennent sur **une se
 des points de suspension**, le reste dans l'infobulle : la colonne devient une liste qu'on
 parcourt au lieu d'un texte qu'on relit.
 
-**L'aide des réglages est repliée par défaut.** Six paragraphes expliquaient les trois
-automates — une trentaine de lignes, en permanence, pour des règles qu'on comprend à la
-première lecture et qu'on relit ensuite tous les jours sans le vouloir. Un bouton « à quoi ça
-sert ? » les rouvre.
+**L'aide des réglages a d'abord été repliée derrière un bouton** — six paragraphes qui
+expliquaient les trois automates, une trentaine de lignes en permanence pour des règles qu'on
+comprend à la première lecture. La version suivante les a supprimées : voir juste en dessous.
 
-Le drapeau est **inversé exprès** : `aide` vrai veut dire *montrée*. Un booléen absent vaut
-faux, donc toutes les parties déjà commencées ouvrent sur la colonne calme sans qu'on ait à
-migrer quoi que ce soit — et le seul joueur qui voit les explications est celui qui les
-demande.
+#### Second passage de rabot
 
-Ce qui **ne** se replie pas : les consignes elles-mêmes, et la note calculée sous chacune.
-L'une est ce qu'on règle, l'autre ce que ça donne ; aucune des deux n'est de la documentation.
+La `2.3.0` avait replié l'aide des réglages derrière un bouton. La `2.4.0` la **supprime** —
+ainsi que trois autres choses, et le raisonnement est le même à chaque fois : *ce qui ne sert
+qu'une fois ne doit pas occuper l'écran pour toujours.*
+
+**Les réglages n'ont plus que leurs titres.** Trois intitulés, trois rangées de segments, et
+**une seule explication** — celle de la revente, la seule règle du panneau qui ne se devine pas
+en bougeant un bouton. Ont disparu : l'introduction, l'explication de l'acheteur, les deux de
+l'évolution, et les **trois notes calculées** qui disaient sous chaque consigne ce qu'elle
+allait produire. Elles étaient justes ; elles faisaient trente lignes.
+
+Le bouton « à quoi ça sert ? » disparaît avec elles : il n'avait plus rien à replier.
+
+**Le nid n'existe pas quand il n'y a plus de place.** Il s'affichait en grisé avec « le nid est
+occupé » et « attends que le couple ait fini » — un emplacement qu'on propose sans pouvoir le
+remplir, et deux phrases pour s'en excuser. Une place qui n'existe pas ne se dessine pas ; les
+lignes de couples au-dessus disent déjà pourquoi.
+
+**La pension ne compte plus.** Le « 1 / 4 » de l'en-tête et la ligne qui annonçait la réserve
+sont retirés. Ce qu'ils disaient se lit là où on va le chercher : les lignes de couples disent
+ce qui travaille, le nid dit ce qu'on peut encore composer, et les œufs produits se comptent en
+boutique, dans la case qui leur a été faite en `2.3.0`.
+
+*Une conséquence à connaître* : la ligne de réserve était le seul endroit qui nommait les
+lignées promises, et donc la seule surface où s'appliquait la règle « une lignée d'un rang
+jamais rencontré ne se nomme pas ». Cette surface n'existe plus ; la règle continue de valoir
+partout ailleurs.
 
 #### Le banc ne voyait que les boutons
 
-`querySelectorAll` n'indexait que les `<button>` de `index.html`. La boucle qui replie l'aide
-parcourt des **paragraphes** : elle tournait donc à vide dans le banc, et rien n'aurait signalé
-qu'elle ne repliait rien. Le banc indexe maintenant tout ce qui porte une classe — et un
+`querySelectorAll` n'indexait que les `<button>` de `index.html`. La boucle qui repliait l'aide
+parcourait des **paragraphes** : elle tournait donc à vide dans le banc, et rien n'aurait
+signalé qu'elle ne repliait rien. Le banc indexe maintenant tout ce qui porte une classe — et un
 élément qui a déjà un nœud sous son identifiant réutilise celui-là, sans quoi deux objets
 décriraient le même élément.
+
+Il lit aussi **ce qu'ils disent**, pour les balises sans enfants de mise en page. Un paragraphe
+dont le banc ne lit pas le texte est un paragraphe qu'aucun scénario ne peut vérifier : on
+saurait qu'il est là, jamais ce qu'il raconte. C'est ce qui permet au scénario de la `2.4.0`
+d'affirmer que la seule explication restante parle bien de vendre.
 
 ### Les consignes, en segments
 
