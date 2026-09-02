@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 3.1.0** | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
+| **beta 3.1.1** | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
+| beta 3.1.0 | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
 | beta 3.0.0 | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
 | beta 2.5.0 | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
 | beta 2.4.1 | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
@@ -1928,8 +1929,21 @@ moment où l'œil choisit une vignette et celui où le doigt appuie, deux ventes
 bête sous le curseur n'est plus la même. **On clique alors sur une bête qu'on n'a pas choisie**
 — et sur une ferme qui tourne bien, ça arrive tout le temps.
 
-**Changer le tri redistribue**, et c'est la seule chose qui le fasse : trier est un geste
-explicite, on s'attend à ce que tout bouge. Le reste du temps, l'enclos est stable.
+**Une case tient une seconde, puis l'enclos se retasse.** La première version figeait les
+cases pour de bon, et c'était une seconde faute après celle qu'elle corrigeait : le **tri
+n'était plus jamais rétabli**. Une bête vendue laissait un trou définitif, la suivante le
+reprenait, et au bout de dix ventes l'enclos ne ressemblait plus à rien de trié.
+
+Les deux besoins sont réels et ne se contredisent que **dans l'instant** : il faut que rien ne
+bouge sous le curseur pendant qu'on vise, et il faut que l'ordre revienne. Une seconde sépare
+les deux — assez pour faire le geste, assez peu pour que l'enclos ne dérive pas.
+
+Le délai court depuis l'instant où l'affectation **cesse de suivre le tri**, et non depuis la
+dernière vente : sinon un marchand qui vend en continu — c'est le cas en ×100, et c'est
+justement là qu'on s'en plaint — repousserait le retassage indéfiniment.
+
+**Changer le tri redistribue immédiatement**, sans attendre : c'est un geste explicite, on
+s'attend à ce que tout bouge.
 
 `subjects()` n'a pas de trous, lui, et c'est voulu : tout le jeu — la sélection, le marchand,
 l'évolution — raisonne sur des bêtes, pas sur des places. Les trous n'existent qu'à l'affichage.

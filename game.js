@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 3.1.0';
+const VERSION = 'beta 3.1.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3802,9 +3802,16 @@ function renderStrip() {
      Elle n'y était pas, et ça ne se voyait pas : les cinq sortes partageaient le même emoji.
      Deux œufs de suite de la MÊME LIGNÉE mais de sortes différentes — un commun puis un
      épique de crapaud — laissaient donc la vignette sur le dessin du premier. */
+  /* LE RETASSAGE ENTRE DANS LA SIGNATURE, sans quoi il n'aurait jamais lieu : rien d'autre
+     ne change au moment où le délai expire, la signature resterait identique et la bande ne
+     se repeindrait pas. Le drapeau bascule une fois, l'enclos se remet dans l'ordre, et il
+     rebascule à l'image suivante — deux redessins par retassage, et aucun entre-temps. */
+  const vivants = list.filter(s => s.kind === 'creature');
+  const retasser = casesARetasser(vivants);
   const sig = list.map(s => s.kind === 'egg'
     ? 'i' + s.i + (s.slot ? ':' + s.slot.kind + ':' + s.slot.line : ':-')
     : 'c' + s.c.id + ':' + s.c.age + (s.c.keep ? ':k' : '')).join(',') +
+    (retasser ? '|R' : '') +
     /* LE NOMBRE D'ENCLOS ENTRE DANS LA SIGNATURE depuis que la bande en dessine les cases :
        acheter un enclos n'ajoute aucune bête, donc rien d'autre ne changerait, et la case
        neuve n'apparaîtrait qu'à la prochaine éclosion. */
@@ -3829,7 +3836,7 @@ function renderStrip() {
     thumbs.delete(key);
   }
 
-  peuplerEnclos($('strip-pen'), list.filter(s => s.kind === 'creature'));
+  peuplerEnclos($('strip-pen'), vivants, retasser);
   peupler($('strip-incub'), list.filter(s => s.kind === 'egg'));
 }
 
@@ -3862,11 +3869,37 @@ function syncAchat() {
    `subjects()` n'a pas de trous, lui, et c'est voulu : tout le jeu — la sélection, le
    marchand, l'évolution — raisonne sur des bêtes, pas sur des places. Les trous n'existent
    qu'à l'affichage. */
-let casesPar = new Map(), triCases = null;
+/* LA CASE TIENT UNE SECONDE, PUIS L'ENCLOS SE RETASSE. La 2.5.0 figeait les cases pour de
+   bon, et c'était une seconde faute après celle qu'elle corrigeait : le TRI n'était plus
+   jamais rétabli. Une bête vendue laissait un trou définitif, la suivante le reprenait, et
+   au bout de dix ventes l'enclos ne ressemblait plus à rien de trié.
+
+   Les deux besoins sont réels et se contredisent seulement DANS L'INSTANT : il faut que rien
+   ne bouge sous le curseur pendant qu'on vise, et il faut que l'ordre revienne. Une seconde
+   sépare les deux — assez pour faire le geste, assez peu pour que l'enclos ne dérive pas.
+
+   Le délai court depuis l'instant où l'affectation CESSE DE SUIVRE LE TRI, pas depuis la
+   dernière vente. Sinon un marchand qui vend en continu — c'est le cas en ×100, et c'est
+   justement là qu'on s'en plaint — repousserait le retassage indéfiniment. */
+const DELAI_CASES = 1000;
+let casesPar = new Map(), triCases = null, casesDepuis = 0;
 const casesVides = [];
 
-function casesDe(list) {
-  if (triCases !== state.tri) { casesPar.clear(); triCases = state.tri; }
+/* Vrai quand il est temps de tout remettre dans l'ordre du tri. Rend `false` tant que le délai
+   court : c'est pendant cette fenêtre que la case est figée sous le doigt. */
+function casesARetasser(list) {
+  if (triCases !== state.tri) return true;
+  if (list.every((s, i) => casesPar.get(s.c.id) === i)) { casesDepuis = 0; return false; }
+  if (!casesDepuis) { casesDepuis = Date.now(); return false; }
+  return Date.now() - casesDepuis >= DELAI_CASES;
+}
+
+function casesDe(list, retasser) {
+  if (retasser || triCases !== state.tri) {
+    casesPar.clear();
+    triCases = state.tri;
+    casesDepuis = 0;
+  }
   const vivants = new Set(list.map(s => s.c.id));
   for (const id of [...casesPar.keys()]) if (!vivants.has(id)) casesPar.delete(id);
   const prises = new Set(casesPar.values());
@@ -3880,9 +3913,9 @@ function casesDe(list) {
   return casesPar;
 }
 
-function peuplerEnclos(host, sujets) {
+function peuplerEnclos(host, sujets, retasser) {
   const defilement = host.scrollTop;
-  const cases = casesDe(sujets);
+  const cases = casesDe(sujets, retasser);
   let n = state.pens || 0;
   for (const v of cases.values()) n = Math.max(n, v + 1);
 

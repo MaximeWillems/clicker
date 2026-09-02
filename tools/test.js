@@ -2870,8 +2870,26 @@ scenario('enclos — une vente laisse un trou à sa place', () => {
   eq('la nouvelle prend la case libérée', qui(1), 'c:' + d.id);
   eq('sans rien pousser', qui(2), place[2]);
 
-  /* TRIER REDISTRIBUE, et c'est la seule chose qui le fasse : c'est un geste explicite, on
-     s'attend à ce que tout bouge. */
+  /* ET AU BOUT D'UNE SECONDE, L'ENCLOS SE RETASSE. Figer les cases pour de bon était une
+     seconde faute après celle qu'elle corrigeait : le TRI n'était plus jamais rétabli, et au
+     bout de dix ventes l'enclos ne ressemblait plus à rien. Les deux besoins ne se
+     contredisent que DANS L'INSTANT — une seconde sépare « je vise » de « remets en ordre ». */
+  jeu.casesDepuis = Date.now() - jeu.DELAI_CASES - 1;
+  jeu.stripSig = '';
+  jeu.refresh();
+  eq('les trois sont retassées en tête', [0, 1, 2].filter(occupee).length, 3);
+  ok('et plus aucun trou', !cases().slice(0, 3).some(x => x.classList.contains('thumb-vide')));
+
+  /* LE DÉLAI COURT DEPUIS LA PERTE DE L'ORDRE, pas depuis la dernière vente : un marchand qui
+     vend en continu — c'est le cas en ×100 — repousserait sinon le retassage indéfiniment. */
+  const e = bete(jeu, 'cerf', 3, 20000);
+  jeu.sell(e);
+  jeu.refresh();
+  ok('un trou frais est bien figé', jeu.casesARetasser(
+     jeu.subjects().filter(x => x.kind === 'creature')) === false);
+
+  /* TRIER REDISTRIBUE TOUT DE SUITE, sans attendre : c'est un geste explicite, on s'attend à
+     ce que tout bouge. */
   s.tri = 'rarete';
   jeu.stripSig = '';
   jeu.refresh();
