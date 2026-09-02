@@ -1098,6 +1098,15 @@ function couple(jeu, ligneA, ligneB) {
   return [bete(jeu, ligneA, 4, 20000), bete(jeu, ligneB, 4, 20000)];
 }
 
+/* Le bloc d'un couple porte une ligne par parent depuis la 2.2.0 : ce qu'on y cherche n'est
+   plus un enfant direct. */
+function sousArbre(e, cls) {
+  const t = [];
+  const m = x => { if (x.classList && x.classList.contains(cls)) t.push(x); x.children.forEach(m); };
+  e.children.forEach(m);
+  return t;
+}
+
 // ce que dit la phrase sous le nid, quel que soit le nombre de couples affichés au-dessus
 function ditPension(jeu) {
   const p = noeuds.get('pension').children.find(c => c.classList.contains('pension-dit'));
@@ -1431,6 +1440,100 @@ scenario('pension — le marchand ne vend pas une bête confiée, même à la ma
   eq('et le couple tient', jeu.couples().length, 1);
 });
 
+scenario('pension — la bête posée au nid quitte la bande tout de suite', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.refresh();
+
+  const dansLaBande = id => jeu.subjects().some(x => x.kind === 'creature' && x.c.id === id);
+  eq('les deux sont dans la bande', [a, b].filter(c => dansLaBande(c.id)).length, 2);
+
+  /* LE NID EST UN ENGAGEMENT EN COURS, PAS UN BROUILLON. Une bête posée restait dans la bande :
+     on la reprenait pour l'autre case sans s'en apercevoir, ou on la cherchait parmi quarante
+     vignettes. Le commentaire de `subjects` promettait déjà ce retrait depuis la 1.8.0 — le
+     filtre ne portait que sur les couples DÉJÀ PARTIS. */
+  ok('on la pose', jeu.poserAuNid(a.id, 'a'));
+  ok('elle a quitté la bande', !dansLaBande(a.id));
+  ok('l’autre y est toujours', dansLaBande(b.id));
+  ok('mais elle est toujours dans l’enclos', s.pen.some(c => c.id === a.id));
+
+  // ON PEUT TOUJOURS ANNULER, et elle réapparaît
+  jeu.retirerDuNid('a');
+  ok('retirée du nid, elle revient', dansLaBande(a.id));
+
+  /* LE REGARD SUIT. Confier la bête EN SCÈNE la faisait disparaître de la bande sans que la
+     sélection bouge : on se retrouvait à regarder une case qui n'existait plus. */
+  s.sel = 'c:' + a.id;
+  jeu.poserAuNid(a.id, 'a');
+  ok('la sélection a bougé', s.sel !== 'c:' + a.id, s.sel);
+  ok('et elle désigne quelque chose de réel',
+     jeu.subjects().some(x => x.key === s.sel), s.sel);
+
+  // et une fois le couple parti, c'est la règle d'avant qui prend le relais
+  jeu.poserAuNid(b.id, 'b');
+  jeu.accoupler(a, b);
+  ok('les deux restent hors de la bande', !dansLaBande(a.id) && !dansLaBande(b.id));
+  eq('et toujours dans l’enclos', s.pen.length, 2);
+});
+
+scenario('pension — on voit ce qu’on a confié : teinte, caractère, motif', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  a.tint = 2; a.temper = 4; a.motif = 4; a.prodige = false;   // écarlate, farouche, un motif
+  b.prodige = true;
+
+  /* LE NOM NE DIT QU'UNE CHOSE — la règle de l'épithète unique, et elle est bonne. La pension
+     est un inventaire, pas un nom : il faut pouvoir dire LAQUELLE des trois louves on a prise.
+     D'où la ligne de signes, qui dit tout ce que le nom a laissé de côté. */
+  const sg = jeu.signesDe(a);
+  ok('le caractère y est', /farouche/.test(sg), sg);
+  ok('le motif aussi', sg.includes(jeu.MOTIFS[a.motif]), jeu.MOTIFS[a.motif] + ' | ' + sg);
+  ok('et l’état', /adulte|ancien|légende|enfant|adolescent/.test(sg), sg);
+  ok('mais pas ce que le nom dit déjà',
+     !new RegExp(jeu.epithetOf(a) + '$').test(sg) || jeu.epithetOf(a) === '',
+     jeu.epithetOf(a) + ' | ' + sg);
+  ok('le chromatique se dit', /chromatique/.test(jeu.signesDe(b)) ||
+     /chromatique/.test(jeu.fullName(b)), jeu.fullName(b) + ' | ' + jeu.signesDe(b));
+
+  jeu.poserAuNid(a.id, 'a'); jeu.poserAuNid(b.id, 'b');
+  jeu.accoupler(a, b);
+  jeu.pensionSig = '';
+  jeu.refresh();
+
+  const ligne = noeuds.get('pension').children.find(c => c.classList.contains('couple'));
+  /* DEUX EMOJI NUS ET DEUX NOMS DE LIGNÉE : c'est tout ce que la ligne montrait. On confiait
+     deux bêtes pour cinq heures sans pouvoir dire lesquelles. */
+  const betes = sousArbre(ligne, 'couple-bete');
+  eq('un dessin par parent', betes.length, 2);
+  ok('teinté comme dans la bande', betes.some(g => g.style.filter),
+     betes.map(g => g.style.filter).join(' | '));
+
+  const noms = sousArbre(ligne, 'couple-nom').map(n => n.textContent);
+  eq('deux noms', noms.length, 2);
+  ok('et ce sont les noms complets, pas les lignées',
+     noms[0] === jeu.fullName(a) && noms[1] === jeu.fullName(b), noms.join(' | '));
+
+  const signes = sousArbre(ligne, 'couple-signes').map(n => n.textContent);
+  eq('deux lignes de signes', signes.length, 2);
+  ok('celle du premier parent dit son caractère', /farouche/.test(signes[0]), signes[0]);
+
+  // la rareté se lit sur chaque parent, comme partout ailleurs
+  const p = sousArbre(ligne, 'couple-p');
+  ok('chaque parent porte sa rareté',
+     p.every(x => /rar-/.test(x.className)), p.map(x => x.className).join(' | '));
+
+  // et le nid dit la même chose : une bête se lit pareil partout
+  jeu.romprePension(a.id);
+  jeu.poserAuNid(a.id, 'a');
+  jeu.pensionSig = '';
+  jeu.refresh();
+  const dit = sousArbre(noeuds.get('pension'), 'nid-dit').map(n => n.textContent).join(' | ');
+  ok('le nid montre les mêmes signes', /farouche/.test(dit), dit);
+  ok('et garde les étiquettes, qui décident de la durée', /poil|terre|écaille|plume|nu/.test(dit), dit);
+});
+
 scenario('pension — le panneau se bâtit une fois, et se repeint ensuite', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
@@ -1461,7 +1564,7 @@ scenario('pension — le panneau se bâtit une fois, et se repeint ensuite', () 
   jeu.accoupler(a, b);
   jeu.refresh();
   const ligne = () => noeuds.get('pension').children.find(c => c.classList.contains('couple'));
-  const reste = () => ligne().children.find(c => c.classList.contains('couple-reste')).textContent;
+  const reste = () => sousArbre(ligne(), 'couple-reste')[0].textContent;
   const noeud = ligne(), t0 = reste();
   jeu.avancePension(600);
   jeu.refresh();
@@ -1479,6 +1582,13 @@ scenario('pension — le panneau se bâtit une fois, et se repeint ensuite', () 
   a.age = 5;
   jeu.refresh();
   ok('mais un âge qui change rebâtit', nid() !== stable);
+
+  /* LE RANG DE TAILLE EST DANS LA SIGNATURE depuis que la ligne de signes le dit : une bête
+     qui passe de « moyenne » à « géante » au nid ne l'annoncerait qu'une fois sur deux. */
+  const stable2 = nid();
+  a.over = (a.over || 0) + 1e6;
+  jeu.refresh();
+  ok('une taille qui change rebâtit aussi', nid() !== stable2);
 });
 
 scenario('pension — une bête posée se reprend et s’échange', () => {

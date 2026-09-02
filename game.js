@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.1.0';
+const VERSION = 'beta 2.2.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2253,6 +2253,30 @@ const aPerte = c => sousLePrix(c) && c.age <= ALERTE_JUSQU[lineOf(c).rarity];
 // sous un varan. Les traits invariables portent la même forme dans les deux cases.
 const accord = (trait, c) => form(c.line, c.age)[2] === 'f' ? trait.fem : trait.name;
 
+/* CE QU'UNE BÊTE EST, EN TOUTES LETTRES. Le nom n'en dit qu'UNE chose, et la règle de
+   l'épithète unique est bonne : « Louve écarlate » se lit, « Louve écarlate farouche tigrée
+   géante » ne se lit plus.
+
+   MAIS LA PENSION N'EST PAS UN NOM, C'EST UN INVENTAIRE. On y confie deux bêtes pour cinq
+   heures, et il faut pouvoir dire LAQUELLE des trois louves de l'enclos on a prise — la rouge,
+   la chromatique, la farouche. Le panneau montrait deux emoji nus et deux noms de lignée : on
+   ne pouvait ni le savoir ni le vérifier.
+
+   La ligne dit donc tout ce que le nom a laissé de côté, et rien de ce qu'il a déjà dit :
+   l'épithète retenue est retirée de la liste, sinon « Louve écarlate · écarlate ». */
+function signesDe(c) {
+  const ep = epithetOf(c);
+  const fem = form(c.line, c.age)[2] === 'f';
+  return [etatOf(c),
+          c.prodige ? 'chromatique' : '',
+          tintOf(c).name ? accord(tintOf(c), c) : '',
+          accord(temperOf(c), c),
+          motifOf(c) + (fem ? 'e' : ''),
+          c.fond ? FOND_BY_KEY[c.fond].nom : '']
+    .filter(x => x && x !== ep)
+    .join(' · ');
+}
+
 function epithetOf(c) {
   if (c.prodige) return 'chromatique';
   if (tintOf(c).name) return accord(tintOf(c), c);
@@ -2587,10 +2611,17 @@ const TRIS = {
    C'est aussi ce qui rend la pause inutile pour composer un couple. Avant, on déposait une
    bête dans le nid et elle continuait de vieillir, d'être vendue et de bouger dans la bande
    sous la main ; maintenant elle en sort au moment du dépôt. Si le marchand l'attrape entre
-   le geste et le clic, elle disparaît simplement — et le nid le dit à la ligne suivante. */
+   le geste et le clic, elle disparaît simplement — et le nid le dit à la ligne suivante.
+
+   ET ÇA VAUT DÈS LE NID, PAS SEULEMENT UNE FOIS LE COUPLE PARTI. Ce paragraphe le promettait
+   depuis la 1.8.0 et le filtre ne portait que sur les couples EN COURS : une bête posée au nid
+   restait dans la bande, si bien qu'on la reprenait pour l'autre case sans s'en apercevoir, ou
+   qu'on cherchait dans quarante vignettes celle qu'on venait d'y mettre. Le nid est un
+   engagement en cours, pas un brouillon — et on peut toujours le défaire en cliquant la case,
+   ce qui la fait réapparaître. */
 function subjects() {
   const list = state.incub.map((slot, i) => ({ key: 'i:' + i, kind: 'egg', i, slot }));
-  const betes = state.pen.filter(c => !enPension(c))
+  const betes = state.pen.filter(c => !enPension(c) && !surLeNid(c.id))
                          .map(c => ({ key: 'c:' + c.id, kind: 'creature', c }));
   const tri = TRIS[state.tri];
   if (tri) betes.sort(tri);
@@ -6003,6 +6034,19 @@ let pensionA = null, pensionB = null;
 // La bête d'un côté du nid, ou null : elle doit être encore là, et pas déjà partie couver.
 const auNid = id => state.pen.find(c => c.id === id && !enPension(c)) || null;
 
+/* Déclaré en fonction et non en flèche : `subjects` s'en sert trois mille lignes plus haut, et
+   une fonction se hisse là où une constante laisserait un trou. */
+function surLeNid(id) { return id === pensionA || id === pensionB; }
+
+/* ANNULER. Depuis que le dépôt retire la bête de la bande, ce geste est ce qui l'y remet — il
+   méritait un nom plutôt que deux lignes au fond d'un écouteur, ne serait-ce que pour être
+   vérifiable : le banc ne clique pas. */
+function retirerDuNid(cote) {
+  if (cote === 'a') { if (pensionA === null) return false; pensionA = null; }
+  else { if (pensionB === null) return false; pensionB = null; }
+  return true;
+}
+
 /* LE NID NE S'OUVRE QUE S'IL RESTE UNE PLACE. Il acceptait les bêtes en toutes circonstances
    et ne refusait qu'au bouton : on composait tranquillement un couple, on lisait « la place est
    prise », et il fallait ressortir les deux bêtes une par une. Un écran qui laisse faire un
@@ -6019,11 +6063,16 @@ const nidOuvert = () => prime('pension') && couples().length < placesPension();
    Venue de la bande, elle prend simplement la place, et l'occupant sort. */
 function poserAuNid(id, cote) {
   if (!nidOuvert() || !auNid(id)) return false;
+  /* La case se relève AVANT le dépôt, comme à la vente : après, la bête n'est plus dans la
+     bande et `caseCourante` ne la trouverait plus. Sans ça, confier la bête en scène renvoyait
+     le regard n'importe où. */
+  const place = state.sel === 'c:' + id ? caseCourante() : -1;
   const venait = pensionA === id ? 'a' : pensionB === id ? 'b' : null;
   const occupant = cote === 'a' ? pensionA : pensionB;
   const pose = (ou, v) => { if (ou === 'a') pensionA = v; else pensionB = v; };
   pose(cote, id);
   if (venait && venait !== cote) pose(venait, occupant);
+  if (place >= 0) tenirLaCase(place);
   return true;
 }
 
@@ -6089,23 +6138,47 @@ function batirPension(a, b, ouvert, portee) {
     el.title = !pa || !pb ? 'Rompre ce couple'
       : 'Rompre le couple — ' + fullName(pa) + ' et ' + fullName(pb) + ' retrouvent leur rente';
 
-    const qui = document.createElement('span');
-    qui.className = 'couple-qui';
-    qui.textContent = (pa ? glyphOf(pa) : '—') + ' ' + (pb ? glyphOf(pb) : '—');
-    const txt = document.createElement('span');
-    txt.className = 'couple-txt';
-    const nom = document.createElement('b');
-    nom.className = 'couple-nom';
-    nom.textContent = !pa || !pb ? 'Couple rompu'
-      : LINE_BY_KEY[pa.line].name + ' × ' + LINE_BY_KEY[pb.line].name;
+    /* UNE LIGNE PAR PARENT, et pas deux emoji côte à côte. La ligne disait
+       « Crapaud × Loup » : la lignée, et rien d'autre. On confie deux bêtes pour cinq heures
+       sans pouvoir dire lesquelles — ni si la chromatique qu'on cherchait est déjà dedans.
+
+       Chaque parent porte donc son DESSIN, teinté comme dans la bande, son nom complet, et la
+       ligne de signes qui dit tout ce que le nom a laissé de côté. C'est le même vocabulaire
+       visuel que l'enclos : une bête doit se reconnaître partout de la même façon. */
+    const parents = document.createElement('span');
+    parents.className = 'couple-parents';
+    for (const p of [pa, pb]) {
+      const ligne = document.createElement('span');
+      ligne.className = 'couple-p' + (p ? ' rar-' + lineOf(p).rarity : '');
+      const g = document.createElement('span');
+      g.className = 'couple-bete';
+      if (p) {
+        setCreature(g, artFor(p), glyphOf(p));
+        g.style.filter = p.prodige ? PRODIGE_FILTER : tintOf(p).filter;
+      } else g.textContent = '—';
+      const t = document.createElement('span');
+      t.className = 'couple-txt';
+      const nom = document.createElement('b');
+      nom.className = 'couple-nom';
+      nom.textContent = p ? fullName(p) : 'Partie';
+      const sg = document.createElement('i');
+      sg.className = 'couple-signes';
+      sg.textContent = p ? signesDe(p) : 'vendue depuis';
+      t.append(nom, sg);
+      ligne.append(g, t);
+      parents.appendChild(ligne);
+    }
+
+    const bas = document.createElement('span');
+    bas.className = 'couple-bas';
     const barre = document.createElement('span');
     barre.className = 'couple-bar';
     const jauge = document.createElement('i');
     barre.appendChild(jauge);
-    txt.append(nom, barre);
     const reste = document.createElement('span');
     reste.className = 'couple-reste';
-    el.append(qui, txt, reste);
+    bas.append(barre, reste);
+    el.append(parents, bas);
     hote.appendChild(el);
     refsPension.couples.push({ k, vivant: !!(pa && pb), jauge, reste });
   }
@@ -6140,7 +6213,9 @@ function batirPension(a, b, ouvert, portee) {
       n.textContent = fullName(c);
       const d = document.createElement('i');
       d.className = 'nid-dit';
-      d.textContent = AGES[c.age - 1].nom + ' · ' + etiqDe(c).join(', ');
+      /* Les ÉTIQUETTES restent en bout de ligne : c'est ce qui décide de la distance, donc
+         de la durée — la seule information de cette case qui serve à choisir un couple. */
+      d.textContent = signesDe(c) + ' · ' + etiqDe(c).join(', ');
       t.append(n, d);
       z.append(g, t);
       z.title = 'Clique pour retirer ' + fullName(c) + ' du nid, ou glisse-la sur l’autre case';
@@ -6192,8 +6267,11 @@ function renderPension() {
 
   /* LA SIGNATURE PORTE TOUT CE QUI DESSINE, et rien de ce qui coule. L'ÂGE des deux bêtes du
      nid en fait partie : elles continuent de grandir tant qu'on ne les a pas confiées, et leur
-     nom change avec. */
-  const carte = c => c ? c.id + ':' + c.age : '-';
+     nom change avec. LE RANG DE TAILLE aussi, depuis que la ligne de signes le dit — une bête
+     qui passe de « moyenne » à « géante » au nid l'aurait annoncé une fois sur deux. Les bêtes
+     d'un couple PARTI, elles, ne bougent plus du tout : la croissance et la mangeoire les
+     sautent toutes les deux. */
+  const carte = c => c ? c.id + ':' + c.age + ':' + rankOf(sizeFactor(c)).i : '-';
   const sig = couples().map(k => k.a + '×' + k.b).join(',') + '|' +
               carte(a) + '/' + carte(b) + '|' + (ouvert ? 'o' : 'f') + '|' +
               portee + '|' + placesPension();
@@ -6800,7 +6878,7 @@ function bindTools() {
     if (!z) return;
     const cote = z.dataset.cote;
     if (z.classList.contains('pleine')) {
-      if (cote === 'a') pensionA = null; else pensionB = null;
+      retirerDuNid(cote);
       blip(330, 0.05, 'sine', 0.03);
       refresh();
       return;

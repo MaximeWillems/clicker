@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.1.0** | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |
+| **beta 2.2.0** | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
+| beta 2.1.0 | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |
 | beta 2.0.0 | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
 | beta 1.14.0 | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
 | beta 1.13.0 | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
@@ -1787,11 +1788,47 @@ combien de temps. La bande montre ce sur quoi on peut agir, le panneau montre ce
 Et le compteur d'enclos ajoute « *· 2 en pension* », sans quoi la pension ferait disparaître des
 bêtes **et** des places sans rien dire.
 
+#### On doit pouvoir dire *laquelle* on a confiée
+
+La ligne d'un couple montrait **deux emoji nus et deux noms de lignée** — « Crapaud × Loup ».
+On confiait deux bêtes pour cinq heures sans pouvoir dire lesquelles : la rouge ? la
+chromatique ? la farouche ? Et sans pouvoir vérifier que celle qu'on cherchait était bien déjà
+dedans.
+
+Depuis la `beta 2.2.0`, **une ligne par parent** : son dessin, teinté comme dans l'enclos, son
+nom complet coloré à sa rareté, et une **ligne de signes** dessous.
+
+    🐺  Louve écarlate
+        ancienne géante · farouche · tigrée
+    🐻  Ours chromatique
+        adulte moyen · placide · uni
+    ▓▓▓▓▓▓░░░░░░  2 h 14
+
+**Le nom ne dit qu'une chose**, et [la règle de l'épithète unique](#une-seule-épithète-accolée-au-nom)
+est bonne : « Louve écarlate » se lit, « Louve écarlate farouche tigrée géante » ne se lit plus.
+Mais **la pension n'est pas un nom, c'est un inventaire.** La ligne de signes dit donc tout ce
+que le nom a laissé de côté — et rien de ce qu'il a déjà dit : l'épithète retenue est retirée de
+la liste, sinon on lirait « Louve écarlate · écarlate ».
+
+Le nid affiche exactement la même chose, plus les **étiquettes** (`terre, poil`) qui décident de
+la distance, donc de la durée : une bête doit se reconnaître partout de la même façon.
+
 **C'est aussi ce qui rend la pause inutile pour composer un couple.** Avant, on déposait une
 bête dans le nid et elle continuait de vieillir, d'être vendue et de bouger dans la bande sous
-la main. Maintenant elle en sort au moment du dépôt. Si le marchand attrape la seconde entre le
-premier dépôt et le second, **elle disparaît simplement** — et le nid le dit à la ligne
-suivante.
+la main. Maintenant elle en sort **au moment du dépôt**. Si le marchand attrape la seconde
+entre le premier dépôt et le second, **elle disparaît simplement** — et le nid le dit à la
+ligne suivante.
+
+Ce paragraphe promettait ça depuis la `beta 1.8.0` et **le code ne le faisait qu'à moitié** :
+le filtre ne portait que sur les couples *déjà partis*. Une bête posée au nid restait donc dans
+la bande, si bien qu'on la reprenait pour l'autre case sans s'en apercevoir, ou qu'on la
+cherchait parmi quarante vignettes. Corrigé en `beta 2.2.0`. **Le nid est un engagement en
+cours, pas un brouillon** — et il se défait toujours en cliquant la case, ce qui fait
+réapparaître la bête à l'instant.
+
+Le regard suit : confier la bête **en scène** la faisait disparaître de la bande sans que la
+sélection bouge, et on se retrouvait à regarder une case qui n'existait plus. Le dépôt tient sa
+case comme une vente le fait.
 
 [La pause](#le-bouton-pause) reste, parce qu'arrêter sa ferme est utile pour tout le reste :
 relire un réglage, compter ses enclos, regarder une bête sans la voir vieillir.

@@ -1475,22 +1475,39 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 
 /* les couples en cours passent devant : c'est le seul bloc qui agit déjà */
 .couple {
-  display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left;
+  display: flex; flex-direction: column; align-items: stretch; gap: 0.4rem;
+  width: 100%; text-align: left;
   background: var(--raised); color: inherit; font: inherit;
   border: 1px solid var(--rule);
   border-left: 2px solid var(--jade);
   padding: 0.4rem 0.6rem; border-radius: 3px; cursor: pointer;
 }
-/* un couple ne se défait plus tout seul : la ligne est le geste qui le rompt */
+/* un couple ne se défait plus tout seul : le bloc est le geste qui le rompt */
 .couple:hover { border-color: var(--red); }
 .couple:hover .couple-bar > i { background: var(--red); }
-.couple-qui { font-size: 1.15rem; line-height: 1; letter-spacing: 0.08em; flex: none; }
-.couple-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+/* UNE LIGNE PAR PARENT : le dessin, le nom, et les signes. Le bloc est plus haut qu'avant, et
+   c'est le prix à payer pour qu'on sache ce qu'on a confié — deux emoji sur une ligne tenaient
+   moins de place et ne disaient rien. */
+.couple-parents { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.couple-p { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.couple-bete {
+  font-size: 1.25rem; line-height: 1; flex: none;
+  width: 1.5rem; text-align: center;
+}
+.couple-bete img { width: 1em; height: 1em; image-rendering: pixelated; vertical-align: middle; }
+.couple-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .couple-nom {
-  font-family: var(--f-name); font-weight: 400; font-size: 0.8rem; color: var(--ink);
+  font-family: var(--f-name); font-weight: 400; font-size: 0.8rem;
+  color: var(--rar, var(--ink));
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.couple-bar { height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+/* les signes ne sont pas un titre : ils se lisent quand on les cherche, pas avant */
+.couple-signes {
+  font-size: 0.66rem; color: var(--soft); font-style: normal;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.couple-bas { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.couple-bar { flex: 1; height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
 .couple-bar > i { display: block; height: 100%; width: 0; background: var(--jade); border-radius: 2px; }
 .couple-reste {
   font-family: var(--f-num); font-size: 0.68rem; color: var(--soft);
