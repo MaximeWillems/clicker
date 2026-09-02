@@ -109,6 +109,51 @@ version est, une première version d'un jeu complet, là où `beta 3.2.0` aurait
 compter les corrections d'un prototype. Le mot et le nombre repartent ensemble, une seule fois
 — il n'y aura pas de `gamma`.
 
+### Les fonds à la pension — les deux voies, et non plus aucune
+
+**La règle change.** La pension ne donnait aucun fond, et devait en donner le jour où elle
+saurait les *hériter*. Elle en donnera par **deux voies à la fois** :
+
+1. **au hasard, exactement comme les teintes** — chaque œuf pondu tire son fond comme il tire
+   déjà sa teinte, son caractère et son motif ;
+2. **par hérédité** — les parents transmettent le leur.
+
+Les deux ne font pas double emploi : la première fait qu'on en *rencontre* en élevant, la
+seconde qu'on peut en *viser* un précis. C'est la même frontière qu'avant, mais elle passe
+désormais à l'intérieur de la pension au lieu de la séparer de la boutique.
+
+#### Le chiffre qui justifiait le garde était faux
+
+Le code et le README disaient la même chose : « une ligne de production à mille œufs l'heure
+en sortirait un toutes les cinq minutes ». Mille œufs l'heure à un sur huit cents font **1,25
+fond par heure**, soit un toutes les *quarante-huit* minutes — pas cinq.
+
+Et mille œufs l'heure n'est pas le plafond : le vrai maximum est de **1 920 œufs l'heure**
+(huit couples, portée 5, 900 s de base divisées par la vitesse 12, deux communes identiques).
+Ce qui donne **2,4 fonds l'heure, un toutes les vingt-cinq minutes** — au sommet absolu d'une
+partie parfaitement optimisée, pas en jeu ordinaire.
+
+Le garde a donc été posé sur un chiffre cinq à dix fois trop alarmant. Ça ne le rendait pas
+absurde — un fond toutes les vingt-cinq minutes reste beaucoup pour un objet dit prestigieux —
+mais ça change la question : elle n'est plus « est-ce que ça casse ? », elle est **« à partir
+de quel rythme un fond cesse d'être une rencontre ? »**
+
+#### Ce qui est proposé, à trancher en jouant
+
+- **Le hasard au même taux qu'à la boutique**, un sur huit cents. Rien ne justifie deux
+  chiffres tant que le plafond réel est de un toutes les vingt-cinq minutes, et deux taux
+  différents demanderaient d'expliquer pourquoi.
+- **L'hérédité n'invente rien** : elle ne peut transmettre que ce que les parents portent.
+  Deux parents du même fond le passent souvent ; un seul parent le passe rarement ; deux fonds
+  différents donnent l'un des deux, jamais un troisième. C'est ce qui fait qu'on *chasse* un
+  fond précis en composant un couple, au lieu de l'attendre.
+- **Les deux tirages sont indépendants et se cumulent** : un œuf sans parent doué peut quand
+  même en sortir un, sinon la pension d'un joueur qui n'en a aucun n'en produirait jamais et la
+  première voie serait fermée à celui qui en a le plus besoin.
+
+À mesurer avant de figer les taux : le débit réel d'une pension de milieu de partie, qui est
+très loin du plafond théorique — c'est lui qui décide, pas le sommet.
+
 ### Ce qui vient ensuite
 
 La colonne du milieu dit **ce qu'il faut avoir fait avant**, ce qui est plus utile qu'un ordre :
@@ -122,7 +167,7 @@ deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 | **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
-| **L'hérédité des fonds** — la pension n'en donne aucun tant qu'elle ne sait pas les transmettre | l'hérédité | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
+| **Les fonds à la pension** — au hasard comme les teintes, ET transmis par les parents | rien pour le hasard, l'hérédité pour le reste | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
 
 ### Le chantier graphique — **livré en beta 1.12.0, 1.13.0 et 1.14.0**
 

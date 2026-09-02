@@ -365,9 +365,14 @@ const PRODIGE_ODDS  = 1 / 8192;
 
    PRESTIGIEUX VEUT DIRE RARE : un sur huit cents, et SEULEMENT dans les œufs de la boutique.
    Un fond fréquent devient un décor et cesse d'être une rencontre — même règle que le
-   chromatique. La pension, elle, n'en donne aucun : elle donnera des fonds le jour où elle
-   saura les HÉRITER, et pas avant. On achète pour tomber dessus, on élèvera pour en obtenir un
-   précis — c'est la même frontière que pour les teintes.
+   chromatique.
+
+   LA PENSION N'EN DONNE AUCUN, ET ÇA VA CHANGER : le plan lui en fait donner par deux voies,
+   au hasard comme les teintes et par hérédité. Le chiffre qui justifiait ce garde était faux —
+   il annonçait « un toutes les cinq minutes » pour mille œufs l'heure, ce qui en fait 1,25 par
+   heure, un toutes les quarante-huit minutes ; et le plafond réel de la pension est de 1 920
+   œufs l'heure, soit un toutes les vingt-cinq minutes au sommet. Beaucoup, mais pas ce qui
+   avait été annoncé.
 
    LE FOND ET LE MOTIF NE FONT PAS LE MÊME MÉTIER : le motif décide de l'EFFET d'une carte, le
    fond de sa VALEUR. Ils coexistent sur la même bête sans se marcher dessus.
@@ -2211,10 +2216,11 @@ function noterPonte(a, b, ligne) {
 
 /* Tiré une fois, à l'éclosion, et jamais retouché ensuite.
 
-   `achete` dit si l'œuf vient de la BOUTIQUE. Seul un œuf acheté peut porter un fond : celui
-   qui sort de la pension n'en a pas, parce que la pension donnera des fonds le jour où elle
-   saura les hériter. Sans ce garde, une ligne de production à mille œufs l'heure sortirait un
-   fond toutes les cinq minutes, et « prestigieux » ne voudrait plus rien dire. */
+   `achete` dit si l'œuf vient de la BOUTIQUE. Seul un œuf acheté peut porter un fond
+   aujourd'hui ; le plan ouvre les deux voies à la pension, au hasard et par hérédité. Le
+   garde reste tant que les taux ne sont pas mesurés en jeu — pas parce qu'il casserait
+   quelque chose, mais parce que personne n'a encore décidé à partir de quel rythme un fond
+   cesse d'être une rencontre. */
 function rollVariants(achete) {
   return {
     tint: pickWeighted(TINTS),

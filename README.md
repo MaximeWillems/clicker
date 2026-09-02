@@ -717,10 +717,15 @@ différentes qu'on peut croiser, et ils sont en CSS.
 
 #### Un sur huit cents, et seulement à la boutique
 
-Le qualificatif compte autant que le chiffre. **La pension n'en donne aucun** : elle en donnera
-le jour où elle saura les *hériter*, et pas avant. Sans ce garde, une ligne de production à
-mille œufs l'heure en sortirait un toutes les cinq minutes, et « prestigieux » ne voudrait plus
-rien dire — même règle que le chromatique.
+Le qualificatif compte autant que le chiffre. **La pension n'en donne aucun** — aujourd'hui :
+[le plan la fait en donner par deux voies](PLAN.md#les-fonds-à-la-pension--les-deux-voies-et-non-plus-aucune),
+au hasard comme les teintes et par hérédité.
+
+*Le chiffre qui justifiait ce garde était faux*, et il est corrigé ici : « mille œufs l'heure
+en sortirait un toutes les cinq minutes » — mille à un sur huit cents font 1,25 par heure, soit
+un toutes les quarante-huit minutes. Le vrai plafond de la pension est de 1 920 œufs l'heure,
+donc un fond toutes les vingt-cinq minutes, au sommet d'une partie parfaitement optimisée.
+Beaucoup pour un objet dit prestigieux, mais cinq à dix fois moins que ce qui était annoncé.
 
 C'est aussi la frontière qui donne sa place à chacune des deux voies : **on achète pour tomber
 dessus, on élèvera pour en obtenir un précis.**
