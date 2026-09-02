@@ -154,6 +154,60 @@ de quel rythme un fond cesse d'être une rencontre ? »**
 À mesurer avant de figer les taux : le débit réel d'une pension de milieu de partie, qui est
 très loin du plafond théorique — c'est lui qui décide, pas le sommet.
 
+### Les primes, et les rares
+
+#### Les primes à choix — le plus important des trois
+
+**Trois options, on en prend une.** La question qui décide de tout le reste : les deux autres
+sont-elles PERDUES, ou seulement remises à plus tard ?
+
+**Perdues.** Remises à plus tard, ce n'est pas un choix, c'est un ordre d'achat — on finit par
+tout avoir et la décision ne coûte rien. Perdues, c'est une décision de build.
+
+Et c'est là que ça se marie à ce qui existe déjà : **les primes ne traversent pas l'ascension**
+— la ferme repart de zéro et les primes avec elle, seul l'album voyage. Le choix se REFAIT donc
+à chaque cycle. C'est exactement ce qui manque au jeu aujourd'hui : une raison de rejouer
+*autrement*, et pas seulement plus vite.
+
+**La contrainte qui décide si c'est réussi** : les trois options doivent pousser des jeux
+différents, pas le même bonus décliné. « +10 % de vente / +10 % de rente / +10 % de vitesse »
+n'est pas un choix, c'est un menu. Le modèle existe déjà dans le jeu — les familles de motifs
+de l'album font précisément ça, et deux d'entre elles baissent des PRIX au lieu d'augmenter des
+vitesses, ce qui est ce qui empêche la seconde partie d'être la première en accéléré.
+
+**Conséquence d'écran, à ne pas découvrir en codant** : la grille des primes montre les cinq
+prochaines en petites cases. Une prime à choix n'entre pas dans ce format. Il lui faut trois
+cartes côte à côte et un moment où le jeu s'arrête pour demander — c'est un écran, pas une case.
+
+#### Le système entier est à revoir, au moment de l'équilibrage
+
+Quarante-cinq primes, de 250 à 2 000 milliards : quinze sous le million, dix-huit entre le
+million et le milliard, douze au-delà. Comme la grille ne montre que les cinq prochaines, **la
+prime suivante EST l'objectif du moment** — il n'y en a jamais d'autre à l'écran.
+
+Ce qui veut dire que réviser les primes n'est pas retoucher des chiffres : **c'est réécrire la
+courbe de progression du jeu.** Deux choses à regarder quand ce sera le moment :
+
+- **les marches vides** — une prime qui ne se sent pas quand on l'achète est une marche qu'on
+  monte sans rien gagner, et elle coûte d'autant plus cher qu'elle occupe une des cinq cases ;
+- **la densité de la fin de partie** — douze primes pour tout ce qui est au-delà du milliard,
+  contre quinze pour la première tranche, alors que la fin de partie dure bien plus longtemps.
+
+#### Les rares sont le prochain palier
+
+**Les communes sont jugées bien équilibrées, en jouant.** Le chantier suivant est l'ère rare, et
+il n'est pas neuf : les deux cibles déjà posées plus haut en sont le contenu.
+
+- l'**œuf rare vers trente millions** et non ses trois cent mille ;
+- le **péage d'évolution des rares**, fort sans bloquer une rare tombée par chance.
+
+Elles cessent donc d'être deux notes isolées : ce sont les deux moitiés d'un même palier, et
+elles se traitent ensemble — reculer l'ère rare rend une rare précoce encore plus précoce.
+
+**L'ordre de travail compte** : équilibrer une ère demande de l'avoir jouée. Le chantier commence
+par une partie menée jusqu'à l'ère rare, pas par une table de chiffres — c'est ce qui a permis
+de dire que les communes vont bien.
+
 ### Vingt idées relues, huit retenues
 
 Ce qui suit vient d'une passe où vingt propositions hors plan ont été mises sur la table. Huit
