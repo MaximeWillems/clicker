@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.4.0** | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
+| **beta 2.4.1** | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
+| beta 2.4.0 | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
 | beta 2.3.0 | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
 | beta 2.2.0 | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
 | beta 2.1.0 | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |

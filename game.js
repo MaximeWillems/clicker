@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.4.0';
+const VERSION = 'beta 2.4.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1564,6 +1564,17 @@ const ART = {
      est ramenée sur une grille de 64 en 8 couleurs, puis rendue. Le SVG sort en
      `shape-rendering: crispEdges`, donc l'anti-aliasing y est impossible par construction —
      c'est le seul chemin du projet qui produise du vrai pixel art. */
+  /* LE KITSUNE N'A QUE QUATRE DESSINS, ET LE CINQUIÈME EST UN `null` ÉCRIT. Sans lui, la
+     règle de repli rendrait le dessin du quatrième âge — sept queues — pour la forme qui en a
+     neuf, et le joueur verrait sa légende ressembler à ce qu'elle vient de quitter. Un emoji
+     dit mieux « pas encore dessiné » qu'un dessin qui ment. */
+  kitsune: {
+    1: 'kitsune-1-kitsune.svg',
+    2: 'kitsune-2-kitsune-a-trois-queues.svg',
+    3: 'kitsune-3-kitsune-a-cinq-queues.svg',
+    4: 'kitsune-4-kitsune-a-sept-queues.svg',
+    5: null,
+  },
   wukong: {
     1: 'wukong-1-pierre.svg',
     2: 'wukong-2-roi.svg',
@@ -1575,11 +1586,17 @@ const ART = {
 
 /* La règle de repli, écrite une seule fois : un âge sans dessin prend celui de l'âge le
    plus proche en dessous. La scène, les vignettes et la collection s'en servent toutes,
-   sinon la collection montrerait autre chose que le jeu. */
+   sinon la collection montrerait autre chose que le jeu.
+
+   UN `null` ÉCRIT ARRÊTE LE REPLI, et c'est la seule façon de dire « celui-là, on ne l'a pas
+   dessiné » quand les précédents le sont. Le repli est bon quand un âge n'a pas encore SA
+   variante d'un dessin qui existe ; il ment quand la forme est autre chose — une kitsune à
+   neuf queues n'est pas une kitsune à sept, et montrer l'une pour l'autre fait croire au
+   joueur que sa légende n'a rien changé. L'emoji, lui, dit la vérité : rien ici. */
 function artAt(lineKey, age) {
   const table = ART[lineKey];
   if (!table) return null;
-  for (let a = age; a >= 1; a--) if (table[a]) return 'art/' + table[a];
+  for (let a = age; a >= 1; a--) if (a in table) return table[a] ? 'art/' + table[a] : null;
   return null;
 }
 

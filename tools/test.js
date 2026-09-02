@@ -745,6 +745,24 @@ scenario('encyclopédie — une carte par lignée, et deux vues qui se réponden
 
 /* ───────────────────────────────── les œufs ────────────────────────────────── */
 
+scenario('dessins — le repli s’arrête sur un « null » écrit', () => {
+  const jeu = neuf();
+  /* LE REPLI EST BON quand un âge n'a pas encore SA variante d'un dessin qui existe : le
+     crapaud ancien montre le crapaud adulte, et personne n'est trompé. */
+  eq('un âge sans dessin prend celui d’en dessous',
+     jeu.artAt('crapaud', 5), jeu.artAt('crapaud', 5));
+  ok('et une lignée sans table n’a rien', jeu.artAt('inconnue', 3) === null);
+
+  /* IL MENT quand la forme est autre chose. Une kitsune à neuf queues n'est pas une kitsune à
+     sept : montrer l'une pour l'autre ferait croire que la légende n'a rien changé. Le `null`
+     écrit arrête le repli, et l'emoji dit la vérité — rien ici. */
+  ok('les quatre premiers kitsune sont dessinés',
+     [1, 2, 3, 4].every(a => /kitsune-/.test(jeu.artAt('kitsune', a) || '')),
+     [1, 2, 3, 4].map(a => jeu.artAt('kitsune', a)).join(' '));
+  eq('le cinquième s’arrête là', jeu.artAt('kitsune', 5), null);
+  ok('et son emoji prend le relais', !!jeu.LINE_BY_KEY.kitsune.forms[4][1]);
+});
+
 scenario('œufs — cinq dessins, cinq sortes, et l’emoji en repli', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
