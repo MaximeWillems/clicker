@@ -158,6 +158,71 @@ emplacements, mais le temps qu'il fallait pour l'atteindre.
 fin de partie, et la rente perpétuelle est précisément ce qui permet d'atteindre 10¹² sans
 jamais rien décider.
 
+### Les teintes deviennent des chromatismes — à analyser
+
+**Une seule échelle de couleur au lieu de deux, et plusieurs chromatismes en haut.**
+
+#### Deux systèmes qui font déjà le même métier
+
+Le jeu porte aujourd'hui **deux axes de couleur qui ne se distinguent que par leurs chiffres** :
+
+| | Teintes | Chromatique |
+|---|---|---|
+| ce que c'est | huit crans, `TINTS` | un booléen, `prodige` |
+| tiré | à l'éclosion, gardé à vie | à l'éclosion, gardé à vie |
+| montré par | un filtre CSS | un filtre CSS |
+| entre dans | `variantMult` | `variantMult` |
+| fréquence | 52 % ordinaire, jusqu'à 1,6 % albâtre | 1 sur 8 192, soit 0,012 % |
+| vaut | ×1,10 à ×1,40 | ×25, et double la rente |
+
+Tout est commun sauf l'ordre de grandeur. Ce ne sont pas deux mécaniques, c'est **une mécanique
+et une exception** — et l'exception a fini par prendre le nom de la famille : « chromatique ».
+
+#### Ce que la fusion des deux change vraiment
+
+**Le plafond d'une bête.** Aujourd'hui les deux se MULTIPLIENT : un albâtre chromatique vaut
+×35. Sur une seule échelle on ne peut plus être les deux, donc le haut de la nouvelle échelle
+doit absorber ce que la combinaison donnait — sinon la meilleure bête possible du jeu perd un
+tiers de sa valeur, et tout l'équilibrage de la fin de partie bouge avec elle.
+
+**Ce qui améliore les chances.** Le chromatique a ses propres tirages améliorables — la carte
+constellée, la prime *Œil exercé*, le bonus d'élevage. Les teintes, elles, n'ont rien : leur
+tirage est un `pickWeighted` fixe. S'il n'y a plus qu'une échelle, il faut décider **ce que ces
+bonus poussent** : le rang le plus rare seulement, ou toute l'échelle vers le haut. Le second
+est plus intéressant — il rend le constellé utile bien avant d'espérer le rang ultime — et c'est
+aussi le plus délicat à équilibrer.
+
+**Le carnet.** L'encyclopédie compte déjà les teintes croisées par lignée, et les prodiges à
+part. Une seule échelle donne une seule rangée, et le compteur de prodiges rejoint la rangée
+des teintes. C'est une simplification franche.
+
+**La sauvegarde.** `tint` (un indice) et `prodige` (un booléen) deviennent un champ. La
+migration est simple et doit être GÉNÉREUSE dans un seul sens : un chromatique d'avant doit
+ressortir au moins aussi haut qu'avant, jamais en dessous.
+
+#### La question qui décide de la forme
+
+**Un chromatisme est-il un cran de l'échelle, ou une couche par-dessus ?**
+
+Un cran : on est écarlate OU chromatique-de-feu, jamais les deux. L'échelle est simple, elle se
+lit d'un nombre, et le plafond est net.
+
+Une couche : un doré peut en plus être chromatique. C'est ce que fait le jeu aujourd'hui, et
+c'est ce qui produit le ×35. Ça garde deux tirages à équilibrer, donc les deux systèmes qu'on
+cherchait à réunir.
+
+La demande — « les variantes de couleur SERONT considérées comme chromatique » — penche vers le
+cran : une seule échelle, dont les derniers rangs sont les chromatismes. Reste alors à trancher
+combien il y en a, et ce qui les distingue **autrement que par un chiffre** : trois chromatismes
+qui ne diffèrent que par leur multiplicateur ne sont pas trois choses, c'est un menu — la même
+faute que celle écrite plus haut à propos des primes à choix.
+
+#### Ce qui ne bouge pas
+
+**Les fonds restent dehors.** Ils sont un décor DERRIÈRE la bête, pas une couleur DE la bête, et
+le fichier le dit déjà : le motif décide de l'effet d'une carte, le fond de sa valeur, la teinte
+de son prix. Trois métiers, et seuls deux d'entre eux fusionnent ici.
+
 ### Le bonheur et la frénésie, à revoir
 
 Le seul système du jeu qui récompense la **présence** plutôt qu'une décision. Il marche, et
