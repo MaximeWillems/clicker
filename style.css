@@ -1106,39 +1106,19 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 }
 .forge-vide { color: var(--soft); font-size: 0.85rem; max-width: 40rem; line-height: 1.6; }
 
-.forge-liste { display: flex; flex-direction: column; gap: 0.9rem; }
-.forge-groupe {
-  display: grid; gap: 0.6rem;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  background: var(--surface); border: 1px solid var(--rule);
+/* LE PLAN DE TRAVAIL RESTE EN HAUT pendant qu'on parcourt la grille : c'est lui qu'on regarde
+   pour décider, et le faire défiler avec la liste obligerait à remonter après chaque choix. */
+.forge-plan {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--rule-hi);
   border-radius: 6px; padding: 0.8rem 0.9rem;
 }
-/* une rangée prête se signale par son cadre, pas par une couleur de fond : le fond porte déjà
-   la rareté des cartes qui sont dessus */
-.forge-groupe.prete { border-color: var(--rule-hi); }
-.forge-nom {
-  grid-column: 1 / -1; margin: 0;
-  font-family: var(--f-ui); font-size: 0.8rem; font-weight: 400;
-  color: var(--soft); letter-spacing: 0.04em;
-}
-.forge-rang {
-  grid-column: 1; display: flex; align-items: center; gap: 0.7rem;
-  overflow-x: auto; padding-bottom: 0.2rem;
-}
 .forge-in, .forge-out { display: flex; gap: 0.5rem; flex: 0 0 auto; }
-.forge-in .carte, .forge-out .carte { width: 7.5rem; }
 .forge-fleche { flex: 0 0 auto; color: var(--soft); font-size: 1.4rem; }
-
-/* la case creuse dit « il en manque une » sans qu'on ait à compter */
-.carte-trou {
-  display: flex; align-items: center; justify-content: center;
-  border-style: dashed; color: var(--soft); font-size: 1.1rem;
-  background: none;
-}
+.forge-boutons { display: flex; flex-direction: column; gap: 0.4rem; margin-left: auto; }
 
 .forge-acte {
-  grid-column: 2; align-self: center;
   font-family: var(--f-ui); font-size: 0.85rem;
   padding: 0.55rem 1rem; border-radius: 5px;
   border: 1px solid var(--rule-hi); background: var(--raised); color: var(--ink);
@@ -1146,10 +1126,44 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 }
 .forge-acte:hover:not(:disabled) { background: var(--rule); }
 .forge-acte:disabled { opacity: 0.45; cursor: default; }
+.forge-annule {
+  font-family: var(--f-ui); font-size: 0.75rem;
+  padding: 0.35rem 1rem; border-radius: 5px;
+  border: 1px solid transparent; background: none; color: var(--soft); cursor: pointer;
+}
+.forge-annule:hover { color: var(--ink); border-color: var(--rule); }
+
+/* LA GRILLE EST L'ALBUM ENTIER, puis ce qui reste après le choix. C'est la réduction elle-même
+   qui enseigne la règle du mariage : on ne lit pas « même lignée, même motif », on voit
+   quarante cartes devenir deux. */
+.forge-grille {
+  display: grid; gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  align-content: start;
+}
+.forge-grille .carte { cursor: pointer; }
+.forge-grille .carte:hover { border-color: var(--rule-hi); }
+/* une carte retenue se signale par son cadre et non par un fond : le fond porte déjà la
+   rareté, et deux codes couleur au même endroit n'en font plus aucun */
+.forge-grille .carte.choisie { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+/* éteinte, mais MONTRÉE : cacher une carte qu'on possède ferait chercher ce qu'on a déjà */
+.carte.forge-hs { opacity: 0.35; cursor: not-allowed; }
+.carte.forge-hs:hover { border-color: var(--rule); }
+
+/* la case creuse dit ce qui manque sans qu'on ait à compter */
+.carte-trou {
+  display: flex; align-items: center; justify-content: center;
+  border-style: dashed; color: var(--soft); font-size: 1.1rem;
+  background: none;
+}
+.carte-trou.attente { color: var(--faint); }
+.forge-in .carte, .forge-out .carte { width: 7rem; }
 
 @media (max-width: 52rem) {
-  .forge-groupe { grid-template-columns: minmax(0, 1fr); }
-  .forge-acte { grid-column: 1; justify-self: stretch; }
+  .forge-plan { gap: 0.5rem; }
+  .forge-boutons { margin-left: 0; width: 100%; }
+  .forge-in .carte, .forge-out .carte { width: 5.5rem; }
+}
 }
 
 /* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────

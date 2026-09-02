@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 2.0.0 · sauvegarde v19 · 10 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 2.1.0 · sauvegarde v19 · 10 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -308,9 +308,32 @@ vingt et un rem. Il montre les trois cartes qui vont entrer, une flèche, et **l
 sortir avant qu'elle existe** — c'est la seule façon de rendre « la moyenne des trois » lisible
 sans l'expliquer.
 
-**Ce qui n'a pas eu besoin d'être inventé** : pour protéger une carte de la forge, on
-l'**équipe**. Une carte équipée n'y entre pas, exactement comme elle ne se fond pas. Le geste
-existait, la règle aussi.
+**Une carte équipée n'entre pas dans la forge**, exactement comme elle ne se fond pas : elle
+s'évaporerait d'un emplacement et changerait le build en silence. La règle existait, elle n'a
+eu qu'à s'étendre.
+
+#### Le choix, en deux temps — **2.1.0**
+
+La 2.0.0 prenait **les trois plus fortes** toute seule, au motif qu'une fusion doit rendre la
+meilleure carte possible. C'était décider à la place du joueur ce qu'il perd, et une fusion
+fait perdre : une teinte s'y dilue, une bête menée à l'âge légende ne se remplace pas en une
+ascension. **Quelles trois cartes entrent est la seule vraie question de l'atelier**, et une
+machine ne peut pas y répondre.
+
+D'où le geste en deux temps : l'album entier, puis la grille qui **se réduit aux semblables**
+de la carte désignée. C'est la réduction elle-même qui enseigne la règle du mariage — on ne lit
+pas « même lignée, même motif », on voit quarante cartes devenir deux.
+
+Trois décisions de détail sont tombées avec :
+
+- **cliquer reprend ce qu'on vient de poser**, au même endroit où on l'a posé, et cliquer la
+  carte de base annule tout ;
+- **ce qu'on ne peut pas forger reste montré**, éteint et avec sa raison : cacher une carte
+  qu'on possède ferait chercher ce qu'on a déjà ;
+- **le choix ne se sauvegarde pas.** C'est un geste en cours, pas un état de partie : un joueur
+  qui ferme l'onglet au milieu ne saurait plus, le lendemain, pourquoi il avait désigné ces
+  cartes-là. Il se périme aussi tout seul si une carte est fondue, équipée ou emportée par une
+  ascension pendant qu'elle est désignée.
 
 ---
 

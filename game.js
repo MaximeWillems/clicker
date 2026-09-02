@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 2.0.0';
+const VERSION = 'beta 2.1.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -537,11 +537,19 @@ const FUSION_COUT       = [0, 100, 400];
    rendait inatteignable avant la dixième ascension. Trois est le seul compte qui fasse de la
    deuxième étoile une décision et de la troisième un objectif.
 
-   ON NE CHOISIT PAS LESQUELLES : la forge prend LES TROIS PLUS FORTES du groupe, parce qu'une
-   fusion doit rendre la meilleure carte possible et que l'arbitrage est ailleurs — il est dans
-   « est-ce que je forge ». Pour en protéger une, on l'ÉQUIPE : une carte équipée n'entre pas
-   dans la forge, exactement comme elle ne se fond pas. Un seul geste sert deux fois, et il
-   existait déjà. */
+   C'EST LE JOUEUR QUI DÉSIGNE LES TROIS. La forge a d'abord pris les trois plus fortes toute
+   seule, au motif qu'une fusion doit rendre la meilleure carte possible ; c'était décider à sa
+   place ce qu'il perd. Une teinte se DILUE dans une fusion, une bête menée à l'âge légende ne
+   se remplace pas en une ascension : quelles trois cartes entrent est la seule vraie question
+   de l'atelier, et une machine ne peut pas y répondre.
+
+   D'où le geste en deux temps : on choisit LA CARTE À FAIRE MONTER, et l'atelier ne montre
+   plus alors que celles qui peuvent la rejoindre. C'est ce qui rend la règle de mariage
+   visible sans l'énoncer — on ne lit pas « même lignée, même motif », on voit la grille se
+   réduire.
+
+   UNE CARTE ÉQUIPÉE N'ENTRE PAS DANS LA FORGE, comme elle ne se fond pas : elle s'évaporerait
+   d'un emplacement et changerait le build en silence. */
 const FUSION_N          = 3;
 
 /* LE MOTIF DÉCIDE DE CE QUE LA CARTE ACCÉLÈRE. Il ne servait à rien, il est déjà tiré à
@@ -4109,89 +4117,127 @@ function carteEl(k, actes) {
    poussière changent, et pas dix fois par seconde. Un bouton détruit entre l'appui et le
    relâchement n'émet aucun « click » — la bande et le nid l'ont appris avant lui. */
 let forgeSig = '';
+
+/* L'ATELIER, EN DEUX TEMPS. D'abord l'album entier : on choisit LA CARTE À FAIRE MONTER.
+   Ensuite la grille ne montre plus que celles qui peuvent la rejoindre — c'est ce qui rend la
+   règle de mariage visible sans l'énoncer. On ne lit pas « même lignée, même motif, même rang
+   d'étoiles » : on voit quarante cartes devenir deux.
+
+   LE PLAN DE TRAVAIL MONTRE LE RÉSULTAT AVANT DE LE FABRIQUER, et c'est ce qui compte le plus
+   ici : une teinte se DILUE dans une fusion. Sans cet aperçu, un joueur qui vient de perdre son
+   albâtre ne le comprend qu'après coup, et il n'a aucun moyen de le défaire.
+
+   Signature, comme partout — et elle porte le choix en cours, sinon désigner une carte ne
+   repeindrait rien. Un bouton détruit entre l'appui et le relâchement n'émet aucun « click » :
+   la bande, le nid et l'album l'ont appris avant elle. */
 function renderForge() {
+  elaguerForge();
   const sig = state.album.map(k => k.id + ':' + (k.etoiles || 1)).join(',') + '|' +
-              state.slots.join(',') + '|' + (state.poussiere || 0);
+              state.slots.join(',') + '|' + (state.poussiere || 0) + '|' +
+              forgeBase + ':' + forgeAmies.join('.');
   if (sig === forgeSig) return;
   forgeSig = sig;
 
-  setText($('forge-poussiere'), '✧ ' + fmt(state.poussiere || 0));
-  const host = $('forge-liste');
-  host.textContent = '';
+  setText($('forge-poussiere'), '\u2727 ' + fmt(state.poussiere || 0));
 
-  const groupes = groupesForge();
-  if (!groupes.length) {
-    const vide = document.createElement('p');
-    vide.className = 'forge-vide';
-    vide.textContent = state.album.length
-      ? 'Rien à marier pour l’instant. Une fusion demande TROIS cartes de la même lignée et du ' +
-        'même motif — l’âge, lui, n’a pas d’importance. Garde les doublons que l’ascension te ' +
-        'donne au lieu de les fondre : c’est ici qu’ils servent.'
-      : 'Ton album est vide. Les cartes viennent de l’ascension.';
-    host.appendChild(vide);
-    return;
-  }
+  const base = forgeBase === null ? null : carteDe(forgeBase);
+  const trou = (texte, cls) => {
+    const t = document.createElement('div');
+    t.className = 'carte carte-trou' + (cls ? ' ' + cls : '');
+    t.textContent = texte;
+    return t;
+  };
 
-  for (const g of groupes) {
-    const base = g.cartes[0];
-    const bloc = document.createElement('section');
-    bloc.className = 'forge-groupe' + (g.prete ? ' prete' : '');
-    bloc.dataset.cle = g.cle;
-
-    const tete = document.createElement('h3');
-    tete.className = 'forge-nom';
-    tete.textContent = LINE_BY_KEY[base.line].name + ' · ' + MOTIFS[base.motif] +
-                       ' · ' + '★'.repeat(base.etoiles || 1);
-    bloc.appendChild(tete);
-
-    const rang = document.createElement('div');
-    rang.className = 'forge-rang';
+  // ── le plan de travail ────────────────────────────────────────────────────
+  const plan = $('forge-plan');
+  plan.textContent = '';
+  plan.hidden = !base;
+  if (base) {
+    const trio = trioForge().map(carteDe);
+    const cout = coutFusion(base);
+    const pret = trio.length === FUSION_N && (state.poussiere || 0) >= cout;
 
     const entrees = document.createElement('div');
     entrees.className = 'forge-in';
-    for (const k of g.entrantes) entrees.appendChild(carteEl(k, false));
-    /* LES CASES MANQUANTES SE MONTRENT VIDES. Dire « il t'en manque une » sans montrer où
-       oblige à compter ; une case creuse se lit sans lire. */
-    for (let i = g.entrantes.length; i < FUSION_N; i++) {
-      const trou = document.createElement('div');
-      trou.className = 'carte carte-trou';
-      trou.textContent = '?';
-      entrees.appendChild(trou);
-    }
-    rang.appendChild(entrees);
+    for (const k of trio) entrees.appendChild(carteEl(k, false));
+    for (let i = trio.length; i < FUSION_N; i++) entrees.appendChild(trou('?'));
+    plan.appendChild(entrees);
 
     const fleche = document.createElement('span');
     fleche.className = 'forge-fleche';
-    fleche.textContent = '→';
-    rang.appendChild(fleche);
+    fleche.textContent = '\u2192';
+    plan.appendChild(fleche);
 
     const sortie = document.createElement('div');
     sortie.className = 'forge-out';
-    if (g.sortie) sortie.appendChild(carteEl(g.sortie, false));
-    else {
-      const trou = document.createElement('div');
-      trou.className = 'carte carte-trou';
-      trou.textContent = '★'.repeat((base.etoiles || 1) + 1);
-      sortie.appendChild(trou);
-    }
-    rang.appendChild(sortie);
-    bloc.appendChild(rang);
+    sortie.appendChild(trio.length === FUSION_N
+      ? carteEl(fusionDe(trio), false)
+      : trou('\u2605'.repeat((base.etoiles || 1) + 1), 'attente'));
+    plan.appendChild(sortie);
 
-    const acte = document.createElement('button');
-    acte.type = 'button';
-    acte.className = 'forge-acte';
-    acte.dataset.cle = g.cle;
-    acte.disabled = !g.prete;
-    acte.textContent = g.complet ? 'Forger  ·  ✧ ' + fmt(g.cout)
-                                 : 'Il en manque ' + (FUSION_N - g.cartes.length);
-    acte.title = !g.complet
-      ? 'Il faut ' + FUSION_N + ' cartes de cette lignée et de ce motif. Tu en as ' +
-        g.cartes.length + '.'
-      : g.prete ? 'Les trois disparaissent. Il en sort une, d’une étoile de plus.'
-                : 'Il te faut ' + fmt(g.cout) + ' de poussière. Tu en as ' +
-                  fmt(state.poussiere || 0) + '.';
-    bloc.appendChild(acte);
-    host.appendChild(bloc);
+    /* PAS « forge-actes » : le nom contenait « forge-acte » en entier, et tout ce qui
+       cherche une classe par sous-chaîne attrapait le conteneur avant le bouton. */
+    const actes = document.createElement('div');
+    actes.className = 'forge-boutons';
+    const forger = document.createElement('button');
+    forger.type = 'button';
+    forger.className = 'forge-acte';
+    forger.disabled = !pret;
+    forger.textContent = trio.length === FUSION_N
+      ? 'Forger  \u00b7  \u2727 ' + fmt(cout)
+      : 'Encore ' + (FUSION_N - trio.length) + ' carte' + (FUSION_N - trio.length > 1 ? 's' : '');
+    forger.title = trio.length < FUSION_N
+      ? 'Choisis ' + (FUSION_N - trio.length) + ' carte(s) de plus dans la grille.'
+      : pret ? 'Les trois disparaissent. Il en sort une, d\u2019une \u00e9toile de plus.'
+             : 'Il te faut ' + fmt(cout) + ' de poussi\u00e8re. Tu en as ' +
+               fmt(state.poussiere || 0) + '.';
+    actes.appendChild(forger);
+
+    const annuler = document.createElement('button');
+    annuler.type = 'button';
+    annuler.className = 'forge-annule';
+    annuler.textContent = 'Changer de carte';
+    actes.appendChild(annuler);
+    plan.appendChild(actes);
+  }
+
+  /* LA PHRASE DIT OÙ ON EN EST, et elle change avec l'étape : une consigne qui ne bouge pas
+     pendant qu'on agit cesse d'être lue au bout de deux visites. */
+  setText($('forge-dit'), !base
+    ? 'Choisis la carte \u00e0 faire monter d\u2019une \u00e9toile. Il en faudra trois en tout \u2014 m\u00eame lign\u00e9e, ' +
+      'm\u00eame motif, m\u00eame rang d\u2019\u00e9toiles. L\u2019\u00e2ge, lui, n\u2019a pas d\u2019importance : il se moyenne.'
+    : 'Voil\u00e0 celles qui peuvent la rejoindre. Ce que les trois valent se moyenne \u2014 \u00e2ge, niveau, ' +
+      'teinte, taille \u2014 et la carte de droite montre ce qui sortira.');
+
+  // ── la grille ─────────────────────────────────────────────────────────────
+  const grille = $('forge-grille');
+  grille.textContent = '';
+
+  /* RANGÉES PAR MARIAGE POSSIBLE et non par arrivée : deux cartes qui peuvent se joindre se
+     retrouvent côte à côte, ce qui répond tout seul à « qu'est-ce que je peux forger ? ». Les
+     éteintes tombent en fin de grille — elles s'expliquent, elles ne se cherchent pas. */
+  const liste = (base ? compagnes(base) : state.album.slice()).sort((a, b) =>
+    (forgeable(b) - forgeable(a)) ||
+    (cleForge(a) < cleForge(b) ? -1 : cleForge(a) > cleForge(b) ? 1 : 0) ||
+    (puissanceDe(b) - puissanceDe(a)));
+
+  if (!liste.length) {
+    const vide = document.createElement('p');
+    vide.className = 'forge-vide';
+    vide.textContent = base
+      ? 'Aucune autre carte ne peut la rejoindre. Il en faut deux de plus, m\u00eame lign\u00e9e et m\u00eame ' +
+        'motif \u2014 garde les doublons que l\u2019ascension te donne au lieu de les fondre.'
+      : 'Ton album est vide. Les cartes viennent de l\u2019ascension.';
+    grille.appendChild(vide);
+    return;
+  }
+
+  for (const k of liste) {
+    const el = carteEl(k, false);
+    const hs = !forgeable(k);
+    if (hs) { el.classList.add('forge-hs'); el.title = refusForge(k); }
+    if (forgeAmies.indexOf(k.id) !== -1) el.classList.add('choisie');
+    grille.appendChild(el);
   }
 }
 
@@ -4319,55 +4365,80 @@ function fusionDe(cartes) {
   };
 }
 
-/* LES GROUPES DE LA FORGE. Une entrée par mariage possible, les plus fortes cartes devant :
-   ce sont elles qui entreront. Une carte ÉQUIPÉE n'y figure pas — elle s'évaporerait d'un
-   emplacement et changerait le build en silence, exactement ce qu'on interdit déjà à
-   « fondre ». C'est aussi comme ça qu'on protège une carte de la forge.
+/* CE QU'UNE CARTE PEUT FAIRE À LA FORGE. Deux refus, et ils ne se disent pas pareil : une
+   carte au bout n'a plus d'étoile à gagner, une carte équipée en aurait mais on ne la touche
+   pas. L'atelier montre les deux, éteintes, avec leur raison — les cacher ferait chercher une
+   carte qu'on possède. */
+const forgeable = k => (k.etoiles || 1) < ETOILES.length && state.slots.indexOf(k.id) === -1;
+const refusForge = k => (k.etoiles || 1) >= ETOILES.length
+  ? 'Elle est au bout : trois étoiles.'
+  : state.slots.indexOf(k.id) !== -1
+    ? 'Elle est équipée. Retire-la de tes cartes actives pour la forger.' : '';
 
-   Les groupes d'UNE SEULE carte sont écartés : ils ne disent rien qu'un joueur puisse suivre.
-   À deux, il manque une carte et ça vaut la peine de le dire. */
-function groupesForge() {
-  const par = new Map();
-  for (const k of state.album) {
-    if (state.slots.indexOf(k.id) !== -1) continue;
-    if ((k.etoiles || 1) >= ETOILES.length) continue;
-    const cle = cleForge(k);
-    if (!par.has(cle)) par.set(cle, []);
-    par.get(cle).push(k);
-  }
-  const groupes = [];
-  for (const [cle, cartes] of par) {
-    if (cartes.length < 2) continue;
-    cartes.sort((a, b) => puissanceDe(b) - puissanceDe(a));
-    const entrantes = cartes.slice(0, FUSION_N);
-    const cout = coutFusion(cartes[0]);
-    groupes.push({
-      cle, cartes, entrantes, cout,
-      prete: cartes.length >= FUSION_N && (state.poussiere || 0) >= cout,
-      complet: cartes.length >= FUSION_N,
-      sortie: cartes.length >= FUSION_N ? fusionDe(entrantes) : null,
-    });
-  }
-  /* Les prêtes d'abord, puis celles qui coûtent le plus cher : ce qui se fait maintenant se
-     lit en haut, et ce qu'on vise ensuite juste après. */
-  groupes.sort((a, b) => (b.prete - a.prete) || (b.complet - a.complet) || (b.cout - a.cout));
-  return groupes;
+// Celles qui peuvent rejoindre une base : même lignée, même motif, même rang d'étoiles.
+const compagnes = base => state.album.filter(k =>
+  k.id !== base.id && forgeable(k) && cleForge(k) === cleForge(base));
+
+/* CE QU'ON A DÉSIGNÉ. Deux identifiants et une liste, et rien de tout ça ne se sauvegarde :
+   c'est un geste en cours, pas un état de partie. Un joueur qui ferme l'onglet au milieu d'un
+   choix ne doit pas le retrouver le lendemain — il ne saurait plus pourquoi il l'avait fait. */
+let forgeBase = null, forgeAmies = [];
+
+/* Un choix se périme tout seul : une carte peut être fondue, équipée ou emportée par une
+   ascension pendant qu'elle est désignée. On élague avant de dessiner plutôt que de garder des
+   identifiants morts — sinon le plan de travail montre des trous sans le dire. */
+function elaguerForge() {
+  const vivante = id => { const k = carteDe(id); return k && forgeable(k); };
+  if (forgeBase !== null && !vivante(forgeBase)) { forgeBase = null; forgeAmies = []; return; }
+  if (forgeBase === null) { forgeAmies = []; return; }
+  const base = carteDe(forgeBase);
+  forgeAmies = forgeAmies.filter(id => vivante(id) && cleForge(carteDe(id)) === cleForge(base))
+                         .slice(0, FUSION_N - 1);
 }
 
-// Forger. Trois cartes et de la poussière entrent, une carte sort.
-function forger(cle) {
-  const g = groupesForge().find(x => x.cle === cle);
-  if (!g || !g.complet || g.cout === null) return false;
-  if ((state.poussiere || 0) < g.cout) return false;
+/* Le clic de la grille : il désigne, il ajoute, il retire. Un seul geste pour les trois, parce
+   qu'un joueur qui vient de poser une carte par erreur cherche à la reprendre au même endroit
+   où il l'a posée. */
+function choisirForge(id) {
+  const k = carteDe(id);
+  if (!k || !forgeable(k)) return false;
+  if (forgeBase === null) { forgeBase = id; forgeAmies = []; }
+  else if (id === forgeBase) { forgeBase = null; forgeAmies = []; }
+  else if (forgeAmies.indexOf(id) !== -1) forgeAmies = forgeAmies.filter(x => x !== id);
+  else {
+    if (cleForge(k) !== cleForge(carteDe(forgeBase))) return false;
+    if (forgeAmies.length >= FUSION_N - 1) return false;
+    forgeAmies.push(id);
+  }
+  forgeSig = '';
+  refresh();
+  return true;
+}
 
-  state.poussiere -= g.cout;
-  const mangees = g.entrantes.map(k => k.id);
-  state.album = state.album.filter(k => mangees.indexOf(k.id) === -1);
-  state.album.push(Object.assign(g.sortie, { id: nextCard++ }));
+const oublierForge = () => { forgeBase = null; forgeAmies = []; forgeSig = ''; };
+
+// Ce que le plan de travail porte en ce moment, base d'abord.
+const trioForge = () => forgeBase === null ? [] : [forgeBase].concat(forgeAmies);
+
+// Forger. Trois cartes et de la poussière entrent, une carte sort.
+function forger(ids) {
+  if (!Array.isArray(ids) || ids.length !== FUSION_N) return false;
+  if (new Set(ids).size !== FUSION_N) return false;
+  const cartes = ids.map(carteDe);
+  if (cartes.some(k => !k || !forgeable(k))) return false;
+  if (new Set(cartes.map(cleForge)).size !== 1) return false;
+
+  const cout = coutFusion(cartes[0]);
+  if (cout === null || (state.poussiere || 0) < cout) return false;
+
+  state.poussiere -= cout;
+  state.album = state.album.filter(k => ids.indexOf(k.id) === -1);
+  state.album.push(Object.assign(fusionDe(cartes), { id: nextCard++ }));
   state.stats.fusions = (state.stats.fusions || 0) + 1;
 
   oublierAlbum();
-  albumSig = ''; forgeSig = '';
+  oublierForge();
+  albumSig = '';
   chord([523, 659, 784, 1046], 80);
   refresh();
   save();
@@ -6877,10 +6948,19 @@ function bindTools() {
      est forgé, pas une carte, et les trois qui entrent sont recalculées au moment du clic.
      Une liste d'identifiants figée dans le DOM aurait vieilli entre deux images — il suffit
      d'équiper une carte pour que le trio change. */
-  $('forge-liste').addEventListener('click', e => {
-    const b = e.target.closest && e.target.closest('.forge-acte');
-    if (!b) return;
-    if (!forger(b.dataset.cle)) blip(300, 0.05, 'sine', 0.03);
+  /* UN SEUL ÉCOUTEUR POUR L'ATELIER. Les cartes du plan de travail et celles de la grille
+     répondent au même geste — cliquer prend, cliquer reprend — et c'est voulu : un joueur qui
+     vient de poser une carte par erreur la reprend là où il l'a posée. */
+  $('vue-forge').addEventListener('click', e => {
+    if (!e.target.closest) return;
+    if (e.target.closest('.forge-annule')) { oublierForge(); refresh(); return; }
+    if (e.target.closest('.forge-acte')) {
+      if (!forger(trioForge())) blip(300, 0.05, 'sine', 0.03);
+      return;
+    }
+    const carte = e.target.closest('.carte');
+    if (!carte || !carte.dataset.id) return;
+    if (!choisirForge(parseInt(carte.dataset.id, 10))) blip(300, 0.05, 'sine', 0.03);
   });
 
   const albumHote = $('album');

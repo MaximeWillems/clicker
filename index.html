@@ -296,12 +296,14 @@
 <section id="vue-forge" class="forge" hidden aria-label="Atelier de forge">
   <div class="forge-tete">
     <h2>L'atelier de forge</h2>
-    <p class="forge-dit">Trois cartes de la même lignée et du même motif n'en font qu'une, d'une
-      étoile de plus. Les trois y disparaissent. Ce qu'elles valaient se moyenne — âge, niveau,
-      teinte, taille — et une carte équipée n'entre jamais dans la forge.</p>
+    <p class="forge-dit" id="forge-dit"></p>
     <span class="forge-poussiere" id="forge-poussiere"></span>
   </div>
-  <div class="forge-liste" id="forge-liste"></div>
+  <!-- Le plan de travail n'existe qu'une fois une carte désignée : trois places, une flèche,
+       et ce qui sortira. Il montre le résultat AVANT de le fabriquer — une teinte se dilue
+       dans une fusion, et rien ne se défait. -->
+  <div class="forge-plan" id="forge-plan" hidden></div>
+  <div class="forge-grille" id="forge-grille"></div>
 </section>
 
 <!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :

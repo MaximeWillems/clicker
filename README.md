@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 2.0.0** | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
+| **beta 2.1.0** | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |
+| beta 2.0.0 | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
 | beta 1.14.0 | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
 | beta 1.13.0 | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
 | beta 1.12.0 | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
@@ -542,11 +543,29 @@ Le compte décide de tout le reste : **neuf cartes** d'une même lignée et d'un
 une seule à trois étoiles. Deux rendait la troisième étoile presque gratuite pour qui joue une
 lignée ; quatre la rendait inatteignable avant la dixième ascension.
 
-**On ne choisit pas lesquelles** : la forge prend les **trois plus fortes** du groupe, parce
-qu'une fusion doit rendre la meilleure carte possible et que l'arbitrage est ailleurs — il est
-dans *« est-ce que je forge »*. Pour en protéger une, on l'**équipe** : une carte équipée
-n'entre pas dans la forge, exactement comme elle ne se fond pas. Un seul geste sert deux fois,
-et il existait déjà.
+#### C'est le joueur qui désigne les trois
+
+La forge a d'abord pris les **trois plus fortes** toute seule, au motif qu'une fusion doit
+rendre la meilleure carte possible. C'était décider à sa place ce qu'il perd — et une fusion
+fait perdre : une teinte s'y **dilue**, une bête menée à l'âge légende ne se remplace pas en
+une ascension. *Quelles* trois cartes entrent est la seule vraie question de l'atelier, et une
+machine ne peut pas y répondre.
+
+D'où **un geste en deux temps** :
+
+1. l'atelier montre **tout l'album**, et on choisit la carte à faire monter ;
+2. la grille **ne montre plus alors que celles qui peuvent la rejoindre**.
+
+C'est la réduction elle-même qui enseigne la règle du mariage. On ne lit pas « même lignée,
+même motif, même rang d'étoiles » — on voit quarante cartes devenir deux. Cliquer une carte du
+plan de travail la reprend, et cliquer la carte de base annule tout : un joueur qui vient de
+poser une carte par erreur la reprend **là où il l'a posée**.
+
+**Ce qu'on ne peut pas forger reste montré**, éteint et avec sa raison — « elle est au bout »,
+« elle est équipée ». Les cacher ferait chercher une carte qu'on possède.
+
+Une carte **équipée** n'entre pas dans la forge, exactement comme elle ne se fond pas : elle
+s'évaporerait d'un emplacement et changerait le build en silence.
 
 #### Ce que la carte hérite
 
@@ -562,10 +581,11 @@ pour en sortir une — et ça fait de la forge une décision au lieu d'un automa
 nombres : on ne peut pas être aux deux tiers chromatique. Deux fonds *différents* n'en font
 donc aucun.
 
-Et le résultat **se voit avant d'être fabriqué** : l'atelier montre les trois cartes qui vont
-entrer, une flèche, et la carte qui va sortir. C'est ce qui rend « la moyenne des trois »
-compréhensible sans l'expliquer — sans quoi un joueur qui perd une belle teinte dans une
-fusion ne le comprendrait qu'après coup.
+Et le résultat **se voit avant d'être fabriqué** : le plan de travail montre les trois cartes
+qui vont entrer, une flèche, et la carte qui va sortir. C'est ce qui rend « la moyenne des
+trois » compréhensible sans l'expliquer — sans quoi un joueur qui perd une belle teinte dans
+une fusion ne le comprendrait qu'après coup, et rien ne se défait. Le plan **reste en haut**
+pendant qu'on parcourt la grille : c'est lui qu'on regarde pour décider.
 
 #### Ce qu'une carte rend, ce qu'une fusion coûte
 
@@ -2157,9 +2177,9 @@ D'où un onglet dans le bandeau : **Ferme**, **Encyclopédie** et, depuis la 2.0
 **Forge** — chacune en pleine largeur. La ferme disparaît entièrement quand on passe à une
 autre : pas de demi-écran partagé, on regarde une chose à la fois.
 
-L'atelier de forge a la même raison d'être en pleine page que l'encyclopédie : il montre des
-cartes côte à côte, sept à la fois, et sept cartes n'entrent pas dans une colonne de vingt et
-un rem.
+L'atelier de forge a la même raison d'être en pleine page que l'encyclopédie : il montre
+**l'album entier** en grille, et un album mûr compte quarante cartes — qui n'entrent pas dans
+une colonne de vingt et un rem.
 
 **L'onglet ne se sauvegarde pas** : on ouvre le jeu sur sa ferme, toujours. Revenir le lendemain
 sur une page de collection serait revenir à côté de sa partie.
