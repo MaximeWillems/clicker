@@ -298,7 +298,7 @@ const STADES = {
     'STANDING, and the mass changes completely: upright, weight on one leg, a plain cape or a fur wrap across one shoulder, a simple flat circlet. No armour yet, no staff. He is a king of animals, not of heaven. Nothing behind him',
     'AIRBORNE, and this is the ONLY stage with no support under him. He has just learned the cloud somersault: the body is on a clear DIAGONAL, legs folded up, one arm extended forward, the tail streaming out behind, and one small flat wisp of cloud under his feet — a wisp, not a base. Still no armour, still no staff, still the plain circlet. The mask stays calm: he is travelling, not straining',
     'UNDER THE MOUNTAIN, AND HE IS PUSHING. The silhouette inverts and this is the only stage where he is not upright. The mountain fills the TOP of the frame — one big flat mass with two or three plane changes, no texture, no drawn rocks. He occupies the LOWER HALF and he is unmistakably present: one shoulder and BOTH arms out from under the stone, the body visibly straining upward, the pale mask high in the frame and perfectly calm. He is trapped, never buried. This is where the ARMOUR first appears: one flat shoulder plate and the phoenix-feather cap show from beneath the mountain. One flat gold seal shape on the stone',
-    'AT REST AND WIDE OPEN, and it reads as the release of stage 4. This one is clearly WIDER THAN TALL — the only one of the five, and that is what makes it a climax instead of a fifth pose. Both arms are open and level, the staff held HORIZONTALLY across the full width at chest height, never planted upright. Under him ONE WIDE FLAT CLOUD drawn as a single simple shape, spreading well past his shoulders on both sides. Armour and cap complete, the two long plumes sweeping OUT sideways, not up. The body is perfectly still and centered; everything that could read as motion sits at the EDGES — the cloud and the plume tips. No roar, no raised weapon, no threat',
+    'AT REST, STANDING, seen from the front, and it reads as the release of stage 4. He stands on ONE WIDE FLAT CLOUD drawn as a single simple shape — the cloud is the widest thing here and spreads well past his shoulders on both sides, making the whole stage wider than tall. Both arms are open and low, palms out. The staff is held DIAGONALLY across his body from hip to shoulder and it is SHORT: both ends stop well INSIDE his silhouette, it never spans the image and it is never planted upright. Armour and cap complete, the two plumes curving OUT sideways, not up. The body is still and centered; everything that could read as motion sits at the EDGES — the cloud and the plume tips. NOTHING behind him: no background, no glow, no halo, no light, no gradient — plain empty space, exactly like the other four stages',
   ],
 
   /* LE FIL DU KITSUNE : LE MASQUE ET LES QUEUES. Le piège de cette lignée est écrit dans son
@@ -316,7 +316,7 @@ const STADES = {
     'the same kitsune now SITTING UPRIGHT, forming a clear TRIANGLE — wide at the haunches, narrowing to the head. THREE tails held close together behind it in a single tight bundle, never spread. Same muzzle, same tall ears, same forehead mark. One flat pale collar of fur at the chest',
     'the same kitsune RUNNING, the body stretched into a clear DIAGONAL across the frame, front legs reaching forward and hind legs pushed back. FIVE tails streaming behind in one flowing trail, all pointing the same way. Same muzzle and ears laid back by the speed. The only one with no ground contact',
     'the same kitsune SEATED FACING THE VIEWER, and SEVEN tails spread WIDE behind it like an open fan, evenly spaced in a half circle. This one is clearly WIDER THAN TALL — the widest of the five. The body itself is small and centered at the bottom of the fan, same muzzle, same ears, same mark',
-    'the same kitsune STANDING TALL on its hind legs before a plain torii gate, and NINE tails rising BEHIND AND ABOVE it in a tall crown, never sideways. This one is clearly TALLER THAN WIDE — the only one that goes UP. Same slender muzzle, same tall ears, the forehead mark now a small flat disc of light. Calm and still',
+    'the same kitsune STANDING on her hind legs and seen FROM THE FRONT, and the NINE tails now form ONE SINGLE CLOSED RING all around her — a flat halo of even thickness, like a mandorla. The nine tails are only suggested by NINE SHALLOW NOTCHES on the outer edge of that ring: never nine separate tails, never a bush, never a fan. Inside the ring the fox is LARGE and fills it — head, chest and forelegs, not a small figure lost in fur. One small plain torii gate at her feet, low and clearly IN FRONT of the ring. Same slender muzzle, same tall ears, the forehead mark now a small flat disc. The mass is a CIRCLE, and no other stage is round',
   ],
 
   /* Le fil de l'ouroboros : LA MORSURE. Il se mord la queue dès le premier âge et ne lâche
@@ -471,14 +471,34 @@ function ecrire(ligne) {
                ? ENTETE_REVELATION : ENTETE;
   const l = [entete];
   if (NOTES[ligne.key]) l.push('', NOTES[ligne.key]);
+  /* UN STADE REFAIT NE SE DEMANDE JAMAIS SEUL. La première tentative l'a demandé isolé, et
+     la technique a dérivé en une seule génération : fond dégradé, halo, ombrages, alors que
+     les quatre autres stades sont plats sur fond vide. Une planche porte sa charte dans ses
+     propres images ; une image seule n'a rien à quoi se tenir.
+
+     Le voisin part donc avec, INCHANGÉ et annoncé comme tel : il ancre la technique, et il met
+     les deux masses côte à côte — ce qui est exactement le contrôle qu'elles doivent passer. */
   if (stadeSeul) {
     const i = stadeSeul - 1;
-    l.push('', 'ONE creature only, alone on the image, centered — not a sheet, not a row:');
-    l.push(stades[i]);
+    const ancre = i > 0 ? i - 1 : i + 1;
+    l.push('', 'TWO creatures on ONE row, side by side, evenly spaced, on plain empty background.');
+    l.push('The FIRST one already exists and must be redrawn EXACTLY as described — it is here');
+    l.push('only to anchor the technique. All the effort goes into the SECOND one.');
+    l.push('');
+    l.push('LEFT (reference, unchanged): ' + stades[ancre]);
+    l.push('');
+    l.push('RIGHT (the one that matters): ' + stades[i]);
+    l.push('');
+    l.push('Both in the SAME flat technique: flat blocks of color, one hard outline, no shading,');
+    l.push('no glow, no gradient, no background of any kind. If the two do not look like they');
+    l.push('come from the same sheet, the image has failed.');
     l.push('', '', '--- une fois l’image enregistrée dans art/source-' + ligne.key + '-'
                  + stadeSeul + '.png ---', '');
     l.push('node tools/pixel.js importer art/source-' + ligne.key + '-' + stadeSeul + '.png '
-           + ligne.key + '-' + stadeSeul + ' --stades 1 --grille 64');
+           + ligne.key + '-' + stadeSeul + ' --stades 2 --grille 64');
+    l.push('', '  Deux grilles en sortent : on ne garde que la SECONDE, la première n’était');
+    l.push('  qu’une ancre. La palette, elle, est calculée sur les deux ensemble — c’est');
+    l.push('  justement ce qui la rapproche de celle de la lignée.');
     l.push('', '  Puis la grille remplace le stade ' + stadeSeul + ' de art/grilles/'
              + ligne.key + '.txt.');
     l.push('  ATTENTION : une image seule fait calculer SA palette, qui ne sera pas celle des');
