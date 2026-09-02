@@ -178,6 +178,54 @@ minute (`FRENESIE_MAX`) empêche même de compenser par le volume.
 et le bonheur d'une bête disparaît avec elle quand on la vend. Rien ne s'accumule, rien ne se
 collectionne, rien ne se vise.
 
+#### Au niveau max, le clic devrait payer
+
+L'idée : **une bête arrivée au bout rend des pièces à chaque clic**, pour qu'on ait encore une
+raison de cliquer sur un rentier en fin de partie.
+
+**Ce que fait un clic aujourd'hui, et ce n'est pas rien.** Sur une bête mûre il ne se perd pas :
+il part dans l'EMBONPOINT, qui monte la taille, qui monte la valeur, qui monte la rente. Le
+geste paie donc déjà — sauf que `sizeFactor` est **logarithmique** :
+
+    sizeFactor = 1 + OVER_GAIN × ln(1 + over / croissance de l'âge)
+
+Chaque clic vaut donc strictement moins que le précédent, et le rendement tend vers zéro sans
+jamais l'atteindre. Le problème n'est pas que le clic ne serve à rien, c'est **qu'il ne se sent
+plus** — ce qui, pour le joueur, revient au même et est plus déroutant.
+
+#### La contrainte qui décide de tout : la carte ocellée
+
+**Une carte ocellée clique à ta place.** Si un clic rapporte des pièces, elle devient une
+machine à monnaie automatique, et l'idée produit exactement l'inverse de son intention : au lieu
+de pousser à cliquer, elle rend le clic inutile en le déléguant. Trois issues, à choisir :
+
+- **le gain ne vaut que pour la main du joueur** — `mainDeCarte` est déjà levé pendant les clics
+  de l'ocellé, et la plonge s'en sert déjà pour se refuser à elle. Le précédent existe ;
+- **l'ocellé rapporte moins**, une fraction du clic manuel ;
+- **l'ocellé change de nature** et cesse de cliquer sur ce qui paie.
+
+La première est la plus simple et la plus honnête : *ce qui récompense la présence ne doit pas
+s'automatiser.*
+
+#### Les deux autres garde-fous
+
+**« Niveau max » doit vouloir dire le bout, pas la maturité de l'âge.** Une commune mûre à
+l'âge enfant est « au max de sa tranche » ; si elle paie aussi, c'est toute la ferme qui paie et
+la mécanique devient le cœur du jeu au lieu d'en être la fin. Le seuil est l'âge légende au
+niveau cent.
+
+**Le gain ne doit pas battre la rente ni la vente**, sinon l'optimum devient « garde une légende
+et clique pour toujours » — la même faute que la rente perpétuelle, sous une autre forme.
+
+#### Ce que ça répare ailleurs
+
+C'est la pièce qui manquait à la frénésie. Son défaut est écrit plus haut : la récompense est un
+`clic ×2` qui s'éteint au moment où on a les primes pour la nourrir, parce que le clic cesse de
+peser. **Si le clic paie en fin de partie, la frénésie, *Soins attentifs* et *Générosité*
+redeviennent tous les trois utiles d'un coup**, sans qu'on touche à aucun des trois.
+
+Les deux chantiers n'en font donc qu'un.
+
 #### Les trois directions possibles
 
 - **Rendre le bonheur collectif** — il monte sur l'enclos entier plutôt que sur la bête
