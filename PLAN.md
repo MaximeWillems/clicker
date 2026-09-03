@@ -832,6 +832,56 @@ elles se traitent ensemble — reculer l'ère rare rend une rare précoce encore
 par une partie menée jusqu'à l'ère rare, pas par une table de chiffres — c'est ce qui a permis
 de dire que les communes vont bien.
 
+#### La mesure, faite au banc — et elle dit autre chose
+
+    ce que coûte l'œuf de l'ère suivante, en temps de la ferme courante
+    (huit bêtes de l'ère, à l'âge 5, rente seule)
+
+    ère courante    rente/h de huit    œuf suivant    temps pour le payer
+    commune               3,24 M          300 000           6 min
+    rare                  77,7 M           7,50 M           6 min
+    épique                1,86 Md         180,0 M           6 min
+
+**SIX MINUTES, TROIS FOIS.** Ce n'est pas l'ère rare qui est mal placée, c'est **l'échelle
+entière qui est plate** : chaque marche coûte exactement la même fraction de la précédente, et
+cette fraction est minuscule. Reculer le seul œuf rare ferait de l'ère rare la seule ère longue
+du jeu, avec les deux suivantes traversées en six minutes chacune — on aurait déplacé le
+défaut, pas corrigé.
+
+**Et le tout premier pas est pire encore** : une commune menée à l'âge 5 se vend **371 644**,
+l'œuf rare en coûte **300 000**. UNE bête suffit à ouvrir l'ère rare — pas une ferme, pas une
+heure, une bête.
+
+Ce que coûterait l'œuf pour une durée d'ère visée :
+
+    durée visée     œuf rare     œuf épique    œuf mythique
+    6 min            310 830        6,76 M        162,2 M      ← aujourd'hui
+    30 min            1,55 M        33,8 M        810,9 M
+    1 h               3,11 M        67,6 M        1,62 Md
+    2 h               6,22 M       135,1 M        3,24 Md
+    4 h               12,4 M       270,3 M        6,49 Md
+    8 h               24,9 M       540,6 M        13,0 Md
+
+**La cible « vers 30 millions » vaut 9,7 heures de ferme commune mûre** — dix fois la marche de
+huit heures, et cent fois la marche actuelle. Elle n'est pas absurde pour un idle, mais elle
+n'a jamais été posée contre un chiffre : elle se décide maintenant, et **elle se décide pour
+les trois marches à la fois**.
+
+#### La seconde moitié — le péage — bute sur la rente
+
+Le péage d'une rare, de l'âge 1 à l'âge 5, coûte **16,08 M**. Une rare à l'âge 5 se vend
+**8,45 M**. **Faire grandir une rare perd donc 7,6 M à la vente** — c'est déjà vrai des
+communes, et de toutes les raretés.
+
+Ce qui rend l'opération rentable, ce n'est jamais la vente : c'est la **rente**, 8,45 M l'heure,
+qui rembourse le péage en deux heures et imprime ensuite pour toujours. Autrement dit, **le
+péage n'est pas un frein, c'est un délai** — et sa force réelle ne se mesure qu'une fois la
+rente corrigée.
+
+> **Le péage des rares ne peut donc pas se chiffrer avant le chantier de la rente.** Le poser
+> maintenant reviendrait à l'équilibrer contre un nombre qu'on sait faux. Le prix des œufs,
+> lui, ne dépend de rien et peut tomber tout de suite.
+
 ### Vingt idées relues, huit retenues
 
 Ce qui suit vient d'une passe où vingt propositions hors plan ont été mises sur la table. Huit
