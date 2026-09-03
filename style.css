@@ -1118,9 +1118,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .carte.a-fond .carte-haut { background: none; }
 
 /* une prime tenue par la constellation : acquise, mais pas achetée — et ça se voit */
-.prime.du-ciel { border-color: var(--accent); }
-.prime.du-ciel .prime-prix { color: var(--accent); font-size: 0; }
-.prime.du-ciel .prime-prix::after { content: '✦'; font-size: 0.7rem; }
 
 /* ── UN CARREFOUR ──────────────────────────────────────────────────────────────────────
    Trois routes côte à côte, à égalité de place : c'est la mise en page qui dit qu'aucune n'est
@@ -1191,7 +1188,7 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .lien.main.pris      { stroke: #E4A63E; }
 .lien.negoce.pris    { stroke: #D8C48E; }
 .lien.couvee.pris    { stroke: #79B36A; }
-.lien.batiments.pris { stroke: #66B79E; }
+.lien.pension.pris   { stroke: #66B79E; }
 .lien.album.pris     { stroke: #9A96D8; }
 
 /* LES NŒUDS. Quatre états qui se distinguent sans les lire : PRISE est pleine et colorée,
@@ -1211,7 +1208,7 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .etoile.main.ouverte .etoile-rond      { stroke: #E4A63E; }
 .etoile.negoce.ouverte .etoile-rond    { stroke: #D8C48E; }
 .etoile.couvee.ouverte .etoile-rond    { stroke: #79B36A; }
-.etoile.batiments.ouverte .etoile-rond { stroke: #66B79E; }
+.etoile.pension.ouverte .etoile-rond   { stroke: #66B79E; }
 .etoile.album.ouverte .etoile-rond     { stroke: #9A96D8; }
 
 .etoile.prise .etoile-rond { stroke-width: 3.5; }
@@ -1220,7 +1217,7 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .etoile.main.prise .etoile-rond       { fill: #3A2E14; stroke: #E4A63E; }
 .etoile.negoce.prise .etoile-rond     { fill: #33301F; stroke: #D8C48E; }
 .etoile.couvee.prise .etoile-rond     { fill: #1D2E1A; stroke: #79B36A; }
-.etoile.batiments.prise .etoile-rond  { fill: #1B3A32; stroke: #66B79E; }
+.etoile.pension.prise .etoile-rond    { fill: #1B3A32; stroke: #66B79E; }
 .etoile.album.prise .etoile-rond      { fill: #24224A; stroke: #9A96D8; }
 
 .etoile.chere .etoile-rond { stroke-dasharray: 4 5; opacity: 0.75; }
@@ -1237,7 +1234,7 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .branche-nom.main      { fill: #E4A63E; }
 .branche-nom.negoce    { fill: #D8C48E; }
 .branche-nom.couvee    { fill: #79B36A; }
-.branche-nom.batiments { fill: #66B79E; }
+.branche-nom.pension   { fill: #66B79E; }
 .branche-nom.album     { fill: #9A96D8; }
 
 /* ── L'ATELIER DE FORGE ────────────────────────────────────────────────────────────────

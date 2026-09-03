@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.4.0 · sauvegarde v22 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.5.0 · sauvegarde v23 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -224,7 +224,29 @@ endroits, aucun recouvrement :
 | où | en jeu | à l'ascension |
 | payées en | pièces | jetons |
 | durée | le cycle, puis effacées | acquises pour toujours |
-| ce qu'elles font | pousser ce qu'on a | ouvrir ce qu'on n'a pas |
+| ce qu'elles font | pousser ce qu'on a | pousser au-delà de ce qu'un cycle peut acheter |
+
+**Une ligne de cette table a été corrigée en `beta 4.5.0`, et la correction est importante.**
+Elle disait « ouvrir ce qu'on n'a pas », et c'est ce qui a produit quatre nœuds « L'acheteur est
+à toi », « Le marchand est à toi », « L'évolution est à toi », « La pension est à toi » — plus
+un cinquième pour l'atelier de forge.
+
+**L'automatisation est du jeu de base.** Elle doit être là dès la PREMIÈRE boucle : sans
+acheteur ni marchand, la première heure se joue au poignet, et c'est exactement ce qu'un jeu de
+clics ne doit jamais demander. Une constellation qui la possède — même seulement pour la rendre
+permanente, ce qui était le cas — déplace hors de la partie une chose qui doit soulager AVANT la
+première ascension. La forge relevait de la même faute : c'est là que va la poussière, une
+monnaie qu'on gagne dès le premier enclos.
+
+**Ce qui reste dans la constellation est ce qu'un cycle ne peut PAS acheter.** Huit nids sont le
+plafond des primes ; le neuvième ne s'achète nulle part ailleurs. La différence tient en une
+phrase : la constellation ne DÉVERROUILLE pas un pan de jeu — elle le pousse au-delà de son mur.
+
+Les cinq nœuds retirés remboursent leurs jetons à la migration `v23`. Et la migration `v21→v22`,
+qui donnait le nœud `forge` à qui avait déjà des cartes, a été SUPPRIMÉE en même temps :
+accorder gratuitement une chose que le bloc suivant rembourse aurait crédité quatre jetons à
+quelqu'un qui n'avait jamais rien payé. Une migration qu'on annule s'efface, elle ne se laisse
+pas tourner à vide.
 
 Sans ces deux mots, tout ce qui suit se serait dit avec le même — « une amélioration » — et le
 fichier a déjà payé ce prix une fois : « palier » désignait les paliers de fortune, les paliers

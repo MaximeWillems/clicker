@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.4.0** | la constellation part du centre : six directions, vingt-sept nœuds, aucun remplissage |
+| **beta 4.5.0** | l’automatisation redevient du jeu de base : elle sort de la constellation, la pension y entre |
+| beta 4.4.0 | la constellation part du centre : six directions, vingt-cinq nœuds, aucun remplissage |
 | beta 4.3.0 | la constellation devient un arbre — la géométrie porte la règle |
 | beta 4.2.0 | la fin de partie cesse d'être monothématique, la forge migre dans la constellation |
 | beta 4.1.0 | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |

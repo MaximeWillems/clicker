@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.4.0';
+const VERSION = 'beta 4.5.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1409,7 +1409,7 @@ const AXES = [
   { cle: 'main',      angle: -30, nom: 'La main · ce que vaut ta présence' },
   { cle: 'negoce',    angle:  30, nom: 'Le négoce · ce que valent tes bêtes' },
   { cle: 'couvee',    angle:  90, nom: 'La couvée · ce qui pousse' },
-  { cle: 'batiments', angle: 150, nom: 'Les bâtiments · ce que ta ferme contient' },
+  { cle: 'pension',   angle: 150, nom: 'La pension · ce que tu produis' },
   { cle: 'album',     angle: 210, nom: 'L’album · ce qui traverse' },
 ];
 const NOM_BRANCHE = Object.fromEntries(AXES.map(a => [a.cle, a.nom]));
@@ -1481,32 +1481,45 @@ const CIEL = [
     bonus: { vitesse: 0.25 } },
 
   // ── LES BÂTIMENTS · ce que ta ferme contient ──
-  { cle: 'acheteur', axe: 'batiments', parent: 'etincelle', prix: 3, glyphe: '🥚',
-    prime: 'acheteur', nom: 'L’acheteur est à toi',
-    dit: 'L’acheteur automatique ne se rachète plus jamais : il est là dès la première seconde d’un cycle.' },
-  { cle: 'marchand', axe: 'batiments', parent: 'acheteur', prix: 5, glyphe: '🤝',
-    prime: 'marchand', nom: 'Le marchand est à toi',
-    dit: 'Le marchand automatique ne se rachète plus jamais.' },
-  { cle: 'evolution', axe: 'batiments', parent: 'marchand', prix: 7, glyphe: '🧬',
-    prime: 'evolution', nom: 'L’évolution est à toi',
-    dit: 'L’évolution automatique ne se rachète plus jamais.' },
-  { cle: 'pension', axe: 'batiments', parent: 'evolution', prix: 11, glyphe: '🛖',
-    prime: 'pension', nom: 'La pension est à toi',
-    dit: 'Le bâtiment est acquis : un cycle neuf commence avec son nid.' },
-  { cle: 'nid-plus', axe: 'batiments', parent: 'pension', prix: 18, glyphe: '🪹',
-    nom: 'Un nid de plus', dit: 'Un couple de plus à la pension, quel que soit ce que tu as acheté ce cycle.' },
-  { cle: 'ponte-plus', axe: 'batiments', parent: 'nid-plus', prix: 28, glyphe: '🍳',
-    nom: 'Une ponte de plus', dit: 'Un œuf de plus à chaque ponte. La chance de merveille, elle, reste attachée à la ponte.' },
+/* ── LA PENSION · ce que tu produis ──
+     ELLE PORTAIT « LES BÂTIMENTS », ET C'ÉTAIT UNE FAUTE. On y trouvait l'acheteur, le
+     marchand, l'évolution et la pension, rendus définitifs — six nœuds sur vingt-sept occupés
+     à ne PLUS RACHETER quelque chose.
+
+     L'AUTOMATISATION EST DU JEU DE BASE. Elle doit être là dès la première boucle, sinon la
+     première heure se joue au poignet. Une constellation qui la possède — même seulement pour
+     la rendre permanente — la déplace hors de la partie où elle appartient, et fait dépendre
+     d'une ascension ce qui doit soulager AVANT la première. La forge est du même bois : c'est
+     là que va la poussière, elle s'ouvre à la première carte, rien ne doit s'interposer.
+
+     CE QUI RESTE ICI EST CE QU'UN CYCLE NE PEUT PAS ACHETER. Huit nids sont le plafond des
+     primes ; le neuvième ne s'achète nulle part ailleurs. C'est la différence entre ouvrir un
+     pan de jeu — qui était déjà ouvert — et le pousser au-delà de son mur. */
+  { cle: 'nid-plus', axe: 'pension', parent: 'etincelle', prix: 6, glyphe: '🪹',
+    nom: 'Un nid de plus',
+    dit: 'Un couple de plus à la pension, par-dessus le plafond d’un cycle.' },
+  { cle: 'ponte-plus', axe: 'pension', parent: 'nid-plus', prix: 12, glyphe: '🥚',
+    nom: 'Une ponte de plus',
+    dit: 'Un œuf de plus à chaque ponte, à toutes les pensions à la fois.' },
+  { cle: 'sang-epais', axe: 'pension', parent: 'ponte-plus', prix: 20, glyphe: '🩸',
+    nom: 'Le sang épais',
+    dit: 'Les lignées rares pèsent deux fois moins sur la durée d’une ponte : un couple mythique cesse d’être un pari.' },
+  { cle: 'nid-vif', axe: 'pension', parent: 'sang-epais', prix: 30, glyphe: '🌡',
+    nom: 'Le nid vif',
+    dit: 'La pension pond moitié plus vite, par-dessus tout ce que tu as acheté ce cycle.' },
 
   // ── L'ALBUM · ce qui traverse ──
-  { cle: 'forge', axe: 'album', parent: 'etincelle', prix: 4, glyphe: '🔨',
-    nom: 'L’atelier de forge',
-    dit: 'Trois cartes semblables n’en font qu’une, d’une étoile de plus. L’atelier reste ouvert à travers les ascensions.' },
-  { cle: 'cendres', axe: 'album', parent: 'forge', prix: 9, glyphe: '✧',
+/* L'ATELIER DE FORGE A ÉTÉ UN NŒUD PENDANT DEUX VERSIONS, et c'était la même faute : c'est
+     là que va la poussière, donc du jeu de base. Il se rouvre à la première carte, comme
+     avant. Ce qui reste ici est ce qui le DÉPASSE. */
+  { cle: 'cendres', axe: 'album', parent: 'etincelle', prix: 5, glyphe: '✧',
     nom: 'Les cendres', dit: 'Fondre une carte rend deux fois plus de poussière.' },
   { cle: 'creuset', axe: 'album', parent: 'cendres', prix: 16, glyphe: '⚒',
     nom: 'Le creuset', dit: 'La forge accepte les cartes équipées : plus besoin de les retirer avant de forger.' },
-  { cle: 'prisme', axe: 'album', parent: 'creuset', prix: 26, glyphe: '🌈',
+  { cle: 'braise-douce', axe: 'album', parent: 'creuset', prix: 22, glyphe: '⚖',
+    nom: 'La braise douce',
+    dit: 'Forger coûte moitié moins de poussière : neuf cartes pour une trois-étoiles, mais deux fois moins de cendres.' },
+  { cle: 'prisme', axe: 'album', parent: 'braise-douce', prix: 30, glyphe: '🌈',
     nom: 'Le prisme', dit: 'Une bête chromatique naît une fois sur 8 192. Ce nœud améliore ce tirage de moitié.',
     bonus: { prodige: 0.5 } },
 ];
@@ -1555,9 +1568,6 @@ function bonusCiel() {
   }
   return b;
 }
-
-// les primes que la constellation a rendues définitives
-const primeAcquise = cle => CIEL.some(n => n.prime === cle && etoilePrise(n.cle));
 
 /* ── La granularité des améliorations ─────────────────────────────────────────
    Un niveau qui double presque de prix et ne rend qu'un cran d'effet, c'est deux décroissances
@@ -1972,7 +1982,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 22;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 23;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -2305,16 +2315,27 @@ function load() {
       merged.asc.sommet = Math.max(merged.asc.sommet || 0, merged.coins || 0);
     }
 
-    /* v21 → v22 : l'atelier de forge migre dans la constellation. Il s'ouvrait tout seul à la
-       première carte ; il demande maintenant un nœud. ON NE RETIRE RIEN À PERSONNE : qui avait
-       déjà des cartes — donc qui avait déjà l'atelier — reçoit le nœud sans le payer. La règle
-       vaut pour toutes les migrations de ce fichier, et c'est la seule qui rende un changement
-       de règle acceptable à quelqu'un qui jouait déjà. */
-    if ((s.v || 0) < 22) {
-      merged.ciel = merged.ciel || {};
-      if ((merged.album || []).length || (merged.stats && merged.stats.fusions)) {
-        merged.ciel.forge = true;
+    /* v21 → v22 : l'atelier de forge migrait dans la constellation, et rendait le nœud à qui
+       avait déjà des cartes. CE BLOC A ÉTÉ SUPPRIMÉ AVEC LE NŒUD : accorder gratuitement une
+       chose que le bloc suivant rembourse, c'est créditer quatre jetons à quelqu'un qui n'a
+       jamais rien payé. Une migration qu'on annule s'efface, elle ne se laisse pas tourner à
+       vide. */
+
+    /* v22 → v23 : L'AUTOMATISATION DE BASE SORT DE LA CONSTELLATION. L'acheteur, le marchand,
+       l'évolution, la pension et la forge y étaient des nœuds « est à toi » ; ils appartiennent
+       au jeu de base, où ils étaient déjà. Ce bloc vient APRÈS celui du dessus exprès : une
+       partie en v21 y reçoit `forge`, et doit le reperdre ici.
+
+       ON NE RETIRE RIEN À PERSONNE : les jetons dépensés sur ces cinq nœuds sont RENDUS, à
+       l'unité près, et les nœuds effacés. Les nœuds qui en descendaient ne sont pas orphelins :
+       leur parent est devenu l'étincelle dans la table, et `etoileOuverte` les rouvre seule. */
+    if ((s.v || 0) < 23 && merged.ciel) {
+      const rendus = { acheteur: 3, marchand: 5, evolution: 7, pension: 11, forge: 4 };
+      let rendu = 0;
+      for (const cle of Object.keys(rendus)) {
+        if (merged.ciel[cle]) { rendu += rendus[cle]; delete merged.ciel[cle]; }
       }
+      if (rendu && merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + rendu;
     }
 
     /* v20 → v21 : le jeton redevient une bourse, et une carte coûte le prix doré. Une partie
@@ -2478,7 +2499,8 @@ const poussiereDe = k => Math.round((etoilePrise('cendres') ? 2 : 1)
                                     * (k.fond ? POUSSIERE_FOND : 1));
 // Ce que coûte l'étoile suivante, ou null quand la carte est au bout.
 const coutFusion  = k => (k.etoiles || 1) >= ETOILES.length ? null
-                       : FUSION_COUT[k.etoiles || 1] * POUSSIERE_RARETE[rareteDe(k)];
+                       : Math.round(FUSION_COUT[k.etoiles || 1] * POUSSIERE_RARETE[rareteDe(k)]
+                                    * (etoilePrise('braise-douce') ? 0.5 : 1));
 
 /* Ce que l'album ajoute, famille par famille. Recalculé seulement quand les cartes équipées
    changent — c'est-à-dire à l'ascension et au chargement : baseValue l'appelle une fois par
@@ -2723,10 +2745,9 @@ const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incuba
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
 
 // Une prime achetée, ou non. Toute la table passe par ici.
-/* UNE PRIME PEUT ÊTRE ACQUISE DE DEUX FAÇONS : achetée en pièces pour ce cycle, ou tenue
-   pour toujours par la constellation. Tout le jeu passe par ce prédicat — nul besoin de le
-   savoir ailleurs. */
-const prime       = cle => !!(state.primes && state.primes[cle]) || primeAcquise(cle);
+/* UNE PRIME S'ACHÈTE EN PIÈCES, POUR CE CYCLE, ET C'EST TOUT. La constellation en a tenu
+   quatre pour toujours pendant deux versions ; elles sont reparties d'où elles venaient. */
+const prime       = cle => !!(state.primes && state.primes[cle]);
 
 /* ── LES CARREFOURS ────────────────────────────────────────────────────────────
    Une prime à choix : trois routes, on en prend UNE, et les deux autres sont perdues pour ce
@@ -6013,9 +6034,6 @@ function tickView() {
       setText(r.el.querySelector('.prime-nom'), o ? o.nom : p.nom);
       setText(r.el.querySelector('.prime-glyphe'), o ? o.glyphe : p.glyphe);
     }
-    const duCiel = primeAcquise(p.cle);
-    r.el.classList.toggle('du-ciel', duCiel);
-    if (duCiel) r.el.title = p.nom + ' — tenue par ta constellation : elle ne se rachète plus.';
     r.el.disabled = pris || state.coins < p.prix;
   }
 
@@ -6232,7 +6250,7 @@ function renderTuto() {
   /* LA FORGE N'EXISTE PAS AVANT LA PREMIÈRE CARTE. Elle ne s'achète pas — c'est un atelier,
      pas un bâtiment — mais elle suit la même règle que tout le reste : on ne montre pas la
      porte d'une pièce vide. La première ascension l'ouvre. */
-  const forgePret = state.album.length > 0 && etoilePrise('forge');
+  const forgePret = state.album.length > 0;
   /* LA CONSTELLATION S'OUVRE AVEC LE PREMIER JETON, et pas avec la première ascension : on
      gagne des jetons AVANT de sauter, et c'est justement en les voyant qu'on comprend qu'il y
      a deux façons de les dépenser. */
@@ -6317,7 +6335,8 @@ const echelle = (paliers, prefixe) => {
 };
 const placesPension  = () => echelle([1, 2, 4, 8], 'pension-place-') +
                             (etoilePrise('nid-plus') ? 1 : 0);
-const vitessePension = () => echelle([1, 1.5, 4, 12], 'pension-vite-');
+const vitessePension = () => echelle([1, 1.5, 4, 12], 'pension-vite-') *
+                            (etoilePrise('nid-vif') ? 1.5 : 1);
 const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-') +
                             (etoilePrise('ponte-plus') ? 1 : 0);
 /* LA RICHESSE, ET POURQUOI ELLE SE DESSERRE SANS SE LEVER. Le multiplicateur de rareté — ×64
@@ -6329,7 +6348,8 @@ const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-') +
    pension rend alors 240 œufs mythiques l'heure, contre 480 pour un acheteur de douze
    incubateurs. Elle devient un vrai choix. Le compte reste perdant — 43 Md/h de valeur
    produite contre 396 Md/h de rente abandonnée par seize enclos — et c'est ce qui tient. */
-const richessePension = () => echelle([1, 4, 8], 'pension-riche-');
+const richessePension = () => echelle([1, 4, 8], 'pension-riche-') *
+                             (etoilePrise('sang-epais') ? 2 : 1);
 
 /* CE QUE LES PRIMES CHANGENT À LA PENSION.
 

@@ -2837,23 +2837,30 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
 
 /* ────────────────────────── les carrefours ────────────────────────── */
 
-scenario('sauvegarde — l’atelier de forge est rendu à qui l’avait déjà', () => {
-  /* ON NE RETIRE RIEN À PERSONNE. L'atelier s'ouvrait tout seul à la première carte ; il
-     demande maintenant un nœud de constellation. Une partie qui avait déjà des cartes avait
-     déjà l'atelier : elle reçoit le nœud sans le payer. C'est la règle de toutes les
+scenario('sauvegarde — les nœuds retirés rendent leurs jetons', () => {
+  /* ON NE RETIRE RIEN À PERSONNE. L'acheteur, le marchand, l'évolution, la pension et la forge
+     ont été des nœuds pendant deux versions ; ils sont redevenus du jeu de base. Qui les avait
+     payés en jetons les retrouve en jetons, à l'unité près — c'est la règle de toutes les
      migrations de ce fichier, et la seule qui rende un changement de règle acceptable à
      quelqu'un qui jouait déjà. */
-  const avecCartes = neuf({
-    v: 21, coins: 0,
+  const paye = neuf({
+    v: 22, coins: 0, asc: { n: 3, paliers: 4, jetons: 2, sommet: 0 },
+    ciel: { etincelle: true, acheteur: true, marchand: true, forge: true, poing: true },
+  });
+  ok('l’acheteur a quitté le ciel', !paye.etoilePrise('acheteur'));
+  ok('la forge aussi', !paye.etoilePrise('forge'));
+  ok('le poing reste, lui', paye.etoilePrise('poing'));
+  eq('et les jetons sont rendus', paye.state.asc.jetons, 2 + 3 + 5 + 4);
+
+  /* LE PIÈGE : une partie d'AVANT la 4.2.0 reçoit `forge` de la migration v22, qui s'exécute
+     plus haut dans le même bloc. Elle doit le reperdre ici, sans rien recevoir en échange —
+     elle ne l'avait jamais payé. */
+  const vieille = neuf({
+    v: 21, coins: 0, asc: { n: 1, paliers: 1, jetons: 0, sommet: 0 },
     album: [{ id: 1, line: 'crapaud', age: 5, niv: 100, tint: 0, rank: 0, motif: 0, temper: 0, etoiles: 1 }],
   });
-  ok('qui avait des cartes garde son atelier', avecCartes.etoilePrise('forge'));
-
-  const sansRien = neuf({ v: 21, coins: 0, album: [] });
-  ok('qui n’en avait pas devra le prendre', !sansRien.etoilePrise('forge'));
-
-  const avaitForge = neuf({ v: 21, coins: 0, album: [], stats: { fusions: 3 } });
-  ok('et qui avait déjà forgé le garde aussi', avaitForge.etoilePrise('forge'));
+  ok('elle ne garde pas un nœud qui n’existe plus', !vieille.etoilePrise('forge'));
+  eq('et rien ne lui est crédité', vieille.state.asc.jetons, 0);
 });
 
 scenario('carrefour — trois routes, on en prend une, les deux autres se ferment', () => {
@@ -2958,32 +2965,45 @@ scenario('constellation — un nœud s’ouvre avec son parent, jamais avant', (
   poserJetons(jeu, 500);
 
   /* LE PARENT REMPLACE LE RANG. « Demande le rang 8 du tronc » demandait de compter ;
-     « demande la pension » se voit sur le trait qui les relie. */
+     « demande le nid de plus » se voit sur le trait qui les relie. */
   ok('l’étincelle est ouverte d’emblée', jeu.etoileOuverte(jeu.ETOILE_BY_KEY.etincelle));
-  ok('rien d’autre ne l’est', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY.acheteur));
-  ok('donc rien d’autre ne s’achète', !jeu.acheterEtoile('acheteur'));
+  ok('rien d’autre ne l’est', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY['nid-plus']));
+  ok('donc rien d’autre ne s’achète', !jeu.acheterEtoile('nid-plus'));
 
   ok('l’étincelle s’achète', jeu.acheterEtoile('etincelle'));
-  ok('et ouvre les six premiers', jeu.etoileOuverte(jeu.ETOILE_BY_KEY.acheteur));
+  ok('et ouvre les six premiers', jeu.etoileOuverte(jeu.ETOILE_BY_KEY['nid-plus']));
   ok('on ne la rachète pas', !jeu.acheterEtoile('etincelle'));
 
-  /* CHAQUE NŒUD FAIT QUELQUE CHOSE : c'est la règle qui a supprimé le tronc de vingt rangs de
-     « +2 % », un chemin fait de marches vides. */
-  const sansEffet = jeu.CIEL.filter(n => !n.bonus && !n.prime && n.cle !== 'etincelle' &&
-                                         !/or-doux|sommet|ferveur|cendres|creuset|forge|nid-plus|ponte-plus/.test(n.cle));
-  eq('aucun nœud de remplissage', sansEffet.length, 0);
-
   // la chaîne se remonte un maillon à la fois
-  ok('le marchand attend l’acheteur', !jeu.acheterEtoile('marchand'));
-  jeu.acheterEtoile('acheteur');
-  ok('puis il s’ouvre', jeu.acheterEtoile('marchand'));
+  ok('la ponte attend le nid', !jeu.acheterEtoile('ponte-plus'));
+  jeu.acheterEtoile('nid-plus');
+  ok('puis elle s’ouvre', jeu.acheterEtoile('ponte-plus'));
 
   /* SIX DIRECTIONS DEPUIS LE CENTRE, et chacune part de l'étincelle. */
   eq('six axes', jeu.AXES.length, 6);
   for (const a of jeu.AXES) {
     ok(a.cle + ' part du centre', jeu.PAR_AXE[a.cle][0].parent === 'etincelle');
-    ok(a.cle + ' porte au moins quatre nœuds', jeu.PAR_AXE[a.cle].length >= 4);
+    eq(a.cle + ' porte quatre nœuds', jeu.PAR_AXE[a.cle].length, 4);
   }
+});
+
+scenario('constellation — elle ne possède rien du jeu de base', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+
+  /* L'AUTOMATISATION EST DU JEU DE BASE. Elle doit être là dès la PREMIÈRE boucle, sinon la
+     première heure se joue au poignet. Quatre nœuds « est à toi » l'ont tenue pendant deux
+     versions ; ce scénario est là pour qu'aucun ne revienne. */
+  for (const cle of ['acheteur', 'marchand', 'evolution', 'pension', 'forge']) {
+    ok(cle + ' n’est pas un nœud', !jeu.ETOILE_BY_KEY[cle]);
+  }
+  ok('aucun nœud ne tient une prime', jeu.CIEL.every(n => !n.prime));
+
+  // et la boutique les vend toujours, sans rien demander au ciel
+  s.coins = 1e6;
+  jeu.buyPrime(jeu.PRIMES.find(p => p.cle === 'acheteur'));
+  ok('l’acheteur s’achète en pièces, dès le premier cycle', jeu.prime('acheteur'));
+  ok('sans un seul jeton', jeu.jetonsEnMain() === 0);
 });
 
 scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
@@ -2994,7 +3014,12 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
 
   eq('l’étincelle a coûté un jeton', jeu.jetonsEnMain(), 499);
 
-  // le négoce : une valeur, un prix d'œuf, un péage
+  /* CHAQUE NŒUD FAIT QUELQUE CHOSE : c'est la règle qui a supprimé le tronc de vingt rangs de
+     « +2 % », un chemin fait de marches vides. Douze nœuds portent un nombre, douze changent
+     une règle — et ce scénario touche chacun des seconds. */
+  eq('douze nœuds portent un nombre', jeu.CIEL.filter(n => n.bonus).length, 12);
+
+  // le négoce : une valeur, un prix d'œuf
   const v = jeu.coef('valeur');
   jeu.acheterEtoile('renom');
   ok('le renom monte la valeur', jeu.coef('valeur') > v);
@@ -3002,43 +3027,43 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
   jeu.acheterEtoile('marche');
   ok('le marché baisse le prix des œufs', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) < oe);
 
-  // la main : le clic, puis l'auto-clic
+  // la main : le clic
   const cp = jeu.clickPower();
   jeu.acheterEtoile('poing');
   ok('le poing double le clic', jeu.clickPower() > cp, cp + ' → ' + jeu.clickPower());
 
-  // les bâtiments : un déverrouillage définitif
-  jeu.acheterEtoile('acheteur');
-  ok('l’acheteur est acquis', jeu.prime('acheteur'));
-  ok('et c’est la constellation qui le tient', jeu.primeAcquise('acheteur'));
+  /* LA PENSION : CE QU'UN CYCLE NE PEUT PAS ACHETER. Huit nids sont le plafond des primes ; le
+     neuvième ne s'achète nulle part ailleurs. C'est la différence entre ouvrir un pan de jeu —
+     qui était déjà ouvert — et le pousser au-delà de son mur. */
+  for (let i = 1; i <= 3; i++) s.primes['pension-place-' + i] = true;
+  eq('les primes plafonnent à huit nids', jeu.placesPension(), 8);
+  jeu.acheterEtoile('nid-plus');
+  eq('le nœud donne le neuvième', jeu.placesPension(), 9);
 
-  // l'album : la poussière double
-  const p0 = jeu.poussiereDe(pave(jeu, 1));
-  jeu.acheterEtoile('forge');
+  const p0 = jeu.porteePension();
+  jeu.acheterEtoile('ponte-plus');
+  eq('et une ponte de plus', jeu.porteePension(), p0 + 1);
+  const r0 = jeu.richessePension(), vi = jeu.vitessePension();
+  jeu.acheterEtoile('sang-epais');
+  eq('le sang épais allège les lignées rares', jeu.richessePension(), r0 * 2);
+  jeu.acheterEtoile('nid-vif');
+  eq('le nid vif accélère la ponte', jeu.vitessePension(), vi * 1.5);
+
+  // l'album : la poussière double, puis la forge coûte moitié moins
+  const d0 = jeu.poussiereDe(pave(jeu, 1));
   jeu.acheterEtoile('cendres');
-  eq('les cendres doublent la poussière', jeu.poussiereDe(pave(jeu, 1)), p0 * 2);
+  eq('les cendres doublent la poussière', jeu.poussiereDe(pave(jeu, 1)), d0 * 2);
 
   /* LE CREUSET LÈVE L'INTERDIT SUR LES CARTES ÉQUIPÉES : la forge DÉSIGNE ses trois cartes et
-     montre le résultat, donc rien n'y est silencieux — l'interdit n'obligeait qu'à un
-     aller-retour sans décision. */
+     montre le résultat, donc rien n'y est silencieux. */
   s.album = [pave(jeu, 1)]; s.slots = [1];
   ok('une équipée reste hors forge', !jeu.forgeable(s.album[0]));
   jeu.acheterEtoile('creuset');
   ok('le creuset l’y fait entrer', jeu.forgeable(s.album[0]));
 
-  // le sang : l'ascension elle-même
-  eq('trois cartes coûtent six jetons', jeu.coutCartes(3), 6);
-  jeu.acheterEtoile('or-doux');
-  eq('adoucies, elles en coûtent quatre', jeu.coutCartes(3), 4);
-  /* ACHETER UN NŒUD CONVERTIT LE SOMMET EN BOURSE — c'est ce qui permet de puiser dans les
-     deux sans les compter deux fois. On pose donc le nœud à la main pour comparer. */
-  s.coins = 1e9; jeu.crediterJetons();
-  const j0 = jeu.jetonsDus();
-  eq('un milliard vaut quatre paliers', j0, 4);
-  s.ciel.sommet = true;
-  eq('le sommet en crédite un de plus', jeu.jetonsDus(), j0 + 1);
-  s.ciel['sommet-2'] = true;
-  eq('et le second encore un', jeu.jetonsDus(), j0 + 2);
+  const f0 = jeu.coutFusion(s.album[0]);
+  jeu.acheterEtoile('braise-douce');
+  eq('la braise douce halve le coût', jeu.coutFusion(s.album[0]), Math.round(f0 / 2));
 });
 
 scenario('constellation — le ciel se dessine, et il est plus grand que l’écran', () => {
@@ -3146,25 +3171,6 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
 
 /* ────────────────────────── les carrefours ────────────────────────── */
 
-scenario('sauvegarde — l’atelier de forge est rendu à qui l’avait déjà', () => {
-  /* ON NE RETIRE RIEN À PERSONNE. L'atelier s'ouvrait tout seul à la première carte ; il
-     demande maintenant un nœud de constellation. Une partie qui avait déjà des cartes avait
-     déjà l'atelier : elle reçoit le nœud sans le payer. C'est la règle de toutes les
-     migrations de ce fichier, et la seule qui rende un changement de règle acceptable à
-     quelqu'un qui jouait déjà. */
-  const avecCartes = neuf({
-    v: 21, coins: 0,
-    album: [{ id: 1, line: 'crapaud', age: 5, niv: 100, tint: 0, rank: 0, motif: 0, temper: 0, etoiles: 1 }],
-  });
-  ok('qui avait des cartes garde son atelier', avecCartes.etoilePrise('forge'));
-
-  const sansRien = neuf({ v: 21, coins: 0, album: [] });
-  ok('qui n’en avait pas devra le prendre', !sansRien.etoilePrise('forge'));
-
-  const avaitForge = neuf({ v: 21, coins: 0, album: [], stats: { fusions: 3 } });
-  ok('et qui avait déjà forgé le garde aussi', avaitForge.etoilePrise('forge'));
-});
-
 scenario('carrefour — trois routes, on en prend une, les deux autres se ferment', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
@@ -3260,36 +3266,6 @@ scenario('carrefour — il ouvre un écran, et se referme sans rien prendre', ()
 });
 
 /* ────────────────────────── la constellation ────────────────────────── */
-
-scenario('constellation — les quatre bâtiments ne se rachètent plus', () => {
-  const jeu = neuf(); const s = jeu.state;
-  s.tuto = false;
-  poserJetons(jeu, 100);
-  /* LA CHAÎNE SE REMONTE UN MAILLON À LA FOIS : la pension demande l'évolution, qui demande le
-     marchand, qui demande l'acheteur, qui demande l'étincelle. Le trait le dit. */
-  for (const cle of ['etincelle', 'acheteur', 'marchand', 'evolution']) jeu.acheterEtoile(cle);
-
-  ok('la pension n’est pas encore là', !jeu.prime('pension'));
-  ok('on prend le nœud', jeu.acheterEtoile('pension'));
-  ok('et le bâtiment existe, sans l’avoir acheté', jeu.prime('pension'));
-  ok('c’est bien la constellation qui le tient', jeu.primeAcquise('pension'));
-  eq('la prime, elle, n’a pas été payée', !!s.primes.pension, false);
-
-  /* CE QUE ÇA VAUT N'EST PAS L'ARGENT. Au dixième cycle 400 000 pièces se gagnent en une
-     seconde. Ce que le nœud change, c'est que le bâtiment est là DÈS LA PREMIÈRE SECONDE du
-     cycle suivant — une prime ne se dévoile qu'à l'approche de son prix. */
-  s.coins = 0;
-  ok('même sans une pièce', jeu.prime('pension'));
-
-  // et il traverse l'ascension, comme l'album
-  poserJetons(jeu, 20);
-  jeu.state.pens = 20;
-  const c = bete(jeu, 'crapaud', 3, 3000);
-  jeu.ascChoix = [-c.id];
-  jeu.ascensionner();
-  ok('après le saut, la pension est toujours là', jeu.prime('pension'));
-  ok('et la constellation aussi', jeu.etoilePrise('etincelle'));
-});
 
 scenario('constellation — le sang touche l’ascension elle-même', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -3643,12 +3619,9 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
              pave(jeu, 6, 'crapaud')];
   jeu.oublierForge();
   jeu.refresh();
-  /* L'ATELIER A MIGRÉ DANS LA CONSTELLATION en 4.2.0 : il s'ouvrait tout seul à la première
-     carte, ce qui était une non-décision. Il demande maintenant son nœud. */
-  eq('des cartes ne suffisent plus', onglet('forge').hidden, true);
-  s.ciel.forge = true;
-  jeu.refresh();
-  eq('le nœud l’ouvre', onglet('forge').hidden, false);
+  /* L'ATELIER A ÉTÉ UN NŒUD DE CONSTELLATION PENDANT DEUX VERSIONS, et c'était une faute :
+     c'est là que va la poussière, donc du jeu de base. Il se rouvre à la première carte. */
+  eq('des cartes suffisent', onglet('forge').hidden, false);
   eq('la grille montre tout l’album', grille().length, 6);
   eq('et le plan de travail attend', plan().hidden, true);
 
