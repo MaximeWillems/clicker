@@ -89,6 +89,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **L'absence** — l'équilibrage du hors-ligne, plus doux | la rente | revenir doit-il valoir plus qu'être resté ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 | **Les dix-huit dessins** | rien | — |
+| **L'écran au doigt** — voir plus bas, six marches | la planche, pour les cinq autres | est-ce que le jeu répond quand on le touche ? |
 
 **Ce qui ne dépend que de soi** :
 
@@ -138,6 +139,99 @@ Deux leçons payées cher, à ne pas réapprendre :
   ils s'affichent à un centimètre du nom, et « Rongeur colossal · taille normale » se
   contredit tout seul. Neuf formes ont dû être renommées en 2.15.0. Le scénario
   `noms` de `tools/test.js` monte la garde.
+
+### L'autre chantier de fond : l'écran, et le doigt
+
+Cette section vient de `REFONTE.md`, écrit en parallèle et jamais versionné. **Deux mémoires
+longues divergent toujours**, et celle-ci l'avait déjà fait : ses chiffres dataient d'`alpha
+2.16.0`. Elle est ici, remesurée.
+
+Le point de départ est une dette que ce fichier porte déjà — *« le rendu visuel n'a jamais été
+regardé »* — plus sa seconde moitié : le jeu n'a jamais été regardé **au doigt** non plus.
+
+#### Ce que la mesure dit aujourd'hui, et elle dit pire qu'avant
+
+    au départ (alpha 2.16.0)     22 :hover · 1 :active · 1 rupture · 14 infos en survol
+    aujourd'hui (beta 4.6.2)     46 :hover · 2 :active · 6 ruptures · 30 infos en survol
+
+**La dette a doublé pendant qu'on regardait ailleurs.** Un `:active` pour vingt-trois `:hover`,
+et **toujours zéro `@media (hover: hover)`** — c'est le chiffre qui compte le plus, parce que
+sans cette garde un navigateur tactile GARDE l'état de survol sur le dernier élément touché :
+la vignette qu'on vient de quitter reste allumée comme si le doigt y était encore.
+
+Sur un téléphone, appuyer sur « Acheter », sur une vignette ou sur une action ne produit donc
+**aucun signal** tant que l'état du jeu n'a pas changé. Un achat refusé faute de pièces est
+indiscernable d'un appui qui n'a pas été pris.
+
+**Trente informations ne vivent que dans un survol** — 12 `title` dans `index.html`, 18 posés
+en JS. Ce ne sont pas des ornements : c'est là que vivent le nom de la rareté d'une vignette,
+le nom de son âge, et les trois états du bouton « Vendre ». Au doigt, il n'y a pas de survol :
+l'information disparaît purement et simplement.
+
+**La mise en page, elle, s'est améliorée** : six ruptures au lieu d'une, dix-huit `min-height`.
+Ce n'est plus « la boutique est sous tout le reste », c'est « rien ne répond au toucher ».
+
+#### Ce qui a été livré depuis, et qui sort de la liste
+
+- **Sauver dans un fichier** — livré en `2.17.0`. Export, import, et le passage par le même
+  chemin de migration que `load()`. **Il en reste une moitié** : le `catch` de `save()` est
+  toujours vide, donc un quota plein ou une navigation privée fait perdre la partie **en
+  silence**. C'est une dizaine de lignes, et c'est la seule marche dont l'absence détruit
+  quelque chose.
+- **Les treize `<select>` des réglages** — il n'y en a plus **aucun** dans `index.html`. Le
+  panneau a été refait entre-temps. La marche 6 change donc d'objet : ce n'est plus « sortir
+  treize sélecteurs d'une colonne étroite », c'est la demande neuve d'un **interrupteur général
+  des automates**, analysée plus bas.
+
+#### L'ordre, et pourquoi
+
+| | Ce qui tombe | La question qu'elle pose | Coût |
+|---|---|---|---|
+| **1** | **La planche** — chaque composant dans chaque état, contre le vrai `style.css`, en une page | est-ce qu'on peut enfin *voir* ce qu'on change ? | une soirée |
+| **2** | **Le doigt** — un `:active` partout où il y a un `:hover`, les survols sous garde, 44 px minimum | est-ce que le jeu répond quand on le touche ? | une soirée |
+| **3** | **Le survol qui cache** — la rareté, l'âge, l'état d'un bouton sortent des infobulles | l'information survit-elle au retrait de la souris ? | une soirée |
+| **4** | **L'échec de sauvegarde qui se voit** — remplir le `catch` de `save()` | perdre sa partie en silence redevient-il impossible ? | une heure |
+| **5** | **Le pouce** — la colonne latérale devient un tiroir, la scène redescend à portée | est-ce que ça se joue d'une main, debout ? | un week-end |
+| **6** | **Les trois `confirm()`** — ascension, effacement, et le troisième venu depuis | la décision irréversible est-elle posée dans la langue du jeu ? | une soirée |
+
+**La planche d'abord, et ce n'est pas négociable.** Les cinq autres marches sont du CSS. Sans
+elle, elles seront livrées comme l'album et l'écran d'ascension l'ont été — vérifiées par la
+seule lecture — et la dette sera creusée au lieu d'être comblée. `tools/planche.html` : une
+page statique qui charge le **vrai** `style.css` et pose à la main le balisage que le rendu
+produit. Aucun JS de jeu, aucun état. En pied de page, la même planche dans trois `<iframe>`
+de 375, 768 et 1400 px, pour que le responsive se juge sans redimensionner quoi que ce soit.
+
+Son risque connu est la **dérive** — montrer un balisage que `game.js` ne produit plus. La
+parade est courte : un `tools/planche.js` qui relève toutes les classes posées par `game.js`
+et liste celles que la planche ne montre jamais. Ce n'est pas un test, c'est une liste de trous.
+
+**L'échec de sauvegarde peut passer devant.** Il ne dépend de rien, il coûte une heure, et
+c'est la seule marche dont l'absence détruit quelque chose.
+
+#### Trois règles à ne pas perdre en chemin
+
+**Un `:hover` sans `:active` est un bug.** À partir de la marche 2, c'est la règle : tout ce
+qui s'allume au survol s'enfonce à l'appui, et la planche montre les deux côte à côte.
+
+**La couleur ne porte jamais seule ce que le survol était seul à nommer.** Si l'information
+disparaît quand on retire la souris, elle n'est pas affichée.
+
+**La scène reste la plus grande chose de la page**, au téléphone comme sur écran large. Le
+tiroir s'ouvre par-dessus la ferme, jamais par-dessus la bête.
+
+#### Ce qu'on a décidé de ne pas faire
+
+- **Pas de thème clair.** Un seul thème assumé — la pièce d'incubation. Doubler la palette
+  double chaque décision de couleur, pour un jeu qui se joue le soir.
+- **Pas de framework, pas de build.** Le jeu est trois fichiers sans dépendance.
+- **Pas de nouvelle direction artistique.** Ce n'est pas une refonte du goût, c'est la même
+  charte rendue utilisable.
+- **Pas d'animation de plus.** `prefers-reduced-motion` est déjà traité six fois ; ajouter du
+  mouvement, c'est ajouter six fois le travail de le retirer.
+- **Pas de passe d'accessibilité large.** Le seul angle mort réel — ce que seul le survol
+  nomme — est la marche 3.
+- `-webkit-tap-highlight-color: transparent` **reste** : il est nécessaire au martèlement de la
+  scène. Ce qu'on lui substitue, c'est un `:active` explicite, qu'on maîtrise.
 
 ### Le mur de l'ascension — **abattu en `beta 3.0.0`**
 
@@ -863,6 +957,26 @@ dessiner de toutes celles qui restent, et la seule dont l'arc de croissance EST 
 - **Ouroboros + oiseau** — la lecture du mythe : le serpent qui ronge la racine, l'aigle au
   sommet. Plus juste, mais elle charge encore l'ouroboros.
 
+**AUCUNE DES DEUX N'EST RETENUE, ET LA RAISON EST PLUS INTÉRESSANTE QUE LES DEUX PISTES.** Ce
+qu'on veut pour parents, c'est une **fontaine de jouvence**, un **jardin**, une **source** —
+des choses qui ne sont pas des bêtes, et qui n'existent pas dans la table.
+
+C'est le même écart que l'arbre lui-même : Yggdrasil serait la première lignée qui n'est pas un
+animal, et ses parents veulent l'être aussi. **Croiser deux bêtes pour obtenir un lieu ne se
+raconte pas** — c'est là que les deux pistes ci-dessus coincent, et pas sur le choix des
+espèces.
+
+Trois façons d'en sortir, aucune tranchée :
+
+- **Ouvrir une famille de lieux** — la source, le jardin, la montagne. C'est un pan de bestiaire
+  neuf, donc cher, et il changerait ce que « lignée » veut dire.
+- **Yggdrasil n'a pas de parents** — comme Sun Wukong, qui naît d'un œuf de pierre sans père ni
+  mère. Le jeu sait déjà faire : `golem + golem` est une non-recette déguisée en recette.
+- **Elle arrive sans qu'on la cherche**, comme la tarasque, qui n'a aucune recette et prend
+  pour cette raison la moitié du sac secret.
+
+La recette attend cette décision ; le dessin, lui, ne l'attend pas.
+
 **Ce qu'il faut vérifier avant de l'écrire** : une merveille ne doit pas rendre un motif ou un
 temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la question de
 l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
@@ -1406,8 +1520,10 @@ est ce qu'il faut avoir en tête pour choisir.
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
 
 La 2.24.0 a réglé la moitié « écran bas » du problème — pliage des panneaux et deux ruptures en
-hauteur — mais **rien de ce qui touche au doigt** : c'est le sujet de `REFONTE.md`, écrit en
-parallèle. Les deux se rejoignent sur `style.css`.
+hauteur — mais **rien de ce qui touche au doigt** : c'est le chantier de
+[l'écran et du doigt](#lautre-chantier-de-fond--lécran-et-le-doigt), plus haut. Il vivait dans
+un `REFONTE.md` séparé, jamais versionné ; il est remonté ici parce que deux mémoires longues
+finissent toujours par diverger — celle-là l'avait déjà fait.
 
 **Les fonds sont sortis du vivier** : livrés en `beta 1.13.0`, et la section qui suit dit
 comment. Ce qui reste ouvert n'est plus le fond lui-même mais **comment on l'obtient** — au
