@@ -2410,8 +2410,12 @@ scenario('globales — trois axes qui ne se recouvrent pas', () => {
 
   /* TROIS FAMILLES DE QUATRE PRIMES, et la table décide de tout : une prime qui porte un
      `bonus` entre dans le calcul sans qu'on touche à une ligne de moteur. */
+  /* LES TROIS FAMILLES GLOBALES, et elles seules. Depuis la 4.2.0 des primes portent aussi
+     `peage`, `oeuf` et `clic` — les leviers que rien ne touchait après le milieu de partie —
+     et ce ne sont pas des familles : elles n'ont ni quatre crans ni cinquante pour cent. */
   const familles = { valeur: [], rente: [], vitesse: [] };
-  for (const p of jeu.PRIMES) for (const k of Object.keys(p.bonus || {})) familles[k].push(p);
+  for (const p of jeu.PRIMES)
+    for (const k of Object.keys(p.bonus || {})) if (familles[k]) familles[k].push(p);
   for (const k of Object.keys(familles)) {
     eq(k + ' — quatre primes', familles[k].length, 4);
     eq(k + ' — cinquante pour cent en tout',
@@ -2421,6 +2425,17 @@ scenario('globales — trois axes qui ne se recouvrent pas', () => {
     for (const p of familles[k]) eq(p.nom + ' ne porte qu’un axe', Object.keys(p.bonus).length, 1);
   }
   for (const k of Object.keys(familles)) eq(k + ' — coefficient neutre au départ', jeu.coef(k), 1);
+
+  /* LA RÈGLE DES CINQUANTE POUR CENT TIENT ENCORE, et c'est ce qui a interdit d'étirer les
+     familles pour régler la variété de fin de partie : quatre crans par famille est un chiffre
+     annoncé ailleurs dans le fichier. La 4.2.0 a donc ajouté des AXES, pas des crans. */
+  const autres = new Set();
+  for (const p of jeu.PRIMES)
+    for (const k of Object.keys(p.bonus || {})) if (!familles[k]) autres.add(k);
+  ok('des primes touchent d’autres leviers que les trois globales',
+     autres.size >= 3, [...autres].join(' '));
+  ok('et ce sont ceux de l’album', [...autres].every(k => k in jeu.bonusAlbum()),
+     [...autres].join(' '));
 
   const v0 = jeu.sellValue(c), r0 = jeu.renteOf(c);
   ok('la bête vaut et rapporte', v0 > 0 && r0 > 0);
@@ -2822,6 +2837,25 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
 
 /* ────────────────────────── les carrefours ────────────────────────── */
 
+scenario('sauvegarde — l’atelier de forge est rendu à qui l’avait déjà', () => {
+  /* ON NE RETIRE RIEN À PERSONNE. L'atelier s'ouvrait tout seul à la première carte ; il
+     demande maintenant un nœud de constellation. Une partie qui avait déjà des cartes avait
+     déjà l'atelier : elle reçoit le nœud sans le payer. C'est la règle de toutes les
+     migrations de ce fichier, et la seule qui rende un changement de règle acceptable à
+     quelqu'un qui jouait déjà. */
+  const avecCartes = neuf({
+    v: 21, coins: 0,
+    album: [{ id: 1, line: 'crapaud', age: 5, niv: 100, tint: 0, rank: 0, motif: 0, temper: 0, etoiles: 1 }],
+  });
+  ok('qui avait des cartes garde son atelier', avecCartes.etoilePrise('forge'));
+
+  const sansRien = neuf({ v: 21, coins: 0, album: [] });
+  ok('qui n’en avait pas devra le prendre', !sansRien.etoilePrise('forge'));
+
+  const avaitForge = neuf({ v: 21, coins: 0, album: [], stats: { fusions: 3 } });
+  ok('et qui avait déjà forgé le garde aussi', avaitForge.etoilePrise('forge'));
+});
+
 scenario('carrefour — trois routes, on en prend une, les deux autres se ferment', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
@@ -3000,6 +3034,32 @@ scenario('constellation — les quatre bâtiments ne se rachètent plus', () => 
   ok('et la constellation aussi', jeu.etoilePrise('tronc-1'));
 });
 
+scenario('constellation — le sang touche l’ascension elle-même', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+
+  /* LE PRIX DORÉ S'ADOUCIT : chaque carte coûte un cran de moins. C'est le seul achat du jeu
+     qui change la valeur de tous les achats suivants — d'où son prix et son rang. */
+  eq('sans le nœud, la troisième carte coûte trois', jeu.coutCarte(2), 3);
+  eq('et cinq cartes en coûtent dix-huit', jeu.coutCartes(5), 18);
+  s.ciel['or-doux'] = true;
+  eq('avec, la troisième coûte comme la deuxième', jeu.coutCarte(2), 2);
+  eq('la première reste à un', jeu.coutCarte(0), 1);
+  ok('et cinq cartes coûtent nettement moins', jeu.coutCartes(5) < 18, jeu.coutCartes(5));
+
+  /* LE SOMMET COMPTE PLUS : un jeton de plus par cycle, pour toujours. */
+  s.ciel = {};
+  s.coins = 1e9; jeu.crediterJetons();
+  eq('un milliard vaut quatre paliers', jeu.jetonsDus(), 4);
+  s.ciel.sommet = true;
+  eq('avec le nœud, cinq', jeu.jetonsDus(), 5);
+
+  /* MAIS JAMAIS SUR ZÉRO : un cycle où l'on n'a pas tenu une seule pièce ne doit rien
+     créditer, sinon sauter aussitôt après un saut rapporterait un jeton gratuit. */
+  s.asc.sommet = 0;
+  eq('un cycle vide ne crédite rien', jeu.jetonsDus(), 0);
+});
+
 scenario('constellation — l’écran montre tout, et n’ouvre que ce qui est ouvert', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
@@ -3026,7 +3086,7 @@ scenario('constellation — l’écran montre tout, et n’ouvre que ce qui est 
      qui gouverne la boutique et les primes, et c'est voulu : là-bas on cache ce qu'un débutant
      ne peut pas s'offrir, ici on montre une carte qu'on lit pour décider où aller. */
   const branches = etoiles('ciel-branches');
-  eq('les quatre bâtiments sont montrés', branches.length, 4);
+  eq('tous les nœuds de branche sont montrés', branches.length, jeu.BRANCHES.length);
   ok('tous fermés au rang zéro', branches.every(b => b.classList.contains('close')));
   ok('et donc tous désactivés', branches.every(b => b.disabled));
 
@@ -3370,7 +3430,12 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
              pave(jeu, 6, 'crapaud')];
   jeu.oublierForge();
   jeu.refresh();
-  eq('l’onglet s’ouvre avec la première carte', onglet('forge').hidden, false);
+  /* L'ATELIER A MIGRÉ DANS LA CONSTELLATION en 4.2.0 : il s'ouvrait tout seul à la première
+     carte, ce qui était une non-décision. Il demande maintenant son nœud. */
+  eq('des cartes ne suffisent plus', onglet('forge').hidden, true);
+  s.ciel.forge = true;
+  jeu.refresh();
+  eq('le nœud l’ouvre', onglet('forge').hidden, false);
   eq('la grille montre tout l’album', grille().length, 6);
   eq('et le plan de travail attend', plan().hidden, true);
 

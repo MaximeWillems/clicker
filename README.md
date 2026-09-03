@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.1.0** | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |
+| **beta 4.2.0** | la fin de partie cesse d'être monothématique, la forge migre dans la constellation |
+| beta 4.1.0 | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |
 | beta 4.0.0 | la constellation : le jeton devient une monnaie à deux éviers, et une carte coûte le prix doré |
 | beta 3.1.2 | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
 | beta 3.1.1 | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
@@ -1735,6 +1736,28 @@ ordre d'achat : on finit par tout avoir et la décision ne coûte rien.
 ce qui les sauve de l'usure : un choix définitif à l'échelle de la partie se regrette, un choix
 qu'on refait tous les cycles s'expérimente.
 
+#### La fin de partie cessait d'être un choix
+
+**Mesuré sur la table : des dix dernières primes, neuf étaient de la pension.** Un joueur qui
+ne l'élève pas n'avait plus rien à acheter passé quinze milliards — les trois familles globales
+s'arrêtent là, et tout le reste améliorait des nids.
+
+Le défaut n'était pas des *marches vides* : l'échelle des prix est saine, ses rapports tiennent
+entre 1,2 et 2,7 d'un bout à l'autre. Le défaut était **monothématique**.
+
+Quatre primes reprennent les trois leviers que rien ne touchait après le milieu de partie :
+
+| Prix | | Ce qu'elle prend |
+|---|---|---|
+| 20 Md | 🗝️ **Le grand œuvre** | le péage : évolutions −25 % |
+| 50 Md | 🛒 **Marché de gros** | le prix des œufs : −25 % |
+| 120 Md | 🤜 **Poing d'acier** | le geste : clic ×2 |
+| 400 Md | 🜄 **Le dernier carrefour** | trois routes, une dernière fois |
+
+**Les familles globales n'ont pas gagné de cinquième cran**, et c'était tentant : quatre crans à
+5, 10, 15 et 20 % font cinquante pour cent par famille, un chiffre annoncé et tenu ailleurs.
+L'étirer aurait réglé la variété en cassant une règle. Un scénario du banc le garde.
+
 #### La contrainte qui décide si c'est réussi
 
 Les trois routes doivent différer **en nature, pas en chiffre**. « +10 % de vente / +10 % de
@@ -1852,6 +1875,38 @@ pension n'existait pas avant d'avoir grimpé jusqu'à 400 000.
 Une prime tenue par la constellation **sort d'elle-même** de « ce qui reste à prendre » : elle
 n'occupe plus une des cinq cases de la grille. Elle s'y affiche marquée `✦`, pour qu'on sache
 d'où elle vient.
+
+#### Le sang — ce que tu emportes
+
+Deux nœuds qui touchent l'ascension elle-même, et ce sont les seuls du plan qui n'attendent
+aucune fonctionnalité manquante :
+
+| Nœud | Rang | Prix | Ce qu'il change |
+|---|---|---|---|
+| **Le prix doré s'adoucit** | 12 | ✦ 16 | chaque carte coûte un cran de moins — la deuxième au prix de la première |
+| **Le sommet compte plus** | 15 | ✦ 20 | un palier de jetons de plus, à chaque cycle |
+
+Ce sont les seuls achats du jeu qui **changent la valeur de tous les achats suivants** : d'où
+leur prix et leur rang. Le second ne crédite jamais sur zéro — un cycle où l'on n'a pas tenu une
+pièce ne doit rien rapporter, sinon sauter aussitôt après un saut donnerait un jeton gratuit.
+
+#### L'atelier de forge a migré ici
+
+Il s'ouvrait tout seul à la première carte, ce qui était **une non-décision** : un atelier qu'on
+n'a jamais choisi d'ouvrir n'est pas un pan de jeu, c'est un écran de plus. Il demande maintenant
+un nœud — et le moment tombe juste, puisqu'on gagne ses premiers jetons au premier saut,
+celui-là même qui donne les premières cartes.
+
+**On ne retire rien à personne** : la migration donne le nœud à qui avait déjà des cartes ou
+avait déjà forgé. C'est la règle de toutes les migrations de ce fichier, et la seule qui rende un
+changement de règle acceptable à quelqu'un qui jouait déjà.
+
+#### Ce que la constellation ajoute se voit
+
+On achetait `+2 % de valeur` et **rien à l'écran ne bougeait** : la ligne des boosts sous la
+scène montrait l'album et la frénésie, jamais les coefficients globaux. C'est le même défaut que
+la bête menée au bout, qui absorbait les clics sans rien dire — *un achat qui ne se sent pas est
+un achat qu'on regrette.* La ligne annonce désormais `valeur ×1,04 · vitesse ×1,02`.
 
 #### Un nœud fermé se montre, il ne se cache pas
 

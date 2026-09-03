@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.1.0';
+const VERSION = 'beta 4.2.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1070,18 +1070,59 @@ const PRIMES = [
     dit: 'Vingt pour cent de rente en plus. La prime la plus chère du jeu, pour la façon de jouer la plus lente.',
     bonus: { rente: 0.20 } },
 
+  /* ── LA FIN DE PARTIE CESSAIT D'ÊTRE UN CHOIX ─────────────────────────────────
+     Mesuré sur la table : DES DIX DERNIÈRES PRIMES, NEUF ÉTAIENT DE LA PENSION. Un joueur qui
+     ne l'élève pas n'avait plus rien à acheter passé quinze milliards — les trois familles
+     globales s'arrêtent là, et tout le reste améliorait des nids.
+
+     Le défaut n'était pas des marches vides : l'échelle des prix est saine, ses rapports
+     tiennent entre 1,2 et 2,7 d'un bout à l'autre. Le défaut était MONOTHÉMATIQUE.
+
+     Les quatre primes qui suivent prennent les trois leviers que rien ne touchait après le
+     milieu de partie — le PÉAGE, le PRIX DES ŒUFS, le CLIC — plus un troisième carrefour. Ils
+     existaient déjà comme familles de motifs d'album ; c'est la 4.1.0 qui a appris aux primes
+     à s'en servir, et c'est ce qui rend cette révision possible sans inventer une mécanique.
+
+     LES FAMILLES GLOBALES N'ONT PAS GAGNÉ DE CINQUIÈME CRAN, et c'était tentant : quatre crans
+     à 5, 10, 15 et 20 % font cinquante pour cent par famille, un chiffre annoncé et tenu
+     ailleurs dans ce fichier. L'étirer aurait réglé la variété en cassant une règle. */
+  { cle: 'peage-1', prix: 20000000000, glyphe: '🗝️', nom: 'Le grand œuvre',
+    dit: 'Faire monter une bête d’un âge coûte un quart de moins. Le péage se paie à chaque évolution : c’est là qu’une fin de partie se joue.',
+    bonus: { peage: 0.25 } },
   { cle: 'pension-place-2', prix: 30000000000, glyphe: '🏘️', nom: 'Rangée de nids',
     dit: 'Quatre couples à la fois. Huit enclos immobilisés en permanence : c’est là qu’est le prix.',
     si: () => prime('pension-place-1') },
+  { cle: 'oeuf-1', prix: 50000000000, glyphe: '🛒', nom: 'Marché de gros',
+    dit: 'Les œufs de la boutique coûtent un quart de moins, quelle que soit leur rareté. Un mythique à cent trente-cinq millions au lieu de cent quatre-vingts.',
+    bonus: { oeuf: 0.25 } },
   { cle: 'pension-portee-2', prix: 80000000000, glyphe: '🍳', nom: 'Ponte triple',
     dit: 'Trois œufs par ponte. La chance de tirer autre chose, elle, reste attachée à la ponte et non à l’œuf.',
     si: () => prime('pension-portee-1') },
+  { cle: 'clic-1', prix: 120000000000, glyphe: '🤜', nom: 'Poing d’acier',
+    dit: 'Chacun de tes clics porte deux fois plus loin. En fin de partie, une bête menée au bout paie au clic — et c’est ce qui rend ce poing utile.',
+    bonus: { clic: 1 } },
   { cle: 'pension-vite-3', prix: 150000000000, glyphe: '🌋', nom: 'Nid ardent',
     dit: 'Douze fois plus vite qu’à l’origine. Une couvaison de seize heures tombe à quatre-vingts minutes.',
     si: () => prime('pension-vite-2') },
   { cle: 'pension-riche-1', prix: 250000000000, glyphe: '🍅', nom: 'Lignées fécondes',
     dit: 'La richesse d’un couple pèse quatre fois moins sur sa durée. C’est ce qui rend les hautes raretés produisibles au lieu d’attendables.',
     si: () => prime('pension-vite-2') },
+  /* TROISIÈME CARREFOUR, et il arrive assez tard pour que les trois routes décrivent trois
+     fins de partie et non trois façons d'aller au même endroit. Même règle que les deux
+     autres : un prix, une vitesse, un geste — trois grandeurs qui ne se comparent pas. */
+  { cle: 'carrefour-3', prix: 400000000000, glyphe: '🜄', nom: 'Le dernier carrefour',
+    dit: 'Trois routes, une dernière fois. Celle-ci décide de ce que ta ferme aura été.',
+    choix: [
+      { cle: 'route-couvee', glyphe: '🔥', nom: 'La grande couvée',
+        dit: 'Les œufs coûtent moitié moins. Tu en achètes deux fois plus, tu en éclos deux fois plus.',
+        bonus: { oeuf: 0.50 } },
+      { cle: 'route-lignee', glyphe: '👑', nom: 'La lignée',
+        dit: 'Trente pour cent de valeur en plus. Ce que tu élèves vaut ce qu’il n’a jamais valu.',
+        bonus: { valeur: 0.30 } },
+      { cle: 'route-fureur', glyphe: '💥', nom: 'La fureur',
+        dit: 'Tes clics portent trois fois plus loin. La ferme travaille, mais c’est ta main qui frappe.',
+        bonus: { clic: 2 } },
+    ] },
   { cle: 'pension-place-3', prix: 600000000000, glyphe: '🏙️', nom: 'Le bâtiment entier',
     dit: 'Huit couples à la fois, seize enclos qui ne rapportent plus rien. À ce stade tu n’élèves plus, tu produis.',
     si: () => prime('pension-place-2') },
@@ -1315,7 +1356,10 @@ const RANG_PREMIER = JETON_PALIERS.indexOf(JETON_PREMIER) + 1;
    Un cycle mené à mille milliards crédite cinq jetons : deux cartes, et il en reste deux pour
    la constellation. C'est là qu'est l'arbitrage — une carte de plus, ou une étoile de plus. */
 const NOMBRE_OR = (1 + Math.sqrt(5)) / 2;
-const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, n));
+/* `or-doux` recule l'escalade d'un cran : la deuxième carte coûte le prix de la première, et
+   ainsi de suite. C'est le seul achat du jeu qui change la valeur de tous les achats suivants,
+   d'où son prix et son rang. */
+const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, Math.max(0, n - (etoilePrise('or-doux') ? 1 : 0))));
 function coutCartes(k) {
   let t = 0;
   for (let i = 0; i < k; i++) t += coutCarte(i);
@@ -1384,10 +1428,32 @@ const BRANCHES = [
   { cle: 'pension',   branche: 'batiments', rang: 8, prix: 8, prime: 'pension',
     nom: 'La pension est à toi',
     dit: 'Le bâtiment de la pension est acquis : un cycle neuf commence avec son nid.' },
+  /* LA FORGE MIGRE ICI. Elle s'ouvrait toute seule à la première carte, ce qui était une
+     non-décision : un atelier qu'on n'a jamais choisi d'ouvrir n'est pas un pan de jeu, c'est
+     un écran de plus. Elle demande maintenant un nœud — et le moment tombe juste, puisqu'on
+     gagne ses premiers jetons au premier saut, celui-là même qui donne les premières cartes.
+
+     Une partie déjà commencée ne perd rien : la migration donne le nœud à qui avait déjà
+     forgé, ou possédait des cartes. */
+  { cle: 'forge',     branche: 'batiments', rang: 3, prix: 4,
+    nom: 'L’atelier de forge',
+    dit: 'Trois cartes semblables n’en font qu’une, d’une étoile de plus. L’atelier reste ouvert à travers les ascensions.' },
+
+  /* LE SANG — ce qui touche l'ascension elle-même. Ces deux nœuds sont les seuls du plan qui
+     parlent d'ascension sans dépendre d'une fonctionnalité qui n'existe pas encore, et ils
+     changent la valeur de tous les achats suivants : ils sont donc les plus chers, et les plus
+     tardifs. */
+  { cle: 'or-doux',   branche: 'sang', rang: 12, prix: 16,
+    nom: 'Le prix doré s’adoucit',
+    dit: 'Chaque carte emportée coûte un cran de moins : la deuxième au prix de la première, la troisième au prix de la deuxième.' },
+  { cle: 'sommet',    branche: 'sang', rang: 15, prix: 20,
+    nom: 'Le sommet compte plus',
+    dit: 'Ton sommet de fortune vaut un palier de plus, à chaque cycle. Un jeton de plus à chaque ascension, pour toujours.' },
 ];
 
 const NOM_BRANCHE = {
   batiments: 'Les bâtiments — ce que ta ferme contient',
+  sang: 'Le sang — ce que tu emportes',
   main: 'La main — ce que vaut ta présence',
   negoce: 'Le négoce — ce que valent tes bêtes',
 };
@@ -1852,7 +1918,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 21;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 22;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -2183,6 +2249,18 @@ function load() {
        image. */
     if ((s.v || 0) < 20 && merged.asc) {
       merged.asc.sommet = Math.max(merged.asc.sommet || 0, merged.coins || 0);
+    }
+
+    /* v21 → v22 : l'atelier de forge migre dans la constellation. Il s'ouvrait tout seul à la
+       première carte ; il demande maintenant un nœud. ON NE RETIRE RIEN À PERSONNE : qui avait
+       déjà des cartes — donc qui avait déjà l'atelier — reçoit le nœud sans le payer. La règle
+       vaut pour toutes les migrations de ce fichier, et c'est la seule qui rende un changement
+       de règle acceptable à quelqu'un qui jouait déjà. */
+    if ((s.v || 0) < 22) {
+      merged.ciel = merged.ciel || {};
+      if ((merged.album || []).length || (merged.stats && merged.stats.fusions)) {
+        merged.ciel.forge = true;
+      }
     }
 
     /* v20 → v21 : le jeton redevient une bourse, et une carte coûte le prix doré. Une partie
@@ -4518,7 +4596,9 @@ function crediterJetons() {
 function jetonsDus() {
   let n = 0;
   while (n < JETON_PALIERS.length && (state.asc.sommet || 0) >= JETON_PALIERS[n]) n++;
-  return n;
+  // `sommet` : un palier de plus, à chaque cycle et pour toujours — mais jamais sur zéro,
+  // sinon un cycle où l'on n'a pas tenu une seule pièce créditerait quand même un jeton
+  return n && etoilePrise('sommet') ? n + 1 : n;
 }
 
 /* CE QU'ON A EN MAIN : ce que le cycle vient de créditer, PLUS ce qui n'a pas été dépensé
@@ -5657,6 +5737,13 @@ function ligneBoosts(sujet) {
     const r = renteOf(c);
     if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
   }
+  /* CE QUE LES PRIMES ET LA CONSTELLATION AJOUTENT SE VOIT ENFIN. On achetait « +2 % de
+     valeur » et rien à l'écran ne bougeait — le même défaut que la bête menée au bout, qui
+     absorbait les clics sans rien dire. Un achat qui ne se sent pas est un achat qu'on
+     regrette. */
+  const cv = coef('valeur'), cvit = coef('vitesse');
+  if (cv > 1) bouts.push('valeur ×' + dec(cv, 2));
+  if (cvit > 1) bouts.push('vitesse ×' + dec(cvit, 2));
   if (alb > 1) bouts.push('album ×' + dec(alb, 2));
   if (enFrenesie()) bouts.push('frénésie ×' + FRENESIE_X);
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
@@ -5992,7 +6079,7 @@ function renderTuto() {
   /* LA FORGE N'EXISTE PAS AVANT LA PREMIÈRE CARTE. Elle ne s'achète pas — c'est un atelier,
      pas un bâtiment — mais elle suit la même règle que tout le reste : on ne montre pas la
      porte d'une pièce vide. La première ascension l'ouvre. */
-  const forgePret = state.album.length > 0;
+  const forgePret = state.album.length > 0 && etoilePrise('forge');
   /* LA CONSTELLATION S'OUVRE AVEC LE PREMIER JETON, et pas avec la première ascension : on
      gagne des jetons AVANT de sauter, et c'est justement en les voyant qu'on comprend qu'il y
      a deux façons de les dépenser. */
@@ -7231,6 +7318,7 @@ function bindTools() {
   });
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('ascension').hidden) fermerAscension();
+    if (e.key === 'Escape' && !$('carrefour').hidden) fermerCarrefour();
   });
 
   /* LA BARRE ESPACE APPARTIENT À LA SCÈNE, et à rien d'autre. Elle ne fait jamais défiler.
