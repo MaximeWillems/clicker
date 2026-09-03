@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.6.2 · sauvegarde v24 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.6.2 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -41,7 +41,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Les prix de moitié** | 1.5 | est-ce que la partie compressée se joue mieux ? | à mesurer encore |
 | **L'album et l'ascension** | 2.0 → 2.5 | est-ce qu'on veut recommencer ? | jouée plusieurs fois ; la question de fond reste ouverte |
 | **Les achats par lots** | 2.1 | est-ce que la fin de partie cesse d'être une paperasse ? | oui |
-| **Les jetons de fortune** | 2.2, 2.9, 2.30 | est-ce que l'ascension se mérite ? | oui — un jeton une carte, et sauter les dépense tous |
+| **Les jetons de fortune** | 2.2, 2.9, 2.30 | est-ce que l'ascension se mérite ? | oui — mais les deux moitiés de la réponse d'alors sont tombées : une carte coûte le prix doré depuis la `4.0.0`, et ce qu'on n'emploie pas reste en bourse |
 | **Dix lignées rares** | 2.3 | est-ce que l'ère rare cesse de se répéter ? | oui sur le papier — six lignées sans dessin |
 | **Le glisser-déposer des cartes** | 2.7 | est-ce que l'album se manipule ? | non vérifié : rien de visuel ne l'est |
 | **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
@@ -66,7 +66,7 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **La fusion et la poussière** | 2.30 → 2.32 | est-ce qu'une carte ratée vaut d'être gardée ? | oui — dix cartes font une étoile |
 | **Les automates par âge** | 1.0 → 1.4 | est-ce que l'ordre des achats suit la vie de la bête ? | oui, depuis les cinq âges — la ligne avait survécu à sa propre livraison |
 | **La pension** | 3.0 | est-ce que parquer deux bêtes est un sacrifice qui se sent ? | oui, et mesuré : jamais le centième de ce qu'elles rapporteraient |
-| **Les merveilleuses** | 3.1 | est-ce qu'une merveilleuse se raconte ? | deux écloses sur huit écrites — la réponse est dans le dessin, pas dans le code |
+| **Les merveilleuses** | 3.1 | est-ce qu'une merveilleuse se raconte ? | trois écrites — kitsune, wukong, tarasque — dont deux dessinées ; la réponse est dans le dessin, pas dans le code |
 | **Le nid et la pause** | beta 1.0, 1.8 | confier une bête est-il un geste ? | oui — et la pause n'est plus nécessaire depuis qu'une bête confiée quitte la bande |
 | **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
@@ -75,34 +75,57 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 ### Ce qui vient ensuite
 
 La colonne du milieu dit **ce qu'il faut avoir fait avant**, ce qui est plus utile qu'un ordre :
-deux de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
+la moitié de ces lignes ne dépendent de rien et peuvent tomber n'importe quand.
+
+**Cette table était incomplète, et c'est le pire défaut qu'elle pouvait avoir** : elle portait
+sept lignes quand le fichier en analysait dix-sept. Les analyses vivaient plus bas sans jamais
+remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne le disait plus.
+
+**Ce qui barre la route à d'autres choses** — à faire d'abord si on veut débloquer le reste :
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **Les dix-sept dessins** | rien | — |
-| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
-| **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
+| **La rente** — elle est perpétuelle, gratuite et trop forte | rien | garder une bête doit-il rester le meilleur coup à tous les coups ? |
+| **L'absence** — l'équilibrage du hors-ligne, plus doux | la rente | revenir doit-il valoir plus qu'être resté ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
+| **Les dix-huit dessins** | rien | — |
+
+**Ce qui ne dépend que de soi** :
+
+| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
+|---|---|---|
+| **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
+| **Yggdrasil** — l'arbre-monde, et le sujet le moins cher à dessiner | sa recette | une merveille peut-elle ne pas être un animal ? |
+| **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
+| **L'équilibrage des rares** — l'œuf rare vers 30 M, et un péage à l'évolution | une partie menée jusqu'à l'ère rare | la deuxième ère se sent-elle comme une ère ? |
+| **Les chromatismes** — plusieurs, là où il n'y a qu'un prodige | rien | une couleur rare peut-elle se chasser ? |
+| **Les tempéraments à second effet** — précoce, difficile, gourmand, précieux | rien | un tempérament peut-il se choisir plutôt que se subir ? |
+| **Cliquer pour aider la pension** | rien | la présence peut-elle servir là où elle ne sert à rien ? |
 | **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Les fonds à la pension** — au hasard comme les teintes, ET transmis par les parents | rien pour le hasard, l'hérédité pour le reste | est-ce qu'un fond se chasse, ou seulement se rencontre ? |
+| **L'idle et le combo** — les deux bouts du même réglage | la refonte du bonheur et de la frénésie | s'arrêter et s'acharner peuvent-ils tous deux valoir quelque chose ? |
+| **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
+| **La taille des menus** — densité et ordre, sauvés | rien | la ferme peut-elle se ranger comme on la regarde ? |
 
 ### Le chantier qui barre la route : les dessins
 
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
 affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**17 lignées sur 27 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
+**18 lignées sur 30 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
 serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
-sphinx, cheval) et les trois mythiques (chimère, béhémoth, ouroboros). Ce n'est pas une
-version, c'est une voie de fond qui avance entre les autres. Rien n'en dépend, tout en
+sphinx, cheval), les trois mythiques (chimère, béhémoth, ouroboros) et la tarasque. Ce n'est
+pas une version, c'est une voie de fond qui avance entre les autres. Rien n'en dépend, tout en
 bénéficie.
+
+Les douze faites : les dix communes, plus le kitsune et le wukong.
 
 C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
 poubelle au jalon 1, les PNG resteront tels quels dans le vrai jeu. Chaque heure passée là est
 acquise, contrairement à tout le reste.
 
-Les 28 fiches de `prompts/` portent chacune le brief, la commande de découpe et la ligne à
+Les 31 fiches de `prompts/` portent chacune le brief, la commande de découpe et la ligne à
 coller dans la table `ART`. La charte a deux registres : **mascotte** pour les communes, les
 rares et les épiques, **idole** pour les mythiques et les merveilleuses — le second est né en
 2.7.1, quand l'Ouroboros mignon a été rejeté.
@@ -315,8 +338,10 @@ Un joueur prend toujours le `+20 %` avant le nœud subtil : c'est lisible, c'est
 ça ne demande pas de comprendre. Si les deux sont côte à côte au même prix, les règles ne
 seront jamais achetées — ou seulement quand il ne restera qu'elles.
 
-**La réponse tient dans la structure, pas dans les prix : le tronc porte les nombres, les
-branches portent les règles, et le tronc est le CHEMIN vers les branches.**
+**La réponse d'alors — et elle a été jetée depuis, voir la section suivante. Elle reste ici
+parce qu'elle porte la tension, qui est réelle, et que le remplaçant se comprend contre
+elle** : le tronc porte les nombres, les branches portent les règles, et le tronc est le CHEMIN
+vers les branches.
 
     ┌─ LE TRONC ─────────────────────────────────────────────┐
     │  vingt rangs, des multiplicateurs permanents           │
@@ -1340,7 +1365,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 48 scénarios
+node tools/test.js              les 128 scénarios, 1882 vérifications
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -1356,9 +1381,14 @@ node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur �
 superposé, un texte illisible, une couleur ratée passent tous les tests. C'est la première
 dette du projet, et elle ne se réglera pas ici.
 
-Les autres outils servent aux dessins : `decouper.py` découpe une planche source en cinq PNG,
-`prompt.js` fabrique les fiches de `prompts/`, et `rendu.js` / `formes-*.js` / `styles.js`
-sont les restes d'une exploration de formes procédurales abandonnée au profit des PNG.
+Les autres outils servent aux dessins. **La chaîne vivante** : `prompt.js` fabrique les fiches
+de `prompts/`, `decouper.py` découpe une planche source en cinq PNG, `pixel.js` et `grilles.js`
+transforment un fichier de grille en caractères en SVG, et `oeufs.js` est le seul générateur
+de grille calculée — les cinq œufs.
+
+**Les restes**, gardés sans être entretenus : `rendu.js`, `formes-*.js`, `styles.js`,
+`pixels.js`, `pixel.py`, `quantifier.js` et `rythme.js` viennent d'explorations de formes
+procédurales abandonnées au profit des PNG. Ils ne sont branchés sur rien.
 
 ---
 
@@ -1371,7 +1401,6 @@ est ce qu'il faut avoir en tête pour choisir.
 
 | L'idée | Ce que ça règle | Coût |
 |---|---|---|
-| **Les fonds** | dix-sept lignées manquent, et huit fonds habilleraient les 135 formes | à chiffrer |
 | **Filtre de l'enclos par trait** | on chasse un motif que le jeu ne permet pas de chercher | une soirée |
 | **Événements courts** | l'éclosion ne surprend plus | deux soirées |
 | **Interface au pouce** | un clicker se joue au téléphone, pas au bureau | un week-end |
@@ -1379,6 +1408,10 @@ est ce qu'il faut avoir en tête pour choisir.
 La 2.24.0 a réglé la moitié « écran bas » du problème — pliage des panneaux et deux ruptures en
 hauteur — mais **rien de ce qui touche au doigt** : c'est le sujet de `REFONTE.md`, écrit en
 parallèle. Les deux se rejoignent sur `style.css`.
+
+**Les fonds sont sortis du vivier** : livrés en `beta 1.13.0`, et la section qui suit dit
+comment. Ce qui reste ouvert n'est plus le fond lui-même mais **comment on l'obtient** — au
+hasard à la pension, et transmis par les parents.
 
 **Les compteurs sont sortis du vivier** : livrés en 2.19.0, sous le bouton `📊`.
 
