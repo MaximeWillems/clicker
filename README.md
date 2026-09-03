@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.0.0** | la constellation : le jeton devient une monnaie à deux éviers, et une carte coûte le prix doré |
+| **beta 4.1.0** | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |
+| beta 4.0.0 | la constellation : le jeton devient une monnaie à deux éviers, et une carte coûte le prix doré |
 | beta 3.1.2 | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
 | beta 3.1.1 | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
 | beta 3.1.0 | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
@@ -1721,6 +1722,61 @@ Aux anciens prix, le marchand tombait à 78 min.
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
+
+### Les carrefours — les primes à choix
+
+Une prime à choix : **trois routes, on en prend une, et les deux autres sont perdues** pour ce
+cycle.
+
+**Perdues, et pas remises à plus tard.** Remises à plus tard, ce n'est pas un choix mais un
+ordre d'achat : on finit par tout avoir et la décision ne coûte rien.
+
+**Elles se rejouent à chaque cycle**, puisque les primes repartent de zéro à l'ascension. C'est
+ce qui les sauve de l'usure : un choix définitif à l'échelle de la partie se regrette, un choix
+qu'on refait tous les cycles s'expérimente.
+
+#### La contrainte qui décide si c'est réussi
+
+Les trois routes doivent différer **en nature, pas en chiffre**. « +10 % de vente / +10 % de
+rente / +10 % de vitesse » n'est pas un choix, c'est un menu : on prend le plus gros nombre et
+on n'y pense plus.
+
+Chaque carrefour offre donc **un prix qui baisse, une vitesse qui monte, et un geste qui pèse**
+— trois grandeurs qui ne se comparent pas, donc trois façons de jouer.
+
+| Le premier carrefour · 700 000 | |
+|---|---|
+| 🪙 **La bourse** | les œufs coûtent un quart de moins |
+| ⚡ **L'ardeur** | tout ce qui pousse va un tiers plus vite |
+| ✊ **La poigne** | chaque clic porte deux fois plus loin |
+
+| Le second carrefour · 25 M | |
+|---|---|
+| 🧬 **Le péage allégé** | faire monter une bête coûte un tiers de moins |
+| 🏷️ **Le grand négoce** | +20 % de valeur, vente comme rente |
+| 🛏️ **Le long repos** | +30 % de rente |
+
+Un scénario du banc vérifie que les trois routes d'un carrefour touchent **trois leviers
+distincts** : c'est la seule garde contre le retour du menu.
+
+#### L'option est rangée sous sa propre clé
+
+Tout le jeu continue de lire `prime('…')` sans rien savoir des carrefours, et une route peut
+servir de garde comme n'importe quelle prime. Un carrefour est « fait » quand une de ses routes
+est prise, jamais par sa propre clé — et sa case affiche alors **le nom de la route retenue** :
+« Le premier carrefour » ne dirait plus rien, et c'est justement ce qu'on veut relire plus tard.
+
+#### Un carrefour ouvre un écran
+
+Trois routes ne tiennent pas dans une case de la grille des cinq, et surtout **un choix
+définitif ne doit pas se prendre d'un clic distrait** au milieu de quarante-sept primes. La case
+ouvre donc un écran, et les trois routes y sont **côte à côte, à égalité de place** : c'est la
+mise en page qui dit qu'aucune n'est la bonne réponse. Une liste verticale aurait suggéré un
+ordre, et un ordre suggère un meilleur choix.
+
+**Il se ferme sans choisir.** Rien ne presse — la case reste, l'argent aussi, et le carrefour se
+rouvre quand on veut. Même règle que le jeton d'ascension : *un choix qu'on peut remettre ne
+réclame rien.*
 
 ### La constellation
 

@@ -1122,6 +1122,27 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .prime.du-ciel .prime-prix { color: var(--accent); font-size: 0; }
 .prime.du-ciel .prime-prix::after { content: '✦'; font-size: 0.7rem; }
 
+/* ── UN CARREFOUR ──────────────────────────────────────────────────────────────────────
+   Trois routes côte à côte, à égalité de place : c'est la mise en page qui dit qu'aucune n'est
+   la bonne réponse. Une liste verticale aurait suggéré un ordre, et un ordre suggère un
+   meilleur choix. */
+.carrefour-box { max-width: 46rem; }
+.carrefour-routes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
+.route {
+  display: flex; flex-direction: column; gap: 0.35rem; text-align: left;
+  background: var(--raised); border: 1px solid var(--rule); border-radius: 5px;
+  color: var(--ink); font-family: var(--f-ui); font-size: 0.84rem;
+  padding: 0.8rem 0.8rem 0.9rem; cursor: pointer;
+}
+.route:hover:not(:disabled) { border-color: var(--accent); background: var(--surface); }
+.route:disabled { opacity: 0.45; cursor: not-allowed; }
+.route-glyphe { font-size: 1.4rem; line-height: 1; }
+.route-nom { font-weight: 500; }
+.route-dit { font-size: 0.74rem; color: var(--soft); font-style: normal; line-height: 1.45; }
+@media (max-width: 46rem) {
+  .carrefour-routes { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ── LA CONSTELLATION ──────────────────────────────────────────────────────────────────
    Le tronc en colonne à gauche : c'est un CHEMIN, et un chemin se lit dans un sens. Les
    branches à droite, en blocs. Un nœud fermé se montre grisé et ne se cache pas — c'est

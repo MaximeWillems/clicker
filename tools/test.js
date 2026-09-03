@@ -2540,8 +2540,11 @@ scenario('primes — la grille ne montre que les cinq prochaines', () => {
      !cases().some(b => conditionnees.some(p => nom(b).includes(p.nom))),
      cases().map(nom).join(' | '));
 
-  /* TOUT PRIS : la grille bascule d'elle-même, sinon elle serait vide. */
-  for (const p of jeu.PRIMES) s.primes[p.cle] = true;
+  /* TOUT PRIS : la grille bascule d'elle-même, sinon elle serait vide.
+     Un CARREFOUR ne se prend pas par sa propre clé — c'est une de ses routes qu'on retient, et
+     elle est rangée sous la sienne. C'est ce qui permet au reste du jeu de lire `prime('...')`
+     sans rien savoir des carrefours. */
+  for (const p of jeu.PRIMES) s.primes[p.choix ? p.choix[0].cle : p.cle] = true;
   jeu.oublierPrimes();
   jeu.refresh();
   eq('elle montre tout ce qu’on a', cases().length, jeu.PRIMES.length);
@@ -2815,6 +2818,102 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
   jeu.mainDeCarte = false;
   eq('l’ocellée n’encaisse rien', s.coins, avant2);
   ok('elle retombe sur l’embonpoint', c.over > gras2);
+});
+
+/* ────────────────────────── les carrefours ────────────────────────── */
+
+scenario('carrefour — trois routes, on en prend une, les deux autres se ferment', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const p = jeu.PRIMES.find(x => x.cle === 'carrefour-1');
+  ok('le premier carrefour existe', !!p);
+  eq('il offre trois routes', p.choix.length, 3);
+
+  s.coins = p.prix - 1;
+  ok('sans de quoi payer, rien ne se prend', !jeu.choisirRoute('carrefour-1', 'route-bourse'));
+
+  s.coins = p.prix;
+  ok('avec de quoi, la route se prend', jeu.choisirRoute('carrefour-1', 'route-bourse'));
+  eq('et elle est payée', s.coins, 0);
+
+  /* LES DEUX AUTRES SONT PERDUES, pas remises à plus tard : remises à plus tard, ce ne serait
+     pas un choix mais un ordre d'achat — on finirait par tout avoir et la décision ne coûterait
+     rien. */
+  s.coins = 1e12;
+  ok('on ne prend pas la deuxième', !jeu.choisirRoute('carrefour-1', 'route-ardeur'));
+  ok('ni la troisième', !jeu.choisirRoute('carrefour-1', 'route-poigne'));
+  eq('la bourse n’a pas rebougé', s.coins, 1e12);
+
+  /* L'OPTION EST RANGÉE SOUS SA PROPRE CLÉ : tout le jeu continue de lire `prime('...')` sans
+     rien savoir des carrefours, et une route peut servir de garde comme n'importe quelle
+     prime. */
+  ok('la route retenue est une prime comme une autre', jeu.prime('route-bourse'));
+  ok('le carrefour, lui, n’est pas une prime', !jeu.prime('carrefour-1'));
+  ok('mais il est fait', jeu.primeFaite(p));
+});
+
+scenario('carrefour — les trois routes diffèrent en nature, pas en chiffre', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+
+  /* LA CONTRAINTE QUI DÉCIDE SI C'EST RÉUSSI. « +10 % de vente / +10 % de rente / +10 % de
+     vitesse » n'est pas un choix, c'est un menu : on prend le plus gros nombre et on n'y pense
+     plus. Chaque carrefour offre donc un PRIX qui baisse, une VITESSE qui monte, et un GESTE
+     qui pèse — trois grandeurs qui ne se comparent pas. */
+  for (const cle of ['carrefour-1', 'carrefour-2']) {
+    const p = jeu.PRIMES.find(x => x.cle === cle);
+    const axes = new Set(p.choix.map(o => Object.keys(o.bonus).join('+')));
+    eq(cle + ' : trois axes distincts', axes.size, 3);
+  }
+
+  // et chaque route agit vraiment, chacune sur son levier
+  const oeuf = jeu.prixOeuf(jeu.EGG_BY_KEY.commun);
+  const clic = jeu.clickPower();
+  const vite = jeu.coef('vitesse');
+
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+  ok('la bourse baisse le prix des œufs', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) < oeuf,
+     oeuf + ' → ' + jeu.prixOeuf(jeu.EGG_BY_KEY.commun));
+  eq('sans toucher au clic', jeu.clickPower(), clic);
+  eq('ni à la vitesse', jeu.coef('vitesse'), vite);
+
+  // une autre partie, une autre route
+  const j2 = neuf(); j2.state.tuto = false; j2.state.coins = 1e12;
+  j2.choisirRoute('carrefour-1', 'route-poigne');
+  ok('la poigne double le clic', j2.clickPower() > clic, clic + ' → ' + j2.clickPower());
+
+  const j3 = neuf(); j3.state.tuto = false; j3.state.coins = 1e12;
+  j3.choisirRoute('carrefour-1', 'route-ardeur');
+  ok('l’ardeur monte la vitesse', j3.coef('vitesse') > vite);
+
+  /* ET LE PÉAGE DU SECOND CARREFOUR : c'est un PRIX, donc il baisse. */
+  const j4 = neuf(); j4.state.tuto = false; j4.state.coins = 1e12;
+  const c = bete(j4, 'crapaud', 2, 3000);
+  const avant = j4.evoCost(c);
+  j4.choisirRoute('carrefour-2', 'route-peage');
+  ok('le péage allégé coûte moins', j4.evoCost(c) < avant, avant + ' → ' + j4.evoCost(c));
+});
+
+scenario('carrefour — il ouvre un écran, et se referme sans rien prendre', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  jeu.refresh();
+
+  eq('l’écran est fermé au départ', noeuds.get('carrefour').hidden, true);
+  ok('la case l’ouvre', jeu.ouvrirCarrefour('carrefour-1'));
+  eq('il s’affiche', noeuds.get('carrefour').hidden, false);
+  eq('avec ses trois routes', noeuds.get('carrefour-routes').children.length, 3);
+
+  /* IL SE FERME SANS CHOISIR. Rien ne presse — la case reste, l'argent aussi. Un choix
+     définitif ne doit pas se prendre d'un clic distrait au milieu de quarante-sept primes. */
+  jeu.fermerCarrefour();
+  eq('refermé', noeuds.get('carrefour').hidden, true);
+  ok('et rien n’a été pris', !jeu.primeFaite(jeu.PRIMES.find(x => x.cle === 'carrefour-1')));
+  eq('la bourse est intacte', s.coins, 1e12);
+
+  // une fois choisi, il ne se rouvre plus
+  jeu.choisirRoute('carrefour-1', 'route-ardeur');
+  ok('le carrefour est clos', !jeu.ouvrirCarrefour('carrefour-1'));
 });
 
 /* ────────────────────────── la constellation ────────────────────────── */

@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.0.0';
+const VERSION = 'beta 4.1.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -974,6 +974,22 @@ const PRIMES = [
   { cle: 'valeur-1', prix: 600000, glyphe: '🗣️', nom: 'Bouche à oreille',
     dit: 'On parle de ta ferme au marché. Cinq pour cent de valeur en plus sur tout ce que tu élèves — à la vente comme à la rente.',
     bonus: { valeur: 0.05 } },
+  /* PREMIER CARREFOUR. Trois routes qui ne se comparent pas : un PRIX qui baisse, une VITESSE
+     qui monte, un GESTE qui pèse. C'est ce qui en fait un choix plutôt qu'un menu — on ne peut
+     pas dire laquelle est « la plus grosse », il faut dire comment on joue. */
+  { cle: 'carrefour-1', prix: 700000, glyphe: '🜁', nom: 'Le premier carrefour',
+    dit: 'Trois routes. Tu en prends une, les deux autres se ferment jusqu’à la prochaine ascension.',
+    choix: [
+      { cle: 'route-bourse', glyphe: '🪙', nom: 'La bourse',
+        dit: 'Les œufs de la boutique coûtent un quart de moins. Tu achètes plus, tu couves plus.',
+        bonus: { oeuf: 0.25 } },
+      { cle: 'route-ardeur', glyphe: '⚡', nom: 'L’ardeur',
+        dit: 'Tout ce qui pousse va un tiers plus vite — couvaison, croissance, engraissement.',
+        bonus: { vitesse: 0.33 } },
+      { cle: 'route-poigne', glyphe: '✊', nom: 'La poigne',
+        dit: 'Chacun de tes clics porte deux fois plus loin. C’est ta main qu’on récompense, pas ta ferme.',
+        bonus: { clic: 1 } },
+    ] },
   { cle: 'generosite', prix: 1000000,  glyphe: '🎁', nom: 'Générosité',
     dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
   { cle: 'vitesse-1', prix: 1500000, glyphe: '🐓', nom: 'Réveil matinal',
@@ -1000,6 +1016,22 @@ const PRIMES = [
   { cle: 'pension-sang', prix: 20000000, glyphe: '🩸', nom: 'Sang dominant',
     dit: 'À la pension, la lignée du parent le plus rare sort deux fois plus souvent. Jamais plus d’une fois sur deux.',
     si: () => prime('pension') },
+  /* SECOND CARREFOUR, même règle et trois natures différentes : un péage qui baisse, une
+     valeur qui monte, une rente qui porte. Il tombe assez tard pour que les trois routes
+     décrivent des fins de partie distinctes, et pas trois façons d'aller au même endroit. */
+  { cle: 'carrefour-2', prix: 25000000, glyphe: '🜃', nom: 'Le second carrefour',
+    dit: 'Trois routes, encore. Ce que tu choisis ici dit comment tu finiras ce cycle.',
+    choix: [
+      { cle: 'route-peage', glyphe: '🧬', nom: 'Le péage allégé',
+        dit: 'Faire monter une bête d’un âge coûte un tiers de moins. Tu mènes plus loin, plus souvent.',
+        bonus: { peage: 0.33 } },
+      { cle: 'route-negoce', glyphe: '🏷️', nom: 'Le grand négoce',
+        dit: 'Vingt pour cent de valeur en plus sur tout ce que tu élèves — vente comme rente.',
+        bonus: { valeur: 0.20 } },
+      { cle: 'route-repos', glyphe: '🛏️', nom: 'Le long repos',
+        dit: 'Trente pour cent de rente en plus. Ta ferme travaille pendant que tu regardes ailleurs.',
+        bonus: { rente: 0.30 } },
+    ] },
   { cle: 'paturage',  prix: 30000000,  glyphe: '🏞️', nom: 'Pâturage',
     dit: 'Trois enclos de plus, offerts.' },
   { cle: 'rente-2', prix: 40000000, glyphe: '💧', nom: 'Abreuvoir',
@@ -2338,12 +2370,19 @@ const oublierPrimes = () => { primeCache = null; };
 
    La table décide de tout : une prime qui porte un `bonus` entre ici sans qu'on touche à
    cette fonction. */
+/* TROIS CLÉS DE PLUS, ET CE SONT CELLES DE L'ALBUM. `oeuf`, `peage` et `clic` existaient déjà
+   comme familles de motifs ; les primes ne savaient pas les toucher. Les carrefours en ont
+   besoin — c'est ce qui leur permet d'offrir un PRIX qui baisse et un GESTE qui pèse, et non
+   trois fois le même multiplicateur sous trois noms. */
 function bonusPrimes() {
   if (primeCache) return primeCache;
-  const b = { valeur: 0, rente: 0, vitesse: 0 };
+  const b = { valeur: 0, rente: 0, vitesse: 0, oeuf: 0, peage: 0, clic: 0 };
   for (const p of PRIMES) {
-    if (!p.bonus || !prime(p.cle)) continue;
-    for (const k of Object.keys(p.bonus)) b[k] = (b[k] || 0) + p.bonus[k];
+    /* UN CARREFOUR PORTE SON BONUS DANS L'OPTION RETENUE, pas sur lui-même : c'est la seule
+       chose qui distingue une prime à choix d'une prime, et tout le reste en découle. */
+    const source = p.choix ? choixPris(p) : (prime(p.cle) ? p : null);
+    if (!source || !source.bonus) continue;
+    for (const k of Object.keys(source.bonus)) b[k] = (b[k] || 0) + source.bonus[k];
   }
   return (primeCache = b);
 }
@@ -2516,11 +2555,12 @@ const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)
 const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2') ? 0.75 : 1);
 const evoCost   = c => EVOLVE[c.age - 1] === null ? null
                      : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise()
-                                  * (1 - bonusAlbum().peage));
+                                  * (1 - bonusAlbum().peage) * (1 - bonusPrimes().peage));
 
 /* Le prix d'un œuf passe toujours par ici : le zébré de l'album le baisse, et un prix qui
    s'afficherait ailleurs qu'à l'endroit où il se paie finirait par mentir. */
 const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)
+                                              * (1 - bonusPrimes().oeuf)
                                               * (prime('grossiste') ? 0.8 : 1)));
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
 /* Les enclos des primes s'ajoutent au compte, JAMAIS au prix : `penCost` continue de se
@@ -2552,6 +2592,43 @@ const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens -
    pour toujours par la constellation. Tout le jeu passe par ce prédicat — nul besoin de le
    savoir ailleurs. */
 const prime       = cle => !!(state.primes && state.primes[cle]) || primeAcquise(cle);
+
+/* ── LES CARREFOURS ────────────────────────────────────────────────────────────
+   Une prime à choix : trois routes, on en prend UNE, et les deux autres sont perdues pour ce
+   cycle. Perdues, et pas remises à plus tard — remises à plus tard, ce n'est pas un choix mais
+   un ordre d'achat : on finirait par tout avoir et la décision ne coûterait rien.
+
+   ELLES SE REJOUENT À CHAQUE CYCLE, puisque les primes repartent de zéro à l'ascension. C'est
+   ce qui les sauve de l'usure : un choix définitif à l'échelle de la partie se regrette, un
+   choix qu'on refait tous les cycles s'expérimente.
+
+   LA CONTRAINTE QUI DÉCIDE SI C'EST RÉUSSI : les trois routes doivent différer EN NATURE, pas
+   en chiffre. « +10 % de vente / +10 % de rente / +10 % de vitesse » n'est pas un choix, c'est
+   un menu — on prend le plus gros nombre et on n'y pense plus. Chaque carrefour offre donc un
+   PRIX qui baisse, une VITESSE qui monte, et un GESTE qui pèse : trois grandeurs qui ne se
+   comparent pas, donc trois façons de jouer.
+
+   L'option retenue est rangée dans `state.primes` sous SA PROPRE CLÉ. Tout le jeu continue
+   donc de lire `prime('...')` sans rien savoir des carrefours, et une option peut servir de
+   garde comme n'importe quelle prime. */
+const choixPris = p => p.choix ? (p.choix.find(o => prime(o.cle)) || null) : null;
+const primeFaite = p => p.choix ? !!choixPris(p) : prime(p.cle);
+
+function choisirRoute(cleCarrefour, cleRoute) {
+  const p = PRIMES.find(x => x.cle === cleCarrefour);
+  if (!p || !p.choix || choixPris(p)) return false;
+  const o = p.choix.find(x => x.cle === cleRoute);
+  if (!o || state.coins < p.prix) return false;
+  state.coins -= p.prix;
+  state.primes[o.cle] = true;
+  oublierPrimes();
+  chord([392, 523, 659, 784], 80);
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y - 60, o.glyphe + ' ' + o.nom, 'gain');
+  refresh();
+  save();
+  return true;
+}
 
 const lvl         = key => state.up[key] || 0;
 /* Le NIVEAU est ce qui s'achète, la PUISSANCE est ce que ce niveau produit. Depuis que les
@@ -2622,7 +2699,7 @@ const enFrenesie = () => (state.frenesie || 0) > 0;
    reste deux fois moins de clics à donner, sans une ligne de plus. */
 const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
                           (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1) *
-                          (1 + bonusAlbum().clic);
+                          (1 + bonusAlbum().clic + bonusPrimes().clic);
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
@@ -3801,7 +3878,7 @@ const REGLAGES = [
       : 'Jusqu’à l’âge ' + AGES[v - 1].nom +
         (v === AGES.length ? ', la forme finale' : '') + ' — ' +
         fmt(EVOLVE.slice(0, v - 1).reduce((n, x) => n + (x || 0), 0) * RARITY[cle].mult *
-            evoRemise() * (1 - bonusAlbum().peage)) },
+            evoRemise() * (1 - bonusAlbum().peage) * (1 - bonusPrimes().peage)) },
 ];
 
 /* Une rangée : son intitulé, son segment, et la phrase du choix actif. Les identifiants
@@ -3929,7 +4006,10 @@ function buildChrome() {
     b.querySelector('.prime-nom').textContent = p.nom;
     b.querySelector('.prime-prix').textContent = fmt(p.prix);
     b.title = p.nom + ' · ' + fmt(p.prix) + '\n\n' + p.dit;
-    b.addEventListener('click', () => buyPrime(p));
+    b.addEventListener('click', () => {
+      if (p.choix) { if (!ouvrirCarrefour(p.cle)) blip(300, 0.05, 'sine', 0.03); }
+      else buyPrime(p);
+    });
     grille.appendChild(b);
     refs.primes[p.cle] = { el: b, prime: p };
   }
@@ -5654,8 +5734,11 @@ function tickView() {
      CE QUI EST PRIS N'EST PAS PERDU — le bouton du bandeau bascule la grille sur les primes
      déjà achetées. C'est une consultation, pas un choix : on va y relire ce qu'on a, jamais
      décider quoi que ce soit. D'où le bouton plutôt qu'une seconde grille toujours ouverte. */
-  const prises = PRIMES.filter(p => prime(p.cle));
-  const aPrendre = PRIMES.filter(p => !prime(p.cle) && (!p.si || p.si()));
+  /* UN CARREFOUR EST « FAIT » quand une de ses routes est prise, jamais par sa propre clé :
+     l'option retenue est rangée sous SA clé à elle, pour que tout le jeu continue de lire
+     `prime('...')` sans rien savoir des carrefours. */
+  const prises = PRIMES.filter(primeFaite);
+  const aPrendre = PRIMES.filter(p => !primeFaite(p) && (!p.si || p.si()));
   // plus rien à prendre : la grille bascule d'elle-même sur ce qu'on a, sinon elle serait vide
   const versPrises = primesPrises || !aPrendre.length;
   const montrees = new Set((versPrises ? prises : aPrendre.slice(0, PRIMES_VUES)).map(p => p.cle));
@@ -5675,7 +5758,7 @@ function tickView() {
   $('primes-vide').hidden = versPrises ? !!prises.length : !!aPrendre.length;
 
   for (const p of PRIMES) {
-    const r = refs.primes[p.cle], pris = prime(p.cle);
+    const r = refs.primes[p.cle], pris = primeFaite(p);
     r.el.hidden = !montrees.has(p.cle);
     r.el.classList.toggle('prise', pris);
     r.el.classList.toggle('prete', !pris && state.coins >= p.prix);
@@ -5683,6 +5766,13 @@ function tickView() {
        prendre » — `prime()` la donne pour acquise, donc elle n'occupe plus une des cinq cases,
        ce qui était toute la question. Mais elle ressemblerait sinon à une prime achetée, et le
        joueur ne saurait pas pourquoi elle est là dès la première seconde du cycle. */
+    /* La case d'un carrefour porte le NOM DE LA ROUTE une fois choisie : « Le premier
+       carrefour » ne dirait plus rien, et c'est justement ce qu'on veut relire plus tard. */
+    if (p.choix) {
+      const o = choixPris(p);
+      setText(r.el.querySelector('.prime-nom'), o ? o.nom : p.nom);
+      setText(r.el.querySelector('.prime-glyphe'), o ? o.glyphe : p.glyphe);
+    }
     const duCiel = primeAcquise(p.cle);
     r.el.classList.toggle('du-ciel', duCiel);
     if (duCiel) r.el.title = p.nom + ' — tenue par ta constellation : elle ne se rachète plus.';
@@ -7067,6 +7157,46 @@ function syncReglages() {
     : 'Il est arrêté : il ne dépense rien.');
 }
 
+/* L'ÉCRAN D'UN CARREFOUR. Il s'ouvre au clic sur la case de la grille, et il s'arrête là :
+   les trois routes ne tiennent pas dans une case de quatre centimètres, et surtout un choix
+   définitif ne doit pas se prendre d'un clic distrait au milieu de quarante-cinq primes.
+
+   IL SE FERME SANS CHOISIR. Rien ne presse — la case reste, l'argent aussi, et le carrefour se
+   rouvre quand on veut. C'est la même règle que le jeton d'ascension : un choix qu'on peut
+   remettre ne réclame rien. */
+let carrefourOuvert = null;
+
+function ouvrirCarrefour(cle) {
+  const p = PRIMES.find(x => x.cle === cle);
+  if (!p || !p.choix || choixPris(p)) return false;
+  carrefourOuvert = cle;
+  const boite = $('carrefour');
+  setText($('carrefour-titre'), p.nom);
+  setText($('carrefour-dit'), p.dit + ' Elles coûtent ' + fmt(p.prix) + ' chacune.');
+  const hote = $('carrefour-routes');
+  hote.textContent = '';
+  for (const o of p.choix) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'route';
+    b.dataset.route = o.cle;
+    b.disabled = state.coins < p.prix;
+    b.innerHTML = '<span class="route-glyphe"></span><b class="route-nom"></b>' +
+                  '<i class="route-dit"></i>';
+    b.querySelector('.route-glyphe').textContent = o.glyphe;
+    b.querySelector('.route-nom').textContent = o.nom;
+    b.querySelector('.route-dit').textContent = o.dit;
+    hote.appendChild(b);
+  }
+  boite.hidden = false;
+  return true;
+}
+
+function fermerCarrefour() {
+  carrefourOuvert = null;
+  $('carrefour').hidden = true;
+}
+
 function cielClic(e) {
   const b = e.target.closest && e.target.closest('.etoile');
   if (!b) return;
@@ -7462,6 +7592,17 @@ function bindTools() {
     const carte = e.target.closest('.carte');
     if (!carte || !carte.dataset.id) return;
     if (!choisirForge(parseInt(carte.dataset.id, 10))) blip(300, 0.05, 'sine', 0.03);
+  });
+
+  $('carrefour-close').addEventListener('click', fermerCarrefour);
+  $('carrefour').addEventListener('click', e => {
+    if (e.target === $('carrefour')) fermerCarrefour();     // clic sur le fond
+  });
+  $('carrefour-routes').addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.route');
+    if (!b || !carrefourOuvert) return;
+    if (choisirRoute(carrefourOuvert, b.dataset.route)) fermerCarrefour();
+    else blip(300, 0.05, 'sine', 0.03);
   });
 
   $('ciel-branches').addEventListener('click', e => cielClic(e));

@@ -293,6 +293,19 @@
   <div class="forge-grille" id="forge-grille"></div>
 </section>
 
+<!-- UN CARREFOUR. Trois routes côte à côte, et un moment où le jeu s'arrête pour demander :
+     une prime à choix n'entre pas dans une case de la grille des cinq. -->
+<div id="carrefour" class="asc" hidden>
+  <div class="asc-box carrefour-box" role="dialog" aria-modal="true" aria-labelledby="carrefour-titre">
+    <div class="asc-head">
+      <h2 id="carrefour-titre"></h2>
+      <button type="button" class="asc-close" id="carrefour-close" title="Plus tard">✕</button>
+    </div>
+    <p class="asc-jalon" id="carrefour-dit"></p>
+    <div class="carrefour-routes" id="carrefour-routes"></div>
+  </div>
+</div>
+
 <!-- LA CONSTELLATION. Le tronc à gauche, en colonne : c'est un chemin, il se lit de bas en
      haut. Les branches à droite, chacune s'ouvrant au rang qu'elle demande. -->
 <section id="vue-ciel" class="ciel" hidden aria-label="Constellation">
