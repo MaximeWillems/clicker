@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 3.1.1** | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
+| **beta 3.1.2** | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
+| beta 3.1.1 | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
 | beta 3.1.0 | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
 | beta 3.0.0 | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
 | beta 2.5.0 | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
@@ -1492,7 +1493,7 @@ qu'on garde.
 
 Deux conséquences à connaître. Le jalon d'ascension *avoir un chromatique en enclos* devient un
 objectif de longue haleine plutôt qu'une étape — il reste franchissable, mais il ne se planifie
-plus. Et la carte d'album **constellée** prend enfin sa valeur : plafonnée à ×2 sur tout
+plus. Et la carte d'album **nacrée** prend enfin sa valeur : plafonnée à ×2 sur tout
 l'album, elle ramène la chance à 1 sur 4 096.
 
 **Un chromatique vaut exactement un cran de rareté** : ×25. Une commune chromatique vaut une
@@ -1535,7 +1536,7 @@ la **vitesse** de croissance, pas sur les bornes — les seuils de niveau sont l
 tout le monde, et la durée de référence des rangs de taille reste celle de l'âge, sinon un
 tempérament vif cumulerait deux bonus.
 
-**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, constellé, ocellé, martelé —
+**Le motif** — uni, tacheté, rayé, moucheté, marbré, tigré, zébré, nacré, ocellé, martelé —
 n'a aucun effet sur la bête vivante. C'est de l'identité pure, jusqu'au jour où elle devient
 une carte : là, il décide de tout.
 
@@ -2610,7 +2611,7 @@ inintéressante le jour où le sien l'est.
 | tigré | rente | +14 % | +200 % |
 | marbré | prix des évolutions | −3 % | −40 % |
 | zébré | prix des œufs | −3 % | −40 % |
-| constellé | chance de chromatique | ×1,07 | ×2 |
+| nacré | chance de chromatique | ×1,07 | ×2 |
 | **ocellé** | **clics automatiques** | **+0,10 / s** | **1 clic / s** |
 | **martelé** | **force du clic** | **+8 %** | **+100 %** |
 
@@ -2669,7 +2670,7 @@ de son nom raccourci sur la ligne. La rente y est définie plutôt que nommée :
 adulte rapporte par seconde en restant simplement dans son enclos, même quand tu n'es pas
 là »*.
 
-Le constellé s'exprime **en multiplicateur de la base, jamais en points** : le prodige est à
+Le nacré s'exprime **en multiplicateur de la base, jamais en points** : le prodige est à
 1 sur 8 192, soit 0,012 %, et un demi-point le multiplierait par plus de quarante. Le bonus
 d'élevage a été coupé de ×25 à ×4 pour protéger cette rareté ; le plafond à ×2 fait le reste,
 et ramène au mieux la chance à 1 sur 4 096.

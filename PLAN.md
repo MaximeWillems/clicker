@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 3.1.1 · sauvegarde v20 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 3.1.2 · sauvegarde v20 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -227,12 +227,12 @@ fichier a déjà payé ce prix une fois : « palier » désignait les paliers de
 d'amélioration ET les crans d'une carte, dans le même fichier et à quelques lignes d'écart. Il
 a fallu renommer les troisièmes en ÉTOILES pour s'en sortir.
 
-**Une collision à connaître, et à trancher un jour** : `constellé` est déjà un MOTIF de carte —
-celui qui améliore la chance de chromatique. « Constellation » et « constellé » ne se croiseront
-jamais dans la même phrase ni sur le même écran, donc ça peut tenir ; mais c'est exactement la
-forme de collision que le renommage de « palier » a servi à éviter. Si elle gêne un jour, c'est
-le MOTIF qui devrait changer de nom, pas la constellation : un motif parmi dix se renomme sans
-rien casser, un pan de jeu entier non.
+**La collision a été levée avant d'exister** : `constellé` était déjà un MOTIF de carte — celui
+qui améliore la chance de chromatique. Il s'appelle **`nacré`** depuis la `beta 3.1.2`.
+
+C'est le MOTIF qui a changé de nom, et pas l'inverse : un motif parmi dix est une étiquette, un
+pan de jeu entier ne l'est pas. Et le renommage n'a rien coûté — une bête stocke un INDICE de
+motif, pas un nom, donc aucune sauvegarde à migrer.
 
 **Trois décisions sont prises**, et elles créent ensemble une tension qu'il faut résoudre plutôt
 que subir :
@@ -420,10 +420,10 @@ doit absorber ce que la combinaison donnait — sinon la meilleure bête possibl
 tiers de sa valeur, et tout l'équilibrage de la fin de partie bouge avec elle.
 
 **Ce qui améliore les chances.** Le chromatique a ses propres tirages améliorables — la carte
-constellée, la prime *Œil exercé*, le bonus d'élevage. Les teintes, elles, n'ont rien : leur
+nacrée, la prime *Œil exercé*, le bonus d'élevage. Les teintes, elles, n'ont rien : leur
 tirage est un `pickWeighted` fixe. S'il n'y a plus qu'une échelle, il faut décider **ce que ces
 bonus poussent** : le rang le plus rare seulement, ou toute l'échelle vers le haut. Le second
-est plus intéressant — il rend le constellé utile bien avant d'espérer le rang ultime — et c'est
+est plus intéressant — il rend le nacré utile bien avant d'espérer le rang ultime — et c'est
 aussi le plus délicat à équilibrer.
 
 **Le carnet.** L'encyclopédie compte déjà les teintes croisées par lignée, et les prodiges à

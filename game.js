@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 3.1.1';
+const VERSION = 'beta 3.1.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -412,8 +412,17 @@ const TEMPERS = [
    seulement à reconnaître une bête entre mille. C'est justement ce qui en fait le bon
    support pour le bonus d'une carte — voir MOTIF_BONUS plus bas. */
 /* Une bête stocke son motif PAR INDICE : les nouveaux s'ajoutent donc à la fin, comme les
-   teintes. En insérer un au milieu redistribuerait les effets de tout l'album déjà gagné. */
-const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'constellé',
+   teintes. En insérer un au milieu redistribuerait les effets de tout l'album déjà gagné.
+
+   `constellé` S'EST APPELÉ AINSI JUSQU'À LA 3.1.2, et il a été renommé `nacré` pour libérer le
+   mot : la CONSTELLATION est le nom de l'arbre d'ascension à venir, et deux choses qui portent
+   la même racine dans le même jeu finissent par se confondre. Le fichier a déjà payé ce prix
+   avec « palier », qui désignait trois objets différents à quelques lignes d'écart.
+
+   Renommer le MOTIF plutôt que l'arbre était le moindre coût : un motif parmi dix est une
+   étiquette, un pan de jeu entier ne l'est pas. Et rien à migrer — une bête stocke un INDICE,
+   pas un nom, et l'indice n'a pas bougé. */
+const MOTIFS = ['uni', 'tacheté', 'rayé', 'moucheté', 'marbré', 'tigré', 'zébré', 'nacré',
                 'ocellé', 'martelé'];
 
 /* Les rangs de taille qualifient une bête MÛRE qu'on n'a pas fait évoluer : « adulte »,
@@ -609,7 +618,7 @@ const MOTIF_BONUS = {
                  dit: 'Faire passer une bête à l’âge suivant coûte moins cher.' },
   'zébré':     { key: 'oeuf',    quoi: 'prix des œufs',         pas: 0.03, cap: 0.40, signe: -1,
                  dit: 'Les œufs de la boutique coûtent moins cher.' },
-  'constellé': { key: 'prodige', quoi: 'chance de chromatique', pas: 0.07, cap: 1.00, signe: 1,
+  'nacré':     { key: 'prodige', quoi: 'chance de chromatique', pas: 0.07, cap: 1.00, signe: 1,
                  dit: 'Une bête chromatique naît une fois sur 8 192. Cette carte améliore ce tirage.' },
 
   'ocellé':    { key: 'clicAuto', quoi: 'clics automatiques',   pas: 0.10, cap: 1.00, signe: 1,
@@ -2256,7 +2265,7 @@ function rollVariants(achete) {
     motif: Math.floor(Math.random() * MOTIFS.length),
     fond: achete && Math.random() < FOND_ODDS
       ? FONDS[Math.floor(Math.random() * FONDS.length)].key : null,
-    // le constellé pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
+    // le nacré pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
     prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige) * (prime('oeil') ? 1.5 : 1),
   };
 }
