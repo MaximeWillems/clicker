@@ -160,7 +160,7 @@ jamais rien décider.
 
 ### Le jeton devient une monnaie — trois idées qui n'en font qu'une
 
-Trois demandes séparées, et elles se répondent : **un arbre de compétences inter-ascension**, un
+Trois demandes séparées, et elles se répondent : **une constellation, acquise à l'ascension**, un
 **prix des cartes qui monte par le nombre d'or**, et — ailleurs — **cliquer pour aider la
 pension**. Les deux premières forment un système ; la troisième vit à part, plus bas.
 
@@ -188,10 +188,10 @@ Avec la réserve actuelle — cinq jetons à mille milliards de fortune — on e
 et il en reste deux**, là où on en prenait cinq. Le geste redevient un arbitrage, et il se pose
 à chaque cycle : *une carte de plus, ou je garde mes jetons ?*
 
-#### L'arbre est ce qui donne un sens au « je garde »
+#### La constellation est ce qui donne un sens au « je garde »
 
 Sans autre emploi, garder un jeton ne serait qu'un gaspillage — la question ne se poserait pas.
-**L'arbre inter-ascension est le second évier**, et c'est lui qui transforme le prix doré en
+**La constellation est le second évier**, et c'est lui qui transforme le prix doré en
 décision plutôt qu'en taxe.
 
 Trois choses le distinguent de tout ce qui existe déjà, et il faut que les trois tiennent :
@@ -210,7 +210,29 @@ ascension, ou s'accumule-t-il ?** S'il s'accumule, c'est un cliquet permanent et
 petit ; s'il se rejoue, c'est un build par cycle et il peut être ambitieux. La seconde forme va
 mieux avec le prix doré, qui est déjà une décision par cycle.
 
-#### L'Héritage — la forme proposée
+#### LA CONSTELLATION — la forme proposée
+
+**Le vocabulaire est fixé, et c'est ce qui compte le plus dans cette section.** Deux mots, deux
+endroits, aucun recouvrement :
+
+| | **Les primes** | **La constellation** |
+|---|---|---|
+| où | en jeu | à l'ascension |
+| payées en | pièces | jetons |
+| durée | le cycle, puis effacées | acquises pour toujours |
+| ce qu'elles font | pousser ce qu'on a | ouvrir ce qu'on n'a pas |
+
+Sans ces deux mots, tout ce qui suit se serait dit avec le même — « une amélioration » — et le
+fichier a déjà payé ce prix une fois : « palier » désignait les paliers de fortune, les paliers
+d'amélioration ET les crans d'une carte, dans le même fichier et à quelques lignes d'écart. Il
+a fallu renommer les troisièmes en ÉTOILES pour s'en sortir.
+
+**Une collision à connaître, et à trancher un jour** : `constellé` est déjà un MOTIF de carte —
+celui qui améliore la chance de chromatique. « Constellation » et « constellé » ne se croiseront
+jamais dans la même phrase ni sur le même écran, donc ça peut tenir ; mais c'est exactement la
+forme de collision que le renommage de « palier » a servi à éviter. Si elle gêne un jour, c'est
+le MOTIF qui devrait changer de nom, pas la constellation : un motif parmi dix se renomme sans
+rien casser, un pan de jeu entier non.
 
 **Trois décisions sont prises**, et elles créent ensemble une tension qu'il faut résoudre plutôt
 que subir :
@@ -326,7 +348,7 @@ nœuds, et les derniers assez chers pour qu'on ne les voie qu'après beaucoup de
 #### Ce qui reste ouvert
 
 - **Où il vit.** Un cinquième onglet, ou un écran ouvert depuis l'ascension ? Le second le lie à
-  son moment — on ne pense à l'Héritage qu'en sautant — mais l'enterre le reste du temps.
+  son moment — on ne pense à la constellation qu'en sautant — mais l'enterre le reste du temps.
 - **Ce qu'on voit avant de pouvoir l'acheter.** Le jeu a une doctrine là-dessus : la boutique
   montre « la marche suivante », les primes n'en montrent que cinq, les merveilles ne se nomment
   pas avant d'être vues. Un arbre qui montre tout d'un coup contredirait tout le reste.
