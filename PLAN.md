@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.6.0 · sauvegarde v23 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.6.1 · sauvegarde v24 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -920,6 +920,29 @@ prend de la place pour des choses que je ne regarde pas ».
 images par seconde derrière une signature. Un ordre qui change l'ordre du DOM doit entrer dans
 la signature, sinon il se perdra au premier rafraîchissement — c'est la même leçon que
 `renderStrip`, et elle se relit avant tout écran neuf.
+
+### Une mesure n'est pas un compteur — corrigé en `beta 4.6.1`
+
+**La constellation imprimait des jetons, et le défaut est une confusion de nature.**
+`acheterEtoile` remettait `asc.sommet` à zéro en croyant convertir le crédit du cycle en
+bourse. Or `crediterJetons` tourne **dix fois par seconde** et relève le sommet sur
+`state.coins` : le crédit revenait entier au tour suivant, EN PLUS de la bourse qui le
+contenait déjà. Quatre jetons, un achat à un, et **sept jetons** un dixième de seconde plus
+tard.
+
+> `sommet` n'est pas une réserve, c'est une **mesure** — le plus haut que la bourse ait atteint
+> ce cycle. Une mesure que la boucle refait ne peut pas servir de compteur : la mettre à zéro
+> n'enlève rien, ça efface une observation que la boucle refera aussitôt.
+
+Ce qu'on dépense se compte à part, dans `asc.depense`, soldé à l'ascension. **La règle vaut
+au-delà d'ici** : partout où la boucle recalcule une valeur, cette valeur est en lecture seule
+pour tout le reste du fichier.
+
+**Les bourses gonflées dégonflent à la migration `v24`.** On ne peut pas recalculer la vérité —
+les sommets des cycles passés ne sont pas gardés — donc on pose un plafond que rien de
+légitime ne peut dépasser : `n ascensions × (11 paliers + les deux nœuds « sommet »)` moins le
+prix des nœuds pris. Large exprès, et il ignore les cartes emportées qui l'abaisseraient
+encore : personne ne perd un jeton gagné.
 
 ### Deux pièges de migration à ne pas oublier
 

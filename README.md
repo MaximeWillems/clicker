@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.6.0** | les faveurs : un tirage de trois, repris sans fin, sur dix leviers distincts |
+| **beta 4.6.1** | la bourse cessait d’imprimer : chaque achat de nœud rendait tout le crédit du cycle |
+| beta 4.6.0 | les faveurs : un tirage de trois, repris sans fin, sur dix leviers distincts |
 | beta 4.5.0 | l’automatisation redevient du jeu de base : elle sort de la constellation, la pension y entre |
 | beta 4.4.0 | la constellation part du centre : six directions, vingt-cinq nœuds, aucun remplissage |
 | beta 4.3.0 | la constellation devient un arbre — la géométrie porte la règle |

@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.6.0';
+const VERSION = 'beta 4.6.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1635,11 +1635,19 @@ function acheterEtoile(cle) {
   const n = ETOILE_BY_KEY[cle];
   if (!n || etoilePrise(cle) || !etoileOuverte(n)) return false;
   if (jetonsEnMain() < n.prix) return false;
-  /* On puise dans la bourse, jamais dans ce que le cycle vient de créditer : `jetonsDus` se
-     recalcule sur le sommet, on ne peut donc pas le décrémenter. Le sommet est converti en
-     bourse au moment où on y touche. */
-  state.asc.jetons = jetonsEnMain() - n.prix;
-  state.asc.sommet = 0;
+  /* ON COMPTE CE QU'ON DÉPENSE, ON NE TOUCHE PAS AU SOMMET.
+
+     La version d'avant convertissait : elle écrivait le total dans la bourse et remettait le
+     sommet à zéro. Or `crediterJetons` tourne DIX FOIS PAR SECONDE et relève le sommet sur
+     `state.coins` — donc le crédit du cycle revenait entier au tour suivant, en plus de la
+     bourse qui le contenait déjà. Chaque achat rendait tout le crédit du cycle. Quatre jetons,
+     un achat à un, et sept jetons un dixième de seconde plus tard.
+
+     LA LEÇON, ET ELLE VAUT AU-DELÀ D'ICI : `sommet` n'est pas une réserve, c'est une MESURE —
+     le plus haut que la bourse ait atteint ce cycle. Une mesure que la boucle refait ne peut
+     pas servir de compteur ; le mettre à zéro ne retire rien, ça efface une observation que la
+     boucle refera aussitôt. Ce qu'on dépense se compte à part. */
+  state.asc.depense = (state.asc.depense || 0) + n.prix;
   state.ciel = state.ciel || {};
   state.ciel[cle] = true;
   oublierPrimes();
@@ -2078,7 +2086,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 23;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 24;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -2206,7 +2214,10 @@ function freshState() {
     /* `sommet` : la plus grosse bourse tenue DEPUIS la dernière ascension. C'est lui qui dit
        combien de jetons le prochain saut crédite, et il repart à zéro avec la ferme.
        `jetons` : ce qui reste en bourse, et qui ne repart JAMAIS à zéro. */
-    asc: { n: 0, paliers: 0, jetons: 0, sommet: 0 },
+    /* `sommet` est une MESURE (le plus haut que la bourse ait atteint ce cycle), `depense`
+       est un COMPTEUR (ce que la constellation a coûté ce cycle). Les confondre a fait une
+       imprimante à jetons ; ils ne se mélangent plus. */
+    asc: { n: 0, paliers: 0, jetons: 0, sommet: 0, depense: 0 },
     /* LA CONSTELLATION. Elle traverse l'ascension comme l'album, et pour la même raison : elle
        est ce qu'on a appris, pas ce qu'on possède. `ciel` plutôt que `constellation` — le
        champ se lit cent fois dans le fichier. */
@@ -2421,6 +2432,30 @@ function load() {
        chose que le bloc suivant rembourse, c'est créditer quatre jetons à quelqu'un qui n'a
        jamais rien payé. Une migration qu'on annule s'efface, elle ne se laisse pas tourner à
        vide. */
+
+    /* v23 → v24 : LA BOURSE DÉGONFLE.
+
+       `acheterEtoile` remettait `asc.sommet` à zéro en croyant convertir le crédit du cycle en
+       bourse. Mais `crediterJetons` tourne dix fois par seconde et relève le sommet sur
+       `state.coins` : le crédit revenait entier au tour suivant, EN PLUS de la bourse qui le
+       contenait déjà. Chaque achat rendait tout le crédit du cycle.
+
+       ON NE PEUT PAS RECALCULER LA VÉRITÉ : les sommets des cycles passés ne sont pas gardés.
+       On pose donc un PLAFOND que rien de légitime ne peut dépasser — ce que toutes les
+       ascensions faites ont pu créditer au mieux, moins ce que l'arbre a coûté :
+
+           n ascensions × (11 paliers + les deux nœuds « sommet »)  −  le prix des nœuds pris
+
+       Le plafond est large exprès, et il ignore les cartes emportées, qui l'abaisseraient
+       encore : personne ne perd un jeton gagné. Ce qui tombe, c'est la monnaie de singe. */
+    if ((s.v || 0) < 24 && merged.asc) {
+      merged.asc.depense = 0;
+      const parCycle = JETON_PALIERS.length + 2;
+      const arbre = Object.keys(merged.ciel || {})
+        .reduce((n, cle) => n + ((ETOILE_BY_KEY[cle] || {}).prix || 0), 0);
+      const plafond = Math.max(0, (merged.asc.n || 0) * parCycle - arbre);
+      merged.asc.jetons = Math.min(merged.asc.jetons || 0, plafond);
+    }
 
     /* v22 → v23 : L'AUTOMATISATION DE BASE SORT DE LA CONSTELLATION. L'acheteur, le marchand,
        l'évolution, la pension et la forge y étaient des nœuds « est à toi » ; ils appartiennent
@@ -4819,7 +4854,8 @@ function jetonsDus() {
    endroit ne peuvent pas se partager un nombre calculé — il faut un solde. Sauter en
    n'emportant qu'une carte laisse les autres jetons pour la constellation, et c'est
    exactement l'arbitrage qu'on cherchait à créer. */
-const jetonsEnMain = () => (state.asc.jetons || 0) + jetonsDus();
+const jetonsEnMain = () =>
+  Math.max(0, (state.asc.jetons || 0) + jetonsDus() - (state.asc.depense || 0));
 
 
 
@@ -5679,8 +5715,12 @@ function ascensionner() {
        prix de sauter trop tôt, et ça n'a plus de sens depuis qu'ils ont un second emploi :
        garder ses jetons pour la constellation EST une décision, pas un gâchis. Ce qui se paie
        ici, c'est le prix doré des cartes emportées, et rien d'autre. */
+    /* LA DÉPENSE DU CYCLE SE SOLDE ICI. `ap.jetons` est déjà ce qu'on a en main, dépense
+       déduite — la bourse du cycle suivant repart donc d'un nombre net, et le compteur avec
+       elle. Le laisser courir referait payer les nœuds du cycle précédent. */
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers,
-           jetons: Math.max(0, ap.jetons - coutCartes(neuves.length)), sommet: 0 },
+           jetons: Math.max(0, ap.jetons - coutCartes(neuves.length)),
+           sommet: 0, depense: 0 },
     seen: state.seen, dex: state.dex, tri: state.tri, achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection

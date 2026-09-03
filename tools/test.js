@@ -3239,6 +3239,66 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
   eq('la braise douce halve le coût', jeu.coutFusion(s.album[0]), Math.round(f0 / 2));
 });
 
+scenario('constellation — acheter coûte, et la boucle ne rend rien', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.coins = 1e9;
+  jeu.crediterJetons();
+
+  /* LE BUG QUE CE SCÉNARIO TIENT. `acheterEtoile` remettait `asc.sommet` à zéro en croyant
+     convertir le crédit du cycle en bourse. Or `crediterJetons` tourne DIX FOIS PAR SECONDE et
+     relève le sommet sur `state.coins` : le crédit revenait entier au tour suivant, en plus de
+     la bourse qui le contenait déjà. Quatre jetons, un achat à un, et sept jetons un dixième
+     de seconde plus tard.
+
+     `sommet` N'EST PAS UNE RÉSERVE, C'EST UNE MESURE — le plus haut que la bourse ait atteint.
+     Une mesure que la boucle refait ne peut pas servir de compteur. */
+  const avant = jeu.jetonsEnMain();
+  eq('un milliard crédite quatre jetons', avant, 4);
+
+  ok('l’étincelle s’achète', jeu.acheterEtoile('etincelle'));
+  eq('elle coûte un jeton', jeu.jetonsEnMain(), avant - 1);
+
+  jeu.crediterJetons();
+  eq('et un tour de boucle ne rend rien', jeu.jetonsEnMain(), avant - 1);
+  for (let i = 0; i < 100; i++) jeu.crediterJetons();
+  eq('cent tours non plus', jeu.jetonsEnMain(), avant - 1);
+
+  /* CE QU'ON N'A PLUS EN MAIN NE S'ACHÈTE PLUS : sans ça, la bourse se vide dans le rouge et
+     l'arbre se prend en entier. */
+  eq('il reste trois jetons', jeu.jetonsEnMain(), 3);
+  ok('un nœud à quatre est hors de portée', !jeu.acheterEtoile('poing'));
+  ok('un nœud à trois passe encore', jeu.acheterEtoile('nid-plus') || jeu.jetonsEnMain() === 3);
+
+  /* LE SOMMET RESTE LA MESURE QU'IL EST : franchir un palier de plus crédite toujours. */
+  const enMain = jeu.jetonsEnMain();
+  s.coins = 1e12;
+  jeu.crediterJetons();
+  ok('un palier de plus crédite encore', jeu.jetonsEnMain() > enMain);
+});
+
+scenario('sauvegarde — les bourses gonflées par le bug dégonflent', () => {
+  /* ON NE PEUT PAS RECALCULER LA VÉRITÉ : les sommets des cycles passés ne sont pas gardés. On
+     pose donc un plafond que rien de légitime ne peut dépasser — ce que les ascensions faites
+     ont pu créditer au mieux, moins ce que l'arbre a coûté. */
+  const gonflee = neuf({
+    v: 23, coins: 0, asc: { n: 3, paliers: 11, jetons: 4000, sommet: 0 },
+    ciel: { etincelle: true, poing: true },
+  });
+  const parCycle = gonflee.JETON_PALIERS.length + 2;
+  eq('la bourse tombe au plafond', gonflee.state.asc.jetons, 3 * parCycle - 1 - 4);
+  eq('et le compteur de dépense repart de zéro', gonflee.state.asc.depense, 0);
+
+  /* LE PLAFOND EST LARGE EXPRÈS : personne ne perd un jeton gagné. */
+  const honnete = neuf({
+    v: 23, coins: 0, asc: { n: 3, paliers: 11, jetons: 7, sommet: 0 }, ciel: {},
+  });
+  eq('une bourse plausible ne bouge pas', honnete.state.asc.jetons, 7);
+
+  const neuve = neuf({ v: 23, coins: 0, asc: { n: 0, paliers: 0, jetons: 900, sommet: 0 } });
+  eq('sans ascension, rien ne peut avoir été mis de côté', neuve.state.asc.jetons, 0);
+});
+
 scenario('constellation — le ciel se dessine, et il est plus grand que l’écran', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
