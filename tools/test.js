@@ -2957,6 +2957,179 @@ scenario('carrefour — il ouvre un écran, et se referme sans rien prendre', ()
   ok('le carrefour est clos', !jeu.ouvrirCarrefour('carrefour-1'));
 });
 
+/* ────────────────────────── les faveurs ─────────────────────────────────────── */
+
+scenario('faveur — trois cartes, une prise, et le tirage ne bouge qu’en prenant', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+
+  /* ELLES S'OUVRENT AU PREMIER CARREFOUR. Un tirage aléatoire posé sous le nez d'un joueur qui
+     n'a jamais choisi entre deux primes ne s'explique pas tout seul. */
+  ok('rien avant le premier carrefour', !jeu.faveursOuvertes());
+  ok('et rien ne se prend', !jeu.prendreFaveur('renommee'));
+
+  s.coins = 1e6;
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+  ok('le carrefour passé, elles s’ouvrent', jeu.faveursOuvertes());
+
+  const main = jeu.mainFaveurs();
+  eq('trois cartes', main.length, 3);
+  eq('trois cartes différentes', new Set(main).size, 3);
+  /* TROIS LEVIERS DIFFÉRENTS : « +10 % de vente / +10 % de rente / +10 % de vitesse » est un
+     menu, pas un choix. Ici les trois grandeurs ne se comparent pas. */
+  eq('trois leviers différents',
+     new Set(main.map(c => jeu.FAVEUR_BY_KEY[c].levier)).size, 3);
+
+  /* LE TIRAGE EST RANGÉ DANS L'ÉTAT. Un tirage qui se refait à chaque lecture, c'est une
+     machine à sous qu'on regarde tourner en attendant le bon lot. */
+  eq('il ne bouge pas d’une lecture à l’autre', jeu.mainFaveurs().join(), main.join());
+  eq('ni de dix', [0,1,2,3,4,5,6,7,8,9].map(() => jeu.mainFaveurs().join()).join('|').split('|')
+     .filter(x => x !== main.join()).length, 0);
+
+  // il faut de quoi payer
+  s.coins = jeu.prixFaveur() - 1;
+  ok('sans de quoi, rien ne se prend', !jeu.prendreFaveur(main[0]));
+  // et il faut que la carte soit sur la table
+  const dehors = jeu.FAVEURS.map(f => f.cle).filter(c => main.indexOf(c) < 0)[0];
+  s.coins = 1e12;
+  ok('une carte hors tirage ne se prend pas', !jeu.prendreFaveur(dehors));
+
+  const avant = s.coins, prix = jeu.prixFaveur();
+  ok('la carte du tirage se prend', jeu.prendreFaveur(main[0]));
+  eq('elle est payée', s.coins, avant - prix);
+  eq('elle est comptée', jeu.faveurCombien(main[0]), 1);
+  ok('le prix monte', jeu.prixFaveur() > prix);
+  ok('et un tirage neuf prend la place', jeu.mainFaveurs().join() !== main.join() ||
+     jeu.faveursPris() === 1);
+  eq('trois cartes à nouveau', jeu.mainFaveurs().length, 3);
+
+  /* ELLES SE REPRENNENT SANS LIMITE : c'est ce qui les distingue d'une prime. */
+  const encore = jeu.mainFaveurs()[0];
+  const n0 = jeu.faveurCombien(encore);
+  jeu.prendreFaveur(encore);
+  eq('la même carte se reprend', jeu.faveurCombien(encore), n0 + 1);
+});
+
+scenario('faveur — ce qui multiplie s’additionne, ce qui remise s’use', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e6;
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+
+  const poser = (cle, n) => {
+    jeu.state.faveurs.acquis[cle] = n;
+    jeu.state.faveurs.pris = n;
+    jeu.oublierPrimes();
+  };
+
+  /* CE QUI MULTIPLIE S'ADDITIONNE. Dix « +5 % de vente » font +50 %, sans plafond : une valeur
+     qui double n'a rien de dangereux dans une économie qui se compte en milliards. */
+  const v0 = jeu.coef('valeur');
+  poser('renommee', 10);
+  eq('dix renommées font un demi de plus', Math.round((jeu.coef('valeur') - v0) * 1000), 500);
+
+  /* CE QUI REMISE S'USE. Vingt « −5 % sur les œufs » additionnés feraient −100 %, et l'œuf
+     serait GRATUIT POUR TOUJOURS — une queue infinie atteint toujours un plafond additif. */
+  poser('adresse', 20);
+  const r = jeu.bonusPrimes().oeuf;
+  ok('vingt remises n’atteignent pas le mur', r < 1, r);
+  ok('mais s’en approchent', r > 0.6, r);
+  poser('adresse', 200);
+  ok('deux cents non plus', jeu.bonusPrimes().oeuf < 1, jeu.bonusPrimes().oeuf);
+  /* ET LA COMPOSITION SE FAIT SUR CE QUE LES PRIMES ONT DÉJÀ MIS : les primes portent elles
+     aussi des remises d'œuf, additives. Composer la faveur dans son coin avant de l'ajouter
+     aurait laissé la somme repasser au-dessus de un — c'est exactement ce qui est arrivé. */
+  s.primes['oeuf-1'] = true;
+  jeu.oublierPrimes();
+  ok('même avec les remises des primes par-dessous', jeu.bonusPrimes().oeuf < 1,
+     jeu.bonusPrimes().oeuf);
+  ok('et l’œuf coûte toujours quelque chose', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) > 0);
+});
+
+scenario('faveur — les quatre leviers neufs bougent vraiment', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e6;
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+
+  /* CES QUATRE-LÀ N'ÉTAIENT LUS QUE DE L'ALBUM ET DU CIEL : les primes ne savaient pas les
+     toucher. Une carte qui ne change rien est du remplissage, donc chacune se vérifie. */
+  const poser = cle => { jeu.state.faveurs.acquis[cle] = 5; jeu.oublierPrimes(); };
+
+  const oeuf = { kind: 'egg', c: null };
+  const av = jeu.albumVitesse(oeuf);
+  poser('couvaison');
+  ok('la couvaison accélère la couvaison', jeu.albumVitesse(oeuf) > av);
+
+  const jeune = { kind: 'pen', c: bete(jeu, 'crapaud', 2, 0) };
+  const ap = jeu.albumVitesse(jeune);
+  poser('fourrage');
+  ok('le fourrage accélère la pousse', jeu.albumVitesse(jeune) > ap);
+
+  poser('ration');
+  ok('la ration compte pour l’engraissement', jeu.bonusPrimes().gras > 0);
+  poser('oeil-neuf');
+  ok('l’œil neuf monte la chance de chromatique', jeu.bonusPrimes().prodige > 0);
+});
+
+scenario('faveur — elles tombent à l’ascension, comme les primes', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20; s.coins = 1e6;
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+  s.coins = 1e12;
+  jeu.prendreFaveur(jeu.mainFaveurs()[0]);
+  eq('une faveur est prise', jeu.faveursPris(), 1);
+
+  /* ELLES SE PAIENT EN PIÈCES, DONC ELLES TOMBENT. C'est ce qui les range du côté du cycle et
+     non du côté de ce qu'on emporte — la constellation est l'autre côté. */
+  poserJetons(jeu, 20);
+  const c = bete(jeu, 'crapaud', 3, 3000);
+  jeu.ascChoix = [-c.id];
+  jeu.ascensionner();
+  eq('après le saut, plus rien', jeu.faveursPris(), 0);
+  eq('et le prix repart du bas', jeu.prixFaveur(), jeu.FAVEUR_BASE);
+  ok('la porte s’est refermée avec le carrefour', !jeu.faveursOuvertes());
+});
+
+scenario('faveur — la rangée s’ouvre, l’écran donne les trois cartes', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e6;
+  jeu.refresh();
+  eq('rien à voir avant le carrefour', noeuds.get('faveur-mise').hidden, true);
+
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+  s.coins = jeu.prixFaveur() - 1;
+  jeu.refresh();
+  eq('la rangée paraît', noeuds.get('faveur-mise').hidden, false);
+  ok('elle annonce son prix',
+     noeuds.get('faveur-mise').textContent.indexOf(jeu.fmt(jeu.prixFaveur())) >= 0,
+     noeuds.get('faveur-mise').textContent);
+  eq('sans de quoi payer, elle est fermée', noeuds.get('faveur-mise').disabled, true);
+
+  s.coins = 1e12;
+  jeu.refresh();
+  eq('avec de quoi, elle s’ouvre', noeuds.get('faveur-mise').disabled, false);
+
+  ok('l’écran s’ouvre', jeu.ouvrirFaveurs());
+  const cartes = noeuds.get('carrefour-routes').children;
+  eq('trois cartes à l’écran', cartes.length, 3);
+  ok('chacune porte sa faveur', cartes.every(b => !!jeu.FAVEUR_BY_KEY[b.dataset.faveur]));
+
+  /* IL SE FERME SANS RETIRER LE TIRAGE : sinon fermer serait relancer, et un tirage qu'on
+     relance gratuitement n'est plus un tirage. */
+  const main = jeu.mainFaveurs().join();
+  jeu.fermerCarrefour();
+  jeu.ouvrirFaveurs();
+  eq('rouvrir rend les mêmes cartes', jeu.mainFaveurs().join(), main);
+
+  /* CE QU'ON EN A DÉJÀ SE DIT SUR LA CARTE : une faveur se reprend sans limite, donc « déjà
+     prise » est la seule chose qui décide vraiment entre deux cartes. */
+  const cle = jeu.mainFaveurs()[0];
+  jeu.state.faveurs.acquis[cle] = 2;
+  jeu.ouvrirFaveurs();
+  const carte = noeuds.get('carrefour-routes').children.find(b => b.dataset.faveur === cle);
+  const nom = carte.children.find(x => (x.className || '').includes('route-nom'));
+  ok('elle dit le rang qu’on prendrait', nom.textContent.indexOf('×3') >= 0, nom.textContent);
+});
+
 /* ────────────────────────── la constellation ────────────────────────── */
 
 scenario('constellation — un nœud s’ouvre avec son parent, jamais avant', () => {

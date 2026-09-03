@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.5.0';
+const VERSION = 'beta 4.6.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1138,6 +1138,102 @@ const PRIMES = [
    coup d'œil sans faire d'arbitrage, et ça tient sur une ligne de grille aux tailles usuelles.
    La bascule ne se sauvegarde pas — c'est un coup d'œil, pas un réglage. */
 const PRIMES_VUES = 5;
+
+/* ── LES FAVEURS ───────────────────────────────────────────────────────────────
+   Un tirage de trois cartes, on en prend UNE, et un nouveau tirage prend sa place. Sans fin.
+
+   C'EST LA RÉPONSE À UNE LISTE QUI SE TERMINE. Les primes sont cinquante et une, et les dix
+   dernières sont presque toutes de pension : arrivé là, il n'y a plus rien à acheter et plus
+   rien à décider. Une queue infinie de petites faveurs rend au dernier tiers de partie ce que
+   le premier avait — un prochain achat.
+
+   DIX CARTES, DIX LEVIERS, UNE CARTE PAR LEVIER. Le carrefour l'avait déjà écrit : « +10 % de
+   vente / +10 % de rente / +10 % de vitesse » est un menu, pas un choix — on prend le plus
+   gros nombre. La règle tient ici aussi, mais elle se respecte AUTREMENT : les trois cartes
+   tirées portent forcément trois leviers différents, donc trois grandeurs qui ne se comparent
+   pas. Deux tailles du même levier dans le sac auraient ramené le menu.
+
+   ELLES SONT FAIBLES, ET C'EST LE POINT. Cinq pour cent ne se sent pas ; c'est la soixantième
+   qui se sent. Une faveur forte serait un carrefour de plus, et le carrefour existe déjà.
+
+   LE TIRAGE EST RANGÉ DANS L'ÉTAT, JAMAIS RECALCULÉ À L'AFFICHAGE. Un tirage qui se refait à
+   chaque image, c'est une machine à sous qu'on regarde tourner en attendant le bon lot — et
+   la même faute que les étoiles du ciel qui scintillaient. Il ne bouge qu'en prenant une carte.
+
+   L'AUTO-CLIC N'EST PAS DANS LE SAC. Il est l'identité d'un motif de carte, l'ocellé, et une
+   identité qu'on distribue au hasard n'en est plus une. */
+const FAVEURS = [
+  { cle: 'renommee',  glyphe: '📯', nom: 'La renommée', levier: 'valeur',
+    bonus: { valeur: 0.05 },   dit: 'Tes bêtes se vendent 5 % plus cher.' },
+  { cle: 'habitude',  glyphe: '🪙', nom: 'La bonne habitude', levier: 'rente',
+    bonus: { rente: 0.05 },    dit: 'Tes enclos rapportent 5 % de plus.' },
+  { cle: 'entrain',   glyphe: '💨', nom: 'L’entrain', levier: 'vitesse',
+    bonus: { vitesse: 0.05 },  dit: 'Tout ce qui pousse, couve et engraisse va 5 % plus vite.' },
+  { cle: 'adresse',   glyphe: '🏷', nom: 'La bonne adresse', levier: 'oeuf', remise: true,
+    bonus: { oeuf: 0.05 },     dit: 'Les œufs coûtent 5 % de moins. La remise se rapproche de son mur sans jamais l’atteindre.' },
+  { cle: 'passe',     glyphe: '🎟', nom: 'Le laissez-passer', levier: 'peage', remise: true,
+    bonus: { peage: 0.05 },    dit: 'Les évolutions coûtent 5 % de moins. La remise se rapproche de son mur sans jamais l’atteindre.' },
+  { cle: 'doigte',    glyphe: '👆', nom: 'Le doigté', levier: 'clic',
+    bonus: { clic: 0.08 },     dit: 'Chaque clic pèse 8 % de plus.' },
+  { cle: 'couvaison', glyphe: '🔥', nom: 'La bonne couvaison', levier: 'couvee',
+    bonus: { couvee: 0.06 },   dit: 'Les œufs couvent 6 % plus vite.' },
+  { cle: 'fourrage',  glyphe: '🌾', nom: 'Le bon fourrage', levier: 'pousse',
+    bonus: { pousse: 0.06 },   dit: 'Les jeunes grandissent 6 % plus vite.' },
+  { cle: 'ration',    glyphe: '🥣', nom: 'La ration double', levier: 'gras',
+    bonus: { gras: 0.06 },     dit: 'Les bêtes mûres engraissent 6 % plus vite.' },
+  { cle: 'oeil-neuf', glyphe: '👁', nom: 'L’œil neuf', levier: 'prodige',
+    bonus: { prodige: 0.10 },  dit: 'Un dixième de chance en plus de voir naître un chromatique.' },
+];
+const FAVEUR_BY_KEY = Object.fromEntries(FAVEURS.map(f => [f.cle, f]));
+const FAVEUR_MAIN = 3;
+
+/* LE PRIX MONTE, SINON LA QUEUE DEVIENT LE JEU. À ×1,4 la faveur suit à peu près l'échelle des
+   primes : la première coûte cent mille, la vingtième quatre-vingt-trois millions, la
+   cinquantième deux mille milliards — soit le prix de la toute dernière prime. Au-delà, elle
+   monte plus vite que la ferme, ce qui est exactement ce qu'on veut d'une chose infinie. */
+const FAVEUR_BASE = 100000, FAVEUR_MULT = 1.4;
+const faveurEtat  = () => (state.faveurs = state.faveurs || { pris: 0, acquis: {}, main: [] });
+const faveursPris = () => faveurEtat().pris || 0;
+const prixFaveur  = () => Math.round(FAVEUR_BASE * Math.pow(FAVEUR_MULT, faveursPris()));
+const faveurCombien = cle => faveurEtat().acquis[cle] || 0;
+
+/* ELLES S'OUVRENT AU PREMIER CARREFOUR, et pas avant. Un tirage aléatoire posé sous le nez
+   d'un joueur qui n'a pas encore choisi une seule fois entre deux primes ne s'explique pas
+   tout seul ; passé le carrefour, il n'a plus rien à expliquer. */
+const faveursOuvertes = () => primeFaite(PRIMES.find(p => p.cle === 'carrefour-1'));
+
+/* LES TROIS CARTES PORTENT TROIS LEVIERS DIFFÉRENTS — c'est le sac qui le garantit, une carte
+   par levier, mais on tire quand même sans remise pour que la règle survive à une table qui
+   grandirait. */
+function mainFaveurs() {
+  const e = faveurEtat();
+  if (e.main && e.main.length === FAVEUR_MAIN) return e.main;
+  const sac = FAVEURS.slice();
+  const main = [];
+  while (main.length < FAVEUR_MAIN && sac.length) {
+    main.push(sac.splice(Math.floor(Math.random() * sac.length), 1)[0].cle);
+  }
+  e.main = main;
+  return main;
+}
+
+function prendreFaveur(cle) {
+  if (!faveursOuvertes()) return false;
+  const f = FAVEUR_BY_KEY[cle];
+  const e = faveurEtat();
+  if (!f || e.main.indexOf(cle) < 0 || state.coins < prixFaveur()) return false;
+  state.coins -= prixFaveur();
+  e.acquis[cle] = (e.acquis[cle] || 0) + 1;
+  e.pris = (e.pris || 0) + 1;
+  e.main = [];                       // le tirage suivant se fera à la prochaine lecture
+  oublierPrimes();
+  chord([440, 587, 740], 70);
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y - 60, f.glyphe + ' ' + f.nom, 'gain');
+  refresh();
+  save();
+  return true;
+}
 let primesPrises = false;
 
 // Le jeu n'en a pas besoin — il parcourt PRIMES — mais le banc d'essai désigne les primes
@@ -2022,6 +2118,11 @@ function freshState() {
     up: { clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 },
     // les primes achetées, par clé. Elles ne traversent pas l'ascension.
     primes: {},
+    /* LES FAVEURS, ET LE TIRAGE EN COURS. Elles sont des primes : elles se paient en pièces et
+       elles tombent à l'ascension, ce qui les met du côté du cycle et non du côté de ce qu'on
+       emporte. `main` est le tirage POSÉ — il vit dans la sauvegarde pour qu'il soit le même
+       après un rechargement, sinon fermer l'onglet serait une relance gratuite. */
+    faveurs: { pris: 0, acquis: {}, main: [] },
     /* CE QUE L'ENCYCLOPÉDIE A APPRIS, lignée par lignée. Elle ne connaît RIEN d'avance :
        chaque case se remplit en rencontrant la chose, jamais en la déduisant d'une table.
        C'est la différence entre un carnet et un manuel — un manuel dit ce qui existe, un
@@ -2531,13 +2632,39 @@ const oublierPrimes = () => { primeCache = null; };
    trois fois le même multiplicateur sous trois noms. */
 function bonusPrimes() {
   if (primeCache) return primeCache;
-  const b = { valeur: 0, rente: 0, vitesse: 0, oeuf: 0, peage: 0, clic: 0 };
+  const b = { valeur: 0, rente: 0, vitesse: 0, oeuf: 0, peage: 0, clic: 0,
+              couvee: 0, pousse: 0, gras: 0, prodige: 0 };
   for (const p of PRIMES) {
     /* UN CARREFOUR PORTE SON BONUS DANS L'OPTION RETENUE, pas sur lui-même : c'est la seule
        chose qui distingue une prime à choix d'une prime, et tout le reste en découle. */
     const source = p.choix ? choixPris(p) : (prime(p.cle) ? p : null);
     if (!source || !source.bonus) continue;
     for (const k of Object.keys(source.bonus)) b[k] = (b[k] || 0) + source.bonus[k];
+  }
+  /* LES FAVEURS S'EMPILENT ICI, et deux façons de les empiler cohabitent.
+
+     CE QUI MULTIPLIE S'ADDITIONNE : dix « +5 % de vente » font +50 %, sans plafond, parce
+     qu'une valeur qui double n'a rien de dangereux dans une économie qui se compte en
+     milliards.
+
+     CE QUI REMISE S'USE : dix « −5 % sur les œufs » additionnés feraient −50 %, vingt feraient
+     −100 %, et l'œuf serait GRATUIT POUR TOUJOURS — une queue infinie finit toujours par
+     atteindre un plafond additif.
+
+     La remise se COMPOSE donc, et elle se compose SUR CE QUE LES PRIMES ONT DÉJÀ MIS : les
+     primes portent elles aussi des remises d'œuf, additives, et composer la faveur dans son
+     coin avant de l'ajouter aurait laissé la somme repasser au-dessus de un. On enlève cinq
+     pour cent de ce qui RESTE, n fois — la remise s'approche du mur sans jamais y toucher,
+     quoi qu'il y ait déjà, et la carte reste utile au vingtième exemplaire. C'est déjà la
+     règle de l'intendance, quelques lignes plus bas. */
+  const e = state.faveurs;
+  for (const f of (e && e.acquis ? FAVEURS : [])) {
+    const n = e.acquis[f.cle] || 0;
+    if (!n) continue;
+    for (const k of Object.keys(f.bonus)) {
+      b[k] = f.remise ? 1 - (1 - (b[k] || 0)) * Math.pow(1 - f.bonus[k], n)
+                      : (b[k] || 0) + f.bonus[k] * n;
+    }
   }
   return (primeCache = b);
 }
@@ -2615,7 +2742,8 @@ function rollVariants(achete) {
     fond: achete && Math.random() < FOND_ODDS
       ? FONDS[Math.floor(Math.random() * FONDS.length)].key : null,
     // le nacré pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
-    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige + bonusCiel().prodige) *
+    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige + bonusCiel().prodige
+                                             + bonusPrimes().prodige) *
                              (prime('oeil') ? 1.5 : 1),
   };
 }
@@ -2866,8 +2994,9 @@ const autoRate = s => s.kind === 'egg' ? force('couveuse')
 /* Ce que l'album ajoute à CE sujet-là, selon ce qu'il est en train de faire : un œuf couve,
    une bête grandit, une bête mûre engraisse. Trois familles de motifs, une seule fonction. */
 const albumVitesse = s => {
-  const b = bonusAlbum();
-  return 1 + (s.kind === 'egg' ? b.couvee : estMur(s.c) ? b.gras : b.pousse);
+  const b = bonusAlbum(), p = bonusPrimes();
+  return 1 + (s.kind === 'egg' ? b.couvee + p.couvee
+            : estMur(s.c) ? b.gras + p.gras : b.pousse + p.pousse);
 };
 
 // La vitesse réellement observée : celle des automates, poussée par l'album. C'est elle
@@ -3586,8 +3715,9 @@ function advance(dt) {
   const b = bonusAlbum();
   const ardeur = coef('vitesse');
   const cl = bonusCiel();
-  const couve = force('couveuse') * (1 + b.couvee + cl.couvee) * ardeur;
-  const eleve = force('eleveur') * (1 + b.pousse + cl.pousse) * ardeur;
+  const bp = bonusPrimes();
+  const couve = force('couveuse') * (1 + b.couvee + cl.couvee + bp.couvee) * ardeur;
+  const eleve = force('eleveur') * (1 + b.pousse + cl.pousse + bp.pousse) * ardeur;
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -3691,7 +3821,8 @@ function runAutomations(dt) {
   // La mangeoire prend le relais de l'éleveur : elle n'engraisse que les bêtes mûres,
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
-    const debit = dt * FATTEN_X * force('mangeoire') * (1 + bonusAlbum().gras) * coef('vitesse');
+    const debit = dt * FATTEN_X * force('mangeoire')
+                * (1 + bonusAlbum().gras + bonusPrimes().gras) * coef('vitesse');
     for (const c of state.pen) {
       if (estMur(c) && !enPension(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
@@ -6037,6 +6168,18 @@ function tickView() {
     r.el.disabled = pris || state.coins < p.prix;
   }
 
+  /* LA RANGÉE DE FAVEUR. Elle dit le prix et rien d'autre : les trois cartes sont derrière le
+     clic, parce qu'une rangée qui les résumerait ferait choisir sans les lire. */
+  const mise = $('faveur-mise');
+  mise.hidden = !faveursOuvertes();
+  if (!mise.hidden) {
+    const prix = prixFaveur();
+    mise.disabled = state.coins < prix;
+    setText(mise, '❖ Une faveur — ' + fmt(prix) +
+                  (faveursPris() ? '  ·  ' + faveursPris() + ' prise' + (faveursPris() > 1 ? 's' : '') : ''));
+    mise.title = 'Trois cartes tirées au sort, une seule à prendre. Le tirage ne change qu’en prenant.';
+  }
+
   const stock = totalEggs();
   /* LE COMPTEUR D'ENCLOS COMPTE LES BÊTES CONFIÉES, puisqu'elles occupent leur case. Sans
      cette mention, la pension ferait disparaître des bêtes ET des places sans rien dire, et le
@@ -7456,7 +7599,48 @@ function ouvrirCarrefour(cle) {
 
 function fermerCarrefour() {
   carrefourOuvert = null;
+  faveurOuverte = false;
   $('carrefour').hidden = true;
+}
+
+/* LES FAVEURS EMPRUNTENT L'ÉCRAN DU CARREFOUR, et c'est la bonne dette : trois cartes côte à
+   côte, un titre, une phrase, une croix pour partir sans rien prendre. Deux écrans identiques
+   à un drapeau près auraient été deux écrans à maintenir.
+
+   IL SE FERME SANS CHOISIR, comme le carrefour — et surtout SANS RETIRER LE TIRAGE. Rouvrir
+   rend les mêmes trois cartes : sinon fermer serait relancer, et un tirage qu'on relance
+   gratuitement n'est plus un tirage. */
+let faveurOuverte = false;
+
+function ouvrirFaveurs() {
+  if (!faveursOuvertes()) return false;
+  const prix = prixFaveur();
+  faveurOuverte = true;
+  carrefourOuvert = null;
+  setText($('carrefour-titre'), 'Une faveur');
+  setText($('carrefour-dit'), 'Trois cartes tirées au sort, une seule à prendre — le tirage ' +
+    'ne bouge qu’en prenant. Elles coûtent ' + fmt(prix) + ' chacune.');
+  const hote = $('carrefour-routes');
+  hote.textContent = '';
+  for (const cle of mainFaveurs()) {
+    const f = FAVEUR_BY_KEY[cle];
+    const n = faveurCombien(cle);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'route';
+    b.dataset.faveur = cle;
+    b.disabled = state.coins < prix;
+    b.innerHTML = '<span class="route-glyphe"></span><b class="route-nom"></b>' +
+                  '<i class="route-dit"></i>';
+    b.querySelector('.route-glyphe').textContent = f.glyphe;
+    /* CE QU'ON EN A DÉJÀ SE DIT SUR LA CARTE. Une faveur se reprend sans limite, donc « déjà
+       prise trois fois » est la seule information qui décide vraiment entre deux cartes. */
+    b.querySelector('.route-nom').textContent = n ? f.nom + ' ×' + (n + 1) : f.nom;
+    b.querySelector('.route-dit').textContent = f.dit;
+    hote.appendChild(b);
+  }
+  $('carrefour').hidden = false;
+  return true;
 }
 
 function cielClic(e) {
@@ -7861,9 +8045,19 @@ function bindTools() {
   $('carrefour').addEventListener('click', e => {
     if (e.target === $('carrefour')) fermerCarrefour();     // clic sur le fond
   });
+  $('faveur-mise').addEventListener('click', () => {
+    if (!ouvrirFaveurs()) blip(300, 0.05, 'sine', 0.03);
+  });
   $('carrefour-routes').addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('.route');
-    if (!b || !carrefourOuvert) return;
+    if (!b) return;
+    if (faveurOuverte) {
+      /* ON REFERME APRÈS AVOIR PRIS. Le tirage suivant existe déjà — le rouvrir aussitôt
+         donnerait une roue qu'on fait tourner, et non une décision qu'on prend. */
+      if (prendreFaveur(b.dataset.faveur)) fermerCarrefour();
+      return;
+    }
+    if (!carrefourOuvert) return;
     if (choisirRoute(carrefourOuvert, b.dataset.route)) fermerCarrefour();
     else blip(300, 0.05, 'sine', 0.03);
   });

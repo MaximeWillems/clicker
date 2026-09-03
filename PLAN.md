@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.5.0 · sauvegarde v23 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.6.0 · sauvegarde v23 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -216,15 +216,57 @@ mieux avec le prix doré, qui est déjà une décision par cycle.
 > Ce qui suit reste la feuille de route des branches — un nœud par fonctionnalité, le jour
 > où elle existe.
 
-**Le vocabulaire est fixé, et c'est ce qui compte le plus dans cette section.** Deux mots, deux
+### Les faveurs, ou ce qu'on fait quand la liste se termine
+
+Les primes sont cinquante et une, et **les dix dernières sont presque toutes de pension** —
+c'est la mesure qui a lancé la révision. Arrivé là, il n'y a plus rien à acheter et plus rien à
+décider : le dernier tiers de partie perd ce que le premier avait, un prochain achat.
+
+**Les faveurs sont une queue infinie.** Un tirage de trois cartes, on en prend une, un nouveau
+tirage prend sa place. Le prix monte de 40 % à chaque fois : la première coûte cent mille, la
+vingtième quatre-vingt-trois millions, la cinquantième deux mille milliards — le prix de la
+toute dernière prime. Au-delà, elles montent plus vite que la ferme, ce qui est exactement ce
+qu'on veut d'une chose sans fin.
+
+**Dix cartes, dix leviers, une carte par levier.** Le carrefour l'avait déjà écrit : « +10 % de
+vente / +10 % de rente / +10 % de vitesse » est un menu, pas un choix — on prend le plus gros
+nombre. La règle tient ici, mais elle se respecte AUTREMENT : les trois cartes tirées portent
+forcément trois leviers différents, donc trois grandeurs qui ne se comparent pas. Deux tailles
+du même levier dans le sac auraient ramené le menu.
+
+| | **Un carrefour** | **Une faveur** |
+|---|---|---|
+| quand | trois moments écrits | sans fin |
+| les trois options | écrites d'avance | tirées au sort |
+| ce qu'elles pèsent | un tournant | 5 % qui ne se sent pas |
+| se reprend | jamais | autant de fois qu'on veut |
+
+**Elles sont faibles, et c'est le point.** Cinq pour cent ne se sent pas ; c'est la soixantième
+qui se sent. Une faveur forte serait un carrefour de plus, et le carrefour existe déjà.
+
+**Deux façons d'empiler cohabitent, et la seconde est une nécessité, pas une finesse.** Ce qui
+multiplie s'additionne : dix « +5 % de vente » font +50 %, sans plafond. Mais ce qui REMISE ne
+peut pas s'additionner — vingt « −5 % sur les œufs » feraient −100 %, et l'œuf serait gratuit
+pour toujours. Une queue infinie atteint toujours un plafond additif. La remise se compose donc,
+et **sur ce que les primes ont déjà mis** : les primes portent elles aussi des remises d'œuf,
+additives, et composer la faveur dans son coin avant de l'ajouter laissait la somme repasser
+au-dessus de un. C'est un scénario qui l'a montré.
+
+**L'auto-clic n'est pas dans le sac.** Il est l'identité d'un motif de carte, l'ocellé, et une
+identité qu'on distribue au hasard n'en est plus une.
+
+---
+
+**Le vocabulaire est fixé, et c'est ce qui compte le plus dans cette section.** Trois mots, trois
 endroits, aucun recouvrement :
 
-| | **Les primes** | **La constellation** |
-|---|---|---|
-| où | en jeu | à l'ascension |
-| payées en | pièces | jetons |
-| durée | le cycle, puis effacées | acquises pour toujours |
-| ce qu'elles font | pousser ce qu'on a | pousser au-delà de ce qu'un cycle peut acheter |
+| | **Les primes** | **Les faveurs** | **La constellation** |
+|---|---|---|---|
+| où | en jeu | en jeu, après le premier carrefour | à l'ascension |
+| payées en | pièces | pièces | jetons |
+| combien | 51, écrites | sans fin, tirées au sort | 25, écrites |
+| durée | le cycle, puis effacées | le cycle, puis effacées | acquises pour toujours |
+| ce qu'elles font | pousser ce qu'on a | pousser un peu, encore | pousser au-delà de ce qu'un cycle peut acheter |
 
 **Une ligne de cette table a été corrigée en `beta 4.5.0`, et la correction est importante.**
 Elle disait « ouvrir ce qu'on n'a pas », et c'est ce qui a produit quatre nœuds « L'acheteur est
