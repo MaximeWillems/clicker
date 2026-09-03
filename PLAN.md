@@ -158,6 +158,93 @@ emplacements, mais le temps qu'il fallait pour l'atteindre.
 fin de partie, et la rente perpétuelle est précisément ce qui permet d'atteindre 10¹² sans
 jamais rien décider.
 
+### Le jeton devient une monnaie — trois idées qui n'en font qu'une
+
+Trois demandes séparées, et elles se répondent : **un arbre de compétences inter-ascension**, un
+**prix des cartes qui monte par le nombre d'or**, et — ailleurs — **cliquer pour aider la
+pension**. Les deux premières forment un système ; la troisième vit à part, plus bas.
+
+#### Ce que la 3.0.0 a ouvert, et qu'il faut refermer
+
+La `beta 3.0.0` a fait regagner les jetons à chaque cycle. C'était la bonne réponse au mur, et
+elle laisse une porte ouverte : **si les jetons reviennent et que chaque carte en coûte un, on
+emporte cinq cartes à chaque ascension, indéfiniment.** L'album se remplit alors sans décision,
+et le seul frein restant est le nombre d'emplacements.
+
+**Le prix doré est exactement le contrepoids qui manquait.** Chaque carte prise dans une même
+ascension renchérit la suivante d'un facteur φ ≈ 1,618 :
+
+| Carte | Coût | Cumul |
+|---|---|---|
+| 1ʳᵉ | 1 | 1 |
+| 2ᵉ | 2 | 3 |
+| 3ᵉ | 3 | 6 |
+| 4ᵉ | 5 | 11 |
+| 5ᵉ | 7 | 18 |
+
+*(φ⁰ à φ⁴, arrondis au supérieur.)*
+
+Avec la réserve actuelle — cinq jetons à mille milliards de fortune — on emporte **deux cartes
+et il en reste deux**, là où on en prenait cinq. Le geste redevient un arbitrage, et il se pose
+à chaque cycle : *une carte de plus, ou je garde mes jetons ?*
+
+#### L'arbre est ce qui donne un sens au « je garde »
+
+Sans autre emploi, garder un jeton ne serait qu'un gaspillage — la question ne se poserait pas.
+**L'arbre inter-ascension est le second évier**, et c'est lui qui transforme le prix doré en
+décision plutôt qu'en taxe.
+
+Trois choses le distinguent de tout ce qui existe déjà, et il faut que les trois tiennent :
+
+- **il TRAVERSE l'ascension**, là où les primes repartent de zéro et où l'album seul voyage. Le
+  jeu n'a aujourd'hui qu'un objet permanent, l'album ; il en aurait deux, de natures
+  différentes — l'un se collectionne, l'autre se planifie ;
+- **il se dépense en jetons**, pas en pièces. Un arbre payé en pièces ne serait qu'une boutique
+  de plus, et le jeton n'aurait toujours qu'un seul emploi ;
+- **il est un ARBRE**, donc des branches qu'on ne prendra pas. Sans exclusivité, il redevient
+  une liste de courses qu'on finit par épuiser — la même faute que les primes à choix
+  éviteraient, et le même remède : *ce qu'on ne prend pas doit être perdu pour ce cycle.*
+
+Reste ouvert, et c'est ce qui décidera de sa forme : **l'arbre se remet-il à zéro à chaque
+ascension, ou s'accumule-t-il ?** S'il s'accumule, c'est un cliquet permanent et il doit être
+petit ; s'il se rejoue, c'est un build par cycle et il peut être ambitieux. La seconde forme va
+mieux avec le prix doré, qui est déjà une décision par cycle.
+
+#### Ce qu'il faut mesurer avant d'écrire une ligne
+
+Le prix doré et l'arbre **retirent tous les deux des cartes à l'album**. Trois cartes de moins
+par ascension, sur dix ascensions, c'est trente cartes — et la forge en demande neuf pour une
+seule trois-étoiles. Il y a un risque réel que l'album cesse de se remplir assez vite pour que
+la forge existe. **À chiffrer sur une partie simulée avant de figer φ**, et φ n'est peut-être pas
+le bon facteur : c'est un joli nombre, ce n'est pas une raison.
+
+### Cliquer pour aider la pension
+
+**La pension est le seul bâtiment où la présence ne sert à rien.** On y dépose deux bêtes, on
+attend, on revient. Tout le reste du jeu répond au clic — l'œuf couve plus vite, la bête grandit,
+et depuis la `3.1.0` la bête finie paie.
+
+Le geste juste existe déjà ailleurs : **cliquer un œuf avance sa couvaison de `clickGain`
+secondes.** Un couple a exactement la même forme — un `t` qui monte vers une `duree`. La règle
+s'écrirait donc sans rien inventer : *un clic sur un couple avance sa ponte comme un clic sur un
+œuf avance son éclosion.*
+
+**Deux garde-fous, et le premier est déjà connu.**
+
+- **La carte ocellée ne doit pas y toucher.** C'est la troisième fois que cette contrainte
+  décide d'une mécanique — la plonge, la bête finie, et maintenant la pension. `mainDeCarte`
+  existe pour ça.
+- **Les chances de merveille sont PAR PONTE.** Accélérer les pontes accélère donc les
+  merveilles dans la même proportion, et le jeu a déjà connu ce défaut sous une autre forme :
+  la `beta 1.8.1` corrigeait un couple bloqué qui retirait sa recette à chaque tour — huit
+  Wukong en une minute. Une pension qu'on peut cliquer en ×100 doit être mesurée au banc
+  AVANT d'être écrite, pas après.
+
+**« Rentrer dans » la pension pose une autre question** : elle vit aujourd'hui dans la colonne
+de droite, celle qu'on a passé quatre versions à vider. En faire une vue à part entière — un
+quatrième onglet après la ferme, l'encyclopédie et la forge — lui donnerait la place que le nid
+à huit couples réclame déjà dans le tableau de route. Les deux chantiers se rejoignent.
+
 ### Les teintes deviennent des chromatismes — à analyser
 
 **Une seule échelle de couleur au lieu de deux, et plusieurs chromatismes en haut.**
