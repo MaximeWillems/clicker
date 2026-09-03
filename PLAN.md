@@ -867,6 +867,45 @@ huit heures, et cent fois la marche actuelle. Elle n'est pas absurde pour un idl
 n'a jamais été posée contre un chiffre : elle se décide maintenant, et **elle se décide pour
 les trois marches à la fois**.
 
+#### Les deux ères, jouées bout à bout — et le verdict s'inverse
+
+La première mesure comparait des ŒUFS. C'était regarder la mauvaise ligne du budget. Voici les
+deux ères jouées au banc, une politique simple — cliquer sur ce qui n'est pas mûr, monter les
+automates, payer les péages qu'on peut, recycler ce qui bloque, ne jamais vendre ce qui rente —
+jusqu'à **huit bêtes de l'ère menées à l'âge 5** :
+
+    ère commune      86 min
+    ère rare        249 min       ×2,9
+
+**L'ÈRE RARE EST DÉJÀ TROIS FOIS PLUS LONGUE QUE L'ÈRE COMMUNE.** Renchérir l'œuf rare
+l'allongerait encore, alors que le critère retenu est que les deux durent pareil. La cible
+« vers 30 millions » aurait donc poussé dans le mauvais sens.
+
+#### Pourquoi : l'œuf ne pèse rien, le péage pèse tout
+
+    ce que coûte une bête menée à l'âge 5
+
+    rareté        œuf        péages 1→5      total     part de l'œuf
+    commune            18       643 200      643 218       0,00 %
+    rare          300 000        16,1 M       16,4 M       1,83 %
+    épique         7,50 M       385,9 M       393,4 M      1,91 %
+    mythique      180,0 M        9,65 Md      9,83 Md      1,83 %
+
+**L'œuf est un huitantième du prix d'une bête finie. Le péage est tout le reste**, et à un
+rapport remarquablement constant — 1,8 % dans les trois ères hautes. Le prix de l'œuf n'est pas
+le levier de la durée d'une ère : c'est le prix d'entrée, pas le prix du voyage.
+
+**Ce qui rend la seconde ère plus lente, c'est que le clic cesse d'y peser.** L'ère commune est
+portée par la main — on clique, on vend, on rachète, et les péages de 200 et 3 000 pièces
+tombent vite. À partir de la rare, un péage se compte en millions : plus aucun clic ne le paie,
+et l'ère entière devient de l'attente de rente. **Les deux ères ne se jouent pas au même jeu**,
+et c'est ça qu'il faut corriger, pas trois nombres dans une table.
+
+> **Le levier est donc le péage, pas l'œuf.** Ce qui découle du critère « la rare doit durer
+> comme la commune » : diviser les péages rares par environ trois, ou rendre au clic un poids
+> qui suit l'échelle. La seconde piste est la meilleure des deux — elle répare la cause au lieu
+> du symptôme — mais elle touche la même mécanique que le chantier de la rente.
+
 #### La seconde moitié — le péage — bute sur la rente
 
 Le péage d'une rare, de l'âge 1 à l'âge 5, coûte **16,08 M**. Une rare à l'âge 5 se vend
