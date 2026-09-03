@@ -210,6 +210,92 @@ ascension, ou s'accumule-t-il ?** S'il s'accumule, c'est un cliquet permanent et
 petit ; s'il se rejoue, c'est un build par cycle et il peut être ambitieux. La seconde forme va
 mieux avec le prix doré, qui est déjà une décision par cycle.
 
+#### L'Héritage — la forme proposée
+
+**Trois décisions sont prises**, et elles créent ensemble une tension qu'il faut résoudre plutôt
+que subir :
+
+| | Retenu | Ce que ça implique |
+|---|---|---|
+| permanence | **acquis pour toujours, tout atteignable** | l'arbre finit par s'épuiser |
+| contenu | **des règles ET des nombres** | les nombres écraseront les règles |
+| reprise | **aucune, pour l'instant** | un achat se subit longtemps |
+
+Un joueur prend toujours le `+20 %` avant le nœud subtil : c'est lisible, c'est immédiat, et
+ça ne demande pas de comprendre. Si les deux sont côte à côte au même prix, les règles ne
+seront jamais achetées — ou seulement quand il ne restera qu'elles.
+
+**La réponse tient dans la structure, pas dans les prix : le tronc porte les nombres, les
+branches portent les règles, et le tronc est le CHEMIN vers les branches.**
+
+    ┌─ LE TRONC ─────────────────────────────────────────────┐
+    │  vingt rangs, des multiplicateurs permanents           │
+    │  chaque rang atteint OUVRE les nœuds de son niveau     │
+    └────────────────────────────────────────────────────────┘
+         │                    │                    │
+      LE SANG             LA TERRE             LE TEMPS
+    l'ascension       ce avec quoi on       ce qui tourne
+      elle-même          repart               sans toi
+
+On n'achète donc plus « le nombre OU la règle » : le nombre est ce qui donne accès à la règle.
+La tension disparaît sans qu'on ait eu à rendre les multiplicateurs faibles — ce qui n'aurait
+fait que les rendre inutiles au lieu de les rendre secondaires.
+
+#### Le tronc
+
+Des crans sur les **trois coefficients globaux** que le jeu porte déjà — valeur, rente,
+vitesse — et rien d'autre. Ils existent, ils sont mesurés, ils ne demandent aucune mécanique
+neuve : une quatrième source dans `coef()` à côté des primes.
+
+**Une réserve, et elle est sérieuse : le tronc ne doit PAS toucher la rente tant que le
+chantier de la rente n'est pas fait.** Elle est déjà perpétuelle et déjà trop forte ; un
+multiplicateur permanent par-dessus aggraverait exactement ce qu'on a écrit plus haut qu'il
+fallait corriger. Valeur et vitesse seulement, jusque-là.
+
+#### Les trois branches
+
+| Branche | Ce qu'elle change | Nœuds envisagés |
+|---|---|---|
+| **Le Sang** | l'ascension elle-même | le prix doré monte plus lentement · le sommet de fortune compte pour un palier de plus · une carte emportée en plus |
+| **La Terre** | ce avec quoi on repart | repartir avec *n* enclos · un incubateur · une bourse de départ · **garder une prime** à travers le saut |
+| **Le Temps** | ce qui tourne sans toi | un couple de pension survit au saut · le marchand repart déjà réglé · l'absence rend davantage |
+
+**Le Sang boucle sur le prix doré**, et c'est ce qui en fait la branche la plus intéressante :
+un nœud qui adoucit l'escalade est le seul achat du jeu qui change la valeur de tous les futurs
+achats. C'est aussi le plus dangereux à équilibrer, pour la même raison.
+
+#### Le dimensionnement, contre l'épuisement
+
+« Tout atteignable » veut dire qu'un arbre trop petit devient décoratif. Il faut donc le tailler
+contre le DÉBIT DE JETONS, qui se calcule :
+
+    par cycle          4 à 6 jetons (les paliers franchis par le sommet)
+    moins les cartes   1, 2, 3, 5, 7 — cumul 1, 3, 6, 11, 18
+    reste pour l'arbre 2 à 4 jetons par ascension
+
+Sur trente ascensions, cela fait **soixante à cent vingt jetons** qui atteignent l'arbre. Pour
+qu'il ne se termine jamais tout à fait, il doit donc en coûter nettement plus :
+
+    tronc      20 rangs à 1-4 jetons        ≈  60
+    branches   3 × 8 nœuds à 3-15 jetons    ≈ 180
+                                              ───
+                                              240
+
+C'est un ordre de grandeur, pas un barème — mais il dit la bonne chose : **une quarantaine de
+nœuds, et les derniers assez chers pour qu'on ne les voie qu'après beaucoup de cycles.**
+
+#### Ce qui reste ouvert
+
+- **Où il vit.** Un cinquième onglet, ou un écran ouvert depuis l'ascension ? Le second le lie à
+  son moment — on ne pense à l'Héritage qu'en sautant — mais l'enterre le reste du temps.
+- **Ce qu'on voit avant de pouvoir l'acheter.** Le jeu a une doctrine là-dessus : la boutique
+  montre « la marche suivante », les primes n'en montrent que cinq, les merveilles ne se nomment
+  pas avant d'être vues. Un arbre qui montre tout d'un coup contredirait tout le reste.
+- **L'absence de reprise.** Retenue pour l'instant, et il faut savoir ce qu'elle coûte : dans un
+  jeu à une seule sauvegarde, un nœud pris par erreur se subit pour toujours. Le jour où ça se
+  sentira, la reprise à chaque ascension est la sortie la moins chère — elle ne rend pas les
+  choix gratuits, elle les rend RÉVISABLES.
+
 #### Ce qu'il faut mesurer avant d'écrire une ligne
 
 Le prix doré et l'arbre **retirent tous les deux des cartes à l'album**. Trois cartes de moins
