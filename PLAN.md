@@ -252,17 +252,56 @@ chantier de la rente n'est pas fait.** Elle est déjà perpétuelle et déjà tr
 multiplicateur permanent par-dessus aggraverait exactement ce qu'on a écrit plus haut qu'il
 fallait corriger. Valeur et vitesse seulement, jusque-là.
 
-#### Les trois branches
+#### Les branches déverrouillent du JEU, pas du confort
 
-| Branche | Ce qu'elle change | Nœuds envisagés |
+**Une première proposition a été écrite puis jetée**, et elle mérite de rester ici comme
+contre-exemple : elle offrait *repartir avec trois enclos*, *une bourse de départ*, *un
+incubateur*. Du CONFORT. Un enclos gratuit ne fait rien décider — il fait souffler. Et un arbre
+de confort devient une liste de courses qu'on coche, jamais un choix.
+
+**Un nœud déverrouille un pan de jeu.** C'est la seule règle, et elle suffit à écrire le reste :
+
+| Branche | Ce qu'elle ouvre | Exemples |
 |---|---|---|
-| **Le Sang** | l'ascension elle-même | le prix doré monte plus lentement · le sommet de fortune compte pour un palier de plus · une carte emportée en plus |
-| **La Terre** | ce avec quoi on repart | repartir avec *n* enclos · un incubateur · une bourse de départ · **garder une prime** à travers le saut |
-| **Le Temps** | ce qui tourne sans toi | un couple de pension survit au saut · le marchand repart déjà réglé · l'absence rend davantage |
+| **Les bâtiments** | ce que ta ferme CONTIENT | la pension · la forge · le couvoir · ce qui n'existe pas encore |
+| **La main** | ce que vaut ta présence | la puissance du clic · les auto-clics · la frénésie · le clic qui paie |
+| **Le négoce** | ce que valent tes bêtes | le taux de vente · la rente · le prix des œufs · les familles de bonus |
 
-**Le Sang boucle sur le prix doré**, et c'est ce qui en fait la branche la plus intéressante :
-un nœud qui adoucit l'escalade est le seul achat du jeu qui change la valeur de tous les futurs
-achats. C'est aussi le plus dangereux à équilibrer, pour la même raison.
+Et la conséquence qui change tout : **l'arbre devient le foyer de tout ce qui reste à écrire.**
+L'hérédité, le marché qui fluctue, l'œuf mystère, les chromatismes, les tempéraments à double
+effet — chacun a désormais un endroit où arriver, au lieu d'être un système de plus posé à côté
+des autres. Un jeu qui grandit par ses branches grandit sans s'empiler.
+
+#### Ce que ça retire aux primes, et ce qu'il faut trancher
+
+Le déverrouillage est aujourd'hui le métier des PRIMES, payées en pièces et **rachetées à chaque
+cycle** : la pension coûte 400 000 à chaque partie, le marchand 15 000, l'évolution 50 000. Si
+l'arbre prend ce métier, deux lectures s'ouvrent et elles ne font pas le même jeu :
+
+- **(a) L'arbre rend PERMANENT ce qu'on connaît déjà.** La pension déverrouillée une fois reste
+  acquise à travers les sauts. Ça règle un vrai défaut — aujourd'hui, ascensionner oblige à
+  racheter la moitié du jeu, ce qui est précisément « la première partie en accéléré », que le
+  fichier dit ailleurs vouloir éviter.
+- **(b) L'arbre ouvre ce qu'une partie neuve n'a PAS DU TOUT.** De nouvelles familles de bonus,
+  de nouveaux automates, des mécaniques qui n'existent pas encore. C'est ce qui donne envie de
+  refaire un cycle : le suivant n'est pas le même jeu plus vite, c'est un autre jeu.
+
+**Les deux, et sans conflit** : (a) pour ce qui existe, (b) pour ce qui viendra. La première ne
+touche pas à l'équilibrage du premier cycle — jugé bon pour les communes — puisqu'une partie
+neuve garde exactement ses primes actuelles. La seconde n'ajoute rien au premier cycle non plus,
+puisqu'elle ne s'ouvre qu'avec des jetons.
+
+**Ce qui reste à trancher** : une prime rendue permanente par l'arbre disparaît-elle de la
+grille des primes du cycle suivant, ou y reste-t-elle déjà achetée ? La première est plus propre
+— une case de la grille des cinq est chère — mais elle demande que la grille sache qu'un
+bâtiment est acquis autrement.
+
+#### Le prix doré n'est plus une branche, c'est un nœud
+
+Adoucir l'escalade du prix des cartes reste le seul achat du jeu qui change la valeur de tous
+les futurs achats — donc le plus intéressant, et le plus dangereux à équilibrer. Ce n'est pas
+pour autant une branche : c'est un pan de jeu qui n'existe pas encore, donc **un nœud parmi
+d'autres**, et il ira là où il tombe.
 
 #### Le dimensionnement, contre l'épuisement
 
