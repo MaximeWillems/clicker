@@ -2952,65 +2952,322 @@ scenario('carrefour — il ouvre un écran, et se referme sans rien prendre', ()
 
 /* ────────────────────────── la constellation ────────────────────────── */
 
-scenario('constellation — le tronc est un chemin, et il ouvre les branches', () => {
+scenario('constellation — un nœud s’ouvre avec son parent, jamais avant', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
-  poserJetons(jeu, 100);
+  poserJetons(jeu, 500);
 
-  /* LE TRONC S'ACHÈTE EN ORDRE : c'est ce qui permet de lire le rang d'un compte plutôt que
-     d'un parcours, et c'est ce qui fait de lui un CHEMIN et non une liste. */
-  eq('on part du rang zéro', jeu.rangTronc(), 0);
-  ok('le premier rang est ouvert', jeu.etoileOuverte(jeu.ETOILE_BY_KEY['tronc-1']));
-  ok('le second ne l’est pas', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY['tronc-2']));
-  ok('on ne peut pas sauter un rang', !jeu.acheterEtoile('tronc-2'));
+  /* LE PARENT REMPLACE LE RANG. « Demande le rang 8 du tronc » demandait de compter ;
+     « demande la pension » se voit sur le trait qui les relie. */
+  ok('l’étincelle est ouverte d’emblée', jeu.etoileOuverte(jeu.ETOILE_BY_KEY.etincelle));
+  ok('rien d’autre ne l’est', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY.acheteur));
+  ok('donc rien d’autre ne s’achète', !jeu.acheterEtoile('acheteur'));
 
-  ok('le premier s’achète', jeu.acheterEtoile('tronc-1'));
-  eq('le rang monte', jeu.rangTronc(), 1);
-  ok('et le second s’ouvre', jeu.etoileOuverte(jeu.ETOILE_BY_KEY['tronc-2']));
-  ok('on ne le rachète pas', !jeu.acheterEtoile('tronc-1'));
+  ok('l’étincelle s’achète', jeu.acheterEtoile('etincelle'));
+  ok('et ouvre les six premiers', jeu.etoileOuverte(jeu.ETOILE_BY_KEY.acheteur));
+  ok('on ne la rachète pas', !jeu.acheterEtoile('etincelle'));
 
-  /* LES BRANCHES DEMANDENT UN RANG DE TRONC. C'est toute la structure : le nombre est le
-     CHEMIN vers la règle. Sans ça, un joueur prendrait toujours le « +2 % » lisible avant le
-     nœud subtil, et les règles ne seraient jamais achetées. */
-  const acheteur = jeu.ETOILE_BY_KEY.acheteur;
-  eq('l’acheteur demande le rang 2', acheteur.rang, 2);
-  ok('fermé au rang 1', !jeu.etoileOuverte(acheteur));
-  ok('donc refusé', !jeu.acheterEtoile('acheteur'));
-  jeu.acheterEtoile('tronc-2');
-  ok('ouvert au rang 2', jeu.etoileOuverte(acheteur));
-  ok('et il s’achète', jeu.acheterEtoile('acheteur'));
+  /* CHAQUE NŒUD FAIT QUELQUE CHOSE : c'est la règle qui a supprimé le tronc de vingt rangs de
+     « +2 % », un chemin fait de marches vides. */
+  const sansEffet = jeu.CIEL.filter(n => !n.bonus && !n.prime && n.cle !== 'etincelle' &&
+                                         !/or-doux|sommet|ferveur|cendres|creuset|forge|nid-plus|ponte-plus/.test(n.cle));
+  eq('aucun nœud de remplissage', sansEffet.length, 0);
+
+  // la chaîne se remonte un maillon à la fois
+  ok('le marchand attend l’acheteur', !jeu.acheterEtoile('marchand'));
+  jeu.acheterEtoile('acheteur');
+  ok('puis il s’ouvre', jeu.acheterEtoile('marchand'));
+
+  /* SIX DIRECTIONS DEPUIS LE CENTRE, et chacune part de l'étincelle. */
+  eq('six axes', jeu.AXES.length, 6);
+  for (const a of jeu.AXES) {
+    ok(a.cle + ' part du centre', jeu.PAR_AXE[a.cle][0].parent === 'etincelle');
+    ok(a.cle + ' porte au moins quatre nœuds', jeu.PAR_AXE[a.cle].length >= 4);
+  }
 });
 
-scenario('constellation — elle paie en jetons, et le tronc pousse deux coefficients', () => {
+scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false;
-  poserJetons(jeu, 3);
+  s.tuto = false; s.pens = 8;
+  poserJetons(jeu, 500);
+  jeu.acheterEtoile('etincelle');
 
-  eq('trois jetons en main', jeu.jetonsEnMain(), 3);
+  eq('l’étincelle a coûté un jeton', jeu.jetonsEnMain(), 499);
+
+  // le négoce : une valeur, un prix d'œuf, un péage
   const v = jeu.coef('valeur');
-  ok('le premier rang passe', jeu.acheterEtoile('tronc-1'));
-  eq('il a coûté un jeton', jeu.jetonsEnMain(), 2);
-  ok('et la valeur monte de deux pour cent',
-     Math.abs(jeu.coef('valeur') - (v + jeu.TRONC_PAS)) < 1e-9,
-     v + ' → ' + jeu.coef('valeur'));
+  jeu.acheterEtoile('renom');
+  ok('le renom monte la valeur', jeu.coef('valeur') > v);
+  const oe = jeu.prixOeuf(jeu.EGG_BY_KEY.commun);
+  jeu.acheterEtoile('marche');
+  ok('le marché baisse le prix des œufs', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) < oe);
 
-  /* NI RENTE NI CHANCE DANS LE TRONC : la rente est déjà perpétuelle et déjà trop forte, un
-     multiplicateur permanent par-dessus aggraverait ce que le plan dit qu'il faut corriger. */
-  const r = jeu.coef('rente');
-  jeu.acheterEtoile('tronc-2');
-  eq('la rente ne bouge pas', jeu.coef('rente'), r);
-  ok('mais la vitesse, oui', jeu.coef('vitesse') > 1);
+  // la main : le clic, puis l'auto-clic
+  const cp = jeu.clickPower();
+  jeu.acheterEtoile('poing');
+  ok('le poing double le clic', jeu.clickPower() > cp, cp + ' → ' + jeu.clickPower());
 
-  // et sans jetons, rien ne s'achète
-  s.asc.jetons = 0; s.asc.sommet = 0;
-  ok('plus un jeton, plus un nœud', !jeu.acheterEtoile('tronc-3'));
+  // les bâtiments : un déverrouillage définitif
+  jeu.acheterEtoile('acheteur');
+  ok('l’acheteur est acquis', jeu.prime('acheteur'));
+  ok('et c’est la constellation qui le tient', jeu.primeAcquise('acheteur'));
+
+  // l'album : la poussière double
+  const p0 = jeu.poussiereDe(pave(jeu, 1));
+  jeu.acheterEtoile('forge');
+  jeu.acheterEtoile('cendres');
+  eq('les cendres doublent la poussière', jeu.poussiereDe(pave(jeu, 1)), p0 * 2);
+
+  /* LE CREUSET LÈVE L'INTERDIT SUR LES CARTES ÉQUIPÉES : la forge DÉSIGNE ses trois cartes et
+     montre le résultat, donc rien n'y est silencieux — l'interdit n'obligeait qu'à un
+     aller-retour sans décision. */
+  s.album = [pave(jeu, 1)]; s.slots = [1];
+  ok('une équipée reste hors forge', !jeu.forgeable(s.album[0]));
+  jeu.acheterEtoile('creuset');
+  ok('le creuset l’y fait entrer', jeu.forgeable(s.album[0]));
+
+  // le sang : l'ascension elle-même
+  eq('trois cartes coûtent six jetons', jeu.coutCartes(3), 6);
+  jeu.acheterEtoile('or-doux');
+  eq('adoucies, elles en coûtent quatre', jeu.coutCartes(3), 4);
+  /* ACHETER UN NŒUD CONVERTIT LE SOMMET EN BOURSE — c'est ce qui permet de puiser dans les
+     deux sans les compter deux fois. On pose donc le nœud à la main pour comparer. */
+  s.coins = 1e9; jeu.crediterJetons();
+  const j0 = jeu.jetonsDus();
+  eq('un milliard vaut quatre paliers', j0, 4);
+  s.ciel.sommet = true;
+  eq('le sommet en crédite un de plus', jeu.jetonsDus(), j0 + 1);
+  s.ciel['sommet-2'] = true;
+  eq('et le second encore un', jeu.jetonsDus(), j0 + 2);
 });
+
+scenario('constellation — le ciel se dessine, et il est plus grand que l’écran', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 500);
+  jeu.cielSig = '';
+  jeu.refresh();
+
+  const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
+  eq('l’onglet s’ouvre avec le premier jeton', onglet('ciel').hidden, false);
+
+  const tous = cls => {
+    const t = [];
+    const m = x => {
+      if (x.classList && x.classList.contains(cls)) t.push(x);
+      x.children.forEach(m);
+    };
+    noeuds.get('ciel-arbre').children.forEach(m);
+    return t;
+  };
+
+  eq('tous les nœuds sont dessinés', tous('etoile').length, jeu.CIEL.length);
+  /* UN LIEN PAR NŒUD SAUF L'ÉTINCELLE, qui n'a pas de parent : c'est le trait qui porte la
+     règle d'ouverture. */
+  eq('un lien par nœud, sauf le centre', tous('lien').length, jeu.CIEL.length - 1);
+
+  /* LE SEMIS EST STABLE : les étoiles de fond viennent d'un générateur graine, pas de
+     `Math.random`. Sinon elles sauteraient à chaque redessin. */
+  const semis = () => tous('ciel-semis')[0].children.map(c => c.getAttribute('cx')).join(',');
+  const a = semis();
+  jeu.cielSig = '';
+  jeu.refresh();
+  eq('le ciel ne scintille pas sans raison', semis(), a);
+
+  /* UN NŒUD FERMÉ SE MONTRE, il ne se cache pas : on montre une carte qu'on lit pour décider
+     où aller, pas une file d'attente. */
+  const fermes = tous('etoile').filter(x => x.classList.contains('close'));
+  eq('tout est fermé sauf le centre', fermes.length, jeu.CIEL.length - 1);
+
+  jeu.acheterEtoile('etincelle');
+  jeu.refresh();
+  ok('le centre se marque', tous('etoile')[0].classList.contains('prise'));
+  eq('et six portes s’ouvrent',
+     tous('etoile').filter(x => x.classList.contains('ouverte')).length, 6);
+
+  eq('la bourse est annoncée', noeuds.get('ciel-jetons').textContent.slice(0, 1), '✦');
+});
+
+/* ────────────────────────── la poussière et la forge ────────────────────────── */
+
+/* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
+function pave(jeu, id, ligne, etoiles) {
+  return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
+           prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
+}
+
+scenario('clic — une bête menée au bout paie, et seulement sous ta main', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 8; s.coins = 0;
+  const c = bete(jeu, 'golem', 5, 0);
+  c.p = jeu.bandTo(c);
+
+  /* TROIS PLAFONDS À LA FOIS, jamais un seul : une commune mûre à l'âge enfant est déjà « au
+     max de sa tranche », et si elle comptait, c'est toute la ferme qui compterait. */
+  eq('au niveau cent mais pas au dernier rang', jeu.estFinie(c), false);
+  ok('et le clic la fait encore grossir',
+     (jeu.select('c:' + c.id), jeu.tapStage(), (c.over || 0) > 0));
+
+  c.over = jeu.ageGrow(c) * 580;
+  eq('au dernier rang, elle est finie', jeu.estFinie(c), true);
+  ok('rankOf le dit déjà', jeu.rankOf(jeu.sizeFactor(c)).next === null);
+
+  // un âge plus bas ne compte pas, quel que soit l'embonpoint
+  const jeune = bete(jeu, 'golem', 4, 0);
+  jeune.p = jeu.bandTo(jeune);
+  jeune.over = jeu.ageGrow(jeune) * 580;
+  eq('un âge en dessous n’est jamais fini', jeu.estFinie(jeune), false);
+
+  /* CE QU'UN CLIC REND ALORS : de la monnaie, et plus de l'embonpoint. */
+  jeu.select('c:' + c.id);
+  const avant = s.coins, gras = c.over;
+  jeu.tapStage();
+  ok('le clic paie', s.coins > avant, s.coins - avant);
+  eq('et n’engraisse plus', c.over, gras);
+  eq('c’est bien le montant annoncé', s.coins - avant,
+     jeu.gainClicFini(c, { kind: 'creature', c }));
+
+  /* IL RESTE UNE RÉCOMPENSE DE PRÉSENCE : de l'ordre de mille cinq cents clics pour égaler
+     une vente. S'il en fallait dix, vendre n'aurait plus de sens. */
+  ok('mille clics ne valent pas une vente',
+     (s.coins - avant) * 1000 < jeu.sellValue(c),
+     Math.round(jeu.sellValue(c) / (s.coins - avant)) + ' clics par vente');
+
+  /* ET SEULEMENT SOUS LA MAIN DU JOUEUR. La carte ocellée clique à ta place : si elle
+     encaissait, elle deviendrait une machine à monnaie automatique, et la mécanique
+     produirait l'inverse de son intention. */
+  const avant2 = s.coins, gras2 = c.over;
+  jeu.mainDeCarte = true;
+  jeu.tapStage();
+  jeu.mainDeCarte = false;
+  eq('l’ocellée n’encaisse rien', s.coins, avant2);
+  ok('elle retombe sur l’embonpoint', c.over > gras2);
+});
+
+/* ────────────────────────── les carrefours ────────────────────────── */
+
+scenario('sauvegarde — l’atelier de forge est rendu à qui l’avait déjà', () => {
+  /* ON NE RETIRE RIEN À PERSONNE. L'atelier s'ouvrait tout seul à la première carte ; il
+     demande maintenant un nœud de constellation. Une partie qui avait déjà des cartes avait
+     déjà l'atelier : elle reçoit le nœud sans le payer. C'est la règle de toutes les
+     migrations de ce fichier, et la seule qui rende un changement de règle acceptable à
+     quelqu'un qui jouait déjà. */
+  const avecCartes = neuf({
+    v: 21, coins: 0,
+    album: [{ id: 1, line: 'crapaud', age: 5, niv: 100, tint: 0, rank: 0, motif: 0, temper: 0, etoiles: 1 }],
+  });
+  ok('qui avait des cartes garde son atelier', avecCartes.etoilePrise('forge'));
+
+  const sansRien = neuf({ v: 21, coins: 0, album: [] });
+  ok('qui n’en avait pas devra le prendre', !sansRien.etoilePrise('forge'));
+
+  const avaitForge = neuf({ v: 21, coins: 0, album: [], stats: { fusions: 3 } });
+  ok('et qui avait déjà forgé le garde aussi', avaitForge.etoilePrise('forge'));
+});
+
+scenario('carrefour — trois routes, on en prend une, les deux autres se ferment', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const p = jeu.PRIMES.find(x => x.cle === 'carrefour-1');
+  ok('le premier carrefour existe', !!p);
+  eq('il offre trois routes', p.choix.length, 3);
+
+  s.coins = p.prix - 1;
+  ok('sans de quoi payer, rien ne se prend', !jeu.choisirRoute('carrefour-1', 'route-bourse'));
+
+  s.coins = p.prix;
+  ok('avec de quoi, la route se prend', jeu.choisirRoute('carrefour-1', 'route-bourse'));
+  eq('et elle est payée', s.coins, 0);
+
+  /* LES DEUX AUTRES SONT PERDUES, pas remises à plus tard : remises à plus tard, ce ne serait
+     pas un choix mais un ordre d'achat — on finirait par tout avoir et la décision ne coûterait
+     rien. */
+  s.coins = 1e12;
+  ok('on ne prend pas la deuxième', !jeu.choisirRoute('carrefour-1', 'route-ardeur'));
+  ok('ni la troisième', !jeu.choisirRoute('carrefour-1', 'route-poigne'));
+  eq('la bourse n’a pas rebougé', s.coins, 1e12);
+
+  /* L'OPTION EST RANGÉE SOUS SA PROPRE CLÉ : tout le jeu continue de lire `prime('...')` sans
+     rien savoir des carrefours, et une route peut servir de garde comme n'importe quelle
+     prime. */
+  ok('la route retenue est une prime comme une autre', jeu.prime('route-bourse'));
+  ok('le carrefour, lui, n’est pas une prime', !jeu.prime('carrefour-1'));
+  ok('mais il est fait', jeu.primeFaite(p));
+});
+
+scenario('carrefour — les trois routes diffèrent en nature, pas en chiffre', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+
+  /* LA CONTRAINTE QUI DÉCIDE SI C'EST RÉUSSI. « +10 % de vente / +10 % de rente / +10 % de
+     vitesse » n'est pas un choix, c'est un menu : on prend le plus gros nombre et on n'y pense
+     plus. Chaque carrefour offre donc un PRIX qui baisse, une VITESSE qui monte, et un GESTE
+     qui pèse — trois grandeurs qui ne se comparent pas. */
+  for (const cle of ['carrefour-1', 'carrefour-2']) {
+    const p = jeu.PRIMES.find(x => x.cle === cle);
+    const axes = new Set(p.choix.map(o => Object.keys(o.bonus).join('+')));
+    eq(cle + ' : trois axes distincts', axes.size, 3);
+  }
+
+  // et chaque route agit vraiment, chacune sur son levier
+  const oeuf = jeu.prixOeuf(jeu.EGG_BY_KEY.commun);
+  const clic = jeu.clickPower();
+  const vite = jeu.coef('vitesse');
+
+  jeu.choisirRoute('carrefour-1', 'route-bourse');
+  ok('la bourse baisse le prix des œufs', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) < oeuf,
+     oeuf + ' → ' + jeu.prixOeuf(jeu.EGG_BY_KEY.commun));
+  eq('sans toucher au clic', jeu.clickPower(), clic);
+  eq('ni à la vitesse', jeu.coef('vitesse'), vite);
+
+  // une autre partie, une autre route
+  const j2 = neuf(); j2.state.tuto = false; j2.state.coins = 1e12;
+  j2.choisirRoute('carrefour-1', 'route-poigne');
+  ok('la poigne double le clic', j2.clickPower() > clic, clic + ' → ' + j2.clickPower());
+
+  const j3 = neuf(); j3.state.tuto = false; j3.state.coins = 1e12;
+  j3.choisirRoute('carrefour-1', 'route-ardeur');
+  ok('l’ardeur monte la vitesse', j3.coef('vitesse') > vite);
+
+  /* ET LE PÉAGE DU SECOND CARREFOUR : c'est un PRIX, donc il baisse. */
+  const j4 = neuf(); j4.state.tuto = false; j4.state.coins = 1e12;
+  const c = bete(j4, 'crapaud', 2, 3000);
+  const avant = j4.evoCost(c);
+  j4.choisirRoute('carrefour-2', 'route-peage');
+  ok('le péage allégé coûte moins', j4.evoCost(c) < avant, avant + ' → ' + j4.evoCost(c));
+});
+
+scenario('carrefour — il ouvre un écran, et se referme sans rien prendre', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12;
+  jeu.refresh();
+
+  eq('l’écran est fermé au départ', noeuds.get('carrefour').hidden, true);
+  ok('la case l’ouvre', jeu.ouvrirCarrefour('carrefour-1'));
+  eq('il s’affiche', noeuds.get('carrefour').hidden, false);
+  eq('avec ses trois routes', noeuds.get('carrefour-routes').children.length, 3);
+
+  /* IL SE FERME SANS CHOISIR. Rien ne presse — la case reste, l'argent aussi. Un choix
+     définitif ne doit pas se prendre d'un clic distrait au milieu de quarante-sept primes. */
+  jeu.fermerCarrefour();
+  eq('refermé', noeuds.get('carrefour').hidden, true);
+  ok('et rien n’a été pris', !jeu.primeFaite(jeu.PRIMES.find(x => x.cle === 'carrefour-1')));
+  eq('la bourse est intacte', s.coins, 1e12);
+
+  // une fois choisi, il ne se rouvre plus
+  jeu.choisirRoute('carrefour-1', 'route-ardeur');
+  ok('le carrefour est clos', !jeu.ouvrirCarrefour('carrefour-1'));
+});
+
+/* ────────────────────────── la constellation ────────────────────────── */
 
 scenario('constellation — les quatre bâtiments ne se rachètent plus', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   poserJetons(jeu, 100);
-  for (let i = 1; i <= 8; i++) jeu.acheterEtoile('tronc-' + i);
+  /* LA CHAÎNE SE REMONTE UN MAILLON À LA FOIS : la pension demande l'évolution, qui demande le
+     marchand, qui demande l'acheteur, qui demande l'étincelle. Le trait le dit. */
+  for (const cle of ['etincelle', 'acheteur', 'marchand', 'evolution']) jeu.acheterEtoile(cle);
 
   ok('la pension n’est pas encore là', !jeu.prime('pension'));
   ok('on prend le nœud', jeu.acheterEtoile('pension'));
@@ -3031,7 +3288,7 @@ scenario('constellation — les quatre bâtiments ne se rachètent plus', () => 
   jeu.ascChoix = [-c.id];
   jeu.ascensionner();
   ok('après le saut, la pension est toujours là', jeu.prime('pension'));
-  ok('et la constellation aussi', jeu.etoilePrise('tronc-1'));
+  ok('et la constellation aussi', jeu.etoilePrise('etincelle'));
 });
 
 scenario('constellation — le sang touche l’ascension elle-même', () => {
@@ -3058,69 +3315,6 @@ scenario('constellation — le sang touche l’ascension elle-même', () => {
      créditer, sinon sauter aussitôt après un saut rapporterait un jeton gratuit. */
   s.asc.sommet = 0;
   eq('un cycle vide ne crédite rien', jeu.jetonsDus(), 0);
-});
-
-scenario('constellation — l’écran montre tout, et n’ouvre que ce qui est ouvert', () => {
-  const jeu = neuf(); const s = jeu.state;
-  s.tuto = false;
-  poserJetons(jeu, 2);
-  jeu.cielSig = '';
-  jeu.refresh();
-
-  const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
-  eq('l’onglet s’ouvre avec le premier jeton', onglet('ciel').hidden, false);
-
-  /* L'ARBRE EST UN SVG : les nœuds vivent sous le `<svg>`, donc on descend au lieu de ne lire
-     que les enfants directs. Et on compare la CLASSE au lieu de la chercher : `etoile-nom`,
-     `etoile-rang` et `etoile-prix` contiennent tous « etoile », et une recherche par
-     sous-chaîne rendrait bien trop de nœuds. Même piège que `forge-acte`. */
-  const etoiles = filtre => {
-    const t = [];
-    const m = x => {
-      if (x.classList && x.classList.contains('etoile') &&
-          (!filtre || x.classList.contains(filtre))) t.push(x);
-      x.children.forEach(m);
-    };
-    noeuds.get('ciel-arbre').children.forEach(m);
-    return t;
-  };
-  eq('le tronc montre ses vingt rangs', etoiles('tronc').length, jeu.TRONC_RANGS);
-
-  /* UN NŒUD FERMÉ SE MONTRE, IL NE SE CACHE PAS. C'est l'inverse de la doctrine du dévoilement
-     qui gouverne la boutique et les primes, et c'est voulu : là-bas on cache ce qu'un débutant
-     ne peut pas s'offrir, ici on montre une carte qu'on lit pour décider où aller. */
-  const branches = etoiles().filter(x => !x.classList.contains('tronc'));
-  eq('tous les nœuds de branche sont montrés', branches.length, jeu.BRANCHES.length);
-  ok('tous fermés au rang zéro', branches.every(b => b.classList.contains('close')));
-
-  const tr = etoiles('tronc');
-  ok('le premier rang est ouvert', tr[0].classList.contains('ouverte'));
-  ok('le second est fermé', tr[1].classList.contains('close'));
-
-  jeu.acheterEtoile('tronc-1');
-  jeu.refresh();
-  ok('une fois pris, il se marque', etoiles('tronc')[0].classList.contains('prise'));
-
-  /* LA GÉOMÉTRIE PORTE LA RÈGLE : un nœud de branche s'accroche au tronc au rang qu'il exige.
-     Le lien existe donc autant que le nœud, et il en dit la couleur. */
-  const liens = [];
-  const m2 = x => { if (x.classList && x.classList.contains('lien')) liens.push(x); x.children.forEach(m2); };
-  noeuds.get('ciel-arbre').children.forEach(m2);
-  /* Un lien par nœud de branche, plus le tronc. Le tronc DÉJÀ PARCOURU se dessine par-dessus,
-     mais il faut deux points pour faire un trait : au rang 1 il n'existe pas encore. */
-  eq('un lien par nœud de branche, plus le tronc',
-     liens.length, jeu.BRANCHES.length + 1);
-  jeu.acheterEtoile('tronc-2');
-  jeu.refresh();
-  const l2 = [];
-  const m3 = x => { if (x.classList && x.classList.contains('lien')) l2.push(x); x.children.forEach(m3); };
-  noeuds.get('ciel-arbre').children.forEach(m3);
-  eq('au rang deux, le chemin parcouru se dessine', l2.length, jeu.BRANCHES.length + 2);
-  ok('et il se distingue du chemin entier',
-     l2.some(x => x.classList.contains('tronc-pris')));
-
-  ok('la bourse est annoncée', /✦/.test(noeuds.get('ciel-jetons').textContent),
-     noeuds.get('ciel-jetons').textContent);
 });
 
 scenario('ascension — les jetons se regagnent, et le mur tombe', () => {

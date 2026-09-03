@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.3.0';
+const VERSION = 'beta 4.4.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1359,7 +1359,8 @@ const NOMBRE_OR = (1 + Math.sqrt(5)) / 2;
 /* `or-doux` recule l'escalade d'un cran : la deuxième carte coûte le prix de la première, et
    ainsi de suite. C'est le seul achat du jeu qui change la valeur de tous les achats suivants,
    d'où son prix et son rang. */
-const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, Math.max(0, n - (etoilePrise('or-doux') ? 1 : 0))));
+const adoucis = () => (etoilePrise('or-doux') ? 1 : 0) + (etoilePrise('or-doux-2') ? 1 : 0);
+const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, Math.max(0, n - adoucis())));
 function coutCartes(k) {
   let t = 0;
   for (let i = 0; i < k; i++) t += coutCarte(i);
@@ -1380,100 +1381,146 @@ function cartesAbordables(jetons) {
      LA CONSTELLATION     à l'ascension, en jetons, acquise pour toujours, elle OUVRE ce
                           qu'on n'a pas
 
-   LE TRONC PORTE LES NOMBRES, LES BRANCHES PORTENT LES RÈGLES, ET LE TRONC EST LE CHEMIN VERS
-   LES BRANCHES. C'est la seule structure qui règle une tension autrement insoluble : un joueur
-   prend toujours le « +2 % » avant le nœud subtil, parce que c'est lisible et immédiat. Côte à
-   côte au même prix, les règles ne seraient jamais achetées. En faisant du tronc le chemin, on
-   n'achète plus « le nombre OU la règle » — le nombre est ce qui donne accès à la règle.
+   ELLE PARTAIT D'UN TRONC, ET LE TRONC ÉTAIT UNE FAUTE. Vingt rangs de « +2 % » servaient de
+   chemin vers les branches : un chemin fait de marches vides, vingt achats qui ne se sentent
+   pas pour atteindre celui qui compte. Le remède valait moins que le mal qu'il corrigeait.
 
-   NI RENTE NI CHANCE DANS LE TRONC. La rente est déjà perpétuelle et déjà trop forte : un
-   multiplicateur permanent par-dessus aggraverait exactement ce que le plan dit qu'il faut
-   corriger. La chance a déjà le nacré et l'Œil exercé.
+   CHAQUE NŒUD FAIT QUELQUE CHOSE, et cette règle a tout redessiné. Il n'y a plus de chemin
+   séparé du contenu : le chemin EST le contenu, puisqu'un nœud s'ouvre avec son parent. Six
+   directions depuis un centre, vingt-sept nœuds, aucun remplissage.
 
-   VINGT RANGS POUR +20 % DE CHAQUE, c'est délibérément peu — les primes d'une seule famille en
-   donnent cinquante à elles seules, et par cycle. Le tronc n'est pas la récompense. */
-const TRONC_RANGS = 20;
-const TRONC_PAS = 0.02;
-const TRONC = Array.from({ length: TRONC_RANGS }, (v, i) => ({
-  cle: 'tronc-' + (i + 1),
-  rang: i + 1,
-  branche: 'tronc',
-  quoi: i % 2 ? 'vitesse' : 'valeur',
-  prix: 1 + Math.floor(i / 5),
-  nom: 'Rang ' + (i + 1),
-}));
+   PAS DE RENTE ICI. Elle est déjà perpétuelle et déjà trop forte ; un multiplicateur permanent
+   par-dessus aggraverait exactement ce que le plan dit qu'il faut corriger. */
+/* SIX DIRECTIONS DEPUIS LE CENTRE, et pas un tronc. La première version montait en colonne
+   avec vingt rangs de « +2 % » qui servaient de chemin vers les branches — un chemin fait de
+   marches vides. Le remède valait moins que le mal : vingt achats qui ne se sentent pas pour
+   atteindre celui qui compte.
 
-/* LES BRANCHES, ET POURQUOI IL N'Y EN A QUE QUATRE NŒUDS AUJOURD'HUI. Le plan en décrit une
-   vingtaine, réparties en trois branches — les bâtiments, la main, le négoce. La moitié ouvre
-   des choses qui N'EXISTENT PAS ENCORE : l'hérédité, le marché, l'œuf mystère, les
-   chromatismes. Un nœud apparaît le jour où sa fonctionnalité existe, et pas avant : une
-   constellation pleine de portes qui ne mènent nulle part serait pire que pas de constellation.
+   CHAQUE NŒUD FAIT QUELQUE CHOSE. C'est la règle qui a tout redessiné, et elle interdit le
+   remplissage : un nœud ouvre un bâtiment, change une règle, ou pousse un levier assez fort
+   pour qu'on le sente. Il n'y a plus de « chemin » séparé du contenu — le chemin EST le
+   contenu, puisqu'un nœud s'ouvre avec son parent.
 
-   CE QUE LES QUATRE FONT, ET CE N'EST PAS CE QU'ON CROIT. « Ne se rachète plus » ne fait pas
-   économiser : au dixième cycle, 400 000 pièces se gagnent en une seconde. Ce qu'ils font,
-   c'est rendre le bâtiment DISPONIBLE TOUT DE SUITE — une prime ne se dévoile qu'à l'approche
-   de son prix, cinq à la fois, donc la pension n'existait pas avant d'avoir grimpé jusqu'à
-   400 000. Le nœud ne remplit pas la bourse, il change ce que le cycle CONTIENT dès sa
-   première seconde. */
-const BRANCHES = [
-  { cle: 'acheteur',  branche: 'batiments', rang: 2, prix: 3, prime: 'acheteur',
-    nom: 'L’acheteur est à toi',
+   LE PARENT REMPLACE LE RANG. « Demande le rang 8 du tronc » demandait de compter ; « demande
+   la pension » se voit sur le trait qui les relie. La géométrie porte la règle, et cette
+   fois-ci sans intermédiaire. */
+const AXES = [
+  { cle: 'sang',      angle: -90, nom: 'Le sang · ce que tu emportes' },
+  { cle: 'main',      angle: -30, nom: 'La main · ce que vaut ta présence' },
+  { cle: 'negoce',    angle:  30, nom: 'Le négoce · ce que valent tes bêtes' },
+  { cle: 'couvee',    angle:  90, nom: 'La couvée · ce qui pousse' },
+  { cle: 'batiments', angle: 150, nom: 'Les bâtiments · ce que ta ferme contient' },
+  { cle: 'album',     angle: 210, nom: 'L’album · ce qui traverse' },
+];
+const NOM_BRANCHE = Object.fromEntries(AXES.map(a => [a.cle, a.nom]));
+
+/* L'ÉTINCELLE est au centre, et elle ne coûte qu'un jeton : c'est la porte, pas un péage. Tout
+   le reste s'accroche à elle, directement ou par un parent. */
+/* ⚠ `CIEL` ET NON `ETOILES` : `ETOILES` désigne déjà les multiplicateurs d'étoiles d'une carte,
+   `[1, 1.8, 3]`. Deux tables sous un même nom dans un même fichier, c'est la faute que
+   « palier » a déjà coûtée ici — il désignait les paliers de fortune, ceux d'amélioration et
+   les crans d'une carte. C'est LA NOUVELLE qui cède le nom, toujours : l'ancienne est lue par
+   du code qui marche. */
+const CIEL = [
+  { cle: 'etincelle', axe: null, parent: null, prix: 1, glyphe: '✦', nom: 'L’étincelle',
+    dit: 'Le premier jeton dépensé. Il n’achète rien qu’un droit : celui de dépenser les suivants.' },
+
+  // ── LE SANG · l'ascension elle-même ──
+  { cle: 'or-doux', axe: 'sang', parent: 'etincelle', prix: 8, glyphe: '🌀',
+    nom: 'Le prix doré s’adoucit',
+    dit: 'Chaque carte emportée coûte un cran de moins : la deuxième au prix de la première.' },
+  { cle: 'sommet', axe: 'sang', parent: 'or-doux', prix: 12, glyphe: '⛰',
+    nom: 'Le sommet compte plus',
+    dit: 'Ton sommet de fortune vaut un palier de plus. Un jeton de plus à chaque cycle, pour toujours.' },
+  { cle: 'or-doux-2', axe: 'sang', parent: 'sommet', prix: 22, glyphe: '🜚',
+    nom: 'L’or coule',
+    dit: 'Un second cran d’adoucissement. Cinq cartes coûtent alors ce que trois coûtaient.' },
+  { cle: 'sommet-2', axe: 'sang', parent: 'or-doux-2', prix: 30, glyphe: '🏔',
+    nom: 'Le second sommet',
+    dit: 'Encore un palier. Deux jetons de plus par cycle que ta fortune seule ne donnerait.' },
+
+  // ── LA MAIN · ce que vaut ta présence ──
+  { cle: 'poing', axe: 'main', parent: 'etincelle', prix: 4, glyphe: '✊',
+    nom: 'Le poing', dit: 'Chacun de tes clics porte deux fois plus loin.',
+    bonus: { clic: 1 } },
+  { cle: 'doigts', axe: 'main', parent: 'poing', prix: 8, glyphe: '👆',
+    nom: 'Les doigts agiles', dit: 'Un demi-clic par seconde, sans que tu touches à rien.',
+    bonus: { clicAuto: 0.5 } },
+  { cle: 'ferveur', axe: 'main', parent: 'doigts', prix: 14, glyphe: '⚡',
+    nom: 'La ferveur', dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
+  { cle: 'fracas', axe: 'main', parent: 'ferveur', prix: 24, glyphe: '💥',
+    nom: 'Le fracas', dit: 'Tes clics portent deux fois plus loin encore. En fin de partie, une bête menée au bout paie au clic.',
+    bonus: { clic: 2 } },
+
+  // ── LE NÉGOCE · ce que valent tes bêtes ──
+  { cle: 'renom', axe: 'negoce', parent: 'etincelle', prix: 4, glyphe: '🏷️',
+    nom: 'Le renom', dit: 'Dix pour cent de valeur en plus sur tout ce que tu élèves — vente comme rente.',
+    bonus: { valeur: 0.10 } },
+  { cle: 'marche', axe: 'negoce', parent: 'renom', prix: 9, glyphe: '🛒',
+    nom: 'Le marché', dit: 'Les œufs de la boutique coûtent un cinquième de moins, quelle que soit leur rareté.',
+    bonus: { oeuf: 0.20 } },
+  { cle: 'passage', axe: 'negoce', parent: 'marche', prix: 15, glyphe: '🗝️',
+    nom: 'Le passage', dit: 'Faire monter une bête d’un âge coûte un quart de moins. Le péage se paie à chaque évolution.',
+    bonus: { peage: 0.25 } },
+  { cle: 'fortune', axe: 'negoce', parent: 'passage', prix: 26, glyphe: '👑',
+    nom: 'La fortune', dit: 'Vingt pour cent de valeur de plus. Ce que tu élèves vaut ce qu’il n’a jamais valu.',
+    bonus: { valeur: 0.20 } },
+
+  // ── LA COUVÉE · ce qui pousse ──
+  { cle: 'ardeur', axe: 'couvee', parent: 'etincelle', prix: 4, glyphe: '🐓',
+    nom: 'L’ardeur', dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse.',
+    bonus: { vitesse: 0.10 } },
+  { cle: 'chaleur', axe: 'couvee', parent: 'ardeur', prix: 9, glyphe: '🔥',
+    nom: 'La chaleur', dit: 'Les œufs éclosent trente pour cent plus vite.',
+    bonus: { couvee: 0.30 } },
+  { cle: 'sève', axe: 'couvee', parent: 'chaleur', prix: 15, glyphe: '🌱',
+    nom: 'La sève', dit: 'Les bêtes montent de niveau trente pour cent plus vite.',
+    bonus: { pousse: 0.30 } },
+  { cle: 'torrent', axe: 'couvee', parent: 'sève', prix: 26, glyphe: '🌊',
+    nom: 'Le torrent', dit: 'Vingt-cinq pour cent de vitesse de plus. Toute la ferme accélère d’un cran.',
+    bonus: { vitesse: 0.25 } },
+
+  // ── LES BÂTIMENTS · ce que ta ferme contient ──
+  { cle: 'acheteur', axe: 'batiments', parent: 'etincelle', prix: 3, glyphe: '🥚',
+    prime: 'acheteur', nom: 'L’acheteur est à toi',
     dit: 'L’acheteur automatique ne se rachète plus jamais : il est là dès la première seconde d’un cycle.' },
-  { cle: 'marchand',  branche: 'batiments', rang: 4, prix: 4, prime: 'marchand',
-    nom: 'Le marchand est à toi',
+  { cle: 'marchand', axe: 'batiments', parent: 'acheteur', prix: 5, glyphe: '🤝',
+    prime: 'marchand', nom: 'Le marchand est à toi',
     dit: 'Le marchand automatique ne se rachète plus jamais.' },
-  { cle: 'evolution', branche: 'batiments', rang: 6, prix: 5, prime: 'evolution',
-    nom: 'L’évolution est à toi',
+  { cle: 'evolution', axe: 'batiments', parent: 'marchand', prix: 7, glyphe: '🧬',
+    prime: 'evolution', nom: 'L’évolution est à toi',
     dit: 'L’évolution automatique ne se rachète plus jamais.' },
-  { cle: 'pension',   branche: 'batiments', rang: 8, prix: 8, prime: 'pension',
-    nom: 'La pension est à toi',
-    dit: 'Le bâtiment de la pension est acquis : un cycle neuf commence avec son nid.' },
-  /* LA FORGE MIGRE ICI. Elle s'ouvrait toute seule à la première carte, ce qui était une
-     non-décision : un atelier qu'on n'a jamais choisi d'ouvrir n'est pas un pan de jeu, c'est
-     un écran de plus. Elle demande maintenant un nœud — et le moment tombe juste, puisqu'on
-     gagne ses premiers jetons au premier saut, celui-là même qui donne les premières cartes.
+  { cle: 'pension', axe: 'batiments', parent: 'evolution', prix: 11, glyphe: '🛖',
+    prime: 'pension', nom: 'La pension est à toi',
+    dit: 'Le bâtiment est acquis : un cycle neuf commence avec son nid.' },
+  { cle: 'nid-plus', axe: 'batiments', parent: 'pension', prix: 18, glyphe: '🪹',
+    nom: 'Un nid de plus', dit: 'Un couple de plus à la pension, quel que soit ce que tu as acheté ce cycle.' },
+  { cle: 'ponte-plus', axe: 'batiments', parent: 'nid-plus', prix: 28, glyphe: '🍳',
+    nom: 'Une ponte de plus', dit: 'Un œuf de plus à chaque ponte. La chance de merveille, elle, reste attachée à la ponte.' },
 
-     Une partie déjà commencée ne perd rien : la migration donne le nœud à qui avait déjà
-     forgé, ou possédait des cartes. */
-  { cle: 'forge',     branche: 'batiments', rang: 3, prix: 4,
-    glyphe: '🔨', nom: 'L’atelier de forge',
+  // ── L'ALBUM · ce qui traverse ──
+  { cle: 'forge', axe: 'album', parent: 'etincelle', prix: 4, glyphe: '🔨',
+    nom: 'L’atelier de forge',
     dit: 'Trois cartes semblables n’en font qu’une, d’une étoile de plus. L’atelier reste ouvert à travers les ascensions.' },
-
-  /* LE SANG — ce qui touche l'ascension elle-même. Ces deux nœuds sont les seuls du plan qui
-     parlent d'ascension sans dépendre d'une fonctionnalité qui n'existe pas encore, et ils
-     changent la valeur de tous les achats suivants : ils sont donc les plus chers, et les plus
-     tardifs. */
-  { cle: 'or-doux',   branche: 'sang', rang: 12, prix: 16,
-    glyphe: '🌀', nom: 'Le prix doré s’adoucit',
-    dit: 'Chaque carte emportée coûte un cran de moins : la deuxième au prix de la première, la troisième au prix de la deuxième.' },
-  { cle: 'sommet',    branche: 'sang', rang: 15, prix: 20,
-    glyphe: '⛰', nom: 'Le sommet compte plus',
-    dit: 'Ton sommet de fortune vaut un palier de plus, à chaque cycle. Un jeton de plus à chaque ascension, pour toujours.' },
+  { cle: 'cendres', axe: 'album', parent: 'forge', prix: 9, glyphe: '✧',
+    nom: 'Les cendres', dit: 'Fondre une carte rend deux fois plus de poussière.' },
+  { cle: 'creuset', axe: 'album', parent: 'cendres', prix: 16, glyphe: '⚒',
+    nom: 'Le creuset', dit: 'La forge accepte les cartes équipées : plus besoin de les retirer avant de forger.' },
+  { cle: 'prisme', axe: 'album', parent: 'creuset', prix: 26, glyphe: '🌈',
+    nom: 'Le prisme', dit: 'Une bête chromatique naît une fois sur 8 192. Ce nœud améliore ce tirage de moitié.',
+    bonus: { prodige: 0.5 } },
 ];
 
-const NOM_BRANCHE = {
-  batiments: 'Les bâtiments — ce que ta ferme contient',
-  sang: 'Le sang — ce que tu emportes',
-  main: 'La main — ce que vaut ta présence',
-  negoce: 'Le négoce — ce que valent tes bêtes',
-};
-const CONSTELLATION = TRONC.concat(BRANCHES);
-const ETOILE_BY_KEY = Object.fromEntries(CONSTELLATION.map(n => [n.cle, n]));
+const ETOILE_BY_KEY = Object.fromEntries(CIEL.map(n => [n.cle, n]));
+// ce que chaque axe porte, dans l'ordre où on le parcourt
+const PAR_AXE = Object.fromEntries(AXES.map(a =>
+  [a.cle, CIEL.filter(n => n.axe === a.cle)]));
 
 const etoilePrise = cle => !!(state.ciel && state.ciel[cle]);
-// le rang atteint : le plus haut rang de tronc pris sans trou, puisqu'ils s'achètent en ordre
-const rangTronc = () => {
-  let n = 0;
-  while (n < TRONC_RANGS && etoilePrise('tronc-' + (n + 1))) n++;
-  return n;
-};
 
-/* Ce qu'un nœud demande : son rang de tronc, et le rang précédent pour le tronc lui-même.
-   L'ordre du tronc n'est pas une décoration — c'est ce qui fait que `rangTronc` peut se lire
-   d'un compte plutôt que d'un parcours. */
-const etoileOuverte = n => n.branche === 'tronc'
-  ? n.rang === rangTronc() + 1
-  : rangTronc() >= n.rang;
+/* UN NŒUD S'OUVRE AVEC SON PARENT, et c'est tout. « Demande le rang 8 du tronc » demandait de
+   compter ; « demande la pension » se voit sur le trait qui les relie. */
+const etoileOuverte = n => !n.parent || etoilePrise(n.parent);
 
 function acheterEtoile(cle) {
   const n = ETOILE_BY_KEY[cle];
@@ -1496,14 +1543,21 @@ function acheterEtoile(cle) {
 
 /* Ce que le tronc ajoute aux deux coefficients globaux. Une quatrième source à côté des
    primes, et elle traverse l'ascension — c'est toute la différence. */
+/* CE QUE LA CONSTELLATION AJOUTE, tous leviers confondus. Les clés sont celles que l'album
+   porte déjà : rien de neuf à brancher, seulement une source de plus aux endroits où elles se
+   consomment. */
 function bonusCiel() {
-  const b = { valeur: 0, rente: 0, vitesse: 0 };
-  for (const n of TRONC) if (etoilePrise(n.cle)) b[n.quoi] += TRONC_PAS;
+  const b = { valeur: 0, rente: 0, vitesse: 0, oeuf: 0, peage: 0, clic: 0,
+              clicAuto: 0, couvee: 0, pousse: 0, prodige: 0 };
+  for (const n of CIEL) {
+    if (!n.bonus || !etoilePrise(n.cle)) continue;
+    for (const k of Object.keys(n.bonus)) b[k] += n.bonus[k];
+  }
   return b;
 }
 
 // les primes que la constellation a rendues définitives
-const primeAcquise = cle => BRANCHES.some(n => n.prime === cle && etoilePrise(n.cle));
+const primeAcquise = cle => CIEL.some(n => n.prime === cle && etoilePrise(n.cle));
 
 /* ── La granularité des améliorations ─────────────────────────────────────────
    Un niveau qui double presque de prix et ne rend qu'un cran d'effet, c'est deux décroissances
@@ -2418,7 +2472,8 @@ const cleForge = k => k.line + ':' + k.motif + ':' + (k.etoiles || 1);
 
 const rareteDe    = k => LINE_BY_KEY[k.line].rarity;
 // Ce qu'une carte rend si on la fond. Les étoiles n'entrent pas : on ne défait pas une fusion.
-const poussiereDe = k => Math.round(POUSSIERE_BASE * POUSSIERE_RARETE[rareteDe(k)]
+const poussiereDe = k => Math.round((etoilePrise('cendres') ? 2 : 1)
+                                    * POUSSIERE_BASE * POUSSIERE_RARETE[rareteDe(k)]
                                     * (k.prodige ? POUSSIERE_PRODIGE : 1)
                                     * (k.fond ? POUSSIERE_FOND : 1));
 // Ce que coûte l'étoile suivante, ou null quand la carte est au bout.
@@ -2538,7 +2593,8 @@ function rollVariants(achete) {
     fond: achete && Math.random() < FOND_ODDS
       ? FONDS[Math.floor(Math.random() * FONDS.length)].key : null,
     // le nacré pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
-    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige) * (prime('oeil') ? 1.5 : 1),
+    prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige + bonusCiel().prodige) *
+                             (prime('oeil') ? 1.5 : 1),
   };
 }
 
@@ -2633,12 +2689,13 @@ const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)
 const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2') ? 0.75 : 1);
 const evoCost   = c => EVOLVE[c.age - 1] === null ? null
                      : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise()
-                                  * (1 - bonusAlbum().peage) * (1 - bonusPrimes().peage));
+                                  * (1 - bonusAlbum().peage) * (1 - bonusPrimes().peage)
+                                  * (1 - bonusCiel().peage));
 
 /* Le prix d'un œuf passe toujours par ici : le zébré de l'album le baisse, et un prix qui
    s'afficherait ailleurs qu'à l'endroit où il se paie finirait par mentir. */
 const prixOeuf  = e => Math.max(1, Math.round(e.price * (1 - bonusAlbum().oeuf)
-                                              * (1 - bonusPrimes().oeuf)
+                                              * (1 - bonusPrimes().oeuf) * (1 - bonusCiel().oeuf)
                                               * (prime('grossiste') ? 0.8 : 1)));
 const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
 /* Les enclos des primes s'ajoutent au compte, JAMAIS au prix : `penCost` continue de se
@@ -2777,7 +2834,7 @@ const enFrenesie = () => (state.frenesie || 0) > 0;
    reste deux fois moins de clics à donner, sans une ligne de plus. */
 const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
                           (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1) *
-                          (1 + bonusAlbum().clic + bonusPrimes().clic);
+                          (1 + bonusAlbum().clic + bonusPrimes().clic + bonusCiel().clic);
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
@@ -3507,8 +3564,9 @@ function upLabel(u, lot) {
 function advance(dt) {
   const b = bonusAlbum();
   const ardeur = coef('vitesse');
-  const couve = force('couveuse') * (1 + b.couvee) * ardeur;
-  const eleve = force('eleveur') * (1 + b.pousse) * ardeur;
+  const cl = bonusCiel();
+  const couve = force('couveuse') * (1 + b.couvee + cl.couvee) * ardeur;
+  const eleve = force('eleveur') * (1 + b.pousse + cl.pousse) * ardeur;
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -3669,7 +3727,7 @@ function runAutomations(dt) {
    ne peut pas cliquer à chaque tour, et arrondir ferait rendre zéro ou dix fois trop. */
 let ocelleReste = 0, mainDeCarte = false;
 function tickOcelle(dt) {
-  const par = bonusAlbum().clicAuto;
+  const par = bonusAlbum().clicAuto + bonusCiel().clicAuto;
   if (!par) { ocelleReste = 0; return; }
   ocelleReste += par * dt;
   let garde = 0;
@@ -3693,7 +3751,7 @@ function tickJoie(dt) {
 }
 
 function offrirFrenesie(palier) {
-  const large = prime('generosite') ? 2 : 1;
+  const large = (prime('generosite') ? 2 : 1) * (etoilePrise('ferveur') ? 2 : 1);
   const duree = FRENESIE[Math.min(palier, FRENESIE.length) - 1] * large;
   // les cadeaux s'ajoutent sans jamais dépasser la minute : deux ×2 ne feront pas un ×4
   state.frenesie = Math.min(FRENESIE_MAX * large, (state.frenesie || 0) + duree);
@@ -4598,7 +4656,8 @@ function jetonsDus() {
   while (n < JETON_PALIERS.length && (state.asc.sommet || 0) >= JETON_PALIERS[n]) n++;
   // `sommet` : un palier de plus, à chaque cycle et pour toujours — mais jamais sur zéro,
   // sinon un cycle où l'on n'a pas tenu une seule pièce créditerait quand même un jeton
-  return n && etoilePrise('sommet') ? n + 1 : n;
+  if (!n) return 0;
+  return n + (etoilePrise('sommet') ? 1 : 0) + (etoilePrise('sommet-2') ? 1 : 0);
 }
 
 /* CE QU'ON A EN MAIN : ce que le cycle vient de créditer, PLUS ce qui n'a pas été dépensé
@@ -4754,35 +4813,31 @@ function carteEl(k, actes) {
    Signature, comme partout : l'écran se rebâtit quand l'album, les emplacements ou la
    poussière changent, et pas dix fois par seconde. Un bouton détruit entre l'appui et le
    relâchement n'émet aucun « click » — la bande et le nid l'ont appris avant lui. */
-/* L'ÉCRAN DE LA CONSTELLATION. Le tronc en colonne à gauche — c'est un chemin, et un chemin
-   se lit dans un sens — les branches à droite, chacune s'ouvrant au rang qu'elle demande.
+/* ── L'ARBRE, DEPUIS LE CENTRE ─────────────────────────────────────────────────
+   Six directions, et le premier nœud au milieu. Un arbre qui monte a un sens de lecture ; une
+   constellation n'en a pas, et c'est ce qui la rend consultable — on part du centre vers ce
+   qu'on vise, pas du bas vers le haut.
 
-   UN NŒUD FERMÉ SE MONTRE, il ne se cache pas. C'est l'inverse de la doctrine du dévoilement
-   qui gouverne la boutique et les primes, et c'est voulu : là-bas on cache ce qu'on ne peut pas
-   encore s'offrir pour ne pas écraser un débutant, ici on montre TOUT parce que c'est une carte
-   qu'on lit pour décider où aller. Un arbre dont on ne voit pas les branches n'est pas un
-   arbre, c'est une file d'attente.
+   LE PARENT SE VOIT SUR LE TRAIT. Un nœud s'ouvre avec le sien, donc la ligne qui les relie
+   dit la règle : plus besoin d'écrire « demande le rang 8 », ni de le compter.
 
-   Signature, comme partout : rien ne se rebâtit tant que rien n'a bougé. */
-let cielSig = '';
+   IL EST PLUS GRAND QUE L'ÉCRAN, EXPRÈS. On le tire pour s'y déplacer, comme une carte. Un
+   arbre qu'on voit entier d'un coup n'a pas de profondeur, et ce qu'on vise à trente jetons
+   doit être loin.
 
-/* ── L'ARBRE ───────────────────────────────────────────────────────────────────
-   LA GÉOMÉTRIE PORTE LA RÈGLE. Chaque nœud de branche s'accroche au tronc EXACTEMENT au rang
-   qu'il exige : « La pension demande le rang 8 » se voit avant de se lire, et on comprend d'un
-   regard qu'il faut monter pour l'atteindre. Une liste l'aurait dit en mots ; un arbre le
-   montre.
-
-   EN SVG, ET SANS LIBRAIRIE. Ce qu'on dessine tient en trois formes — une courbe, un cercle,
-   un texte — et les positions se calculent. Le tronc oscille légèrement : une colonne droite
-   se lit comme un tableau, une ligne qui ondule se lit comme un arbre, et c'est tout ce qui
-   sépare les deux.
-
-   LES BRANCHES ALTERNENT LEUR ÉCART au tronc. Trois nœuds à des rangs voisins — l'acheteur au
-   2, la forge au 3, le marchand au 4 — se poseraient sinon l'un sur l'autre : quarante-six
-   pixels séparent deux rangs, et un cercle en fait cinquante-six. */
-const ARBRE = { l: 900, pas: 46, bas: 1010, x: 450, r: 20, ecart: [150, 236] };
-const arbreX = rang => ARBRE.x + Math.sin(rang * 0.55) * 16;
-const arbreY = rang => ARBRE.bas - (rang - 1) * ARBRE.pas;
+   LE CIEL EST SEMÉ, ET LE SEMIS EST STABLE : les étoiles de fond viennent d'un générateur
+   graine, pas de `Math.random`. Sinon elles sauteraient à chaque redessin, et un fond qui
+   scintille sans raison est un fond qui fatigue. */
+const CIEL_VUE = { l: 1700, h: 1700, r: 22, rayon: [175, 320, 470, 630, 790] };
+const cieuxXY = n => {
+  if (!n.axe) return { x: CIEL_VUE.l / 2, y: CIEL_VUE.h / 2 };
+  const axe = AXES.find(a => a.cle === n.axe);
+  const i = PAR_AXE[n.axe].indexOf(n);
+  // un léger balancement : trois nœuds parfaitement alignés font une règle, pas une branche
+  const ang = (axe.angle + (i % 2 ? 6 : -6)) * Math.PI / 180;
+  const r = CIEL_VUE.rayon[Math.min(i, CIEL_VUE.rayon.length - 1)];
+  return { x: CIEL_VUE.l / 2 + Math.cos(ang) * r, y: CIEL_VUE.h / 2 + Math.sin(ang) * r };
+};
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => {
   const n = document.createElementNS(SVG_NS, tag);
@@ -4790,8 +4845,9 @@ const svgEl = (tag, attrs) => {
   return n;
 };
 
+let cielSig = '';
 function renderCiel() {
-  const jetons = jetonsEnMain(), rang = rangTronc();
+  const jetons = jetonsEnMain();
   const sig = Object.keys(state.ciel || {}).sort().join(',') + '|' + jetons;
   if (sig === cielSig) return;
   cielSig = sig;
@@ -4801,36 +4857,32 @@ function renderCiel() {
   const hote = $('ciel-arbre');
   hote.textContent = '';
   const svg = svgEl('svg', {
-    class: 'ciel-svg', viewBox: '0 0 ' + ARBRE.l + ' ' + (ARBRE.bas + 60),
-    preserveAspectRatio: 'xMidYMax meet',
+    class: 'ciel-svg', viewBox: '0 0 ' + CIEL_VUE.l + ' ' + CIEL_VUE.h,
+    preserveAspectRatio: 'xMidYMid meet',
   });
 
-  /* LE TRONC D'ABORD, en deux traits : le chemin déjà parcouru par-dessus le chemin entier.
-     C'est ce qui donne la barre de progression sans en dessiner une. */
-  const trace = n => {
-    let d = 'M ' + arbreX(1) + ' ' + arbreY(1);
-    for (let i = 2; i <= n; i++) d += ' L ' + arbreX(i) + ' ' + arbreY(i);
-    return d;
-  };
-  svg.appendChild(svgEl('path', { class: 'lien tronc-vide', d: trace(TRONC_RANGS) }));
-  if (rang > 1) svg.appendChild(svgEl('path', { class: 'lien tronc-pris', d: trace(rang) }));
+  // le semis, semé une fois pour toutes
+  let g = 20250903;
+  const suivant = () => ((g = (g * 1103515245 + 12345) % 2147483648) / 2147483648);
+  const fond = svgEl('g', { class: 'ciel-semis' });
+  for (let i = 0; i < 220; i++) {
+    fond.appendChild(svgEl('circle', {
+      cx: (suivant() * CIEL_VUE.l).toFixed(1), cy: (suivant() * CIEL_VUE.h).toFixed(1),
+      r: (0.7 + suivant() * 1.8).toFixed(2), opacity: (0.15 + suivant() * 0.5).toFixed(2),
+    }));
+  }
+  svg.appendChild(fond);
 
-  const cote = {};
-  for (const n of BRANCHES) cote[n.branche] = n.branche === 'sang' ? 1 : -1;
-  const compte = {};
+  const xy = {};
+  for (const n of CIEL) xy[n.cle] = cieuxXY(n);
 
-  // les liens des branches, avant les nœuds : un trait ne doit jamais passer sur un cercle
-  const pose = {};
-  for (const n of BRANCHES) {
-    const i = (compte[n.branche] = (compte[n.branche] || 0) + 1) - 1;
-    const dx = ARBRE.ecart[i % ARBRE.ecart.length] * cote[n.branche];
-    const x0 = arbreX(n.rang), y0 = arbreY(n.rang);
-    const x = x0 + dx, y = y0 - 10;
-    pose[n.cle] = { x, y, dx };
+  // les liens d'abord : un trait ne passe jamais par-dessus un cercle
+  for (const n of CIEL) {
+    if (!n.parent) continue;
+    const a = xy[n.parent], b = xy[n.cle];
     svg.appendChild(svgEl('path', {
-      class: 'lien ' + n.branche + (etoilePrise(n.cle) ? ' pris' : ''),
-      d: 'M ' + x0 + ' ' + y0 + ' C ' + (x0 + dx * 0.5) + ' ' + y0 + ' ' +
-         (x0 + dx * 0.6) + ' ' + y + ' ' + x + ' ' + y,
+      class: 'lien ' + (n.axe || 'centre') + (etoilePrise(n.cle) ? ' pris' : ''),
+      d: 'M ' + a.x + ' ' + a.y + ' L ' + b.x + ' ' + b.y,
     }));
   }
 
@@ -4838,59 +4890,80 @@ function renderCiel() {
                : !etoileOuverte(n) ? 'close'
                : jetons < n.prix ? 'chere' : 'ouverte';
 
-  const poser = (n, x, y, texte, classe) => {
-    const g = svgEl('g', {
-      class: 'etoile ' + (n.branche === 'tronc' ? 'tronc' : n.branche) + ' ' + etat(n),
-      'data-etoile': n.cle, tabindex: '0', role: 'button',
-    });
-    g.dataset.etoile = n.cle;
-    g.appendChild(svgEl('circle', { class: 'etoile-rond', cx: x, cy: y, r: ARBRE.r }));
-    const t = svgEl('text', { class: classe, x, y: y + 6, 'text-anchor': 'middle' });
-    t.textContent = texte;
-    g.appendChild(t);
-    const titre = svgEl('title');
-    titre.textContent = etoilePrise(n.cle) ? n.nom + ' — acquis pour toujours.'
-      : !etoileOuverte(n) ? n.nom + ' — demande le rang ' + n.rang + ' du tronc.'
-      : n.nom + ' — ✦ ' + n.prix + '. ' + (n.dit || '');
-    g.appendChild(titre);
-    return g;
-  };
-
-  for (const n of TRONC) {
-    svg.appendChild(poser(n, arbreX(n.rang), arbreY(n.rang), String(n.rang), 'etoile-rang'));
-  }
-
-  for (const n of BRANCHES) {
-    const p = pose[n.cle];
-    const g = poser(n, p.x, p.y, n.glyphe || '', 'etoile-icone');
-    /* LE NOM SE LIT SANS SURVOL. Une infobulle suffit pour le détail, jamais pour l'essentiel :
-       un arbre dont il faut survoler chaque nœud pour savoir ce qu'il fait n'est pas une carte
-       qu'on lit, c'est une devinette. */
-    const cg = p.dx < 0 ? 'end' : 'start';
-    const lx = p.x + (p.dx < 0 ? -32 : 32);
-    const nom = svgEl('text', { class: 'etoile-nom', x: lx, y: p.y - 2, 'text-anchor': cg });
+  for (const n of CIEL) {
+    const p = xy[n.cle];
+    const cl = 'etoile ' + (n.axe || 'centre') + ' ' + etat(n);
+    const g2 = svgEl('g', { class: cl, 'data-etoile': n.cle, tabindex: '0', role: 'button' });
+    g2.dataset.etoile = n.cle;
+    g2.appendChild(svgEl('circle', { class: 'etoile-rond', cx: p.x, cy: p.y, r: CIEL_VUE.r }));
+    const ic = svgEl('text', { class: 'etoile-icone', x: p.x, y: p.y + 7, 'text-anchor': 'middle' });
+    ic.textContent = n.glyphe || '';
+    g2.appendChild(ic);
+    /* LE NOM SE LIT SANS SURVOL : un arbre dont il faut survoler chaque nœud pour savoir ce
+       qu'il fait n'est pas une carte qu'on lit, c'est une devinette. */
+    const nom = svgEl('text', { class: 'etoile-nom', x: p.x, y: p.y + CIEL_VUE.r + 20, 'text-anchor': 'middle' });
     nom.textContent = n.nom;
-    const prix = svgEl('text', { class: 'etoile-prix', x: lx, y: p.y + 15, 'text-anchor': cg });
+    const prix = svgEl('text', { class: 'etoile-prix', x: p.x, y: p.y + CIEL_VUE.r + 36, 'text-anchor': 'middle' });
     prix.textContent = etoilePrise(n.cle) ? 'acquis' : '✦ ' + n.prix;
+    const t = svgEl('title');
+    t.textContent = etoilePrise(n.cle) ? n.nom + ' — acquis pour toujours.'
+      : !etoileOuverte(n) ? n.nom + ' — demande « ' + (ETOILE_BY_KEY[n.parent] || {}).nom + ' ».'
+      : n.nom + ' — ✦ ' + n.prix + '. ' + (n.dit || '');
+    g2.appendChild(t);
     svg.appendChild(nom);
     svg.appendChild(prix);
-    svg.appendChild(g);
+    svg.appendChild(g2);
   }
 
-  /* LE NOM D'UNE BRANCHE ET SON COMPTE, au bout, comme une signature. */
-  for (const cle of Object.keys(cote)) {
-    const noeuds = BRANCHES.filter(n => n.branche === cle);
-    const haut = noeuds.reduce((a, n) => (n.rang > a.rang ? n : a), noeuds[0]);
-    const p = pose[haut.cle];
+  // le nom d'un axe et son compte, au bout de sa direction
+  for (const a of AXES) {
+    const liste = PAR_AXE[a.cle];
+    if (!liste.length) continue;
+    const p = xy[liste[liste.length - 1].cle];
+    const ang = a.angle * Math.PI / 180;
     const t = svgEl('text', {
-      class: 'branche-nom ' + cle, x: p.x, y: p.y - 46, 'text-anchor': 'middle',
+      class: 'branche-nom ' + a.cle, 'text-anchor': 'middle',
+      x: CIEL_VUE.l / 2 + Math.cos(ang) * (CIEL_VUE.rayon[liste.length - 1] + 105),
+      y: CIEL_VUE.h / 2 + Math.sin(ang) * (CIEL_VUE.rayon[liste.length - 1] + 105),
     });
-    t.textContent = (NOM_BRANCHE[cle] || cle).split(' — ')[0].toUpperCase() + '  ' +
-                    noeuds.filter(n => etoilePrise(n.cle)).length + ' / ' + noeuds.length;
+    t.textContent = a.nom.split(' · ')[0].toUpperCase() + '  ' +
+                    liste.filter(n => etoilePrise(n.cle)).length + ' / ' + liste.length;
     svg.appendChild(t);
   }
 
   hote.appendChild(svg);
+  cielCadrer();
+}
+
+/* LE DÉPLACEMENT. Le canevas est plus grand que l'écran, donc on le tire — et le glisser ne
+   doit pas déclencher un achat : on ne compte un clic que si la main n'a presque pas bougé.
+   Trois pixels de tolérance, ce qui laisse passer un doigt qui tremble et arrête un geste. */
+let cielVue = { x: 0, y: 0 }, cielTire = null, cielGlisse = false;
+
+function cielCadrer() {
+  const svg = $('ciel-arbre').firstElementChild;
+  if (svg) svg.style.transform =
+    'translate(' + cielVue.x.toFixed(0) + 'px,' + cielVue.y.toFixed(0) + 'px)';
+}
+
+function cielDebutTire(e) {
+  const p = e.touches ? e.touches[0] : e;
+  cielTire = { x: p.clientX, y: p.clientY, ox: cielVue.x, oy: cielVue.y, bouge: 0 };
+}
+function cielBouge(e) {
+  if (!cielTire) return;
+  const p = e.touches ? e.touches[0] : e;
+  const dx = p.clientX - cielTire.x, dy = p.clientY - cielTire.y;
+  cielTire.bouge = Math.max(cielTire.bouge, Math.abs(dx) + Math.abs(dy));
+  cielVue.x = cielTire.ox + dx;
+  cielVue.y = cielTire.oy + dy;
+  cielCadrer();
+  if (e.cancelable) e.preventDefault();
+}
+function cielFinTire() {
+  const bouge = cielTire ? cielTire.bouge : 0;
+  cielTire = null;
+  return bouge;
 }
 
 let forgeSig = '';
@@ -5146,7 +5219,12 @@ function fusionDe(cartes) {
    carte au bout n'a plus d'étoile à gagner, une carte équipée en aurait mais on ne la touche
    pas. L'atelier montre les deux, éteintes, avec leur raison — les cacher ferait chercher une
    carte qu'on possède. */
-const forgeable = k => (k.etoiles || 1) < ETOILES.length && state.slots.indexOf(k.id) === -1;
+/* LE CREUSET LÈVE L'INTERDIT SUR LES CARTES ÉQUIPÉES. Il tenait à ce qu'une carte qui
+   s'évapore d'un emplacement change le build en silence — mais la forge DÉSIGNE ses trois
+   cartes et montre le résultat : rien n'y est silencieux, et l'interdit n'obligeait qu'à un
+   aller-retour sans décision. Il reste par défaut, et se lève par un nœud. */
+const forgeable = k => (k.etoiles || 1) < ETOILES.length &&
+                       (etoilePrise('creuset') || state.slots.indexOf(k.id) === -1);
 const refusForge = k => (k.etoiles || 1) >= ETOILES.length
   ? 'Elle est au bout : trois étoiles.'
   : state.slots.indexOf(k.id) !== -1
@@ -6237,9 +6315,11 @@ const echelle = (paliers, prefixe) => {
   for (let i = 1; i < paliers.length; i++) if (prime(prefixe + i)) v = paliers[i];
   return v;
 };
-const placesPension  = () => echelle([1, 2, 4, 8], 'pension-place-');
+const placesPension  = () => echelle([1, 2, 4, 8], 'pension-place-') +
+                            (etoilePrise('nid-plus') ? 1 : 0);
 const vitessePension = () => echelle([1, 1.5, 4, 12], 'pension-vite-');
-const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-');
+const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-') +
+                            (etoilePrise('ponte-plus') ? 1 : 0);
 /* LA RICHESSE, ET POURQUOI ELLE SE DESSERRE SANS SE LEVER. Le multiplicateur de rareté — ×64
    pour deux mythiques — est ce qui empêche la pension d'être une imprimante à billets, et
    c'était mesuré avant de l'ouvrir. Mais c'est aussi ce qui la laissait à trente œufs
@@ -7768,10 +7848,23 @@ function bindTools() {
     else blip(300, 0.05, 'sine', 0.03);
   });
 
-  $('ciel-arbre').addEventListener('click', e => cielClic(e));
+  /* LE GLISSER NE DOIT PAS ACHETER. On tire le canevas pour s'y déplacer, et le même geste
+     finit sur un nœud : sans ce garde, traverser l'écran achèterait ce qu'on relâche. */
+  const arbre = $('ciel-arbre');
+  arbre.addEventListener('mousedown', cielDebutTire);
+  arbre.addEventListener('touchstart', cielDebutTire, { passive: true });
+  window.addEventListener('mousemove', cielBouge);
+  window.addEventListener('touchmove', cielBouge, { passive: false });
+  window.addEventListener('mouseup', () => { if (cielFinTire() > 3) cielGlisse = true; });
+  window.addEventListener('touchend', () => { if (cielFinTire() > 3) cielGlisse = true; });
+
+  arbre.addEventListener('click', e => {
+    if (cielGlisse) { cielGlisse = false; return; }
+    cielClic(e);
+  });
   /* AU CLAVIER AUSSI. Les nœuds sont des `g` SVG, donc ni boutons ni liens : sans ceci, tout
      l'écran serait inatteignable sans souris. */
-  $('ciel-arbre').addEventListener('keydown', e => {
+  arbre.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cielClic(e); }
   });
 

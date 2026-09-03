@@ -1143,14 +1143,14 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   .carrefour-routes { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* ── LA CONSTELLATION, EN ARBRE ────────────────────────────────────────────────────────
-   Le tronc monte du bas, les branches s'accrochent au rang qu'elles exigent. Tout est en SVG :
-   trois formes — une courbe, un cercle, un texte — et des positions calculées.
+/* ── LA CONSTELLATION ──────────────────────────────────────────────────────────────────
+   Six directions depuis un centre, sur un ciel semé. Tout est en SVG : trois formes — une
+   ligne, un cercle, un texte — et des positions calculées en polaire.
 
-   UN NŒUD FERMÉ SE MONTRE, il ne se cache pas. C'est l'inverse de la doctrine du dévoilement
-   de la boutique, et c'est voulu : là-bas on cache ce qu'un débutant ne peut pas s'offrir, ici
-   on montre une carte qu'on lit pour décider où aller. */
-.ciel { display: flex; flex-direction: column; gap: 1rem; min-height: 0; overflow-y: auto; }
+   LE CANEVAS EST PLUS GRAND QUE L'ÉCRAN, EXPRÈS. On le tire pour s'y déplacer, comme une
+   carte : un arbre qu'on voit entier d'un coup n'a pas de profondeur, et ce qu'on vise à
+   trente jetons doit être loin. */
+.ciel { display: flex; flex-direction: column; gap: 0.8rem; min-height: 0; }
 .ciel-tete { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: baseline; }
 .ciel-tete h2 {
   font-family: var(--f-name); font-weight: 400; font-size: 1.15rem; color: var(--ink); margin: 0;
@@ -1162,61 +1162,83 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 
-.ciel-arbre { display: flex; justify-content: center; padding-bottom: 1rem; }
-.ciel-svg { width: 100%; max-width: 58rem; height: auto; }
+/* LE CIEL. Un fond plus sombre que la page, deux lueurs très diffuses pour qu'il ne soit pas
+   plat, et le semis d'étoiles par-dessus — celui-là est dans le SVG, parce qu'il doit se
+   déplacer avec l'arbre : un fond fixe sous un arbre qui bouge trahit la fenêtre. */
+.ciel-arbre {
+  flex: 1; min-height: 24rem; overflow: hidden; position: relative;
+  border: 1px solid var(--rule); border-radius: 6px;
+  background:
+    radial-gradient(60rem 40rem at 30% 25%, #101B2A 0%, transparent 60%),
+    radial-gradient(50rem 35rem at 75% 70%, #16121F 0%, transparent 60%),
+    var(--sunken);
+  cursor: grab;
+  touch-action: none;
+}
+.ciel-arbre:active { cursor: grabbing; }
+.ciel-svg {
+  position: absolute; left: 50%; top: 50%;
+  width: 1700px; height: 1700px; margin: -850px 0 0 -850px;
+  will-change: transform;
+}
+.ciel-semis circle { fill: #C9D6E8; }
 
-/* LES LIENS. Le chemin entier est une trace pâle, le chemin parcouru se peint par-dessus :
-   c'est une barre de progression sans en dessiner une. */
-.lien { fill: none; stroke-width: 3; stroke-linecap: round; }
-.tronc-vide { stroke: var(--rule); stroke-width: 5; }
-.tronc-pris { stroke: var(--coin); stroke-width: 5; }
-.lien.batiments { stroke: var(--rule); }
-.lien.batiments.pris { stroke: var(--accent); }
-.lien.sang { stroke: var(--rule); }
-.lien.sang.pris { stroke: var(--red); }
+/* LES LIENS. Pâles tant que le nœud n'est pas pris, de la couleur de leur axe ensuite : la
+   constellation se colore à mesure qu'on la parcourt. */
+.lien { fill: none; stroke: var(--rule); stroke-width: 2.5; stroke-linecap: round; }
+.lien.pris { stroke-width: 3.5; }
+.lien.sang.pris      { stroke: #C9705C; }
+.lien.main.pris      { stroke: #E4A63E; }
+.lien.negoce.pris    { stroke: #D8C48E; }
+.lien.couvee.pris    { stroke: #79B36A; }
+.lien.batiments.pris { stroke: #66B79E; }
+.lien.album.pris     { stroke: #9A96D8; }
 
-/* LES NŒUDS. Une couleur par branche, et trois états qui se distinguent sans la lire :
-   PRISE est pleine, OUVERTE est cerclée vif, CHERE est cerclée pâle, CLOSE s'efface. */
+/* LES NŒUDS. Quatre états qui se distinguent sans les lire : PRISE est pleine et colorée,
+   OUVERTE est cerclée vif, CHÈRE est en pointillé — la porte est là, il manque des jetons —
+   et CLOSE s'efface. */
 .etoile { cursor: pointer; }
-.etoile-rond { fill: var(--sunken); stroke: var(--rule); stroke-width: 3; }
-.etoile-rang {
-  font-family: var(--f-num); font-size: 15px; fill: var(--faint);
-  font-variant-numeric: tabular-nums;
-}
-.etoile-icone { font-size: 19px; }
-.etoile-nom { font-family: var(--f-ui); font-size: 15px; fill: var(--ink); }
+.etoile-rond { fill: var(--ground); stroke: var(--rule); stroke-width: 2.5; }
+.etoile-icone { font-size: 20px; }
+.etoile-nom { font-family: var(--f-ui); font-size: 14px; fill: var(--ink); }
 .etoile-prix {
-  font-family: var(--f-num); font-size: 13px; fill: var(--soft);
+  font-family: var(--f-num); font-size: 12px; fill: var(--soft);
   font-variant-numeric: tabular-nums;
 }
 
-.etoile.tronc.ouverte .etoile-rond { stroke: var(--coin); }
-.etoile.tronc.prise .etoile-rond { fill: var(--coin); stroke: var(--coin); }
-.etoile.tronc.prise .etoile-rang { fill: var(--ground); }
+.etoile.centre .etoile-rond     { stroke: var(--coin); }
+.etoile.sang.ouverte .etoile-rond      { stroke: #C9705C; }
+.etoile.main.ouverte .etoile-rond      { stroke: #E4A63E; }
+.etoile.negoce.ouverte .etoile-rond    { stroke: #D8C48E; }
+.etoile.couvee.ouverte .etoile-rond    { stroke: #79B36A; }
+.etoile.batiments.ouverte .etoile-rond { stroke: #66B79E; }
+.etoile.album.ouverte .etoile-rond     { stroke: #9A96D8; }
 
-.etoile.batiments.ouverte .etoile-rond { stroke: var(--accent); }
-.etoile.batiments.prise .etoile-rond { fill: var(--jade-dim); stroke: var(--accent); }
-.etoile.sang.ouverte .etoile-rond { stroke: var(--red); }
-.etoile.sang.prise .etoile-rond { fill: #3A1D18; stroke: var(--red); }
+.etoile.prise .etoile-rond { stroke-width: 3.5; }
+.etoile.centre.prise .etoile-rond     { fill: #3A2E14; stroke: var(--coin); }
+.etoile.sang.prise .etoile-rond       { fill: #3A1D18; stroke: #C9705C; }
+.etoile.main.prise .etoile-rond       { fill: #3A2E14; stroke: #E4A63E; }
+.etoile.negoce.prise .etoile-rond     { fill: #33301F; stroke: #D8C48E; }
+.etoile.couvee.prise .etoile-rond     { fill: #1D2E1A; stroke: #79B36A; }
+.etoile.batiments.prise .etoile-rond  { fill: #1B3A32; stroke: #66B79E; }
+.etoile.album.prise .etoile-rond      { fill: #24224A; stroke: #9A96D8; }
 
-/* CHÈRE : ouverte, mais pas les moyens. Cerclée de sa couleur en pointillé — on voit que la
-   porte est là, et qu'il manque des jetons. */
-.etoile.chere .etoile-rond { stroke-dasharray: 4 4; }
-.etoile.chere.batiments .etoile-rond { stroke: var(--jade-dim); }
-.etoile.chere.sang .etoile-rond { stroke: #3A1D18; }
-.etoile.chere.tronc .etoile-rond { stroke: var(--amber-dim); }
-
-.etoile.close { opacity: 0.35; cursor: not-allowed; }
+.etoile.chere .etoile-rond { stroke-dasharray: 4 5; opacity: 0.75; }
+.etoile.close { opacity: 0.3; cursor: not-allowed; }
 .etoile:not(.close):hover .etoile-rond { stroke-width: 4; }
 .etoile:focus-visible { outline: none; }
 .etoile:focus-visible .etoile-rond { stroke: var(--accent); stroke-width: 4; }
 
 .branche-nom {
-  font-family: var(--f-num); font-size: 13px; letter-spacing: 0.12em;
+  font-family: var(--f-num); font-size: 13px; letter-spacing: 0.14em;
   fill: var(--soft); font-variant-numeric: tabular-nums;
 }
-.branche-nom.batiments { fill: var(--accent); }
-.branche-nom.sang { fill: var(--red); }
+.branche-nom.sang      { fill: #C9705C; }
+.branche-nom.main      { fill: #E4A63E; }
+.branche-nom.negoce    { fill: #D8C48E; }
+.branche-nom.couvee    { fill: #79B36A; }
+.branche-nom.batiments { fill: #66B79E; }
+.branche-nom.album     { fill: #9A96D8; }
 
 /* ── L'ATELIER DE FORGE ────────────────────────────────────────────────────────────────
    Une rangée par mariage : trois cartes, une flèche, la carte qui en sortira. La flèche fait
