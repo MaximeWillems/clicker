@@ -3299,6 +3299,140 @@ scenario('sauvegarde — les bourses gonflées par le bug dégonflent', () => {
   eq('sans ascension, rien ne peut avoir été mis de côté', neuve.state.asc.jetons, 0);
 });
 
+scenario('ascension — la porte, le nombre et la phrase disent tous la bourse', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20;
+  const bouton = () => noeuds.get('btn-asc');
+
+  s.coins = 1e12; jeu.crediterJetons();
+  s.pen = [bete(jeu, 'crapaud', 3, 3000)];
+  jeu.ascChoix = [-s.pen[0].id];
+  jeu.ascensionner();
+
+  /* LE MUR REMONTAIT ICI, SOUS UNE AUTRE FORME. Le bouton lisait `jetonsDus`, le crédit du
+     CYCLE, et se cachait quand il valait zéro — c'est-à-dire juste après un saut, quand
+     `sommet` repart de zéro. On pouvait avoir quatre jetons en poche, le droit de sauter, et
+     aucun bouton. */
+  s.coins = 100; jeu.crediterJetons();
+  eq('le cycle neuf ne crédite rien', jeu.jetonsDus(), 0);
+  ok('mais la bourse n’est pas vide', jeu.jetonsEnMain() > 0);
+  ok('et on peut sauter', jeu.peutAscensionner());
+
+  jeu.refresh();
+  eq('donc le bouton est là', bouton().hidden, false);
+  ok('et il annonce la bourse, pas le crédit',
+     bouton().textContent.indexOf(String(jeu.jetonsEnMain())) >= 0, bouton().textContent);
+
+  /* LA PHRASE DE L'ÉCRAN DISAIT LE CONTRAIRE DE CE QUE LE CODE FAIT. « Sauter les dépense
+     tous, employés ou non » était vrai jusqu'à la 4.0.0 et faux depuis : le reste demeure. La
+     phrase poussait à brûler ses jetons en cartes qu'on ne veut pas — exactement contre
+     l'arbitrage qu'elle était censée servir. */
+  s.pen = [bete(jeu, 'crapaud', 3, 3000)];
+  jeu.ouvrirAscension();
+  const dit = noeuds.get('asc-jalon').textContent;
+  ok('elle ne promet plus de tout dépenser', dit.indexOf('dépense tous') < 0, dit);
+  ok('elle dit ce qui reste', dit.indexOf('reste en bourse') >= 0, dit);
+});
+
+scenario('ascension — ce qui n’est pas employé demeure vraiment', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20;
+  s.coins = 1e12; jeu.crediterJetons();
+  const avant = jeu.jetonsEnMain();
+  ok('la bourse est garnie', avant >= 4, avant);
+
+  s.pen = [bete(jeu, 'crapaud', 3, 3000)];
+  jeu.ascChoix = [-s.pen[0].id];
+  jeu.ascensionner();
+  /* UNE CARTE COÛTE UN JETON, ET PAS PLUS : le reste est en bourse, disponible pour l'arbre. */
+  eq('une carte a coûté son prix doré, le reste demeure', jeu.jetonsEnMain(), avant - 1);
+});
+
+scenario('constellation — le glisser ne mange plus le clic suivant', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 500);
+
+  /* LE DRAPEAU NE SE BAISSAIT QU'EN CLIQUANT L'ARBRE. Or un glisser se termine souvent HORS de
+     l'arbre — le canevas déborde de son cadre — et alors aucun clic ne survenait : le drapeau
+     restait levé, et le prochain vrai clic sur un nœud était avalé. */
+  jeu.cielDebutTire({ clientX: 0, clientY: 0 });
+  jeu.cielBouge({ clientX: 200, clientY: 0 });
+  ok('le glisser est reconnu', jeu.cielFinTire() > 3);
+  jeu.cielGlisse = true;                       // ce que fait le `mouseup` de la fenêtre
+
+  jeu.cielDebutTire({ clientX: 0, clientY: 0 });
+  eq('un geste neuf repart d’une ardoise propre', jeu.cielGlisse, false);
+  eq('et un clic simple ne bouge rien', jeu.cielFinTire(), 0);
+});
+
+scenario('constellation — on ne peut pas perdre l’arbre hors de l’écran', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 500);
+
+  /* LE GLISSER N'AVAIT AUCUNE BORNE : trois mille pixels et la constellation quittait l'écran,
+     sans rien pour la ramener — une carte qu'on peut faire tomber du bureau. */
+  jeu.cielDebutTire({ clientX: 0, clientY: 0 });
+  jeu.cielBouge({ clientX: 9000, clientY: 9000 });
+  jeu.cielFinTire();
+  ok('le déplacement est borné', Math.abs(jeu.cielVue.x) <= jeu.CIEL_LIMITE, jeu.cielVue.x);
+  ok('dans les deux axes', Math.abs(jeu.cielVue.y) <= jeu.CIEL_LIMITE, jeu.cielVue.y);
+
+  jeu.cielDebutTire({ clientX: 0, clientY: 0 });
+  jeu.cielBouge({ clientX: -9000, clientY: -9000 });
+  jeu.cielFinTire();
+  ok('et dans l’autre sens', Math.abs(jeu.cielVue.x) <= jeu.CIEL_LIMITE, jeu.cielVue.x);
+
+  /* LA BORNE DOIT RESTER ASSEZ LARGE POUR ATTEINDRE LE NŒUD LE PLUS LOIN, sinon on aurait
+     échangé un arbre perdu contre un arbre inaccessible. */
+  const loin = Math.max(...jeu.CIEL_VUE.rayon);
+  ok('elle laisse amener le nœud le plus loin au centre', jeu.CIEL_LIMITE >= loin,
+     jeu.CIEL_LIMITE + ' vs ' + loin);
+});
+
+scenario('constellation — chaque nœud change quelque chose de mesurable', () => {
+  /* AUCUN REMPLISSAGE : c'est la règle qui a supprimé le tronc de vingt rangs de « +2 % ». Ce
+     scénario la tient pour les vingt-cinq nœuds à la fois, en mesurant une sonde par levier —
+     un nœud qui ne bougerait aucune d'elles serait du décor. */
+  const sondes = [
+    j => j.coef('valeur'), j => j.coef('rente'), j => j.coef('vitesse'),
+    j => j.prixOeuf(j.EGG_BY_KEY.commun), j => j.clickPower(),
+    j => JSON.stringify(j.bonusCiel()),
+    j => j.placesPension(), j => j.porteePension(),
+    j => j.richessePension(), j => j.vitessePension(),
+    j => j.coutCartes(3), j => j.jetonsDus(),
+    j => j.state.album[0] ? j.coutFusion(j.state.album[0]) : 0,
+    j => j.state.album[0] ? j.forgeable(j.state.album[0]) : 0,
+    j => j.state.pen[0] ? j.evoCost(j.state.pen[0]) : 0,
+    j => j.state.album[0] ? j.poussiereDe(j.state.album[0]) : 0,
+    /* LA FERVEUR NE SE LIT NULLE PART AILLEURS : elle vit dans `offrirFrenesie`, donc on
+       l offre pour de vrai et on regarde la duree obtenue. */
+    j => { j.state.frenesie = 0; j.offrirFrenesie(1); return j.state.frenesie; },
+    j => j.PRIMES.length,          // sentinelle : une sonde qui ne bouge jamais
+  ];
+  const muets = [];
+  for (const n of neuf().CIEL) {
+    const jeu = neuf(); const s = jeu.state;
+    s.tuto = false; s.pens = 8; s.coins = 1e12;
+    jeu.crediterJetons();
+    s.pen = [bete(jeu, 'crapaud', 2, 100)];
+    s.album = [pave(jeu, 1)]; s.slots = [1];
+    const av = sondes.map(f => String(f(jeu)));
+    s.ciel[n.cle] = true;
+    jeu.oublierPrimes();
+    const ap = sondes.map(f => String(f(jeu)));
+    /* L'ÉTINCELLE EST LA SEULE EXCEPTION, ET SON EFFET EST STRUCTUREL : elle n'ajoute aucun
+       nombre, elle ouvre les six directions. */
+    if (n.cle !== 'etincelle' && av.join('|') === ap.join('|')) muets.push(n.cle);
+  }
+  eq('aucun nœud muet', muets.join(' '), '');
+
+  const j = neuf();
+  ok('et l’étincelle ouvre bien les six',
+     j.PAR_AXE[j.AXES[0].cle][0].parent === 'etincelle');
+});
+
 scenario('constellation — le ciel se dessine, et il est plus grand que l’écran', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

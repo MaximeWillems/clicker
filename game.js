@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.6.1';
+const VERSION = 'beta 4.6.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -5127,6 +5127,8 @@ function renderCiel() {
    doit pas déclencher un achat : on ne compte un clic que si la main n'a presque pas bougé.
    Trois pixels de tolérance, ce qui laisse passer un doigt qui tremble et arrête un geste. */
 let cielVue = { x: 0, y: 0 }, cielTire = null, cielGlisse = false;
+const CIEL_LIMITE = CIEL_VUE.l / 2;
+const borne = (v, max) => Math.max(-max, Math.min(max, v));
 
 function cielCadrer() {
   const svg = $('ciel-arbre').firstElementChild;
@@ -5135,6 +5137,12 @@ function cielCadrer() {
 }
 
 function cielDebutTire(e) {
+  /* LE DRAPEAU SE LÈVE ICI, ET NON AU CLIC QUI SUIT. Il ne se baissait qu'en cliquant l'arbre :
+     un glisser qui se termine HORS de l'arbre — ce qui arrive tout le temps, le canevas déborde
+     — ne produisait aucun clic, le drapeau restait levé, et le prochain vrai clic sur un nœud
+     était avalé. On repart de zéro à chaque geste, ce qui est la seule façon de ne rien laisser
+     traîner entre deux. */
+  cielGlisse = false;
   const p = e.touches ? e.touches[0] : e;
   cielTire = { x: p.clientX, y: p.clientY, ox: cielVue.x, oy: cielVue.y, bouge: 0 };
 }
@@ -5143,8 +5151,12 @@ function cielBouge(e) {
   const p = e.touches ? e.touches[0] : e;
   const dx = p.clientX - cielTire.x, dy = p.clientY - cielTire.y;
   cielTire.bouge = Math.max(cielTire.bouge, Math.abs(dx) + Math.abs(dy));
-  cielVue.x = cielTire.ox + dx;
-  cielVue.y = cielTire.oy + dy;
+  /* ON NE PEUT PAS PERDRE L'ARBRE. Le glisser n'avait aucune borne : trois mille pixels vers la
+     droite et la constellation quittait l'écran, sans rien pour la ramener — une carte qu'on
+     peut faire tomber du bureau. La borne vaut la moitié du canevas, ce qui suffit à amener
+     n'importe quel nœud au centre de la vue et jamais à le pousser dehors. */
+  cielVue.x = borne(cielTire.ox + dx, CIEL_LIMITE);
+  cielVue.y = borne(cielTire.oy + dy, CIEL_LIMITE);
   cielCadrer();
   if (e.cancelable) e.preventDefault();
 }
@@ -5571,7 +5583,11 @@ function renderAscension() {
     ap.jetons + ' jeton' + (ap.jetons > 1 ? 's' : '') + ' d’ascension, donc ' +
     ap.max + ' carte' + (ap.max > 1 ? 's' : '') + ' à emporter dans ton album' +
     (ap.max > SLOTS ? ' — cinq s’équipent, le reste attend en réserve' : '') + '. ' +
-    'Sauter les dépense tous, employés ou non — rien ne t’oblige à sauter, ni maintenant ni jamais.' +
+    /* IL DISAIT « Sauter les dépense tous, employés ou non ». C'ÉTAIT VRAI JUSQU'À LA
+       4.0.0 ET FAUX DEPUIS : le reste de la bourse demeure, et c'est même toute la raison
+       d'être du second évier. La phrase poussait donc à brûler ses jetons en cartes qu'on ne
+       veut pas, c'est-à-dire exactement contre l'arbitrage qu'on voulait créer. */
+    'Ce que tu n’emploies pas reste en bourse pour la constellation — rien ne t’oblige à sauter, ni maintenant ni jamais.' +
     (suivant ? ' Le prochain se gagne à ' + fmt(suivant) + ' pièces.'
              : ' C’était le dernier palier de l’échelle.'));
 
@@ -6145,12 +6161,21 @@ function tickView() {
      sacrifice qu'on choisit — on perd sa ferme entière — et un bouton qui réclame ferait
      croire à une étape obligatoire. Son infobulle dit ce qui l'a ouvert, et qu'on peut
      l'ignorer. */
-  const jetons = peutAscensionner() ? jetonsDus() : 0;
-  $('btn-asc').hidden = !jetons;
-  if (jetons) {
-    setText($('btn-asc'), 'Ascension' + (jetons > 1 ? ' · ' + jetons : ''));
-    $('btn-asc').title = jetons + ' jeton' + (jetons > 1 ? 's' : '') +
-      ' d’ascension — tu peux sauter quand tu veux, ou jamais.';
+  /* IL LISAIT `jetonsDus`, LE CRÉDIT DU CYCLE, ET NON LA BOURSE. Deux conséquences, et la
+     seconde remettait debout le mur qu'on avait abattu : le bouton annonçait un nombre qui
+     ignore ce qui reste des cycles passés, et il DISPARAISSAIT quand le cycle en cours n'avait
+     rien crédité — donc juste après un saut, quand `sommet` repart de zéro. On pouvait avoir
+     quatre jetons en poche, le droit de sauter, et aucun bouton.
+
+     Ce qui décide de la porte, c'est `peutAscensionner` et lui seul. Le nombre montré est ce
+     qu'on a EN MAIN, puisque c'est lui qui achète les cartes. */
+  const jetons = jetonsEnMain();
+  $('btn-asc').hidden = !peutAscensionner();
+  if (!$('btn-asc').hidden) {
+    setText($('btn-asc'), 'Ascension' + (jetons ? ' · ' + jetons : ''));
+    $('btn-asc').title = (jetons ? jetons + ' jeton' + (jetons > 1 ? 's' : '') + ' en bourse — '
+                                 : 'Bourse vide, et ce n’est pas un obstacle — ') +
+      'tu peux sauter quand tu veux, ou jamais.';
   }
 
   /* Le panneau s'ouvre quand la première prime est à portée, comme la boutique : voir une
@@ -7706,12 +7731,17 @@ function bindTools() {
     const ap = apercuAscension();
     const prises = Math.min(ascChoix.length, ap.max);
     const perdues = n - prises;
-    const dorment = Math.max(0, jetonsDus() - prises);
+    /* L'AVERTISSEMENT EST TOMBÉ, ET IL ÉTAIT FAUX DEUX FOIS. Il annonçait que les jetons
+       inemployés « partaient avec » — ils restent en bourse depuis la 4.0.0. Et il les comptait
+       en soustrayant un NOMBRE DE CARTES à un nombre de jetons, alors que trois cartes coûtent
+       six jetons depuis que le prix est doré. Un avertissement faux est pire qu'aucun : il
+       fait prendre des cartes dont on ne veut pas. */
+    const reste = Math.max(0, jetonsEnMain() - coutCartes(prises));
     if (!confirm('Ascensionner ?\n\n' + prises + ' bête' + (prises > 1 ? 's deviennent' : ' devient') +
         ' une carte.' +
         (perdues ? '\nLes ' + perdues + ' autre' + (perdues > 1 ? 's sont perdues' : ' est perdue') + '.' : '') +
-        (dorment ? '\n⚠ ' + dorment + ' jeton' + (dorment > 1 ? 's' : '') +
-                   ' que tu n’emploies pas ' + (dorment > 1 ? 'partent' : 'part') + ' avec.' : '') +
+        (reste ? '\n✦ ' + reste + ' jeton' + (reste > 1 ? 's restent' : ' reste') +
+                 ' en bourse pour la constellation.' : '') +
         '\nTout le reste repart de zéro. C’est irréversible.')) return;
     ascensionner();
   });
