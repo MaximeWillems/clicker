@@ -319,13 +319,14 @@ body.vue-dex {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "top" "note" "main";
 }
-body.vue-forge {
+body.vue-forge, body.vue-ciel {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "top" "note" "main";
 }
 body.vue-dex .stage-col, body.vue-dex .side, body.vue-dex .dial,
-body.vue-forge .stage-col, body.vue-forge .side, body.vue-forge .dial { display: none; }
-#vue-dex, #vue-forge { grid-area: main; }
+body.vue-forge .stage-col, body.vue-forge .side, body.vue-forge .dial,
+body.vue-ciel .stage-col, body.vue-ciel .side, body.vue-ciel .dial { display: none; }
+#vue-dex, #vue-forge, #vue-ciel { grid-area: main; }
 
 .onglets { display: flex; gap: 3px; }
 .onglet {
@@ -1115,6 +1116,63 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
    un se signale par un cadre plus clair : c'est ce qui la distingue dans une grille de vingt. */
 .carte.a-fond { border-color: var(--rule-hi); }
 .carte.a-fond .carte-haut { background: none; }
+
+/* une prime tenue par la constellation : acquise, mais pas achetée — et ça se voit */
+.prime.du-ciel { border-color: var(--accent); }
+.prime.du-ciel .prime-prix { color: var(--accent); font-size: 0; }
+.prime.du-ciel .prime-prix::after { content: '✦'; font-size: 0.7rem; }
+
+/* ── LA CONSTELLATION ──────────────────────────────────────────────────────────────────
+   Le tronc en colonne à gauche : c'est un CHEMIN, et un chemin se lit dans un sens. Les
+   branches à droite, en blocs. Un nœud fermé se montre grisé et ne se cache pas — c'est
+   l'inverse de la doctrine du dévoilement de la boutique, et c'est voulu : on cache ce qu'un
+   débutant ne peut pas s'offrir, on montre une carte qu'on lit pour décider où aller. */
+.ciel { display: flex; flex-direction: column; gap: 1rem; min-height: 0; overflow-y: auto; }
+.ciel-tete { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: baseline; }
+.ciel-tete h2 {
+  font-family: var(--f-name); font-weight: 400; font-size: 1.15rem; color: var(--ink); margin: 0;
+}
+.ciel-dit { grid-column: 1; margin: 0; max-width: 46rem; color: var(--soft); font-size: 0.82rem; line-height: 1.5; }
+.ciel-jetons {
+  grid-column: 2; grid-row: 1 / span 2;
+  font-family: var(--f-num); font-size: 1rem; color: var(--accent);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+.ciel-corps { display: grid; grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); gap: 1.25rem; }
+.ciel-tronc, .ciel-branche { display: flex; flex-direction: column; gap: 0.35rem; }
+.ciel-branches { display: flex; flex-direction: column; gap: 1.25rem; }
+.ciel-titre {
+  margin: 0 0 0.2rem; font-family: var(--f-ui); font-size: 0.78rem; font-weight: 400;
+  color: var(--soft); letter-spacing: 0.04em;
+}
+
+.etoile {
+  display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.6rem;
+  text-align: left; width: 100%; cursor: pointer;
+  background: var(--raised); border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--ink); font-family: var(--f-ui); font-size: 0.82rem;
+  padding: 0.45rem 0.6rem;
+}
+.etoile-nom { font-weight: 500; }
+.etoile-dit { grid-column: 1; font-size: 0.72rem; color: var(--faint); font-style: normal; line-height: 1.35; }
+.etoile-prix {
+  grid-row: 1 / span 2; align-self: center;
+  font-family: var(--f-num); font-size: 0.8rem; color: var(--accent);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.etoile.ouverte:hover:not(:disabled) { border-color: var(--accent); }
+/* PRISE : acquise pour toujours. Le vert de la vie, comme partout où le jeu dit « c'est à toi ». */
+.etoile.prise { border-color: var(--jade-dim); background: var(--surface); }
+.etoile.prise .etoile-prix { color: var(--jade); }
+.etoile.prise .etoile-nom { color: var(--soft); }
+/* CLOSE : montrée, jamais cachée — c'est une carte, pas une file d'attente. */
+.etoile.close { opacity: 0.4; cursor: not-allowed; }
+.etoile:disabled:not(.prise):not(.close) { opacity: 0.55; cursor: not-allowed; }
+
+@media (max-width: 62rem) {
+  .ciel-corps { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* ── L'ATELIER DE FORGE ────────────────────────────────────────────────────────────────
    Une rangée par mariage : trois cartes, une flèche, la carte qui en sortira. La flèche fait

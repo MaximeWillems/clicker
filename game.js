@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 3.1.2';
+const VERSION = 'beta 4.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1263,6 +1263,150 @@ const JETON_PALIERS = Array.from({ length: 11 }, (v, n) => Math.pow(JETON_PAS, n
 const JETON_PREMIER = 1e6;
 const RANG_PREMIER = JETON_PALIERS.indexOf(JETON_PREMIER) + 1;
 
+/* ── LE PRIX DORÉ D'UNE CARTE ──────────────────────────────────────────────────
+   Chaque carte emportée dans une même ascension renchérit la suivante d'un facteur φ.
+
+   POURQUOI IL FALLAIT L'ÉCRIRE. La 3.0.0 a fait REGAGNER les jetons à chaque cycle, ce qui a
+   abattu le mur de fin de partie — et ouvert un trou dans le même geste : si les jetons
+   reviennent et qu'une carte en coûte un, on emporte cinq cartes à chaque ascension,
+   indéfiniment. L'album se remplit alors sans qu'aucune décision ne soit prise, et la forge,
+   qui demande neuf cartes pour une seule trois-étoiles, devient triviale.
+
+   φ plutôt que ×2 : le doublement écrase trop vite — la quatrième carte coûterait huit jetons
+   quand la première en coûte un, et on n'en prendrait jamais plus de trois. Le nombre d'or
+   monte assez pour qu'on hésite, assez peu pour qu'on puisse viser la cinquième.
+
+       carte    1    2    3    4    5    6
+       coût     1    2    3    5    7   12
+       cumul    1    3    6   11   18   30
+
+   Un cycle mené à mille milliards crédite cinq jetons : deux cartes, et il en reste deux pour
+   la constellation. C'est là qu'est l'arbitrage — une carte de plus, ou une étoile de plus. */
+const NOMBRE_OR = (1 + Math.sqrt(5)) / 2;
+const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, n));
+function coutCartes(k) {
+  let t = 0;
+  for (let i = 0; i < k; i++) t += coutCarte(i);
+  return t;
+}
+// combien de cartes une bourse permet d'emporter
+function cartesAbordables(jetons) {
+  let k = 0;
+  while (coutCartes(k + 1) <= jetons) k++;
+  return k;
+}
+
+/* ── LA CONSTELLATION ──────────────────────────────────────────────────────────
+   Le second évier des jetons, et le seul objet du jeu — avec l'album — qui traverse
+   l'ascension. Deux mots, deux endroits, aucun recouvrement :
+
+     LES PRIMES           en jeu, en pièces, effacées au saut, elles POUSSENT ce qu'on a
+     LA CONSTELLATION     à l'ascension, en jetons, acquise pour toujours, elle OUVRE ce
+                          qu'on n'a pas
+
+   LE TRONC PORTE LES NOMBRES, LES BRANCHES PORTENT LES RÈGLES, ET LE TRONC EST LE CHEMIN VERS
+   LES BRANCHES. C'est la seule structure qui règle une tension autrement insoluble : un joueur
+   prend toujours le « +2 % » avant le nœud subtil, parce que c'est lisible et immédiat. Côte à
+   côte au même prix, les règles ne seraient jamais achetées. En faisant du tronc le chemin, on
+   n'achète plus « le nombre OU la règle » — le nombre est ce qui donne accès à la règle.
+
+   NI RENTE NI CHANCE DANS LE TRONC. La rente est déjà perpétuelle et déjà trop forte : un
+   multiplicateur permanent par-dessus aggraverait exactement ce que le plan dit qu'il faut
+   corriger. La chance a déjà le nacré et l'Œil exercé.
+
+   VINGT RANGS POUR +20 % DE CHAQUE, c'est délibérément peu — les primes d'une seule famille en
+   donnent cinquante à elles seules, et par cycle. Le tronc n'est pas la récompense. */
+const TRONC_RANGS = 20;
+const TRONC_PAS = 0.02;
+const TRONC = Array.from({ length: TRONC_RANGS }, (v, i) => ({
+  cle: 'tronc-' + (i + 1),
+  rang: i + 1,
+  branche: 'tronc',
+  quoi: i % 2 ? 'vitesse' : 'valeur',
+  prix: 1 + Math.floor(i / 5),
+  nom: 'Rang ' + (i + 1),
+}));
+
+/* LES BRANCHES, ET POURQUOI IL N'Y EN A QUE QUATRE NŒUDS AUJOURD'HUI. Le plan en décrit une
+   vingtaine, réparties en trois branches — les bâtiments, la main, le négoce. La moitié ouvre
+   des choses qui N'EXISTENT PAS ENCORE : l'hérédité, le marché, l'œuf mystère, les
+   chromatismes. Un nœud apparaît le jour où sa fonctionnalité existe, et pas avant : une
+   constellation pleine de portes qui ne mènent nulle part serait pire que pas de constellation.
+
+   CE QUE LES QUATRE FONT, ET CE N'EST PAS CE QU'ON CROIT. « Ne se rachète plus » ne fait pas
+   économiser : au dixième cycle, 400 000 pièces se gagnent en une seconde. Ce qu'ils font,
+   c'est rendre le bâtiment DISPONIBLE TOUT DE SUITE — une prime ne se dévoile qu'à l'approche
+   de son prix, cinq à la fois, donc la pension n'existait pas avant d'avoir grimpé jusqu'à
+   400 000. Le nœud ne remplit pas la bourse, il change ce que le cycle CONTIENT dès sa
+   première seconde. */
+const BRANCHES = [
+  { cle: 'acheteur',  branche: 'batiments', rang: 2, prix: 3, prime: 'acheteur',
+    nom: 'L’acheteur est à toi',
+    dit: 'L’acheteur automatique ne se rachète plus jamais : il est là dès la première seconde d’un cycle.' },
+  { cle: 'marchand',  branche: 'batiments', rang: 4, prix: 4, prime: 'marchand',
+    nom: 'Le marchand est à toi',
+    dit: 'Le marchand automatique ne se rachète plus jamais.' },
+  { cle: 'evolution', branche: 'batiments', rang: 6, prix: 5, prime: 'evolution',
+    nom: 'L’évolution est à toi',
+    dit: 'L’évolution automatique ne se rachète plus jamais.' },
+  { cle: 'pension',   branche: 'batiments', rang: 8, prix: 8, prime: 'pension',
+    nom: 'La pension est à toi',
+    dit: 'Le bâtiment de la pension est acquis : un cycle neuf commence avec son nid.' },
+];
+
+const NOM_BRANCHE = {
+  batiments: 'Les bâtiments — ce que ta ferme contient',
+  main: 'La main — ce que vaut ta présence',
+  negoce: 'Le négoce — ce que valent tes bêtes',
+};
+const CONSTELLATION = TRONC.concat(BRANCHES);
+const ETOILE_BY_KEY = Object.fromEntries(CONSTELLATION.map(n => [n.cle, n]));
+
+const etoilePrise = cle => !!(state.ciel && state.ciel[cle]);
+// le rang atteint : le plus haut rang de tronc pris sans trou, puisqu'ils s'achètent en ordre
+const rangTronc = () => {
+  let n = 0;
+  while (n < TRONC_RANGS && etoilePrise('tronc-' + (n + 1))) n++;
+  return n;
+};
+
+/* Ce qu'un nœud demande : son rang de tronc, et le rang précédent pour le tronc lui-même.
+   L'ordre du tronc n'est pas une décoration — c'est ce qui fait que `rangTronc` peut se lire
+   d'un compte plutôt que d'un parcours. */
+const etoileOuverte = n => n.branche === 'tronc'
+  ? n.rang === rangTronc() + 1
+  : rangTronc() >= n.rang;
+
+function acheterEtoile(cle) {
+  const n = ETOILE_BY_KEY[cle];
+  if (!n || etoilePrise(cle) || !etoileOuverte(n)) return false;
+  if (jetonsEnMain() < n.prix) return false;
+  /* On puise dans la bourse, jamais dans ce que le cycle vient de créditer : `jetonsDus` se
+     recalcule sur le sommet, on ne peut donc pas le décrémenter. Le sommet est converti en
+     bourse au moment où on y touche. */
+  state.asc.jetons = jetonsEnMain() - n.prix;
+  state.asc.sommet = 0;
+  state.ciel = state.ciel || {};
+  state.ciel[cle] = true;
+  oublierPrimes();
+  cielSig = '';
+  chord([523, 659, 784, 1046], 80);
+  refresh();
+  save();
+  return true;
+}
+
+/* Ce que le tronc ajoute aux deux coefficients globaux. Une quatrième source à côté des
+   primes, et elle traverse l'ascension — c'est toute la différence. */
+function bonusCiel() {
+  const b = { valeur: 0, rente: 0, vitesse: 0 };
+  for (const n of TRONC) if (etoilePrise(n.cle)) b[n.quoi] += TRONC_PAS;
+  return b;
+}
+
+// les primes que la constellation a rendues définitives
+const primeAcquise = cle => BRANCHES.some(n => n.prime === cle && etoilePrise(n.cle));
+
 /* ── La granularité des améliorations ─────────────────────────────────────────
    Un niveau qui double presque de prix et ne rend qu'un cran d'effet, c'est deux décroissances
    qui se cumulent : chaque achat coûte plus et pèse moins. À l'essai, la cadence des
@@ -1676,7 +1820,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 20;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 21;          // le numéro de ce que le fichier sait produire aujourd'hui
 const OFFLINE_CAP = 24 * 3600;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -1797,8 +1941,13 @@ function freshState() {
     album: [],
     slots: [],
     /* `sommet` : la plus grosse bourse tenue DEPUIS la dernière ascension. C'est lui qui dit
-       combien de cartes le prochain saut emporte, et il repart à zéro avec la ferme. */
+       combien de jetons le prochain saut crédite, et il repart à zéro avec la ferme.
+       `jetons` : ce qui reste en bourse, et qui ne repart JAMAIS à zéro. */
     asc: { n: 0, paliers: 0, jetons: 0, sommet: 0 },
+    /* LA CONSTELLATION. Elle traverse l'ascension comme l'album, et pour la même raison : elle
+       est ce qu'on a appris, pas ce qu'on possède. `ciel` plutôt que `constellation` — le
+       champ se lit cent fois dans le fichier. */
+    ciel: {},
     speed: 1,
     sound: true,
     t: Date.now(),
@@ -1944,6 +2093,7 @@ function load() {
        d'ascensions déjà faites, lui, ne bouge pas — c'est lui qui porte les emplacements.
        Une partie en cours regagnera son premier jeton dès qu'elle repassera le million. */
     merged.asc = Object.assign({ n: 0, paliers: 0, jetons: 0, sommet: 0 }, merged.asc || {});
+    merged.ciel = merged.ciel || {};
     delete merged.asc.done;
     merged.asc.n = merged.asc.n || 0;
     merged.asc.paliers = merged.asc.paliers || 0;
@@ -2002,6 +2152,11 @@ function load() {
     if ((s.v || 0) < 20 && merged.asc) {
       merged.asc.sommet = Math.max(merged.asc.sommet || 0, merged.coins || 0);
     }
+
+    /* v20 → v21 : le jeton redevient une bourse, et une carte coûte le prix doré. Une partie
+       d'avant a un `jetons` qui ne voulait plus rien dire depuis la 3.0.0 — il était remis à
+       zéro à chaque saut et jamais lu. On le laisse tel quel : ce que le cycle en cours a
+       gagné se lit sur le sommet, et s'y ajoutera. Rien à convertir, rien à rendre. */
 
     /* v12 → v13 : quatre améliorations quittent la liste à niveaux pour devenir des primes.
        On ne retire jamais rien à qui avait payé — les trois achats uniques se transposent tels
@@ -2192,7 +2347,7 @@ function bonusPrimes() {
   }
   return (primeCache = b);
 }
-const coef = quoi => 1 + bonusPrimes()[quoi];
+const coef = quoi => 1 + bonusPrimes()[quoi] + bonusCiel()[quoi];
 function bonusAlbum() {
   if (bonusCache) return bonusCache;
   const b = { valeur: 0, couvee: 0, pousse: 0, gras: 0, rente: 0, peage: 0, oeuf: 0, prodige: 0,
@@ -2393,7 +2548,10 @@ const incubCost = () => Math.round(INCUB_BASE * Math.pow(SLOT_MULT, state.incuba
 const penCost   = () => Math.round(PEN_BASE   * Math.pow(SLOT_MULT, state.pens - 1));
 
 // Une prime achetée, ou non. Toute la table passe par ici.
-const prime       = cle => !!(state.primes && state.primes[cle]);
+/* UNE PRIME PEUT ÊTRE ACQUISE DE DEUX FAÇONS : achetée en pièces pour ce cycle, ou tenue
+   pour toujours par la constellation. Tout le jeu passe par ce prédicat — nul besoin de le
+   savoir ailleurs. */
+const prime       = cle => !!(state.primes && state.primes[cle]) || primeAcquise(cle);
 
 const lvl         = key => state.up[key] || 0;
 /* Le NIVEAU est ce qui s'achète, la PUISSANCE est ce que ce niveau produit. Depuis que les
@@ -4274,14 +4432,23 @@ function crediterJetons() {
   while ((seuil = prochainPalier()) !== null && state.coins >= seuil) state.asc.paliers++;
 }
 
-/* CE QU'ON EMPORTE : un jeton par palier franchi DEPUIS LA DERNIÈRE ASCENSION. Le compte se
-   lit sur le sommet du cycle, donc il se refait entièrement à chaque fois — c'est ce qui
-   remplace le crédit unique et supprime le mur. */
+/* CE QUE LE CYCLE CRÉDITE : un jeton par palier franchi DEPUIS LA DERNIÈRE ASCENSION. Le
+   compte se lit sur le sommet du cycle, donc il se refait entièrement à chaque fois — c'est ce
+   qui remplace le crédit unique et supprime le mur de la 3.0.0. */
 function jetonsDus() {
   let n = 0;
   while (n < JETON_PALIERS.length && (state.asc.sommet || 0) >= JETON_PALIERS[n]) n++;
   return n;
 }
+
+/* CE QU'ON A EN MAIN : ce que le cycle vient de créditer, PLUS ce qui n'a pas été dépensé
+   auparavant. Le jeton redevient donc une BOURSE, et non plus une lecture.
+
+   C'est le prix doré et la constellation qui l'exigent : deux éviers qui puisent au même
+   endroit ne peuvent pas se partager un nombre calculé — il faut un solde. Sauter en
+   n'emportant qu'une carte laisse les autres jetons pour la constellation, et c'est
+   exactement l'arbitrage qu'on cherchait à créer. */
+const jetonsEnMain = () => (state.asc.jetons || 0) + jetonsDus();
 
 
 
@@ -4427,6 +4594,70 @@ function carteEl(k, actes) {
    Signature, comme partout : l'écran se rebâtit quand l'album, les emplacements ou la
    poussière changent, et pas dix fois par seconde. Un bouton détruit entre l'appui et le
    relâchement n'émet aucun « click » — la bande et le nid l'ont appris avant lui. */
+/* L'ÉCRAN DE LA CONSTELLATION. Le tronc en colonne à gauche — c'est un chemin, et un chemin
+   se lit dans un sens — les branches à droite, chacune s'ouvrant au rang qu'elle demande.
+
+   UN NŒUD FERMÉ SE MONTRE, il ne se cache pas. C'est l'inverse de la doctrine du dévoilement
+   qui gouverne la boutique et les primes, et c'est voulu : là-bas on cache ce qu'on ne peut pas
+   encore s'offrir pour ne pas écraser un débutant, ici on montre TOUT parce que c'est une carte
+   qu'on lit pour décider où aller. Un arbre dont on ne voit pas les branches n'est pas un
+   arbre, c'est une file d'attente.
+
+   Signature, comme partout : rien ne se rebâtit tant que rien n'a bougé. */
+let cielSig = '';
+function renderCiel() {
+  const jetons = jetonsEnMain(), rang = rangTronc();
+  const sig = Object.keys(state.ciel || {}).sort().join(',') + '|' + jetons;
+  if (sig === cielSig) return;
+  cielSig = sig;
+
+  setText($('ciel-jetons'), '✦ ' + fmt(jetons) + (jetons > 1 ? ' jetons' : ' jeton'));
+
+  const noeud = n => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'etoile' + (etoilePrise(n.cle) ? ' prise'
+                            : etoileOuverte(n) ? ' ouverte' : ' close');
+    b.dataset.etoile = n.cle;
+    b.disabled = etoilePrise(n.cle) || !etoileOuverte(n) || jetons < n.prix;
+    b.innerHTML = '<b class="etoile-nom"></b><i class="etoile-dit"></i>' +
+                  '<span class="etoile-prix"></span>';
+    b.querySelector('.etoile-nom').textContent = n.nom;
+    b.querySelector('.etoile-dit').textContent = n.branche === 'tronc'
+      ? '+' + Math.round(TRONC_PAS * 100) + ' % ' + n.quoi
+      : n.dit;
+    b.querySelector('.etoile-prix').textContent = etoilePrise(n.cle) ? '✓' : '✦ ' + n.prix;
+    b.title = etoilePrise(n.cle) ? 'Acquis pour toujours.'
+            : !etoileOuverte(n) ? 'Demande le rang ' + n.rang + ' du tronc.'
+            : jetons < n.prix ? 'Il te faut ' + n.prix + ' jetons. Tu en as ' + jetons + '.'
+            : (n.dit || '') + ' Coûte ' + n.prix + ' jetons, et c’est définitif.';
+    return b;
+  };
+
+  const tronc = $('ciel-tronc');
+  tronc.textContent = '';
+  const tt = document.createElement('h3');
+  tt.className = 'ciel-titre';
+  tt.textContent = 'Le tronc — rang ' + rang + ' / ' + TRONC_RANGS;
+  tronc.appendChild(tt);
+  for (const n of TRONC) tronc.appendChild(noeud(n));
+
+  const hote = $('ciel-branches');
+  hote.textContent = '';
+  const groupes = {};
+  for (const n of BRANCHES) (groupes[n.branche] = groupes[n.branche] || []).push(n);
+  for (const cle of Object.keys(groupes)) {
+    const bloc = document.createElement('div');
+    bloc.className = 'ciel-branche';
+    const h = document.createElement('h3');
+    h.className = 'ciel-titre';
+    h.textContent = NOM_BRANCHE[cle] || cle;
+    bloc.appendChild(h);
+    for (const n of groupes[cle]) bloc.appendChild(noeud(n));
+    hote.appendChild(bloc);
+  }
+}
+
 let forgeSig = '';
 
 /* L'ATELIER, EN DEUX TEMPS. D'abord l'album entier : on choisit LA CARTE À FAIRE MONTER.
@@ -4811,10 +5042,12 @@ let ascChoix = [];
    cartes ; cinq d'entre elles s'équipent, les quatre autres attendent leur tour. Plafonner à
    SLOTS revenait à jeter quatre cartes gagnées, et confondait la vitrine avec la collection. */
 function apercuAscension() {
-  const jetons = jetonsDus();
+  const jetons = jetonsEnMain();
   const neuves = subjects().filter(s => s.kind === 'creature')
     .map(s => Object.assign(capsuleBrute(s.c), { id: -s.c.id }));
-  return { jetons, neuves, max: jetons };
+  /* `max` n'est plus le nombre de jetons mais ce que la bourse PERMET : le prix d'une carte
+     monte, donc cinq jetons n'achètent plus cinq cartes. */
+  return { jetons, neuves, max: cartesAbordables(jetons) };
 }
 
 function ouvrirAscension() {
@@ -4973,10 +5206,16 @@ function ascensionner() {
   oublierPrimes();
   state = Object.assign(freshState(), {
     album, slots,
+    // la constellation traverse le saut, comme l'album : c'est ce qu'on a appris
+    ciel: state.ciel || {},
     /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
        C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
-    // tous les jetons partent, employés ou non : c'est le prix de sauter trop tôt
-    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers, jetons: 0, sommet: 0 },
+    /* LE RESTE DE LA BOURSE DEMEURE. Les jetons partaient tous, employés ou non — c'était le
+       prix de sauter trop tôt, et ça n'a plus de sens depuis qu'ils ont un second emploi :
+       garder ses jetons pour la constellation EST une décision, pas un gâchis. Ce qui se paie
+       ici, c'est le prix doré des cartes emportées, et rien d'autre. */
+    asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers,
+           jetons: Math.max(0, ap.jetons - coutCartes(neuves.length)), sommet: 0 },
     seen: state.seen, dex: state.dex, tri: state.tri, achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
@@ -5440,6 +5679,13 @@ function tickView() {
     r.el.hidden = !montrees.has(p.cle);
     r.el.classList.toggle('prise', pris);
     r.el.classList.toggle('prete', !pris && state.coins >= p.prix);
+    /* UNE PRIME TENUE PAR LA CONSTELLATION SE DIT. Elle sort d'elle-même de « ce qui reste à
+       prendre » — `prime()` la donne pour acquise, donc elle n'occupe plus une des cinq cases,
+       ce qui était toute la question. Mais elle ressemblerait sinon à une prime achetée, et le
+       joueur ne saurait pas pourquoi elle est là dès la première seconde du cycle. */
+    const duCiel = primeAcquise(p.cle);
+    r.el.classList.toggle('du-ciel', duCiel);
+    if (duCiel) r.el.title = p.nom + ' — tenue par ta constellation : elle ne se rachète plus.';
     r.el.disabled = pris || state.coins < p.prix;
   }
 
@@ -5657,12 +5903,18 @@ function renderTuto() {
      pas un bâtiment — mais elle suit la même règle que tout le reste : on ne montre pas la
      porte d'une pièce vide. La première ascension l'ouvre. */
   const forgePret = state.album.length > 0;
+  /* LA CONSTELLATION S'OUVRE AVEC LE PREMIER JETON, et pas avec la première ascension : on
+     gagne des jetons AVANT de sauter, et c'est justement en les voyant qu'on comprend qu'il y
+     a deux façons de les dépenser. */
+  const cielPret = jetonsEnMain() > 0 || Object.keys(state.ciel || {}).length > 0;
   for (const b of document.querySelectorAll('.onglet')) {
     if (b.dataset.vue === 'dex') b.hidden = !dexPret;
     if (b.dataset.vue === 'forge') b.hidden = !forgePret;
+    if (b.dataset.vue === 'ciel') b.hidden = !cielPret;
   }
   if (!dexPret && vue === 'dex') ouvrirVue('ferme');
   if (!forgePret && vue === 'forge') ouvrirVue('ferme');
+  if (!cielPret && vue === 'ciel') ouvrirVue('ferme');
 
   // le pied de page parle du prototype, pas du jeu : il attend qu'on ait de quoi acheter
   $('foot').hidden = jeune && !estDevoile('egg-commun');
@@ -5674,6 +5926,7 @@ function refresh() {
   renderCollection();
   renderAlbum();
   renderForge();
+  renderCiel();
   renderStage();
   syncReglages();
   renderEncyclopedie();
@@ -6271,15 +6524,17 @@ function poserAuNid(id, cote) {
    page, aucune ne se sauvegarde. La forge a la même raison d'être pleine page que
    l'encyclopédie — elle montre des cartes côte à côte, six à la fois, et six cartes n'entrent
    pas dans une colonne de vingt et un rem. */
-const VUES = ['ferme', 'dex', 'forge'];
+const VUES = ['ferme', 'dex', 'forge', 'ciel'];
 let vue = 'ferme';
 
 function ouvrirVue(v) {
   vue = VUES.indexOf(v) === -1 ? 'ferme' : v;
   document.body.classList.toggle('vue-dex', vue === 'dex');
   document.body.classList.toggle('vue-forge', vue === 'forge');
+  document.body.classList.toggle('vue-ciel', vue === 'ciel');
   $('vue-dex').hidden = vue !== 'dex';
   $('vue-forge').hidden = vue !== 'forge';
+  $('vue-ciel').hidden = vue !== 'ciel';
   for (const b of document.querySelectorAll('.onglet'))
     b.setAttribute('aria-pressed', String(b.dataset.vue === vue));
   refresh();
@@ -6812,6 +7067,12 @@ function syncReglages() {
     : 'Il est arrêté : il ne dépense rien.');
 }
 
+function cielClic(e) {
+  const b = e.target.closest && e.target.closest('.etoile');
+  if (!b) return;
+  if (!acheterEtoile(b.dataset.etoile)) blip(300, 0.05, 'sine', 0.03);
+}
+
 function bindTools() {
   $('subject').addEventListener('click', tapStage);
   $('offline-note').addEventListener('click', e => {
@@ -7202,6 +7463,9 @@ function bindTools() {
     if (!carte || !carte.dataset.id) return;
     if (!choisirForge(parseInt(carte.dataset.id, 10))) blip(300, 0.05, 'sine', 0.03);
   });
+
+  $('ciel-branches').addEventListener('click', e => cielClic(e));
+  $('ciel-tronc').addEventListener('click', e => cielClic(e));
 
   const albumHote = $('album');
 

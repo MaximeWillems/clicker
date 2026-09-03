@@ -32,6 +32,7 @@
     <button type="button" class="onglet" data-vue="ferme" aria-pressed="true">Ferme</button>
     <button type="button" class="onglet" data-vue="dex" aria-pressed="false">Encyclopédie</button>
     <button type="button" class="onglet" data-vue="forge" aria-pressed="false" hidden>Forge</button>
+    <button type="button" class="onglet" data-vue="ciel" aria-pressed="false" hidden>Constellation</button>
   </nav>
 
   <button type="button" id="btn-asc" class="asc-call" hidden>Ascension</button>
@@ -290,6 +291,22 @@
        dans une fusion, et rien ne se défait. -->
   <div class="forge-plan" id="forge-plan" hidden></div>
   <div class="forge-grille" id="forge-grille"></div>
+</section>
+
+<!-- LA CONSTELLATION. Le tronc à gauche, en colonne : c'est un chemin, il se lit de bas en
+     haut. Les branches à droite, chacune s'ouvrant au rang qu'elle demande. -->
+<section id="vue-ciel" class="ciel" hidden aria-label="Constellation">
+  <div class="ciel-tete">
+    <h2>La constellation</h2>
+    <p class="ciel-dit">Ce qui traverse l'ascension. Les primes poussent ce que tu as, pour un
+      cycle ; la constellation ouvre ce que tu n'as pas, pour toujours. Le tronc est le chemin :
+      chaque rang atteint ouvre les nœuds de son niveau.</p>
+    <span class="ciel-jetons" id="ciel-jetons"></span>
+  </div>
+  <div class="ciel-corps">
+    <div class="ciel-tronc" id="ciel-tronc"></div>
+    <div class="ciel-branches" id="ciel-branches"></div>
+  </div>
 </section>
 
 <!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :

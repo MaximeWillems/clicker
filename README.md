@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 3.1.2** | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
+| **beta 4.0.0** | la constellation : le jeton devient une monnaie à deux éviers, et une carte coûte le prix doré |
+| beta 3.1.2 | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
 | beta 3.1.1 | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
 | beta 3.1.0 | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
 | beta 3.0.0 | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
@@ -1720,6 +1721,99 @@ Aux anciens prix, le marchand tombait à 78 min.
 **L'éleveur et la mangeoire se partagent la vie de la bête** : l'éleveur pousse les jeunes
 jusqu'à sa maturité, la mangeoire prend le relais et engraisse les bêtes mûres. Aucune des deux
 ne dépense de pièces.
+
+### La constellation
+
+**Deux mots, deux endroits, aucun recouvrement.**
+
+| | **Les primes** | **La constellation** |
+|---|---|---|
+| où | en jeu | à l'ascension |
+| payées en | pièces | jetons |
+| durée | le cycle, puis effacées | acquises pour toujours |
+| ce qu'elles font | pousser ce qu'on a | **ouvrir ce qu'on n'a pas** |
+
+#### Le prix doré d'une carte
+
+Chaque carte emportée dans une même ascension renchérit la suivante d'un facteur **φ ≈ 1,618**.
+
+| Carte | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| coût | 1 | 2 | 3 | 5 | 7 | 12 |
+| cumul | 1 | 3 | 6 | 11 | 18 | 30 |
+
+**Pourquoi il fallait l'écrire.** La `beta 3.0.0` a fait *regagner* les jetons à chaque cycle,
+ce qui a abattu le mur de fin de partie — et ouvert un trou dans le même geste : si les jetons
+reviennent et qu'une carte en coûte un, on emporte cinq cartes à chaque ascension,
+indéfiniment. L'album se remplit alors sans qu'aucune décision ne soit prise, et la forge, qui
+demande neuf cartes pour une seule trois-étoiles, devient triviale.
+
+φ plutôt que ×2 : le doublement écrase trop vite — la quatrième carte coûterait huit jetons
+quand la première en coûte un, et on n'en prendrait jamais plus de trois. Le nombre d'or monte
+assez pour qu'on hésite, assez peu pour qu'on puisse viser la cinquième.
+
+#### Le jeton redevient une bourse
+
+Il était devenu une *lecture* en `3.0.0` — le nombre de paliers franchis par le sommet du
+cycle. Avec deux éviers qui puisent au même endroit, il faut un **solde** :
+
+    en main  =  ce qui reste en bourse  +  ce que le cycle vient de créditer
+
+Et **le reste demeure au saut**. Les jetons partaient tous, employés ou non ; c'était le prix de
+sauter trop tôt, et ça n'a plus de sens depuis qu'ils ont un second emploi. *Garder ses jetons
+pour la constellation est une décision, pas un gâchis.*
+
+#### Le tronc porte les nombres, les branches portent les règles
+
+Et **le tronc est le chemin vers les branches** : chaque rang atteint ouvre les nœuds de son
+niveau. C'est la seule structure qui règle une tension autrement insoluble — un joueur prend
+toujours le `+2 %` avant le nœud subtil, parce que c'est lisible et immédiat. Côte à côte au
+même prix, les règles ne seraient jamais achetées. En faisant du tronc le chemin, on n'achète
+plus « le nombre *ou* la règle » : le nombre est ce qui **donne accès** à la règle.
+
+**Vingt rangs**, alternant valeur et vitesse, +2 % chacun, de 1 à 4 jetons — cinquante jetons
+pour +20 % de chaque. C'est délibérément peu : les primes d'une seule famille en donnent
+cinquante à elles seules, et par cycle. Le tronc n'est pas la récompense.
+
+**Ni rente ni chance.** La rente est déjà perpétuelle et déjà trop forte ; un multiplicateur
+permanent par-dessus aggraverait ce que le plan dit qu'il faut corriger. La chance a déjà le
+nacré et l'*Œil exercé*.
+
+#### Quatre nœuds, et ce qu'ils valent vraiment
+
+| Nœud | Rang | Prix | Ce qu'il ouvre |
+|---|---|---|---|
+| L'acheteur est à toi | 2 | ✦ 3 | l'acheteur automatique ne se rachète plus |
+| Le marchand est à toi | 4 | ✦ 4 | idem |
+| L'évolution est à toi | 6 | ✦ 5 | idem |
+| La pension est à toi | 8 | ✦ 8 | le bâtiment est acquis |
+
+**« Ne se rachète plus » ne fait pas économiser.** Au dixième cycle, 400 000 pièces se gagnent
+en une seconde. Ce que le nœud change, c'est que le bâtiment est là **dès la première seconde**
+du cycle suivant — une prime ne se dévoile qu'à l'approche de son prix, cinq à la fois, donc la
+pension n'existait pas avant d'avoir grimpé jusqu'à 400 000.
+
+Une prime tenue par la constellation **sort d'elle-même** de « ce qui reste à prendre » : elle
+n'occupe plus une des cinq cases de la grille. Elle s'y affiche marquée `✦`, pour qu'on sache
+d'où elle vient.
+
+#### Un nœud fermé se montre, il ne se cache pas
+
+C'est l'inverse de la doctrine du dévoilement qui gouverne la boutique et les primes, et c'est
+voulu : **là-bas on cache ce qu'un débutant ne peut pas s'offrir, ici on montre une carte qu'on
+lit pour décider où aller.** Un arbre dont on ne voit pas les branches n'est pas un arbre, c'est
+une file d'attente.
+
+#### Ce qui n'est pas dans cette version
+
+Le plan décrit une vingtaine de nœuds en trois branches. **La moitié ouvre des choses qui
+n'existent pas encore** — l'hérédité, le marché, l'œuf mystère, les chromatismes. Un nœud
+apparaît le jour où sa fonctionnalité existe : une constellation pleine de portes qui ne mènent
+nulle part serait pire que pas de constellation.
+
+Et la **révision des 45 primes** avec les **primes à choix** n'y est pas non plus, pour une
+raison de méthode : réviser l'ordre des primes est un travail de *mesure*, et la mesure change
+sous les pieds si l'économie de l'ascension bouge dans la même version.
 
 ### Les primes
 

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 3.1.2 · sauvegarde v20 · 11 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.0.0 · sauvegarde v21 · 11 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -210,7 +210,11 @@ ascension, ou s'accumule-t-il ?** S'il s'accumule, c'est un cliquet permanent et
 petit ; s'il se rejoue, c'est un build par cycle et il peut être ambitieux. La seconde forme va
 mieux avec le prix doré, qui est déjà une décision par cycle.
 
-#### LA CONSTELLATION — la forme proposée
+#### LA CONSTELLATION — **le socle est livré en `beta 4.0.0`**
+
+> Le tronc, les quatre nœuds de bâtiments, le prix doré et la bourse de jetons sont écrits.
+> Ce qui suit reste la feuille de route des branches — un nœud par fonctionnalité, le jour
+> où elle existe.
 
 **Le vocabulaire est fixé, et c'est ce qui compte le plus dans cette section.** Deux mots, deux
 endroits, aucun recouvrement :

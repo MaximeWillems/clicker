@@ -32,11 +32,13 @@ function ok(quoi, vrai, detail) {
 }
 const eq = (quoi, a, b) => ok(quoi + ' (' + a + ' attendu ' + b + ')', a === b);
 
-/* CE QU'ON EMPORTE SE LIT SUR LE SOMMET DU CYCLE depuis la 3.0.0 : poser « trois jetons »,
-   c'est poser une fortune qui a franchi trois paliers. `paliers` reste ce qui a ouvert
+/* POSER N JETONS, c'est remplir la BOURSE depuis la 4.0.0 — et non plus poser une fortune qui
+   aurait franchi n paliers. L'échelle n'a que onze crans, donc au-delà elle ne savait plus
+   représenter la demande ; la bourse, elle, n'a pas de plafond. `paliers` reste ce qui a ouvert
    l'ascension une première fois. */
 function poserJetons(jeu, n) {
-  jeu.state.asc.sommet = n ? jeu.JETON_PALIERS[n - 1] : 0;
+  jeu.state.asc.jetons = n;
+  jeu.state.asc.sommet = 0;
   jeu.state.asc.paliers = jeu.RANG_PREMIER;
 }
 
@@ -579,7 +581,8 @@ scenario('ascension — un jeton, des cartes, et tout le reste repart de zéro',
   ok('les scènes déjà jouées traversent', Object.keys(jeu.state.vu).length > 0);
 });
 
-scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
+scenario('jetons — le prix d’une carte monte par le nombre d’or', () => {
+  const jeu0 = neuf();
   const bete2 = (jeu, ligne, age, p) => {
     const s = jeu.state;
     s.incub[0] = { line: ligne, p: 9999, kind: 'commun' };
@@ -593,14 +596,27 @@ scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
      nombre de jetons n'entrait nulle part, un seul jeton laissait choisir cinq cartes. Et
      l'ascension n'en consommait qu'un — on sautait avec cinq et on en retrouvait quatre. */
   /* ⚠ L'ALBUM ET LES CARTES ACTIVES SONT DEUX CHOSES. L'album n'a pas de limite ; SLOTS ne
-     borne que les cinq cartes qui agissent. Le jeton borne donc ce qui ENTRE DANS L'ALBUM, et
-     neuf jetons emportent bien neuf cartes. */
-  for (const n of [1, 2, 3, 5, 9, 11]) {
+     borne que les cinq cartes qui agissent. Ce qui borne ce qui ENTRE DANS L'ALBUM, c'est la
+     bourse — et depuis la 4.0.0, le PRIX DORÉ.
+
+     UN JETON N'ACHÈTE PLUS UNE CARTE. Chaque carte prise dans la même ascension renchérit la
+     suivante d'un facteur φ : 1, 2, 3, 5, 7, 12 — cumul 1, 3, 6, 11, 18, 30. Sans cette
+     escalade, les jetons regagnés à chaque cycle depuis la 3.0.0 auraient donné cinq cartes à
+     chaque saut, indéfiniment, et l'album se serait rempli sans qu'aucune décision ne soit
+     prise. */
+  eq('le coût de la première carte', jeu0.coutCarte(0), 1);
+  eq('puis deux', jeu0.coutCarte(1), 2);
+  eq('puis trois', jeu0.coutCarte(2), 3);
+  eq('puis cinq', jeu0.coutCarte(3), 5);
+  eq('puis sept', jeu0.coutCarte(4), 7);
+  eq('cinq cartes coûtent dix-huit jetons', jeu0.coutCartes(5), 18);
+
+  for (const [n, cartes] of [[1, 1], [2, 1], [3, 2], [5, 2], [9, 3], [11, 4], [18, 5]]) {
     const jeu = neuf(); const s = jeu.state;
     s.tuto = false; s.coins = 5e6; s.pens = 20;
     for (let i = 0; i < 16; i++) bete2(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
     poserJetons(jeu, n);
-    eq(n + ' jeton(s) → ' + n + ' carte(s), sans plafond', jeu.apercuAscension().max, n);
+    eq(n + ' jeton(s) → ' + cartes + ' carte(s)', jeu.apercuAscension().max, cartes);
   }
 
   const jeu = neuf(); const s = jeu.state;
@@ -612,12 +628,16 @@ scenario('jetons — un jeton une carte, et le saut les prend tous', () => {
   jeu.ascensionner();
   eq('le sommet repart à zéro', jeu.state.asc.sommet, 0);
   eq('deux cartes emportées', jeu.state.album.length, 2);
+  /* LE RESTE DE LA BOURSE DEMEURE. Les jetons partaient tous, employés ou non ; ils ont
+     désormais un second emploi — la constellation — donc en garder EST une décision. Deux
+     cartes coûtent trois jetons sur cinq : il en reste deux. */
+  eq('et il reste ce qu’on n’a pas dépensé', jeu.state.asc.jetons, 5 - jeu.coutCartes(2));
   /* L'ASCENSION NE SE REFERME PLUS. Elle demandait un jeton NON DÉPENSÉ, si bien qu'un joueur
      qui venait de sauter devait multiplier sa fortune par mille pour pouvoir sauter à
      nouveau — le mur rencontré en jouant à mille milliards. La porte est désormais un
      déblocage : ce qui varie, c'est le nombre de cartes emportées. */
   ok('mais la porte reste ouverte', jeu.peutAscensionner());
-  eq('sans rien à emporter pour l’instant', jeu.apercuAscension().max, 0);
+  eq('et les deux jetons restants valent encore une carte', jeu.apercuAscension().max, 1);
   eq('les paliers déjà franchis restent franchis', jeu.state.asc.paliers, jeu.RANG_PREMIER);
 });
 
@@ -633,7 +653,7 @@ scenario('album — sans limite, et cinq cartes actives qui s’échangent', () 
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 12; i++) bete3(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
-  poserJetons(jeu, 9);
+  poserJetons(jeu, jeu.coutCartes(9));   // le prix doré : neuf cartes ne coûtent plus neuf jetons
 
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.slice(0, 9).map(k => k.id);
@@ -2797,6 +2817,134 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
   ok('elle retombe sur l’embonpoint', c.over > gras2);
 });
 
+/* ────────────────────────── la constellation ────────────────────────── */
+
+scenario('constellation — le tronc est un chemin, et il ouvre les branches', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 100);
+
+  /* LE TRONC S'ACHÈTE EN ORDRE : c'est ce qui permet de lire le rang d'un compte plutôt que
+     d'un parcours, et c'est ce qui fait de lui un CHEMIN et non une liste. */
+  eq('on part du rang zéro', jeu.rangTronc(), 0);
+  ok('le premier rang est ouvert', jeu.etoileOuverte(jeu.ETOILE_BY_KEY['tronc-1']));
+  ok('le second ne l’est pas', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY['tronc-2']));
+  ok('on ne peut pas sauter un rang', !jeu.acheterEtoile('tronc-2'));
+
+  ok('le premier s’achète', jeu.acheterEtoile('tronc-1'));
+  eq('le rang monte', jeu.rangTronc(), 1);
+  ok('et le second s’ouvre', jeu.etoileOuverte(jeu.ETOILE_BY_KEY['tronc-2']));
+  ok('on ne le rachète pas', !jeu.acheterEtoile('tronc-1'));
+
+  /* LES BRANCHES DEMANDENT UN RANG DE TRONC. C'est toute la structure : le nombre est le
+     CHEMIN vers la règle. Sans ça, un joueur prendrait toujours le « +2 % » lisible avant le
+     nœud subtil, et les règles ne seraient jamais achetées. */
+  const acheteur = jeu.ETOILE_BY_KEY.acheteur;
+  eq('l’acheteur demande le rang 2', acheteur.rang, 2);
+  ok('fermé au rang 1', !jeu.etoileOuverte(acheteur));
+  ok('donc refusé', !jeu.acheterEtoile('acheteur'));
+  jeu.acheterEtoile('tronc-2');
+  ok('ouvert au rang 2', jeu.etoileOuverte(acheteur));
+  ok('et il s’achète', jeu.acheterEtoile('acheteur'));
+});
+
+scenario('constellation — elle paie en jetons, et le tronc pousse deux coefficients', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 3);
+
+  eq('trois jetons en main', jeu.jetonsEnMain(), 3);
+  const v = jeu.coef('valeur');
+  ok('le premier rang passe', jeu.acheterEtoile('tronc-1'));
+  eq('il a coûté un jeton', jeu.jetonsEnMain(), 2);
+  ok('et la valeur monte de deux pour cent',
+     Math.abs(jeu.coef('valeur') - (v + jeu.TRONC_PAS)) < 1e-9,
+     v + ' → ' + jeu.coef('valeur'));
+
+  /* NI RENTE NI CHANCE DANS LE TRONC : la rente est déjà perpétuelle et déjà trop forte, un
+     multiplicateur permanent par-dessus aggraverait ce que le plan dit qu'il faut corriger. */
+  const r = jeu.coef('rente');
+  jeu.acheterEtoile('tronc-2');
+  eq('la rente ne bouge pas', jeu.coef('rente'), r);
+  ok('mais la vitesse, oui', jeu.coef('vitesse') > 1);
+
+  // et sans jetons, rien ne s'achète
+  s.asc.jetons = 0; s.asc.sommet = 0;
+  ok('plus un jeton, plus un nœud', !jeu.acheterEtoile('tronc-3'));
+});
+
+scenario('constellation — les quatre bâtiments ne se rachètent plus', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 100);
+  for (let i = 1; i <= 8; i++) jeu.acheterEtoile('tronc-' + i);
+
+  ok('la pension n’est pas encore là', !jeu.prime('pension'));
+  ok('on prend le nœud', jeu.acheterEtoile('pension'));
+  ok('et le bâtiment existe, sans l’avoir acheté', jeu.prime('pension'));
+  ok('c’est bien la constellation qui le tient', jeu.primeAcquise('pension'));
+  eq('la prime, elle, n’a pas été payée', !!s.primes.pension, false);
+
+  /* CE QUE ÇA VAUT N'EST PAS L'ARGENT. Au dixième cycle 400 000 pièces se gagnent en une
+     seconde. Ce que le nœud change, c'est que le bâtiment est là DÈS LA PREMIÈRE SECONDE du
+     cycle suivant — une prime ne se dévoile qu'à l'approche de son prix. */
+  s.coins = 0;
+  ok('même sans une pièce', jeu.prime('pension'));
+
+  // et il traverse l'ascension, comme l'album
+  poserJetons(jeu, 20);
+  jeu.state.pens = 20;
+  const c = bete(jeu, 'crapaud', 3, 3000);
+  jeu.ascChoix = [-c.id];
+  jeu.ascensionner();
+  ok('après le saut, la pension est toujours là', jeu.prime('pension'));
+  ok('et la constellation aussi', jeu.etoilePrise('tronc-1'));
+});
+
+scenario('constellation — l’écran montre tout, et n’ouvre que ce qui est ouvert', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 2);
+  jeu.cielSig = '';
+  jeu.refresh();
+
+  const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
+  eq('l’onglet s’ouvre avec le premier jeton', onglet('ciel').hidden, false);
+
+  /* Les branches ont un niveau de plus — un bloc par branche — donc on descend l'arbre au lieu
+     de ne lire que les enfants directs. Et on compare la CLASSE au lieu de la chercher :
+     `etoile-nom`, `etoile-dit` et `etoile-prix` contiennent tous « etoile », et une recherche
+     par sous-chaîne rendait quatre fois trop de nœuds. Même piège que `forge-acte`. */
+  const etoiles = hote => {
+    const t = [];
+    const m = x => { if (x.classList && x.classList.contains('etoile')) t.push(x); x.children.forEach(m); };
+    noeuds.get(hote).children.forEach(m);
+    return t;
+  };
+  eq('le tronc montre ses vingt rangs', etoiles('ciel-tronc').length, jeu.TRONC_RANGS);
+
+  /* UN NŒUD FERMÉ SE MONTRE, IL NE SE CACHE PAS. C'est l'inverse de la doctrine du dévoilement
+     qui gouverne la boutique et les primes, et c'est voulu : là-bas on cache ce qu'un débutant
+     ne peut pas s'offrir, ici on montre une carte qu'on lit pour décider où aller. */
+  const branches = etoiles('ciel-branches');
+  eq('les quatre bâtiments sont montrés', branches.length, 4);
+  ok('tous fermés au rang zéro', branches.every(b => b.classList.contains('close')));
+  ok('et donc tous désactivés', branches.every(b => b.disabled));
+
+  const tr = etoiles('ciel-tronc');
+  ok('le premier rang est ouvert', tr[0].classList.contains('ouverte'));
+  ok('et cliquable', !tr[0].disabled);
+  ok('le second est fermé', tr[1].classList.contains('close'));
+
+  jeu.acheterEtoile('tronc-1');
+  jeu.refresh();
+  ok('une fois pris, il se marque', etoiles('ciel-tronc')[0].classList.contains('prise'));
+  ok('et il n’est plus cliquable', etoiles('ciel-tronc')[0].disabled);
+
+  ok('la bourse est annoncée', /✦/.test(noeuds.get('ciel-jetons').textContent),
+     noeuds.get('ciel-jetons').textContent);
+});
+
 scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 20;
@@ -2808,7 +2956,11 @@ scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
   s.coins = 1e9; jeu.crediterJetons();
   eq('un milliard vaut quatre paliers', jeu.jetonsDus(), 4);
   ok('l’ascension est ouverte', jeu.peutAscensionner());
-  eq('et elle emporte quatre cartes', jeu.apercuAscension().max, 4);
+  /* QUATRE JETONS N'ACHÈTENT PLUS QUATRE CARTES : le prix doré fait payer 1, 2, 3, 5 — donc
+     deux cartes pour trois jetons, et la troisième en coûterait six. */
+  eq('mais quatre jetons ne valent que deux cartes', jeu.apercuAscension().max, 2);
+  s.asc.jetons = 11;   // de quoi en prendre quatre : 1 + 2 + 3 + 5
+  eq('onze jetons en valent quatre', jeu.apercuAscension().max, 4);
 
   jeu.ascChoix = jeu.apercuAscension().neuves.slice(0, 4).map(k => k.id);
   jeu.ascensionner();
@@ -2822,10 +2974,13 @@ scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
      Avant, il aurait fallu multiplier sa fortune par mille pour pouvoir sauter à nouveau. */
   ok('la porte reste ouverte', jeu.peutAscensionner());
   eq('mais le sommet est reparti à zéro', n.asc.sommet, 0);
-  eq('donc rien à emporter tout de suite', jeu.apercuAscension().max, 0);
+  /* La bourse gardait onze jetons, le cycle en créditait quatre de plus, et les quatre cartes
+     en ont coûté onze : il en reste quatre. Ce reste EST la décision — il va à la
+     constellation. */
+  eq('et il reste ce que les cartes n’ont pas mangé', n.asc.jetons, 15 - jeu.coutCartes(4));
 
   n.coins = 1e9; jeu.crediterJetons();
-  eq('refaire le milliard rend les quatre cartes', jeu.jetonsDus(), 4);
+  eq('refaire le milliard recrédite quatre jetons', jeu.jetonsDus(), 4);
   /* L'ÉCHELLE, ELLE, NE SE REFRANCHIT PAS : `paliers` compte la partie entière et sert au
      déblocage, pas à ce qu'on emporte. */
   eq('sans refranchir l’échelle', n.asc.paliers, 4);
@@ -3199,7 +3354,7 @@ scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () =>
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 10; i++) bete3(jeu, 'crapaud', 3, 3000);
-  poserJetons(jeu, 2);
+  poserJetons(jeu, jeu.coutCartes(2));   // deux cartes coûtent trois jetons, prix doré
 
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.slice(0, 2).map(k => k.id);
