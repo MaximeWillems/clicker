@@ -92,7 +92,16 @@ function el(tag) {
       return n;
     },
     addEventListener() {}, removeEventListener() {},
-    setAttribute(k, v) { this._attrs[k] = String(v); },
+    /* `class` ET `id` NE SONT PAS DES ATTRIBUTS COMME LES AUTRES. Sur un nœud SVG,
+       `setAttribute('class', …)` est la SEULE façon de poser une classe — `className` y est en
+       lecture seule. Un banc qui range ça dans un coin ne voit donc aucun nœud d'un arbre SVG,
+       et l'écran entier devient invérifiable. Le jour où la constellation est devenue un arbre,
+       tous ses scénarios ont rendu zéro. */
+    setAttribute(k, v) {
+      this._attrs[k] = String(v);
+      if (k === 'class') this.className = String(v);
+      if (k === 'id') this.id = String(v);
+    },
     getAttribute(k) { return this._attrs[k] === undefined ? null : this._attrs[k]; },
     removeAttribute(k) { delete this._attrs[k]; },
     closest() { return null; },
@@ -187,6 +196,11 @@ for (const m of html.matchAll(/<(p|div|section|span|nav|ul|li)[^>]*class="([^"]+
 
 global.document = {
   createElement: el,
+  /* UN NŒUD SVG EST UN NŒUD. Le banc ne connaît pas les espaces de noms et n'a pas à les
+     connaître : ce qu'il vérifie d'un arbre, ce sont ses classes, ses `data-` et son état —
+     jamais son rendu. Sans cette ligne, l'arbre de la constellation aurait été un écran
+     entier qu'aucun scénario ne pouvait voir. */
+  createElementNS: (ns, tag) => el(tag),
   getElementById(id) {
     // un identifiant que game.js demande sans qu'index.html le pose : c'est un bug, on le note
     if (!noeuds.has(id)) { inconnus.push(id); noeuds.set(id, el()); }

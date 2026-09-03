@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.2.0';
+const VERSION = 'beta 4.3.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -949,17 +949,17 @@ const PRIMES = [
     dit: 'Deux incubateurs de plus, offerts. Ils ne font pas monter le prix des suivants.' },
   { cle: 'paille',    prix: 1200,      glyphe: '🌾', nom: 'Paille fraîche',
     dit: 'Deux enclos de plus, offerts. Ils ne font pas monter le prix des suivants.' },
-  { cle: 'acheteur',  prix: 2000,      glyphe: '🥚', nom: 'Acheteur automatique',
+  { cle: 'acheteur',  prix: 2000,      glyphe: '🥚', glyphe: '🥚', nom: 'Acheteur automatique',
     dit: 'Rachète un œuf dès qu’un incubateur se libère et que ta réserve est vide.' },
   { cle: 'negoce-commune', prix: 4000, glyphe: '🪙', nom: 'Négoce commun',
     dit: 'Les communes se vendent un quart plus cher.' },
   { cle: 'poigne',    prix: 8000,      glyphe: '✊', nom: 'Poigne',
     dit: 'Trois secondes de plus à chaque clic, quoi que tu aies acheté par ailleurs.' },
-  { cle: 'marchand',  prix: 15000,     glyphe: '🤝', nom: 'Marchand automatique',
+  { cle: 'marchand',  prix: 15000,     glyphe: '🤝', glyphe: '🤝', nom: 'Marchand automatique',
     dit: 'Vend les bêtes mûres tout seul, à l’âge que tu règles pour chaque rareté.' },
   { cle: 'grossiste', prix: 30000,     glyphe: '📦', nom: 'Grossiste',
     dit: 'Les œufs de la boutique coûtent un cinquième de moins.' },
-  { cle: 'evolution', prix: 50000,     glyphe: '🧬', nom: 'Évolution automatique',
+  { cle: 'evolution', prix: 50000,     glyphe: '🧬', glyphe: '🧬', nom: 'Évolution automatique',
     dit: 'Fait passer les bêtes mûres d’un âge au suivant, jusqu’où tu décides. Elle agit avant le marchand.' },
   { cle: 'negoce-rare', prix: 80000,   glyphe: '🔷', nom: 'Négoce rare',
     dit: 'Les rares se vendent un quart plus cher.' },
@@ -967,7 +967,7 @@ const PRIMES = [
     dit: 'Les bêtes que tu gardes ☆ ne comptent plus dans la limite d’enclos. Une ménagerie cesse de coûter du débit.' },
   { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
     dit: 'Chaque évolution coûte un quart de moins. Passé l’ère commune, ce n’est plus la vitesse qui freine mais la mise de fonds.' },
-  { cle: 'pension',   prix: 400000,    glyphe: '🛖', nom: 'La pension',
+  { cle: 'pension',   prix: 400000,    glyphe: '🛖', glyphe: '🛖', nom: 'La pension',
     dit: 'Un bâtiment où confier deux bêtes adultes. Elles gardent leur enclos, cessent de rapporter, et pondent un œuf dont tu connais déjà la lignée.' },
   { cle: 'oeil',      prix: 500000,    glyphe: '👁️', nom: 'Œil exercé',
     dit: 'Une chance sur deux de plus de voir naître un chromatique — de 1 sur 8 192 à 1 sur 5 461.' },
@@ -1436,7 +1436,7 @@ const BRANCHES = [
      Une partie déjà commencée ne perd rien : la migration donne le nœud à qui avait déjà
      forgé, ou possédait des cartes. */
   { cle: 'forge',     branche: 'batiments', rang: 3, prix: 4,
-    nom: 'L’atelier de forge',
+    glyphe: '🔨', nom: 'L’atelier de forge',
     dit: 'Trois cartes semblables n’en font qu’une, d’une étoile de plus. L’atelier reste ouvert à travers les ascensions.' },
 
   /* LE SANG — ce qui touche l'ascension elle-même. Ces deux nœuds sont les seuls du plan qui
@@ -1444,10 +1444,10 @@ const BRANCHES = [
      changent la valeur de tous les achats suivants : ils sont donc les plus chers, et les plus
      tardifs. */
   { cle: 'or-doux',   branche: 'sang', rang: 12, prix: 16,
-    nom: 'Le prix doré s’adoucit',
+    glyphe: '🌀', nom: 'Le prix doré s’adoucit',
     dit: 'Chaque carte emportée coûte un cran de moins : la deuxième au prix de la première, la troisième au prix de la deuxième.' },
   { cle: 'sommet',    branche: 'sang', rang: 15, prix: 20,
-    nom: 'Le sommet compte plus',
+    glyphe: '⛰', nom: 'Le sommet compte plus',
     dit: 'Ton sommet de fortune vaut un palier de plus, à chaque cycle. Un jeton de plus à chaque ascension, pour toujours.' },
 ];
 
@@ -4765,6 +4765,31 @@ function carteEl(k, actes) {
 
    Signature, comme partout : rien ne se rebâtit tant que rien n'a bougé. */
 let cielSig = '';
+
+/* ── L'ARBRE ───────────────────────────────────────────────────────────────────
+   LA GÉOMÉTRIE PORTE LA RÈGLE. Chaque nœud de branche s'accroche au tronc EXACTEMENT au rang
+   qu'il exige : « La pension demande le rang 8 » se voit avant de se lire, et on comprend d'un
+   regard qu'il faut monter pour l'atteindre. Une liste l'aurait dit en mots ; un arbre le
+   montre.
+
+   EN SVG, ET SANS LIBRAIRIE. Ce qu'on dessine tient en trois formes — une courbe, un cercle,
+   un texte — et les positions se calculent. Le tronc oscille légèrement : une colonne droite
+   se lit comme un tableau, une ligne qui ondule se lit comme un arbre, et c'est tout ce qui
+   sépare les deux.
+
+   LES BRANCHES ALTERNENT LEUR ÉCART au tronc. Trois nœuds à des rangs voisins — l'acheteur au
+   2, la forge au 3, le marchand au 4 — se poseraient sinon l'un sur l'autre : quarante-six
+   pixels séparent deux rangs, et un cercle en fait cinquante-six. */
+const ARBRE = { l: 900, pas: 46, bas: 1010, x: 450, r: 20, ecart: [150, 236] };
+const arbreX = rang => ARBRE.x + Math.sin(rang * 0.55) * 16;
+const arbreY = rang => ARBRE.bas - (rang - 1) * ARBRE.pas;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svgEl = (tag, attrs) => {
+  const n = document.createElementNS(SVG_NS, tag);
+  for (const k of Object.keys(attrs || {})) n.setAttribute(k, attrs[k]);
+  return n;
+};
+
 function renderCiel() {
   const jetons = jetonsEnMain(), rang = rangTronc();
   const sig = Object.keys(state.ciel || {}).sort().join(',') + '|' + jetons;
@@ -4773,49 +4798,99 @@ function renderCiel() {
 
   setText($('ciel-jetons'), '✦ ' + fmt(jetons) + (jetons > 1 ? ' jetons' : ' jeton'));
 
-  const noeud = n => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'etoile' + (etoilePrise(n.cle) ? ' prise'
-                            : etoileOuverte(n) ? ' ouverte' : ' close');
-    b.dataset.etoile = n.cle;
-    b.disabled = etoilePrise(n.cle) || !etoileOuverte(n) || jetons < n.prix;
-    b.innerHTML = '<b class="etoile-nom"></b><i class="etoile-dit"></i>' +
-                  '<span class="etoile-prix"></span>';
-    b.querySelector('.etoile-nom').textContent = n.nom;
-    b.querySelector('.etoile-dit').textContent = n.branche === 'tronc'
-      ? '+' + Math.round(TRONC_PAS * 100) + ' % ' + n.quoi
-      : n.dit;
-    b.querySelector('.etoile-prix').textContent = etoilePrise(n.cle) ? '✓' : '✦ ' + n.prix;
-    b.title = etoilePrise(n.cle) ? 'Acquis pour toujours.'
-            : !etoileOuverte(n) ? 'Demande le rang ' + n.rang + ' du tronc.'
-            : jetons < n.prix ? 'Il te faut ' + n.prix + ' jetons. Tu en as ' + jetons + '.'
-            : (n.dit || '') + ' Coûte ' + n.prix + ' jetons, et c’est définitif.';
-    return b;
+  const hote = $('ciel-arbre');
+  hote.textContent = '';
+  const svg = svgEl('svg', {
+    class: 'ciel-svg', viewBox: '0 0 ' + ARBRE.l + ' ' + (ARBRE.bas + 60),
+    preserveAspectRatio: 'xMidYMax meet',
+  });
+
+  /* LE TRONC D'ABORD, en deux traits : le chemin déjà parcouru par-dessus le chemin entier.
+     C'est ce qui donne la barre de progression sans en dessiner une. */
+  const trace = n => {
+    let d = 'M ' + arbreX(1) + ' ' + arbreY(1);
+    for (let i = 2; i <= n; i++) d += ' L ' + arbreX(i) + ' ' + arbreY(i);
+    return d;
+  };
+  svg.appendChild(svgEl('path', { class: 'lien tronc-vide', d: trace(TRONC_RANGS) }));
+  if (rang > 1) svg.appendChild(svgEl('path', { class: 'lien tronc-pris', d: trace(rang) }));
+
+  const cote = {};
+  for (const n of BRANCHES) cote[n.branche] = n.branche === 'sang' ? 1 : -1;
+  const compte = {};
+
+  // les liens des branches, avant les nœuds : un trait ne doit jamais passer sur un cercle
+  const pose = {};
+  for (const n of BRANCHES) {
+    const i = (compte[n.branche] = (compte[n.branche] || 0) + 1) - 1;
+    const dx = ARBRE.ecart[i % ARBRE.ecart.length] * cote[n.branche];
+    const x0 = arbreX(n.rang), y0 = arbreY(n.rang);
+    const x = x0 + dx, y = y0 - 10;
+    pose[n.cle] = { x, y, dx };
+    svg.appendChild(svgEl('path', {
+      class: 'lien ' + n.branche + (etoilePrise(n.cle) ? ' pris' : ''),
+      d: 'M ' + x0 + ' ' + y0 + ' C ' + (x0 + dx * 0.5) + ' ' + y0 + ' ' +
+         (x0 + dx * 0.6) + ' ' + y + ' ' + x + ' ' + y,
+    }));
+  }
+
+  const etat = n => etoilePrise(n.cle) ? 'prise'
+               : !etoileOuverte(n) ? 'close'
+               : jetons < n.prix ? 'chere' : 'ouverte';
+
+  const poser = (n, x, y, texte, classe) => {
+    const g = svgEl('g', {
+      class: 'etoile ' + (n.branche === 'tronc' ? 'tronc' : n.branche) + ' ' + etat(n),
+      'data-etoile': n.cle, tabindex: '0', role: 'button',
+    });
+    g.dataset.etoile = n.cle;
+    g.appendChild(svgEl('circle', { class: 'etoile-rond', cx: x, cy: y, r: ARBRE.r }));
+    const t = svgEl('text', { class: classe, x, y: y + 6, 'text-anchor': 'middle' });
+    t.textContent = texte;
+    g.appendChild(t);
+    const titre = svgEl('title');
+    titre.textContent = etoilePrise(n.cle) ? n.nom + ' — acquis pour toujours.'
+      : !etoileOuverte(n) ? n.nom + ' — demande le rang ' + n.rang + ' du tronc.'
+      : n.nom + ' — ✦ ' + n.prix + '. ' + (n.dit || '');
+    g.appendChild(titre);
+    return g;
   };
 
-  const tronc = $('ciel-tronc');
-  tronc.textContent = '';
-  const tt = document.createElement('h3');
-  tt.className = 'ciel-titre';
-  tt.textContent = 'Le tronc — rang ' + rang + ' / ' + TRONC_RANGS;
-  tronc.appendChild(tt);
-  for (const n of TRONC) tronc.appendChild(noeud(n));
-
-  const hote = $('ciel-branches');
-  hote.textContent = '';
-  const groupes = {};
-  for (const n of BRANCHES) (groupes[n.branche] = groupes[n.branche] || []).push(n);
-  for (const cle of Object.keys(groupes)) {
-    const bloc = document.createElement('div');
-    bloc.className = 'ciel-branche';
-    const h = document.createElement('h3');
-    h.className = 'ciel-titre';
-    h.textContent = NOM_BRANCHE[cle] || cle;
-    bloc.appendChild(h);
-    for (const n of groupes[cle]) bloc.appendChild(noeud(n));
-    hote.appendChild(bloc);
+  for (const n of TRONC) {
+    svg.appendChild(poser(n, arbreX(n.rang), arbreY(n.rang), String(n.rang), 'etoile-rang'));
   }
+
+  for (const n of BRANCHES) {
+    const p = pose[n.cle];
+    const g = poser(n, p.x, p.y, n.glyphe || '', 'etoile-icone');
+    /* LE NOM SE LIT SANS SURVOL. Une infobulle suffit pour le détail, jamais pour l'essentiel :
+       un arbre dont il faut survoler chaque nœud pour savoir ce qu'il fait n'est pas une carte
+       qu'on lit, c'est une devinette. */
+    const cg = p.dx < 0 ? 'end' : 'start';
+    const lx = p.x + (p.dx < 0 ? -32 : 32);
+    const nom = svgEl('text', { class: 'etoile-nom', x: lx, y: p.y - 2, 'text-anchor': cg });
+    nom.textContent = n.nom;
+    const prix = svgEl('text', { class: 'etoile-prix', x: lx, y: p.y + 15, 'text-anchor': cg });
+    prix.textContent = etoilePrise(n.cle) ? 'acquis' : '✦ ' + n.prix;
+    svg.appendChild(nom);
+    svg.appendChild(prix);
+    svg.appendChild(g);
+  }
+
+  /* LE NOM D'UNE BRANCHE ET SON COMPTE, au bout, comme une signature. */
+  for (const cle of Object.keys(cote)) {
+    const noeuds = BRANCHES.filter(n => n.branche === cle);
+    const haut = noeuds.reduce((a, n) => (n.rang > a.rang ? n : a), noeuds[0]);
+    const p = pose[haut.cle];
+    const t = svgEl('text', {
+      class: 'branche-nom ' + cle, x: p.x, y: p.y - 46, 'text-anchor': 'middle',
+    });
+    t.textContent = (NOM_BRANCHE[cle] || cle).split(' — ')[0].toUpperCase() + '  ' +
+                    noeuds.filter(n => etoilePrise(n.cle)).length + ' / ' + noeuds.length;
+    svg.appendChild(t);
+  }
+
+  hote.appendChild(svg);
 }
 
 let forgeSig = '';
@@ -7693,8 +7768,12 @@ function bindTools() {
     else blip(300, 0.05, 'sine', 0.03);
   });
 
-  $('ciel-branches').addEventListener('click', e => cielClic(e));
-  $('ciel-tronc').addEventListener('click', e => cielClic(e));
+  $('ciel-arbre').addEventListener('click', e => cielClic(e));
+  /* AU CLAVIER AUSSI. Les nœuds sont des `g` SVG, donc ni boutons ni liens : sans ceci, tout
+     l'écran serait inatteignable sans souris. */
+  $('ciel-arbre').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cielClic(e); }
+  });
 
   const albumHote = $('album');
 

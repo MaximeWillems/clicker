@@ -3070,35 +3070,54 @@ scenario('constellation — l’écran montre tout, et n’ouvre que ce qui est 
   const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
   eq('l’onglet s’ouvre avec le premier jeton', onglet('ciel').hidden, false);
 
-  /* Les branches ont un niveau de plus — un bloc par branche — donc on descend l'arbre au lieu
-     de ne lire que les enfants directs. Et on compare la CLASSE au lieu de la chercher :
-     `etoile-nom`, `etoile-dit` et `etoile-prix` contiennent tous « etoile », et une recherche
-     par sous-chaîne rendait quatre fois trop de nœuds. Même piège que `forge-acte`. */
-  const etoiles = hote => {
+  /* L'ARBRE EST UN SVG : les nœuds vivent sous le `<svg>`, donc on descend au lieu de ne lire
+     que les enfants directs. Et on compare la CLASSE au lieu de la chercher : `etoile-nom`,
+     `etoile-rang` et `etoile-prix` contiennent tous « etoile », et une recherche par
+     sous-chaîne rendrait bien trop de nœuds. Même piège que `forge-acte`. */
+  const etoiles = filtre => {
     const t = [];
-    const m = x => { if (x.classList && x.classList.contains('etoile')) t.push(x); x.children.forEach(m); };
-    noeuds.get(hote).children.forEach(m);
+    const m = x => {
+      if (x.classList && x.classList.contains('etoile') &&
+          (!filtre || x.classList.contains(filtre))) t.push(x);
+      x.children.forEach(m);
+    };
+    noeuds.get('ciel-arbre').children.forEach(m);
     return t;
   };
-  eq('le tronc montre ses vingt rangs', etoiles('ciel-tronc').length, jeu.TRONC_RANGS);
+  eq('le tronc montre ses vingt rangs', etoiles('tronc').length, jeu.TRONC_RANGS);
 
   /* UN NŒUD FERMÉ SE MONTRE, IL NE SE CACHE PAS. C'est l'inverse de la doctrine du dévoilement
      qui gouverne la boutique et les primes, et c'est voulu : là-bas on cache ce qu'un débutant
      ne peut pas s'offrir, ici on montre une carte qu'on lit pour décider où aller. */
-  const branches = etoiles('ciel-branches');
+  const branches = etoiles().filter(x => !x.classList.contains('tronc'));
   eq('tous les nœuds de branche sont montrés', branches.length, jeu.BRANCHES.length);
   ok('tous fermés au rang zéro', branches.every(b => b.classList.contains('close')));
-  ok('et donc tous désactivés', branches.every(b => b.disabled));
 
-  const tr = etoiles('ciel-tronc');
+  const tr = etoiles('tronc');
   ok('le premier rang est ouvert', tr[0].classList.contains('ouverte'));
-  ok('et cliquable', !tr[0].disabled);
   ok('le second est fermé', tr[1].classList.contains('close'));
 
   jeu.acheterEtoile('tronc-1');
   jeu.refresh();
-  ok('une fois pris, il se marque', etoiles('ciel-tronc')[0].classList.contains('prise'));
-  ok('et il n’est plus cliquable', etoiles('ciel-tronc')[0].disabled);
+  ok('une fois pris, il se marque', etoiles('tronc')[0].classList.contains('prise'));
+
+  /* LA GÉOMÉTRIE PORTE LA RÈGLE : un nœud de branche s'accroche au tronc au rang qu'il exige.
+     Le lien existe donc autant que le nœud, et il en dit la couleur. */
+  const liens = [];
+  const m2 = x => { if (x.classList && x.classList.contains('lien')) liens.push(x); x.children.forEach(m2); };
+  noeuds.get('ciel-arbre').children.forEach(m2);
+  /* Un lien par nœud de branche, plus le tronc. Le tronc DÉJÀ PARCOURU se dessine par-dessus,
+     mais il faut deux points pour faire un trait : au rang 1 il n'existe pas encore. */
+  eq('un lien par nœud de branche, plus le tronc',
+     liens.length, jeu.BRANCHES.length + 1);
+  jeu.acheterEtoile('tronc-2');
+  jeu.refresh();
+  const l2 = [];
+  const m3 = x => { if (x.classList && x.classList.contains('lien')) l2.push(x); x.children.forEach(m3); };
+  noeuds.get('ciel-arbre').children.forEach(m3);
+  eq('au rang deux, le chemin parcouru se dessine', l2.length, jeu.BRANCHES.length + 2);
+  ok('et il se distingue du chemin entier',
+     l2.some(x => x.classList.contains('tronc-pris')));
 
   ok('la bourse est annoncée', /✦/.test(noeuds.get('ciel-jetons').textContent),
      noeuds.get('ciel-jetons').textContent);

@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.2.0** | la fin de partie cesse d'être monothématique, la forge migre dans la constellation |
+| **beta 4.3.0** | la constellation devient un arbre — la géométrie porte la règle |
+| beta 4.2.0 | la fin de partie cesse d'être monothématique, la forge migre dans la constellation |
 | beta 4.1.0 | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |
 | beta 4.0.0 | la constellation : le jeton devient une monnaie à deux éviers, et une carte coûte le prix doré |
 | beta 3.1.2 | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
@@ -1907,6 +1908,29 @@ On achetait `+2 % de valeur` et **rien à l'écran ne bougeait** : la ligne des 
 scène montrait l'album et la frénésie, jamais les coefficients globaux. C'est le même défaut que
 la bête menée au bout, qui absorbait les clics sans rien dire — *un achat qui ne se sent pas est
 un achat qu'on regrette.* La ligne annonce désormais `valeur ×1,04 · vitesse ×1,02`.
+
+#### La géométrie porte la règle
+
+La constellation est un **arbre**, en SVG et sans librairie : le tronc monte du bas en ondulant
+légèrement — une colonne droite se lit comme un tableau, une ligne qui ondule se lit comme un
+arbre, et c'est tout ce qui sépare les deux.
+
+**Chaque nœud de branche s'accroche au tronc exactement au rang qu'il exige.** « La pension
+demande le rang 8 » se voit avant de se lire, et on comprend d'un regard qu'il faut monter pour
+l'atteindre. Une liste l'aurait dit en mots ; un arbre le montre.
+
+Le **chemin parcouru** se peint par-dessus le chemin entier : c'est une barre de progression
+sans en dessiner une.
+
+Les branches **alternent leur écart** au tronc. Trois nœuds à des rangs voisins — l'acheteur au
+2, la forge au 3, le marchand au 4 — se poseraient sinon l'un sur l'autre : quarante-six pixels
+séparent deux rangs, et un cercle en fait cinquante-six.
+
+Quatre états qui se distinguent sans les lire : **prise** est pleine, **ouverte** est cerclée
+vif, **chère** est cerclée en pointillé — la porte est là, il manque des jetons — et **close**
+s'efface. Le nom et le prix sont écrits à côté du nœud, jamais seulement au survol : *un arbre
+dont il faut survoler chaque nœud pour savoir ce qu'il fait n'est pas une carte qu'on lit, c'est
+une devinette.*
 
 #### Un nœud fermé se montre, il ne se cache pas
 
