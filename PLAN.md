@@ -331,192 +331,77 @@ On n'achète donc plus « le nombre OU la règle » : le nombre est ce qui donne
 La tension disparaît sans qu'on ait eu à rendre les multiplicateurs faibles — ce qui n'aurait
 fait que les rendre inutiles au lieu de les rendre secondaires.
 
-#### Le tronc
+#### Le tronc — **abandonné en `beta 4.4.0`**, et il faut savoir pourquoi
 
-Des crans sur les **trois coefficients globaux** que le jeu porte déjà — valeur, rente,
-vitesse — et rien d'autre. Ils existent, ils sont mesurés, ils ne demandent aucune mécanique
-neuve : une quatrième source dans `coef()` à côté des primes.
+La forme spécifiée ici pendant trois versions était un **tronc de vingt rangs** — des crans de
++2 % sur valeur et vitesse — servant de **chemin** vers trois branches. L'argument tenait
+debout : côte à côte au même prix, un joueur prend toujours le « +2 % » lisible avant le nœud
+subtil, donc on fait du nombre le péage de la règle.
 
-**Une réserve, et elle est sérieuse : le tronc ne doit PAS toucher la rente tant que le
-chantier de la rente n'est pas fait.** Elle est déjà perpétuelle et déjà trop forte ; un
-multiplicateur permanent par-dessus aggraverait exactement ce qu'on a écrit plus haut qu'il
-fallait corriger. Valeur et vitesse seulement, jusque-là.
+**Le remède valait moins que le mal.** Vingt rangs de « +2 % » sont vingt achats qui ne se
+sentent pas, alignés devant celui qui compte. On avait réglé une tension en fabriquant une
+corvée, et une corvée se sent tout de suite quand une tension ne se sent qu'à la longue.
 
-#### Les branches déverrouillent du JEU, pas du confort
+**La règle qui l'a remplacé tient en une phrase : chaque nœud fait quelque chose.** Il n'y a
+plus de chemin séparé du contenu — le chemin EST le contenu, puisqu'un nœud s'ouvre avec son
+PARENT. La tension d'origine disparaît d'elle-même : on ne compare plus un nombre à une règle
+au même prix, on remonte une chaîne où les deux alternent.
 
-**Une première proposition a été écrite puis jetée**, et elle mérite de rester ici comme
-contre-exemple : elle offrait *repartir avec trois enclos*, *une bourse de départ*, *un
-incubateur*. Du CONFORT. Un enclos gratuit ne fait rien décider — il fait souffler. Et un arbre
-de confort devient une liste de courses qu'on coche, jamais un choix.
+**Ce qui a été jeté avec le tronc, et qui mérite de rester ici comme contre-exemple** : une
+première liste de branches offrait *repartir avec trois enclos*, *une bourse de départ*, *un
+incubateur*. Du CONFORT. Un enclos gratuit ne fait rien décider — il fait souffler.
 
-**Un nœud déverrouille un pan de jeu.** C'est la seule règle, et elle suffit à écrire le reste :
+Et une seconde faute a tenu deux versions de plus : la branche **« les bâtiments »** contenait
+*L'acheteur est à toi*, *Le marchand est à toi*, *L'évolution est à toi*, *La pension est à toi*,
+plus l'atelier de forge. Six nœuds sur vingt-sept occupés à **ne plus racheter** quelque chose.
+Corrigé en `beta 4.5.0` : l'automatisation est du jeu de base, elle doit être là dès la première
+boucle, sinon la première heure se joue au poignet.
 
-| Branche | Ce qu'elle ouvre | Exemples |
-|---|---|---|
-| **Les bâtiments** | ce que ta ferme CONTIENT | la pension · la forge · le couvoir · ce qui n'existe pas encore |
-| **La main** | ce que vaut ta présence | la puissance du clic · les auto-clics · la frénésie · le clic qui paie |
-| **Le négoce** | ce que valent tes bêtes | le taux de vente · la rente · le prix des œufs · les familles de bonus |
+#### La forme actuelle — six directions depuis un centre
 
-Et la conséquence qui change tout : **l'arbre devient le foyer de tout ce qui reste à écrire.**
-L'hérédité, le marché qui fluctue, l'œuf mystère, les chromatismes, les tempéraments à double
-effet — chacun a désormais un endroit où arriver, au lieu d'être un système de plus posé à côté
-des autres. Un jeu qui grandit par ses branches grandit sans s'empiler.
+    25 nœuds  ·  358 jetons  ·  aucun remplissage
 
-#### Ce que ça retire aux primes, et ce qu'il faut trancher
-
-Le déverrouillage est aujourd'hui le métier des PRIMES, payées en pièces et **rachetées à chaque
-cycle** : la pension coûte 400 000 à chaque partie, le marchand 15 000, l'évolution 50 000. Si
-l'arbre prend ce métier, deux lectures s'ouvrent et elles ne font pas le même jeu :
-
-- **(a) L'arbre rend PERMANENT ce qu'on connaît déjà.** La pension déverrouillée une fois reste
-  acquise à travers les sauts. Ça règle un vrai défaut — aujourd'hui, ascensionner oblige à
-  racheter la moitié du jeu, ce qui est précisément « la première partie en accéléré », que le
-  fichier dit ailleurs vouloir éviter.
-- **(b) L'arbre ouvre ce qu'une partie neuve n'a PAS DU TOUT.** De nouvelles familles de bonus,
-  de nouveaux automates, des mécaniques qui n'existent pas encore. C'est ce qui donne envie de
-  refaire un cycle : le suivant n'est pas le même jeu plus vite, c'est un autre jeu.
-
-**Les deux, et sans conflit** : (a) pour ce qui existe, (b) pour ce qui viendra. La première ne
-touche pas à l'équilibrage du premier cycle — jugé bon pour les communes — puisqu'une partie
-neuve garde exactement ses primes actuelles. La seconde n'ajoute rien au premier cycle non plus,
-puisqu'elle ne s'ouvre qu'avec des jetons.
-
-**Ce qui reste à trancher** : une prime rendue permanente par l'arbre disparaît-elle de la
-grille des primes du cycle suivant, ou y reste-t-elle déjà achetée ? La première est plus propre
-— une case de la grille des cinq est chère — mais elle demande que la grille sache qu'un
-bâtiment est acquis autrement.
-
-#### Le prix doré n'est plus une branche, c'est un nœud
-
-Adoucir l'escalade du prix des cartes reste le seul achat du jeu qui change la valeur de tous
-les futurs achats — donc le plus intéressant, et le plus dangereux à équilibrer. Ce n'est pas
-pour autant une branche : c'est un pan de jeu qui n'existe pas encore, donc **un nœud parmi
-d'autres**, et il ira là où il tombe.
-
-#### Le tronc, rang par rang
-
-Vingt rangs, alternant **valeur** et **vitesse**, +2 % chacun. Ni rente ni chance : la rente est
-déjà trop forte et attend son chantier, et la chance a déjà le nacré et l'*Œil exercé*.
-
-    rangs  1 – 5    1 jeton chacun      →  5
-    rangs  6 – 10   2 jetons            → 10
-    rangs 11 – 15   3 jetons            → 15
-    rangs 16 – 20   4 jetons            → 20
-                                          ──
-                                          50 jetons · +20 % valeur, +20 % vitesse
-
-Le tronc n'est pas la récompense, c'est le **chemin** : le rang atteint ouvre les nœuds de son
-niveau. Vingt rangs pour quarante pour cent cumulés, c'est délibérément peu — les primes d'une
-seule famille en donnent cinquante à elles seules, et par cycle.
-
-#### Branche I — LES BÂTIMENTS · ce que ta ferme contient
-
-| Nœud | Tronc | Prix | Ce qu'il ouvre |
+| Axe | Ce qu'il pousse | Nœuds | Jetons |
 |---|---|---|---|
-| **L'acheteur est à toi** | 2 | 3 | l'acheteur automatique ne se rachète plus jamais |
-| **Le marchand est à toi** | 4 | 4 | idem |
-| **L'évolution est à toi** | 6 | 5 | idem |
-| **La pension est à toi** | 8 | 8 | idem |
-| **Le journal des pontes** | 7 | 6 | ce que la pension a rendu pendant l'absence, par lignée |
-| **L'hérédité** | 10 | 12 | les parents transmettent teinte, caractère et motif |
-| **Les fonds se transmettent** | 13 | 15 | la pension donne des fonds : au hasard, et hérités *(exige l'hérédité)* |
-| **Un couple survit au saut** | 16 | 18 | la pension continue de tourner à travers l'ascension |
+| **le sang** | l'ascension elle-même — prix doré, paliers de jetons | 4 | 72 |
+| **la main** | ce que vaut ta présence — clic, frénésie | 4 | 50 |
+| **le négoce** | ce que valent tes bêtes — valeur, œufs, péage | 4 | 54 |
+| **la couvée** | ce qui pousse — couvaison, croissance | 4 | 54 |
+| **la pension** | ce que tu produis, au-delà du plafond des primes | 4 | 72 |
+| **l'album** | ce qui traverse — poussière, forge, chromatique | 4 | 55 |
 
-**Ce que « ne se rachète plus » vaut vraiment**, et ce n'est pas ce qu'on croit. Au dixième
-cycle, 400 000 pièces se gagnent en une seconde : l'économie n'est pas l'enjeu. L'enjeu est que
-**la pension n'est pas DISPONIBLE avant d'avoir grimpé jusqu'à 400 000** — les primes se
-dévoilent par prix, cinq à la fois. Le nœud ne fait pas économiser de l'argent, il fait
-commencer le cycle avec son bâtiment, et c'est tout autre chose.
+**Le parent remplace le rang.** « Demande le rang 8 du tronc » demandait de compter ; « demande
+le nid de plus » se voit sur le trait qui les relie. La géométrie porte la règle, sans
+intermédiaire.
 
-#### Branche II — LA MAIN · ce que vaut ta présence
-
-| Nœud | Tronc | Prix | Ce qu'il ouvre |
-|---|---|---|---|
-| **Le clic maintenu** | 1 | 3 | maintenir le bouton au lieu de marteler |
-| **L'auto-clic** | 3 | 4 | un auto-clic de base, sans passer par une carte ocellée |
-| **Le bonheur collectif** | 5 | 6 | il monte sur l'enclos entier, plus sur la seule bête regardée |
-| **La main à la pension** | 8 | 8 | cliquer un couple avance sa ponte, comme un clic avance un œuf |
-| **La frénésie porte plus loin** | 11 | 9 | elle touche ce qui TOURNE — couvaison, croissance, ponte — et plus seulement le clic |
-| **Le clic paie plus tôt** | 14 | 12 | une bête mûre paie dès l'âge ancien, sans attendre les trois plafonds |
-| **Le clic rend de la poussière** | 17 | 15 | une bête finie nourrit aussi la forge |
-
-Trois de ces nœuds **réparent des défauts déjà écrits** : le bonheur qui récompense de ne rien
-faire, la frénésie dont la récompense s'éteint quand on a les primes pour la nourrir, et la
-pension où la présence ne sert à rien. C'est le meilleur usage possible d'une branche — elle ne
-rattrape pas une faute, elle en fait une progression.
-
-#### Branche III — LE NÉGOCE · ce que valent tes bêtes
-
-| Nœud | Tronc | Prix | Ce qu'il ouvre |
-|---|---|---|---|
-| **L'œuf mystère** | 2 | 5 | moins cher, rareté inconnue jusqu'à l'éclosion |
-| **Le marché** | 5 | 7 | un multiplicateur du jour par rareté — *jamais punitif pour l'absent* |
-| **Les tempéraments** | 8 | 9 | chaque caractère gagne un second effet, et chacun est un échange |
-| **La lignée complète** | 11 | 11 | les cinq âges d'une lignée rencontrés donnent un bonus permanent |
-| **Les chromatismes** | 13 | 14 | une seule échelle de couleur, plusieurs chromatismes en haut |
-| **Le prix doré s'adoucit** | 16 | 16 | chaque cran ralentit l'escalade du prix des cartes |
-| **Le sommet compte plus** | 19 | 20 | un palier de plus au compte des jetons, à chaque cycle |
-
-Les deux derniers sont les seuls qui **changent la valeur de tous les achats suivants** : ils
-sont donc les plus chers, les plus tardifs, et les plus dangereux à équilibrer. Ils sont aussi
-la raison pour laquelle la constellation ne s'épuise pas — on les vise longtemps.
-
-#### Le compte
-
-    tronc            50
-    bâtiments        71
-    la main          57
-    le négoce        82
-                    ───
-                    260 jetons  ·  42 nœuds
-
-Contre deux à quatre jetons par ascension, cela fait **soixante-cinq à cent trente ascensions**
-pour tout prendre. C'est hors d'atteinte, et c'est le but : « tout atteignable » veut dire
-qu'aucune porte n'est fermée, pas qu'on verra le bout.
-
-#### La conséquence de séquencement, et elle est lourde
-
-**La moitié de ces nœuds ouvre des choses qui n'existent pas encore.** L'hérédité, le marché,
-l'œuf mystère, les chromatismes, les tempéraments à double effet, le prix doré : tous sont dans
-ce plan, aucun n'est écrit. La constellation ne peut donc pas sortir d'un bloc.
-
-**Elle sort par étapes, et un nœud apparaît le jour où sa fonctionnalité existe.** La première
-version ne peut contenir que ce qui est déjà là :
-
-    les quatre « est à toi »        acheteur, marchand, évolution, pension
-    le bonheur collectif            le défaut est écrit, le correctif est court
-    la frénésie qui porte plus loin idem
-    le tronc                         vingt rangs de multiplicateurs
-
-Soit une douzaine de nœuds — assez pour que l'écran existe et que les jetons aient un second
-évier, et le reste s'y accroche au fur et à mesure. **C'est d'ailleurs le meilleur argument
-pour la constellation** : elle donne un endroit où arriver à tout ce qui reste à écrire, au lieu
-que chaque système nouveau soit posé à côté des autres.
+**Une constellation n'a pas de sens de lecture, et c'est ce qui la rend consultable** — on part
+du centre vers ce qu'on vise, pas du bas vers le haut. Le canevas est plus grand que l'écran
+exprès : ce qu'on vise à trente jetons doit être loin.
 
 #### Le dimensionnement, contre l'épuisement
 
-« Tout atteignable » veut dire qu'un arbre trop petit devient décoratif. Il faut donc le tailler
-contre le DÉBIT DE JETONS, qui se calcule :
+« Tout atteignable » veut dire qu'un arbre trop petit devient décoratif. Il se taille donc
+contre le DÉBIT DE JETONS :
 
     par cycle          4 à 6 jetons (les paliers franchis par le sommet)
     moins les cartes   1, 2, 3, 5, 7 — cumul 1, 3, 6, 11, 18
     reste pour l'arbre 2 à 4 jetons par ascension
 
-Sur trente ascensions, cela fait **soixante à cent vingt jetons** qui atteignent l'arbre. Pour
-qu'il ne se termine jamais tout à fait, il doit donc en coûter nettement plus :
+Sur trente ascensions, **soixante à cent vingt jetons** atteignent l'arbre, contre **358** qu'il
+demande. Il ne se termine donc jamais tout à fait, ce qui est le but : « tout atteignable » veut
+dire qu'aucune porte n'est fermée, pas qu'on verra le bout.
 
-    tronc      20 rangs à 1-4 jetons        ≈  60
-    branches   3 × 8 nœuds à 3-15 jetons    ≈ 180
-                                              ───
-                                              240
-
-C'est un ordre de grandeur, pas un barème — mais il dit la bonne chose : **une quarantaine de
-nœuds, et les derniers assez chers pour qu'on ne les voie qu'après beaucoup de cycles.**
+**La conséquence de séquencement tient toujours**, et elle est lourde : une partie des nœuds
+qu'on voudrait écrire ouvre des choses qui n'existent pas encore — l'hérédité, le marché, l'œuf
+mystère, les chromatismes, les tempéraments à double effet. Un nœud apparaît le jour où sa
+fonctionnalité existe, jamais avant. **C'est d'ailleurs le meilleur argument pour la
+constellation** : elle donne un endroit où arriver à tout ce qui reste à écrire, au lieu que
+chaque système nouveau soit posé à côté des autres.
 
 #### Ce qui reste ouvert
 
-- **Où il vit.** Un cinquième onglet, ou un écran ouvert depuis l'ascension ? Le second le lie à
-  son moment — on ne pense à la constellation qu'en sautant — mais l'enterre le reste du temps.
+- ~~**Où il vit.**~~ **Tranché** : un onglet à lui, qui paraît au premier jeton. L'ouvrir
+  seulement depuis l'ascension l'aurait lié à son moment, mais enterré le reste du temps.
 - **Ce qu'on voit avant de pouvoir l'acheter.** Le jeu a une doctrine là-dessus : la boutique
   montre « la marche suivante », les primes n'en montrent que cinq, les merveilles ne se nomment
   pas avant d'être vues. Un arbre qui montre tout d'un coup contredirait tout le reste.
@@ -930,6 +815,111 @@ Filtrer l'enclos · vente en lot · un chemin tactile pour le glisser-déposer �
 qui bloque » · les cartes équipées visibles depuis la ferme · une courbe des gains · nommer une
 bête · un tableau d'honneur des ventes · un journal des ascensions · l'œuf mystère · un effet
 aux teintes · le clic maintenu.
+
+### Quatre idées de plus
+
+#### Yggdrasil, l'arbre-monde — la quatrième merveille
+
+Trois merveilles existent : **kitsune**, **wukong**, **tarasque**. Yggdrasil serait la quatrième,
+et elle apporte quelque chose qu'aucune des trente lignées n'a : **ce n'est pas un animal.**
+
+**C'est un avantage, pas un problème, et il tombe pile où ça fait mal.** Le chantier qui barre
+la route, c'est le dessin — dix-sept lignées manquent, et chacune demande cinq formes qui
+doivent se ressembler ET se distinguer. Or *un arbre est le seul sujet dont les cinq âges se
+lisent par la seule taille et la seule ramification* : graine, pousse, arbrisseau, arbre, monde.
+Un crapaud qui devient légende doit changer d'anatomie sans changer d'espèce, ce qui est
+difficile ; un arbre qui grandit ne fait que grandir. C'est la merveille la moins chère à
+dessiner de toutes celles qui restent, et la seule dont l'arc de croissance EST le sujet.
+
+**La recette.** Deux pistes, à trancher :
+
+- **Béhémoth + tortue** — les deux bêtes qui portent un monde sur leur dos. C'est la lecture du
+  jeu, et elle évite l'ouroboros qui sert déjà dans deux recettes sur trois.
+- **Ouroboros + oiseau** — la lecture du mythe : le serpent qui ronge la racine, l'aigle au
+  sommet. Plus juste, mais elle charge encore l'ouroboros.
+
+**Ce qu'il faut vérifier avant de l'écrire** : une merveille ne doit pas rendre un motif ou un
+temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la question de
+l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
+arbre, ce sont les feuilles et la lumière, pas le corps.
+
+#### L'état idle et le combo — deux forces qui tirent en sens contraire
+
+Les deux tiennent dans la même section parce qu'ils sont **le même réglage vu des deux bouts** :
+l'un paie l'absence, l'autre paie la présence intense. Les traiter séparément, c'est se
+condamner à les rééquilibrer l'un contre l'autre à chaque passe.
+
+**L'absence est DÉJÀ trop payante**, et le plan le dit ailleurs. Un « état idle » qui donnerait
+un bonus de plus pour ne pas être là aggraverait exactement ce qu'il faut corriger. Donc :
+
+> **L'idle ne doit pas être un bonus d'absence. Il doit changer CE QUE la ferme fait, pas
+> COMBIEN elle rend.**
+
+Une piste qui respecte ça : au bout de quelques minutes sans clic, la ferme passe en régime
+lent — elle cesse de vendre, ou elle ne fait plus que couver, ou elle accumule au lieu de
+produire. Le retour du joueur déclenche alors une *reprise* qui vaut le coup d'être regardée.
+Le gain ne vient pas de l'absence, il vient du geste qui la termine.
+
+**Le combo est le partenaire naturel d'une chose déjà livrée** : depuis la `beta 3.1.0`, cliquer
+une bête au niveau et à l'engraissement maximum paie. Ce clic-là n'a pour l'instant aucun
+plafond à viser. Un combo — des clics rapprochés qui montent un multiplicateur, et qui retombe
+dès qu'on s'arrête — lui en donne un.
+
+**Le piège du combo, et il est sérieux** : un multiplicateur qui récompense la cadence
+récompense aussi les macros, et il fait mal aux mains. La frénésie existante contourne déjà ça
+en donnant une *fenêtre* plutôt qu'une *cadence*. Le combo doit se monter en quelques clics et
+se tenir plusieurs secondes, jamais demander dix clics par seconde pendant une minute.
+
+À traiter **avec** la refonte du bonheur et de la frénésie, jamais avant.
+
+#### Voir les automates, et les couper vite
+
+**Le besoin est réel et il vient d'un vrai désagrément** : le marchand vend ce qu'on voulait
+garder, l'acheteur vide la bourse au mauvais moment, et la seule façon de les arrêter est
+d'aller changer une consigne dans un panneau replié.
+
+**Ce n'est pas un réglage de plus, c'est un raccourci vers un réglage existant.** La distinction
+compte : ajouter un troisième endroit où l'acheteur se règle créerait deux vérités. Le
+bandeau doit lire l'état des consignes et le basculer, jamais tenir son propre état.
+
+Ce qu'il montre, dans une bande compacte, en pictogrammes et sans phrase :
+
+| | ce qu'on coupe |
+|---|---|
+| l'acheteur | il cesse d'acheter des œufs |
+| le marchand | il cesse de vendre |
+| l'évolution | elle cesse de faire monter les raretés |
+| l'auto-clic | la main de la carte ocellée s'arrête |
+
+**Une contrainte de forme** : la consigne de l'écran doit rester la commande fine — « vends à
+partir de l'âge légende, les rares seulement ». Le bandeau est un interrupteur général, et un
+interrupteur général qui perd le réglage fin en le coupant serait pire que rien. Couper puis
+rallumer doit **retrouver la consigne exacte**, ce qui veut dire la garder de côté et non
+l'écraser.
+
+#### La taille des menus, et qu'elle se retienne
+
+Le pliage existe déjà et il se sauve — `state.plie`, un booléen par panneau. Ce qui manque, ce
+sont **les panneaux qu'on ne peut pas replier parce qu'on s'en sert, mais qui prennent trop de
+place**.
+
+**Le tirer-pour-redimensionner n'est pas la bonne réponse**, et il vaut mieux l'écrire tout de
+suite : sur une colonne de panneaux empilés, une poignée de redimensionnement se bat contre le
+défilement, demande un état par panneau en pixels, et casse au premier changement de fenêtre.
+Ce qu'on ressent n'est pas « ce panneau fait trente pixels de trop », c'est « ce panneau me
+prend de la place pour des choses que je ne regarde pas ».
+
+**Deux réglages valent mieux qu'une poignée**, tous deux rangés à côté de `plie` :
+
+- **Une densité par panneau** — normal ou compact. Compact retire les libellés secondaires et
+  resserre les lignes ; le panneau reste utilisable, il tient en deux fois moins de haut.
+- **L'ordre des panneaux** — glisser un panneau pour le remonter. C'est ça, la vraie demande de
+  « gérer les menus » : mettre en haut ce qu'on regarde, et non rétrécir ce qu'on ignore.
+
+**Ce qu'il faut se rappeler avant de coder l'un ou l'autre** : les panneaux se redessinent à dix
+images par seconde derrière une signature. Un ordre qui change l'ordre du DOM doit entrer dans
+la signature, sinon il se perdra au premier rafraîchissement — c'est la même leçon que
+`renderStrip`, et elle se relit avant tout écran neuf.
 
 ### Deux pièges de migration à ne pas oublier
 
