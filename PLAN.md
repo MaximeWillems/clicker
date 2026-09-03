@@ -325,6 +325,106 @@ les futurs achats — donc le plus intéressant, et le plus dangereux à équili
 pour autant une branche : c'est un pan de jeu qui n'existe pas encore, donc **un nœud parmi
 d'autres**, et il ira là où il tombe.
 
+#### Le tronc, rang par rang
+
+Vingt rangs, alternant **valeur** et **vitesse**, +2 % chacun. Ni rente ni chance : la rente est
+déjà trop forte et attend son chantier, et la chance a déjà le nacré et l'*Œil exercé*.
+
+    rangs  1 – 5    1 jeton chacun      →  5
+    rangs  6 – 10   2 jetons            → 10
+    rangs 11 – 15   3 jetons            → 15
+    rangs 16 – 20   4 jetons            → 20
+                                          ──
+                                          50 jetons · +20 % valeur, +20 % vitesse
+
+Le tronc n'est pas la récompense, c'est le **chemin** : le rang atteint ouvre les nœuds de son
+niveau. Vingt rangs pour quarante pour cent cumulés, c'est délibérément peu — les primes d'une
+seule famille en donnent cinquante à elles seules, et par cycle.
+
+#### Branche I — LES BÂTIMENTS · ce que ta ferme contient
+
+| Nœud | Tronc | Prix | Ce qu'il ouvre |
+|---|---|---|---|
+| **L'acheteur est à toi** | 2 | 3 | l'acheteur automatique ne se rachète plus jamais |
+| **Le marchand est à toi** | 4 | 4 | idem |
+| **L'évolution est à toi** | 6 | 5 | idem |
+| **La pension est à toi** | 8 | 8 | idem |
+| **Le journal des pontes** | 7 | 6 | ce que la pension a rendu pendant l'absence, par lignée |
+| **L'hérédité** | 10 | 12 | les parents transmettent teinte, caractère et motif |
+| **Les fonds se transmettent** | 13 | 15 | la pension donne des fonds : au hasard, et hérités *(exige l'hérédité)* |
+| **Un couple survit au saut** | 16 | 18 | la pension continue de tourner à travers l'ascension |
+
+**Ce que « ne se rachète plus » vaut vraiment**, et ce n'est pas ce qu'on croit. Au dixième
+cycle, 400 000 pièces se gagnent en une seconde : l'économie n'est pas l'enjeu. L'enjeu est que
+**la pension n'est pas DISPONIBLE avant d'avoir grimpé jusqu'à 400 000** — les primes se
+dévoilent par prix, cinq à la fois. Le nœud ne fait pas économiser de l'argent, il fait
+commencer le cycle avec son bâtiment, et c'est tout autre chose.
+
+#### Branche II — LA MAIN · ce que vaut ta présence
+
+| Nœud | Tronc | Prix | Ce qu'il ouvre |
+|---|---|---|---|
+| **Le clic maintenu** | 1 | 3 | maintenir le bouton au lieu de marteler |
+| **L'auto-clic** | 3 | 4 | un auto-clic de base, sans passer par une carte ocellée |
+| **Le bonheur collectif** | 5 | 6 | il monte sur l'enclos entier, plus sur la seule bête regardée |
+| **La main à la pension** | 8 | 8 | cliquer un couple avance sa ponte, comme un clic avance un œuf |
+| **La frénésie porte plus loin** | 11 | 9 | elle touche ce qui TOURNE — couvaison, croissance, ponte — et plus seulement le clic |
+| **Le clic paie plus tôt** | 14 | 12 | une bête mûre paie dès l'âge ancien, sans attendre les trois plafonds |
+| **Le clic rend de la poussière** | 17 | 15 | une bête finie nourrit aussi la forge |
+
+Trois de ces nœuds **réparent des défauts déjà écrits** : le bonheur qui récompense de ne rien
+faire, la frénésie dont la récompense s'éteint quand on a les primes pour la nourrir, et la
+pension où la présence ne sert à rien. C'est le meilleur usage possible d'une branche — elle ne
+rattrape pas une faute, elle en fait une progression.
+
+#### Branche III — LE NÉGOCE · ce que valent tes bêtes
+
+| Nœud | Tronc | Prix | Ce qu'il ouvre |
+|---|---|---|---|
+| **L'œuf mystère** | 2 | 5 | moins cher, rareté inconnue jusqu'à l'éclosion |
+| **Le marché** | 5 | 7 | un multiplicateur du jour par rareté — *jamais punitif pour l'absent* |
+| **Les tempéraments** | 8 | 9 | chaque caractère gagne un second effet, et chacun est un échange |
+| **La lignée complète** | 11 | 11 | les cinq âges d'une lignée rencontrés donnent un bonus permanent |
+| **Les chromatismes** | 13 | 14 | une seule échelle de couleur, plusieurs chromatismes en haut |
+| **Le prix doré s'adoucit** | 16 | 16 | chaque cran ralentit l'escalade du prix des cartes |
+| **Le sommet compte plus** | 19 | 20 | un palier de plus au compte des jetons, à chaque cycle |
+
+Les deux derniers sont les seuls qui **changent la valeur de tous les achats suivants** : ils
+sont donc les plus chers, les plus tardifs, et les plus dangereux à équilibrer. Ils sont aussi
+la raison pour laquelle la constellation ne s'épuise pas — on les vise longtemps.
+
+#### Le compte
+
+    tronc            50
+    bâtiments        71
+    la main          57
+    le négoce        82
+                    ───
+                    260 jetons  ·  42 nœuds
+
+Contre deux à quatre jetons par ascension, cela fait **soixante-cinq à cent trente ascensions**
+pour tout prendre. C'est hors d'atteinte, et c'est le but : « tout atteignable » veut dire
+qu'aucune porte n'est fermée, pas qu'on verra le bout.
+
+#### La conséquence de séquencement, et elle est lourde
+
+**La moitié de ces nœuds ouvre des choses qui n'existent pas encore.** L'hérédité, le marché,
+l'œuf mystère, les chromatismes, les tempéraments à double effet, le prix doré : tous sont dans
+ce plan, aucun n'est écrit. La constellation ne peut donc pas sortir d'un bloc.
+
+**Elle sort par étapes, et un nœud apparaît le jour où sa fonctionnalité existe.** La première
+version ne peut contenir que ce qui est déjà là :
+
+    les quatre « est à toi »        acheteur, marchand, évolution, pension
+    le bonheur collectif            le défaut est écrit, le correctif est court
+    la frénésie qui porte plus loin idem
+    le tronc                         vingt rangs de multiplicateurs
+
+Soit une douzaine de nœuds — assez pour que l'écran existe et que les jetons aient un second
+évier, et le reste s'y accroche au fur et à mesure. **C'est d'ailleurs le meilleur argument
+pour la constellation** : elle donne un endroit où arriver à tout ce qui reste à écrire, au lieu
+que chaque système nouveau soit posé à côté des autres.
+
 #### Le dimensionnement, contre l'épuisement
 
 « Tout atteignable » veut dire qu'un arbre trop petit devient décoratif. Il faut donc le tailler
