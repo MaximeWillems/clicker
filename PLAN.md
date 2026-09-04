@@ -127,6 +127,13 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
 | **La taille des menus** — densité et ordre, sauvés | rien | la ferme peut-elle se ranger comme on la regarde ? |
 
+**Le second mode de jeu** — seul de sa taille, donc seul dans son bloc : le mettre parmi les
+lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il demande.
+
+| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
+|---|---|---|
+| **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | les tempéraments à second effet, qui en sont le socle de statistiques ; et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
+
 ### Le chantier qui barre la route : les dessins
 
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
@@ -1157,6 +1164,11 @@ l'animation du cinquième âge — déjà au plan — d'une façon différente :
 arbre, ce sont les feuilles et la lumière, pas le corps.
 
 #### La tour de combat — le second mode de jeu
+
+**Elle a vécu ici sans être dans aucune table pendant tout ce temps**, et c'est le plus gros
+morceau à qui ce soit arrivé : un SECOND MODE DE JEU, invisible dans la seule table qui dit ce
+qui vient. Elle y est maintenant, dans un bloc à elle. Le reste de cette section est l'analyse ;
+la table dit seulement qu'elle existe et ce qu'elle attend.
 
 Une tour qu'on monte le plus haut possible. Chaque étage est plus dur que le précédent. **Un
 minuteur.** On choisit **UN seul combattant** au départ, on commence avec **zéro boost**, et
