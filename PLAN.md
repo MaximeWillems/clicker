@@ -906,20 +906,39 @@ et c'est ça qu'il faut corriger, pas trois nombres dans une table.
 > qui suit l'échelle. La seconde piste est la meilleure des deux — elle répare la cause au lieu
 > du symptôme — mais elle touche la même mécanique que le chantier de la rente.
 
-#### La seconde moitié — le péage — bute sur la rente
+#### Les trois leviers mesurés, et il n'en reste qu'un
 
-Le péage d'une rare, de l'âge 1 à l'âge 5, coûte **16,08 M**. Une rare à l'âge 5 se vend
-**8,45 M**. **Faire grandir une rare perd donc 7,6 M à la vente** — c'est déjà vrai des
-communes, et de toutes les raretés.
+**LE PÉAGE EST DÉJÀ CALIBRÉ, ET C'EST LA MESURE QUI L'A MONTRÉ.** Le rapport entre ce que
+coûtent les péages d'une bête et ce qu'elle vaut une fois grandie :
 
-Ce qui rend l'opération rentable, ce n'est jamais la vente : c'est la **rente**, 8,45 M l'heure,
-qui rembourse le péage en deux heures et imprime ensuite pour toujours. Autrement dit, **le
-péage n'est pas un frein, c'est un délai** — et sa force réelle ne se mesure qu'une fois la
-rente corrigée.
+    commune    643 200  →     371 644     ×1,73
+    rare        16,1 M  →      8,45 M     ×1,90
+    épique     385,9 M  →     202,7 M     ×1,90
+    mythique    9,65 Md →      5,07 Md    ×1,90
 
-> **Le péage des rares ne peut donc pas se chiffrer avant le chantier de la rente.** Le poser
-> maintenant reviendrait à l'équilibrer contre un nombre qu'on sait faux. Le prix des œufs,
-> lui, ne dépend de rien et peut tomber tout de suite.
+**Le même nombre à toutes les raretés.** C'est ce qui tient la règle du jeu — faire grandir une
+bête PERD toujours de l'argent à la vente, et seule la rente rembourse. Baisser le péage des
+rares seules casserait cette règle pour elles et pour elles seules : la rare deviendrait la
+première bête qu'on élève pour la revendre. Le péage n'est donc pas un levier libre, il est
+porteur.
+
+**L'ŒUF NE PÈSE RIEN.** Trois cents mille contre seize millions de péages : l'œuf est 1,8 % du
+coût d'une rare menée à l'âge 5. Le balayage l'a confirmé — de 300 k à 30 M, le rapport entre
+les deux ères EMPIRE au lieu de s'améliorer, parce qu'il n'agit pas sur ce qui compte.
+
+**LE PÉAGE BAISSÉ NE SUFFIT MÊME PAS.** Poussé de ×25 à ×4 — donc en cassant la règle — le
+rapport tombe de ×2,70 à ×1,69 seulement. Il ne va pas jusqu'à la parité, et la simulation est
+trop bruitée en dessous pour régler finement.
+
+> **IL NE RESTE QU'UN LEVIER, ET C'EST LA RENTE.** Les deux ères ne sont pas de la même nature :
+> l'ère commune est portée par le CLIC — le joueur part de zéro et fabrique sa première pièce à
+> la main — tandis que l'ère rare est portée par la RENTE de la ferme déjà bâtie. Ce qui décide
+> de la longueur de l'ère rare, ce n'est donc ni l'œuf ni le péage : c'est le débit qui la
+> finance. **Le chantier des rares EST le chantier de la rente**, vu depuis l'autre bout.
+
+C'est la troisième fois que ce fichier arrive à cette conclusion par un chemin différent — le
+vivier, la refonte de l'absence, et maintenant l'ère rare. Trois chantiers qui butent au même
+endroit, ce n'est plus une coïncidence, c'est un ordre de travail.
 
 ### Vingt idées relues, huit retenues
 
