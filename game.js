@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.12.2';
+const VERSION = 'beta 4.12.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2237,7 +2237,24 @@ function setCreature(el, fichier, emoji) {
 
 const SAVE_KEY = 'eclosion.jalon0';
 const SAVE_V = 24;          // le numéro de ce que le fichier sait produire aujourd'hui
-const OFFLINE_CAP = 24 * 3600;
+/* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
+   Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
+   d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
+   grossit pendant qu'on dort et que le tout compose. Le plafond de vingt-quatre heures valait
+   donc une trentaine d'heures de jeu. Sur un joueur qui joue une demi-heure par jour, l'absence
+   faisait quatre-vingt-dix-huit pour cent du revenu, et son clic un pour cent d'une nuit.
+
+   Ce n'est pas un bonus, c'est le jeu — et un jeu qui se joue mieux fermé n'en est pas un.
+
+   DEUX BORNES ET UNE SEULE FORMULE : on raccourcit l'absence au lieu de bricoler le rendement
+   de ce qui la rejoue. Tout ce qui est en aval — éclosions, ventes, rente, pension, et la
+   composition des trois — reste exact sans qu'une ligne de `runAutomations` ne change.
+
+       rejoué = min(réel, OFFLINE_CAP) × OFFLINE_PART       soit trente minutes au plus
+
+   Une nuit rend donc une demi-heure, un week-end aussi. Revenir ne vaut plus qu'être resté. */
+const OFFLINE_CAP  = 2 * 3600;
+const OFFLINE_PART = 0.25;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
 
@@ -4364,8 +4381,20 @@ function basculerPause(v) {
   refresh();
 }
 
+/* ── UN ONGLET DERRIÈRE EST UNE ABSENCE ────────────────────────────────────────
+   Sans ça, le nerf de l'absence n'aurait porté que sur les joueurs qui FERMENT leur
+   navigateur. Un onglet caché continue de recevoir ses minuteries — une par seconde au lieu
+   de dix, mais `loop` compte en `Date.now()` et rattrape le retard tout seul — donc la ferme
+   tournait à plein régime derrière, sans plafond et sans quart. Laisser l'onglet ouvert serait
+   devenu strictement meilleur que de revenir jouer, ce qui est exactement ce qu'on corrige.
+
+   La règle devient donc une : CE QUI COMPTE, C'EST LE TEMPS OÙ L'ÉCRAN EST DEVANT TOI. Le
+   reste passe par la même porte que le rechargement, plafond et quart compris. */
+let veilleDepuis = 0;
+
 function loop() {
   const now = Date.now();
+  if (document.hidden) { veilleDepuis = veilleDepuis || now; lastFrame = now; return; }
   // la ferme s'arrête aussi quand on le demande, et pour les mêmes raisons que l'ascension
   if (enPause) { lastFrame = now; return; }
   /* LA FERME S'ARRÊTE PENDANT L'ÉCRAN D'ASCENSION. On y décide du sort de bêtes précises ;
@@ -4387,12 +4416,29 @@ function loop() {
   renderTuto();        // les seuils se franchissent aussi entre deux redessins
 }
 
-function catchUp() {
-  const elapsed = Math.min(OFFLINE_CAP, (Date.now() - (state.t || Date.now())) / 1000);
+/* CE QU'UNE ABSENCE REND, une fois les deux bornes appliquées. Une seule fonction pour les
+   deux portes : le rechargement de la page, et le retour sur un onglet qu'on avait laissé
+   derrière. Sans ça, le nerf n'aurait porté que sur ceux qui ferment leur navigateur. */
+const absenceRejouee = depuis =>
+  Math.min(OFFLINE_CAP, (Date.now() - (depuis || Date.now())) / 1000) * OFFLINE_PART;
+
+/* En deçà, la ferme rattrape SANS LE DIRE. Un bandeau « pendant ton absence » pour un
+   alt-tab de deux minutes est du bruit, et le joueur apprend à le fermer sans le lire — donc
+   à ne pas le lire le jour où il compte. */
+const SILENCE_ABSENCE = 5 * 60;
+
+/* `depuis` vaut `state.t` au rechargement, et l'instant où l'onglet est passé derrière quand
+   on y revient. Le SEUIL DE TRENTE SECONDES SE LIT SUR LE TEMPS RÉEL et non sur le temps
+   rejoué : sinon la borne le déplacerait à deux minutes d'absence sans que personne l'ait
+   décidé, et un aller-retour d'une minute serait purement perdu. */
+function catchUp(depuis) {
+  const origine = depuis || state.t;
+  const reel = (Date.now() - (origine || Date.now())) / 1000;
+  const elapsed = absenceRejouee(origine);
   lastFrame = Date.now();
   // une première partie ne doit pas s'ouvrir sur « pendant ton absence », et tant que rien
   // n'est automatisé il ne s'est effectivement rien passé pendant l'absence
-  if (isNewGame || elapsed < 30) return;
+  if (isNewGame || reel < 30) return;
   // une bête assez grosse pour renter travaille même sans le moindre automate acheté
   if (!state.up.couveuse && !state.up.eleveur && !renteTotale()) return;
 
@@ -4446,7 +4492,14 @@ function catchUp() {
      écouteur — donc il restait à l'écran jusqu'au rechargement, à raconter une absence
      vieille de trois heures. La croix est dans le HTML du bandeau et non à côté : le
      contenu est réécrit à chaque retour, et un bouton posé une fois disparaîtrait avec. */
-  note.innerHTML = '<span><b>Pendant ton absence (' + fmtTime(elapsed) + ')</b> — ' +
+  /* IL DIT CE QUI A ÉTÉ REJOUÉ, ET NON CE QUI S'EST ÉCOULÉ. Annoncer « pendant ton absence
+     (8 h) » pour trente minutes de ferme, c'est promettre huit heures de gains et en livrer
+     une demi-heure : le joueur ne conclut pas « l'absence est bornée », il conclut que le jeu
+     a perdu sa nuit. La borne se dit donc à l'endroit exact où elle se subit. */
+  if (reel < SILENCE_ABSENCE) return;
+  const plafonne = reel > OFFLINE_CAP;
+  note.innerHTML = '<span><b>Pendant ton absence</b> — ta ferme a tourné ' + fmtTime(elapsed) +
+    (plafonne ? ' (le maximum)' : '') + ' : ' +
     (bits.length ? bits.join(', ') + '.' : 'rien de neuf, tout tournait déjà.') + '</span>' +
     '<button type="button" class="note-x" title="Fermer">✕</button>';
   note.hidden = false;
@@ -8686,7 +8739,16 @@ function start() {
   setInterval(loop, 100);
   setInterval(save, 5000);
   window.addEventListener('beforeunload', save);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { veilleDepuis = veilleDepuis || Date.now(); save(); return; }
+    /* On revient : l'onglet caché s'est comporté comme une page fermée, et il se rattrape
+       par le même chemin. `loop` a laissé `lastFrame` à l'heure à chaque tour passé derrière,
+       donc rien ne s'est accumulé en double. */
+    if (!veilleDepuis) return;
+    catchUp(veilleDepuis);
+    veilleDepuis = 0;
+    refresh();
+  });
 }
 
 start();

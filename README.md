@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.12.2** | la montée en niveau passe du doigt à la machine : l’éleveur triple, le clic tombe au tiers sur la croissance seule |
+| **beta 4.12.3** | l’absence devient un petit bonus : bornée à deux heures, rendue au quart, et un onglet caché compte comme une absence |
+| beta 4.12.2 | la montée en niveau passe du doigt à la machine : l’éleveur triple, le clic tombe au tiers sur la croissance seule |
 | beta 4.12.1 | l’œuf rare passe à 55 M : la règle du multiplicateur n’a plus d’exception hors de l’ère commune |
 | beta 4.12.0 | l’œuf épique vaut un billion : le multiplicateur d’une rareté se déduit de son prix, et une bête achetée est à l’équilibre à l’âge adulte |
 | beta 4.11.5 | la rente passe à cinq minutes : une décision de garde se paie dans la séance |

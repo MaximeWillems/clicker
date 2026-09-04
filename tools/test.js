@@ -299,6 +299,51 @@ scenario('hors-ligne — la ferme avance, le tutoriel se tait', () => {
 
 /* ────────────────────────── le bonheur et la frénésie ────────────────────────── */
 
+scenario('absence — bornée, et elle ne rend qu’un quart de ce qu’elle a duré', () => {
+  const jeu = neuf();
+  ok('le plafond tient en deux heures', jeu.OFFLINE_CAP === 2 * 3600, jeu.OFFLINE_CAP);
+  ok('et le quart est un quart', jeu.OFFLINE_PART === 0.25, jeu.OFFLINE_PART);
+
+  /* LA FORMULE EST LA SEULE CHOSE À TENIR : `min(réel, CAP) × PART`. Tout le reste — les
+     éclosions, les ventes, la rente, la pension — se rejoue exactement, sur un temps plus
+     court. C'est ce qui permet de borner l'absence sans toucher à `runAutomations`. */
+  const h = 3600, m = 60;
+  const rejoue = reel => jeu.absenceRejouee(Date.now() - reel * 1000);
+  const proche = (a, b) => Math.abs(a - b) < 1;
+  ok('dix minutes en rendent deux et demie', proche(rejoue(10 * m), 2.5 * m), rejoue(10 * m));
+  ok('deux heures en rendent trente minutes', proche(rejoue(2 * h), 30 * m), rejoue(2 * h));
+  ok('une nuit aussi', proche(rejoue(8 * h), 30 * m), rejoue(8 * h));
+  ok('un week-end aussi', proche(rejoue(60 * h), 30 * m), rejoue(60 * h));
+
+  /* UNE NUIT NE DOIT PLUS VALOIR UNE NUIT. C'est le chiffre du chantier : elle rendait
+     douze heures de présence pour huit d'absence, la ferme grossissant pendant qu'on dort. */
+  const ferme = () => {
+    const j = neuf(); const s = j.state;
+    s.tuto = false; s.pens = 8; s.incubators = 4; j.syncIncub();
+    s.up.couveuse = 30; s.up.eleveur = 30; s.up.mangeoire = 30;
+    for (const r of Object.keys(j.RARITY)) s.sellAt[r] = 0;
+    for (let i = 0; i < 8; i++) {
+      s.incub[0] = { line: 'loup', p: 9999, kind: 'rare' };
+      j.hatchAll();
+      const c = s.pen[s.pen.length - 1];
+      c.age = 5; c.p = j.bandTo(c); c.keep = true;
+      c.tint = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false;
+    }
+    s.incub = [null, null, null, null];
+    s.coins = 0;
+    return j;
+  };
+  const gagne = (j, secondes) => {
+    const avant = j.state.coins, pas = Math.max(1, secondes / 20000);
+    for (let t = 0; t < secondes; t += pas) { j.advance(pas); j.runAutomations(pas); j.hatchAll(); }
+    return j.state.coins - avant;
+  };
+  const uneHeure = gagne(ferme(), h);
+  const nuit = gagne(ferme(), jeu.absenceRejouee(Date.now() - 8 * h * 1000));
+  ok('une nuit rend moins qu’une heure de présence', nuit < uneHeure, (nuit / uneHeure).toFixed(2));
+  ok('et elle rend quand même quelque chose', nuit > 0, nuit);
+});
+
 scenario('bonheur — la jauge monte pour la bête en scène, et pour elle seule', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 4;
