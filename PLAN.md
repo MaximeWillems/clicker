@@ -1071,6 +1071,62 @@ temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la quest
 l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
 arbre, ce sont les feuilles et la lumière, pas le corps.
 
+#### La tour de combat — le second mode de jeu
+
+Une tour qu'on monte le plus haut possible. Chaque étage est plus dur que le précédent. **Un
+minuteur.** On choisit **UN seul combattant** au départ, on commence avec **zéro boost**, et
+tout le jeu tient dans le CHOIX DES BOOSTS, qui n'existent que dans la tour. L'ascension en
+donne ; **la ferme ne donne rien.**
+
+**« LA FERME NE DONNE RIEN » EST LA DÉCISION QUI PORTE TOUT LE RESTE**, et c'est aussi la plus
+difficile à tenir quand viendra l'équilibrage. Sans elle, la tour n'est pas un jeu : c'est un
+tableau d'affichage où gagne celui qui a la plus grosse mythique, et la montée ne décide de
+rien. Avec elle, la tour est une partie neuve à chaque fois — ce que la ferme n'est plus après
+le premier cycle.
+
+**Mais alors, à quoi sert de CHOISIR son combattant ?** C'est la question que la règle
+soulève, et elle a une réponse propre : la bête n'apporte pas de la PUISSANCE, elle apporte une
+IDENTITÉ. Sa lignée, son tempérament, son motif, son chromatisme — tout ce que le jeu fabrique
+déjà et qui ne se réduit pas à un nombre. On n'emmène pas sa plus forte, on emmène celle dont
+la nature va bien avec la façon dont on veut monter. C'est la seule lecture qui rend le choix
+intéressant sans rouvrir la porte à la ferme.
+
+**LES BOOSTS SONT DES FAVEURS À L'ENVERS, et il ne faut surtout pas leur donner les mêmes
+nombres.** La forme existe déjà — un tirage, on en prend un, ça recommence : l'écran des
+faveurs peut servir tel quel. Mais les faveurs sont FAIBLES ET RÉPÉTABLES par construction, et
+c'est écrit noir sur blanc dans leur section : « cinq pour cent ne se sent pas ; c'est la
+soixantième qui se sent ». Un boost de tour doit être l'inverse — **fort, définissant, et rare
+sur une montée qui dure quelques minutes**. Même écran, réglage opposé. Copier les valeurs des
+faveurs ferait une tour où rien ne se sent.
+
+**LE MINUTEUR EST CE QUI DONNE UN PRIX AU BOOST.** Sans lui, on prend toujours le plus puissant
+et on monte lentement ; avec lui, la vitesse devient une monnaie et « +40 % de dégâts » se
+compare enfin à « chaque étage prend cinq secondes de moins ». Reste à trancher : un minuteur
+pour toute la montée, ou un par étage. Le premier fait une course, le second fait une pression
+constante.
+
+**LE VRAI DANGER EST AILLEURS : L'ASCENSION AURAIT UN TROISIÈME ÉVIER.** Les jetons en ont déjà
+deux — le prix doré des cartes et la constellation — et l'arbitrage entre les deux est
+exactement ce que la `4.0.0` cherchait à créer. Un troisième les dilue tous les deux. Deux
+sorties, à trancher avant d'écrire une ligne :
+
+- **Une monnaie à elle**, gagnée dans la tour et dépensée dans la tour. La ferme et la tour ne
+  se touchent alors jamais, ce qui est cohérent avec « la ferme ne donne rien » — mais alors
+  l'ascension ne donne rien non plus, et la demande initiale tombe.
+- **Un troisième évier assumé**, et le budget de jetons se recalcule pour trois. Le compte
+  existe déjà dans la section du dimensionnement : deux à quatre jetons par ascension
+  atteignent la constellation. Il n'y a pas la place pour un troisième sans augmenter le débit.
+
+**CE QU'EST « COMBATTRE » ICI, ET IL FAUT LE DIRE TÔT** : le jeu n'a aucun système de combat et
+n'a pas besoin d'en avoir un. Un étage peut être un SEUIL — un nombre à dépasser dans le temps
+imparti — et la tour reste alors un jeu de clic et de choix, ce qu'elle doit être. Écrire un
+vrai combat, c'est écrire un second jeu.
+
+**ET C'EST LA TOUR QUI RÉVEILLE L'HYDRE.** La question laissée ouverte plus bas — d'où vient la
+blessure, dans un jeu sans combat — trouve ici sa réponse : la tour EST l'endroit où l'on prend
+des coups. L'hydre n'est donc pas une lignée de plus, c'est la bête du second mode, et les deux
+idées se tiennent debout ensemble ou pas du tout.
+
 #### L'hydre de Lerne — la première bête qui grandit par le mal qu'on lui fait
 
 **Merveille, et le rang se décide sur la mécanique.** J'avais recommandé mythique pour soulager
