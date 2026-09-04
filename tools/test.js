@@ -2863,6 +2863,44 @@ scenario('sauvegarde — les nœuds retirés rendent leurs jetons', () => {
   eq('et rien ne lui est crédité', vieille.state.asc.jetons, 0);
 });
 
+scenario('primes — un négoce n’arrive jamais avant sa rareté', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+
+  /* UNE MARCHE VIDE. La grille ne montre que CINQ primes à la fois : une prime qui n'agit sur
+     rien occupe une case, retarde les quatre suivantes, et se paie pour ne rien sentir. Le
+     négoce rare coûtait 80 000 quand un œuf rare en coûte 300 000 — le quart de ce qu'il
+     améliore, donc offert longtemps avant qu'on puisse en posséder un. */
+  const negoce = r => jeu.PRIMES.find(p => p.cle === 'negoce-' + r);
+  for (const r of ['rare', 'epique', 'mythique']) {
+    ok('le négoce ' + r + ' est gardé', !!negoce(r).si);
+    ok('et il se tait tant que la rareté est inconnue', !negoce(r).si());
+  }
+  ok('celui des communes ne l’est pas', !negoce('commune').si);
+
+  /* LA GARDE SE RÈGLE SUR CE QU'ON A VU, pas sur un prix — elle s'ajuste toute seule à une
+     rare tombée par chance. Et `rareteVue` n'est pas `rareteConnue` : la seconde ne parle que
+     du rang secret, toutes les autres raretés étant nommées d'avance par la boutique. */
+  ok('vue et connue ne sont pas la même question',
+     jeu.rareteConnue('rare') && !jeu.rareteVue('rare'));
+  s.seen['loup:1'] = 1;
+  ok('une rare vue ouvre le négoce rare', negoce('rare').si());
+  ok('sans ouvrir celui des épiques', !negoce('epique').si());
+
+  /* CHACUN VAUT DEUX ŒUFS DE SA RARETÉ : on en a un, on en veut d'autres. Gardé à 80 000, il
+     serait apparu comme un cadeau et non comme une décision. */
+  const oeuf = { rare: 'rare', epique: 'epique', mythique: 'mythique' };
+  for (const r of Object.keys(oeuf)) {
+    const p = negoce(r).prix, e = jeu.EGG_BY_KEY[oeuf[r]].price;
+    ok(r + ' coûte environ deux œufs', p / e > 1.8 && p / e < 2.4, (p / e).toFixed(2));
+  }
+
+  // et la table reste rangée par prix, puisque la grille la lit dans l'ordre
+  let prec = 0, mal = 0;
+  for (const p of jeu.PRIMES) { if (p.prix < prec) mal++; prec = Math.max(prec, p.prix); }
+  eq('la table reste triée', mal, 0);
+});
+
 scenario('carrefour — trois routes, on en prend une, les deux autres se ferment', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.7.1';
+const VERSION = 'beta 4.7.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -153,9 +153,13 @@ const RARITY = {
 
    La règle est portée par la TABLE et non par un `if` sur « merveilleuse » : un rang secret
    futur sera secret sans qu'on ait à retrouver les cinq endroits. */
-const rareteConnue = cle =>
-  !RARITY[cle].secret ||
+/* AVOIR VU UNE RARETÉ, ET LA CONNAÎTRE, SONT DEUX QUESTIONS DIFFÉRENTES. `rareteConnue` ne
+   parle que du rang SECRET : toutes les autres raretés sont connues d'avance, puisque la
+   boutique les nomme. `rareteVue` demande si l'on en a réellement croisé une, et c'est ce
+   qu'il faut pour garder une prime qui n'agit que sur elle. */
+const rareteVue = cle =>
   LINES.some(l => l.rarity === cle && AGES.some((a, i) => state.seen[l.key + ':' + (i + 1)]));
+const rareteConnue = cle => !RARITY[cle].secret || rareteVue(cle);
 
 const raretesConnues = () => Object.keys(RARITY).filter(rareteConnue);
 // les formes que la collection a le droit de compter : celles des rangs qu'on connaît
@@ -961,8 +965,23 @@ const PRIMES = [
     dit: 'Les œufs de la boutique coûtent un cinquième de moins.' },
   { cle: 'evolution', prix: 50000,     glyphe: '🧬', glyphe: '🧬', nom: 'Évolution automatique',
     dit: 'Fait passer les bêtes mûres d’un âge au suivant, jusqu’où tu décides. Elle agit avant le marchand.' },
-  { cle: 'negoce-rare', prix: 80000,   glyphe: '🔷', nom: 'Négoce rare',
-    dit: 'Les rares se vendent un quart plus cher.' },
+  /* ── LES NÉGOCES ARRIVENT AVEC LEUR RARETÉ ──
+     Ils étaient posés BIEN AVANT elle, et le compte était clair : le négoce rare coûtait
+     80 000 quand un œuf rare en coûte 300 000, l'épique 2 M pour un œuf à 7,5 M, le mythique
+     80 M pour un œuf à 180 M. Chacun valait le QUART de l'œuf de sa rareté — donc chacun
+     s'offrait longtemps avant qu'on puisse posséder ce qu'il améliore.
+
+     C'était pire qu'inutile : la grille ne montre que CINQ primes à la fois, donc une prime
+     qui n'agit sur rien occupe une case, retarde les quatre qui la suivent, et se paie pour ne
+     rien sentir. Le plan appelle ça une MARCHE VIDE, et c'est le premier défaut qu'il demande
+     de chercher quand on révise les primes.
+
+     Deux corrections, et il faut les deux. LA GARDE d'abord : la prime n'apparaît pas tant
+     qu'on n'a pas VU la rareté — c'est la doctrine du rang secret, appliquée ici. Elle se
+     règle toute seule sur une rare tombée par chance, ce qu'un prix ne saurait pas faire.
+     LE PRIX ensuite : gardé à 80 000, le négoce rare apparaîtrait le jour où l'on a de quoi
+     acheter un œuf à 300 000, c'est-à-dire comme un cadeau et non comme une décision. Chacun
+     vaut donc DEUX ŒUFS de sa rareté — on en a un, on en veut d'autres. */
   { cle: 'etable',    prix: 150000,    glyphe: '⭐', nom: 'Étable',
     dit: 'Les bêtes que tu gardes ☆ ne comptent plus dans la limite d’enclos. Une ménagerie cesse de coûter du débit.' },
   { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
@@ -977,6 +996,9 @@ const PRIMES = [
   /* PREMIER CARREFOUR. Trois routes qui ne se comparent pas : un PRIX qui baisse, une VITESSE
      qui monte, un GESTE qui pèse. C'est ce qui en fait un choix plutôt qu'un menu — on ne peut
      pas dire laquelle est « la plus grosse », il faut dire comment on joue. */
+  { cle: 'negoce-rare', prix: 650000, glyphe: '🔷', nom: 'Négoce rare',
+    dit: 'Les rares se vendent un quart plus cher.',
+    si: () => rareteVue('rare') },
   { cle: 'carrefour-1', prix: 700000, glyphe: '🜁', nom: 'Le premier carrefour',
     dit: 'Trois routes. Tu en prends une, les deux autres se ferment jusqu’à la prochaine ascension.',
     choix: [
@@ -995,8 +1017,6 @@ const PRIMES = [
   { cle: 'vitesse-1', prix: 1500000, glyphe: '🐓', nom: 'Réveil matinal',
     dit: 'Tout ce qui pousse tout seul pousse cinq pour cent plus vite : la couvaison, la croissance, l’engraissement.',
     bonus: { vitesse: 0.05 } },
-  { cle: 'negoce-epique', prix: 2000000, glyphe: '🔮', nom: 'Négoce épique',
-    dit: 'Les épiques se vendent un quart plus cher.' },
   { cle: 'rente-1', prix: 2500000, glyphe: '🛏️', nom: 'Litière profonde',
     dit: 'Cinq pour cent de rente en plus. Ne touche pas au prix de vente : ça ne paie que si tu gardes.',
     bonus: { rente: 0.05 } },
@@ -1013,6 +1033,9 @@ const PRIMES = [
   { cle: 'vitesse-2', prix: 15000000, glyphe: '⚡', nom: 'Ardeur',
     dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse. Elle ne remplace aucun automate, elle les multiplie.',
     bonus: { vitesse: 0.10 } },
+  { cle: 'negoce-epique', prix: 16000000, glyphe: '🔮', nom: 'Négoce épique',
+    dit: 'Les épiques se vendent un quart plus cher.',
+    si: () => rareteVue('epique') },
   { cle: 'pension-sang', prix: 20000000, glyphe: '🩸', nom: 'Sang dominant',
     dit: 'À la pension, la lignée du parent le plus rare sort deux fois plus souvent. Jamais plus d’une fois sur deux.',
     si: () => prime('pension') },
@@ -1037,8 +1060,6 @@ const PRIMES = [
   { cle: 'rente-2', prix: 40000000, glyphe: '💧', nom: 'Abreuvoir',
     dit: 'Dix pour cent de rente en plus. Une bête qui boit à sa soif rapporte sans qu’on la touche.',
     bonus: { rente: 0.10 } },
-  { cle: 'negoce-mythique', prix: 80000000, glyphe: '👑', nom: 'Négoce mythique',
-    dit: 'Les mythiques se vendent un quart plus cher.' },
   { cle: 'valeur-3', prix: 120000000, glyphe: '📯', nom: 'Renom',
     dit: 'Quinze pour cent de valeur en plus. À ce stade, ce n’est plus toi qui cherches des acheteurs.',
     bonus: { valeur: 0.15 } },
@@ -1047,6 +1068,9 @@ const PRIMES = [
   { cle: 'vitesse-3', prix: 300000000, glyphe: '👟', nom: 'Bon pied',
     dit: 'Quinze pour cent de vitesse en plus. Le temps ne se rattrape pas, mais il se serre.',
     bonus: { vitesse: 0.15 } },
+  { cle: 'negoce-mythique', prix: 360000000, glyphe: '👑', nom: 'Négoce mythique',
+    dit: 'Les mythiques se vendent un quart plus cher.',
+    si: () => rareteVue('mythique') },
   { cle: 'pension-place-1', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
     dit: 'Un couple de plus à la fois. La première prime qui te dispense de choisir.',
     si: () => prime('pension') },
