@@ -2537,10 +2537,14 @@ scenario('globales — trois axes qui ne se recouvrent pas', () => {
   /* LA VITESSE PORTE LE TEMPS : couvaison, croissance, engraissement. */
   s.up.couveuse = 3 * jeu.GRAIN; s.up.eleveur = 3 * jeu.GRAIN; s.up.mangeoire = 3 * jeu.GRAIN;
   const jeune = bete(jeu, 'loup', 1, 0);
+  /* TROIS SECONDES ET NON DIX : depuis que l'éleveur triple (`ELEVEUR_X`), dix secondes
+     poussent la bête au-delà du bout de sa première tranche, `c.p` bute sur `bandTo` et le
+     rapport mesuré n'est plus celui des primes mais celui du plafond. On mesure une pente,
+     donc on reste dans la pente. */
   const pousse = () => {
     s.incub[0] = { line: 'ouroboros', p: 0, kind: 'mythique' };
     jeune.p = 0; jeune.age = 1; jeune.over = 0;
-    jeu.advance(10);
+    jeu.advance(3);
     return { oeuf: s.incub[0].p, bete: jeune.p };
   };
   const sans = pousse();

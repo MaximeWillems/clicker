@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.12.1';
+const VERSION = 'beta 4.12.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -329,6 +329,16 @@ const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
    dégonfle d'elle-même — un adulte démesuré fait un ancien colossal — sans qu'on ait à
    confisquer quoi que ce soit. */
 const FATTEN_X  = 6;        // secondes d'engraissement par seconde et par niveau de mangeoire
+/* ── CE QU'UNE UNITÉ D'ÉLEVEUR POUSSE, ET POURQUOI CE N'EST PLUS UN ──────────────
+   La montée en niveau venait trop du doigt et pas assez de la machine. Un âge se traverse en
+   quelques minutes de clic acharné là où l'éleveur, lui, met des heures : on ne l'achetait
+   pas pour aller plus vite, on l'achetait pour ne pas avoir à rester. Un automate qu'on paie
+   doit être le chemin normal, pas la consolation de celui qui s'absente.
+
+   L'éleveur triple donc, et le clic tombe au tiers de ce qu'il valait — deux gestes, pas un :
+   monter la machine sans baisser la main aurait monté les deux ensemble, puisqu'un clic vaut
+   des SECONDES D'AUTOMATE (voir `clickGain`) et suit tout ce que l'automate gagne. */
+const ELEVEUR_X = 3;        // multiplicateur de croissance par unité d'éleveur
 const OVER_GAIN = 0.55;     // rendement décroissant de la taille
 
 /* La taille à l'écran ne redescend JAMAIS. Elle ne se lit donc pas sur l'âge et l'embonpoint
@@ -1858,7 +1868,7 @@ const UPGRADES = [
     value: n => n / GRAIN, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.65,
     desc: 'Les bêtes grandissent toutes seules jusqu’à leur maturité, âge après âge.',
-    value: n => n / GRAIN, unit: '× la vitesse de croissance' },
+    value: n => n * ELEVEUR_X / GRAIN, unit: '× la vitesse de croissance' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
     desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
     value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
@@ -3328,7 +3338,7 @@ const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
    instant précis, et 0 tant qu'aucun n'est acheté. */
 const autoRate = s => s.kind === 'egg' ? force('couveuse')
                     : estMur(s.c) ? FATTEN_X * force('mangeoire') * temperOf(s.c).fat
-                    : force('eleveur');
+                    : force('eleveur') * ELEVEUR_X;
 
 /* Ce que l'album ajoute à CE sujet-là, selon ce qu'il est en train de faire : un œuf couve,
    une bête grandit, une bête mûre engraisse. Trois familles de motifs, une seule fonction. */
@@ -3350,7 +3360,26 @@ const autoReel = s => autoRate(s) * albumVitesse(s);
 /* L'album multiplie le clic AVANT le plancher, pas après : c'est ce qui le fait sentir dès
    la première seconde d'une nouvelle partie, quand plus aucun automate n'est acheté. Une fois
    un automate en route, le produit redonne exactement la vitesse réelle de la machine. */
-const clickGain = s => clickPower() * albumVitesse(s) * Math.max(1, autoRate(s));
+/* ── LE CLIC PÈSE MOINS SUR LA CROISSANCE, ET SUR ELLE SEULE ───────────────────
+   Un tiers de ce qu'il valait, et rien ne change ailleurs : une coquille se casse au doigt
+   comme avant, une bête mûre s'engraisse comme avant. Seule LA MONTÉE EN NIVEAU passe la main
+   à l'éleveur, parce que c'est le seul endroit où le doigt battait la machine.
+
+   LE DIVISEUR EST 3 × ELEVEUR_X, ET LES DEUX TIERS NE DISENT PAS LA MÊME CHOSE. Le premier
+   annule le triplement de l'éleveur, qui remonterait sinon dans le clic par `autoRate` — un
+   clic vaut des secondes d'automate, donc il gagne tout ce que l'automate gagne. Le second est
+   la baisse voulue. Sans le premier, tripler la machine aurait rendu le doigt trois fois plus
+   fort au lieu de trois fois moins.
+
+   IL S'APPLIQUE DEDANS LE PLANCHER, ET C'EST TOUTE L'OUVERTURE DU JEU. Tant qu'aucun éleveur
+   n'est acheté, `autoRate` vaut zéro, le plancher rend 1, et le clic vaut exactement ce qu'il
+   valait hier : la première bête se monte au doigt à la même vitesse. La baisse n'apparaît
+   qu'une fois la machine assez forte pour dépasser ce plancher — c'est-à-dire au moment précis
+   où elle est censée prendre le relais. Appliqué DEHORS, il aurait divisé par neuf le seul
+   moyen de jouer les dix premières minutes. */
+const CLIC_POUSSE = 1 / (3 * ELEVEUR_X);
+const partClic  = s => s.kind === 'creature' && !estMur(s.c) ? CLIC_POUSSE : 1;
+const clickGain = s => clickPower() * albumVitesse(s) * Math.max(1, autoRate(s) * partClic(s));
 
 /* ── UNE BÊTE FINIE ────────────────────────────────────────────────────────────
    TROIS PLAFONDS À LA FOIS : l'âge légende, le niveau cent, et le dernier rang de taille.
@@ -4095,7 +4124,7 @@ function advance(dt) {
   const cl = bonusCiel();
   const bp = bonusPrimes();
   const couve = force('couveuse') * (1 + b.couvee + cl.couvee + bp.couvee) * ardeur;
-  const eleve = force('eleveur') * (1 + b.pousse + cl.pousse + bp.pousse) * ardeur;
+  const eleve = force('eleveur') * ELEVEUR_X * (1 + b.pousse + cl.pousse + bp.pousse) * ardeur;
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -6473,7 +6502,7 @@ function ligneBoosts(sujet) {
     const c = sujet.c, t = temperOf(c);
     if (!estMur(c)) {
       // la durée annoncée est celle d'UN NIVEAU : c'est l'attente que le joueur vit
-      const pas = ageGrow(c) / nivDansAge(c.age), brut = force('eleveur'), n = brut * alb;
+      const pas = ageGrow(c) / nivDansAge(c.age), brut = force('eleveur') * ELEVEUR_X, n = brut * alb;
       bouts.push('Croissance ' + fmtTime(pas) + ' par niveau → ' +
                  (n ? fmtTime(pas / (n * t.grow)) : 'rien sans toi'));
       if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));
