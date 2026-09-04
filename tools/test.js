@@ -2863,6 +2863,50 @@ scenario('sauvegarde — les nœuds retirés rendent leurs jetons', () => {
   eq('et rien ne lui est crédité', vieille.state.asc.jetons, 0);
 });
 
+scenario('péage — le mur est à la première évolution, et le total ne bouge pas', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  /* L'ENCLOS SE VIDE ENTRE DEUX : sans ca `hatchAll` refuse d'eclore sur un enclos plein et
+     l'on mesure deux fois la meme bete — ce qui est arrive, et le scenario l'a dit. */
+  const bete1 = l => { s.pens = 20; s.pen = []; s.incub[0] = { line: l, p: 9999, kind: 'commun' };
+                       jeu.hatchAll(); return s.pen[s.pen.length - 1]; };
+  const peages = c => [1, 2, 3, 4].map(a => jeu.evoCost(Object.assign({}, c, { age: a })));
+
+  /* QUATRE-VINGT-TREIZE POUR CENT DU PÉAGE ÉTAIT SUR LA DERNIÈRE MARCHE, rien sur la première.
+     C'est le pire endroit : on investit, on monte trois âges sans rien décider, et on découvre
+     le mur à l'arrivée — quand on a déjà tout payé. Une dépense qu'on ne peut plus refuser
+     n'est pas une décision, c'est une facture. */
+  const rare = peages(bete1('loup'));
+  const total = rare.reduce((n, x) => n + x, 0);
+  ok('la première marche porte le mur', rare[0] / total > 0.5, (rare[0] / total).toFixed(2));
+  ok('et la dernière ne le porte plus', rare[3] / total < 0.2, (rare[3] / total).toFixed(2));
+  ok('chaque marche décroît', rare[0] > rare[1] && rare[1] >= rare[2] && rare[2] > rare[3],
+     rare.join(' '));
+
+  /* LES COMMUNES GARDENT LEUR COURBE : elles vont bien, et l'ouverture du jeu est le dernier
+     endroit où poser un mur. */
+  const commune = peages(bete1('crapaud'));
+  eq('la commune paie toujours deux cents d’abord', commune[0], 200);
+  eq('et six cent mille en dernier', commune[3], 600000);
+
+  /* LE TOTAL NE BOUGE PAS D'UNE PIÈCE, et c'est ce qui rend la redistribution sûre : le
+     rapport péages / valeur à l'âge 5 tient la règle « faire grandir perd toujours à la
+     vente, seule la rente rembourse ». */
+  const base = jeu.EVOLVE.reduce((n, x) => n + (x || 0), 0);
+  for (const [ligne, nom] of [['loup', 'rare'], ['kraken', 'épique'], ['behemoth', 'mythique']]) {
+    const c = bete1(ligne);
+    const t = peages(c).reduce((n, x) => n + x, 0);
+    ok('le total ' + nom + ' est inchangé', Math.abs(t - base * jeu.rarityOf(c).mult) <= 4,
+       t + ' vs ' + base * jeu.rarityOf(c).mult);
+  }
+
+  /* ET LA RARE TOMBÉE PAR CHANCE POSE ENFIN SA QUESTION : la revendre pour un petit gain, ou
+     s'engager pour un prix qu'on n'a pas encore. */
+  const trouvee = bete1('loup');
+  ok('elle se vend pour peu', jeu.sellValue(trouvee) < 2000, jeu.sellValue(trouvee));
+  ok('mais la garder coûte une fortune', jeu.evoCost(trouvee) > 5e6, jeu.evoCost(trouvee));
+});
+
 scenario('primes — un négoce n’arrive jamais avant sa rareté', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

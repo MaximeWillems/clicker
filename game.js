@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.8.0';
+const VERSION = 'beta 4.8.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2935,10 +2935,40 @@ const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
 const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2') ? 0.75 : 1);
-const evoCost   = c => EVOLVE[c.age - 1] === null ? null
-                     : Math.round(EVOLVE[c.age - 1] * rarityOf(c).mult * evoRemise()
-                                  * (1 - bonusAlbum().peage) * (1 - bonusPrimes().peage)
-                                  * (1 - bonusCiel().peage));
+
+/* ── OÙ SE TIENT LE MUR ────────────────────────────────────────────────────────
+   Le péage d'une bête se répartissait sur ses quatre évolutions comme ceci :
+
+       1→2  0,0 %     2→3  0,5 %     3→4  6,2 %     4→5  93,3 %
+
+   Quatre-vingt-treize pour cent sur la DERNIÈRE marche, rien sur la première. C'est le pire
+   endroit possible : on investit, on monte trois âges sans rien décider, et on découvre le
+   mur à l'arrivée — quand on a déjà tout payé et qu'on ne peut plus reculer. Une dépense
+   qu'on ne peut plus refuser n'est pas une décision, c'est une facture.
+
+   LE MUR SE MET DONC À LA PREMIÈRE ÉVOLUTION, où il pose la seule question qui compte :
+   « celle-là, je m'y engage ou je la revends ? » Et il répond du même coup à la rare tombée
+   par chance — elle se vend pour un joli petit gain, ou elle se garde pour un prix qu'on n'a
+   pas encore.
+
+   LE TOTAL NE BOUGE PAS D'UNE PIÈCE, et c'est ce qui rend la redistribution sûre : le rapport
+   entre ce que coûtent les péages et ce que la bête vaut à l'âge 5 vaut ×1,90 à toutes les
+   raretés, et c'est LUI qui tient la règle « faire grandir perd toujours à la vente, seule la
+   rente rembourse ». On déplace le poids, on n'en ajoute ni n'en retire.
+
+   LES COMMUNES GARDENT LEUR COURBE. Elles vont bien, c'est mesuré, et l'ouverture du jeu est
+   le dernier endroit où l'on veut poser un mur. */
+const PARTS_MUR = [0.60, 0.15, 0.15, 0.10];
+const partsDe = c => rarityOf(c).rank > 0 ? PARTS_MUR : null;
+const peageTotal = c => EVOLVE.reduce((n, x) => n + (x || 0), 0) * rarityOf(c).mult;
+const evoCost   = c => {
+  if (EVOLVE[c.age - 1] === null) return null;
+  const parts = partsDe(c);
+  const brut = parts ? peageTotal(c) * parts[c.age - 1]
+                     : EVOLVE[c.age - 1] * rarityOf(c).mult;
+  return Math.round(brut * evoRemise() * (1 - bonusAlbum().peage)
+                    * (1 - bonusPrimes().peage) * (1 - bonusCiel().peage));
+};
 
 /* Le prix d'un œuf passe toujours par ici : le zébré de l'album le baisse, et un prix qui
    s'afficherait ailleurs qu'à l'endroit où il se paie finirait par mentir. */
