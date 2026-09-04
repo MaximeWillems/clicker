@@ -1071,6 +1071,45 @@ temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la quest
 l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
 arbre, ce sont les feuilles et la lumière, pas le corps.
 
+#### Mimi et Mila — les deux merveilles qui ne sont pas des dieux
+
+**Mimi**, la chatte noire aux yeux verts. **Mila**, la carline. Pas des divinités : deux
+animaux réels, ceux qui donnent beaucoup d'amour à leur propriétaire.
+
+**Elles renversent ce que le rang veut dire, et c'est tout leur intérêt.** Les trois merveilles
+écrites — kitsune, wukong, tarasque — sont mythologiques, et Yggdrasil le serait aussi. Le rang
+secret signifie donc aujourd'hui « le divin ». Avec ces deux-là il signifie **« ce à quoi on
+tient »**, ce qui est plus juste pour un jeu dont le sujet est d'élever une bête et de s'y
+attacher. Un jeu où l'on hésite à vendre place très bien un chat au sommet de sa table.
+
+**La charte les traite en idoles, exactement comme les autres, et il ne faut pas reculer
+là-dessus.** Le registre « idole » — celui de l'Ouroboros, né en 2.7.1 quand l'Ouroboros mignon
+a été rejeté — appliqué à un carlin, c'est là qu'est la force de l'idée. Un carlin dessiné en
+mascotte serait une commune de plus ; un carlin dessiné en idole dit ce que le joueur ressent
+vraiment. **Aucune concession de style**, sinon les deux ne sont qu'une blague.
+
+**Les cinq âges d'un animal réel sont sa vie**, et c'est la lignée la plus facile à écrire de
+toutes : chaton, jeune chat, chat, vieux chat, et le cinquième — celui qui doit être stylé.
+C'est le seul endroit où le cinquième âge n'est pas une montée en puissance mais une montée en
+présence, et il faut le décider avant de dessiner.
+
+**Deux choses restent ouvertes :**
+
+- **La recette.** `chat` existe déjà (rare) et `loup` est le plus proche d'un chien ; aucune
+  lignée n'est un carlin. Croiser deux bêtes pour obtenir SON animal se raconte mal — c'est la
+  même gêne qu'Yggdrasil, pour une raison différente. La sortie propre est peut-être qu'elles
+  n'aient pas de recette du tout, comme la tarasque : on ne les cherche pas, elles arrivent.
+  Ce serait d'ailleurs le bon sens de la chose.
+- **Le nom propre.** Toutes les lignées portent un nom d'espèce ; « Mimi » et « Mila » sont des
+  noms de personne. Le précédent existe — `wukong` s'appelle « Sun Wukong » — mais ici c'est
+  systématique, et l'épithète du jeu viendrait se coller derrière : « Mimi la farouche ». À
+  vérifier contre le scénario `noms`, qui interdit déjà qu'une forme reprenne un nom d'âge ou
+  de taille.
+
+Ce qu'il faut pour chacune : cinq formes dans `LINES`, une entrée `ETIQUETTES` (le couple
+milieu/peau), une entrée dans la table `ART`, cinq dessins, et une recette — ou l'absence
+assumée d'une recette.
+
 #### L'état idle et le combo — deux forces qui tirent en sens contraire
 
 Les deux tiennent dans la même section parce qu'ils sont **le même réglage vu des deux bouts** :
