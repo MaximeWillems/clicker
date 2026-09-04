@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.11.1';
+const VERSION = 'beta 4.11.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3456,8 +3456,29 @@ const TRIS = {
    qu'on cherchait dans quarante vignettes celle qu'on venait d'y mettre. Le nid est un
    engagement en cours, pas un brouillon — et on peut toujours le défaire en cliquant la case,
    ce qui la fait réapparaître. */
+/* L'ORDRE DES ŒUFS SUR LA BANDE, et pourquoi il compte autant que celui de la file.
+
+   Le réglage vit sur la bande de couvaison. Le poser là et ne trier QUE la file invisible,
+   c'était promettre une chose et en faire une autre : on clique « rareté », on regarde la
+   bande, et rien ne bouge. Un tri qui ne trie pas ce qu'il surplombe n'est pas un tri.
+
+   Il fait donc les deux, exactement comme celui de l'enclos : il range ce qu'on VOIT couver,
+   et il décide de ce qui SORT ensuite de la réserve. Une seule règle, deux endroits où elle
+   se lit.
+
+   PAR ARRIVÉE, ON NE TOUCHE À RIEN : les incubateurs sont déjà dans l'ordre où on les a
+   remplis. Et les cases VIDES vont au bout — c'est là qu'on clique pour poser un œuf, elles
+   n'ont rien à faire au milieu de ce qui couve. */
+const TRI_COUVEE = (a, b) => {
+  if (!a.slot || !b.slot) return (a.slot ? 0 : 1) - (b.slot ? 0 : 1);
+  const ra = RARITY[(EGG_BY_KEY[a.slot.kind] || {}).rarity || 'commune'].rank;
+  const rb = RARITY[(EGG_BY_KEY[b.slot.kind] || {}).rarity || 'commune'].rank;
+  return rb - ra || b.slot.p - a.slot.p;
+};
+
 function subjects() {
   const list = state.incub.map((slot, i) => ({ key: 'i:' + i, kind: 'egg', i, slot }));
+  if (state.triOeuf === 'rarete') list.sort(TRI_COUVEE);
   const betes = state.pen.filter(c => !enPension(c) && !surLeNid(c.id))
                          .map(c => ({ key: 'c:' + c.id, kind: 'creature', c }));
   const tri = TRIS[state.tri];
@@ -3739,8 +3760,12 @@ function laverAssiette() {
 function placeEgg(i, kind) {
   kind = kind || bestStocked();
   if (state.incub[i] || !kind || !eggStock(kind)) return;
-  state.eggs[kind]--;
+  /* ON RETIRE DE LA FILE AVANT DE DÉCOMPTER, pour la même raison qu'on y pousse avant de
+     compter : `fileOeufs` RÉCONCILIE la file avec les comptes. Décompter d'abord la laissait
+     plus longue d'un cran, donc jugée fausse, donc RECONSTRUITE — et l'ordre d'arrivée était
+     perdu à chaque œuf posé, silencieusement. */
   retirerFile(kind);
+  state.eggs[kind]--;
   state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
   // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
   // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
@@ -4076,8 +4101,8 @@ function runAutomations(dt) {
   for (let i = 0; i < state.incub.length && totalEggs(); i++) {
     if (state.incub[i]) continue;
     const kind = bestStocked();
+    retirerFile(kind);
     state.eggs[kind]--;
-  retirerFile(kind);
     state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
   }
 
@@ -4590,7 +4615,7 @@ function renderStrip() {
     /* LE NOMBRE D'ENCLOS ENTRE DANS LA SIGNATURE depuis que la bande en dessine les cases :
        acheter un enclos n'ajoute aucune bête, donc rien d'autre ne changerait, et la case
        neuve n'apparaîtrait qu'à la prochaine éclosion. */
-    '|' + state.pens + '|' + state.tri;
+    '|' + state.pens + '|' + state.tri + '|' + state.triOeuf;
   if (sig === stripSig) return;
   stripSig = sig;
 

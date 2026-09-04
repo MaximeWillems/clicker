@@ -2923,6 +2923,42 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
 });
 
+scenario('œufs — le tri range la bande, pas seulement la file', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.coins = 1e15; s.incubators = 4; s.pens = 8;
+  s.incub = [null, null, null, null];
+  s.eggs = { commun: 2, rare: 1, epique: 1, mythique: 0, merveille: 0 };
+  s.file = ['commun', 'commun', 'rare', 'epique'];
+  s.triOeuf = 'arrivee';
+  jeu.runAutomations(0.1);
+
+  const bande = () => jeu.subjects().filter(x => x.kind === 'egg')
+                         .map(x => (x.slot ? x.slot.kind : 'vide')).join(' ');
+
+  /* LE RÉGLAGE VIT SUR LA BANDE DE COUVAISON. Le poser là et ne trier QUE la file invisible,
+     c'était promettre une chose et en faire une autre : on clique « rareté », on regarde la
+     bande, et rien ne bouge. Un tri qui ne trie pas ce qu'il surplombe n'est pas un tri. */
+  eq('par arrivée, la bande garde son ordre', bande(), 'commun commun rare epique');
+  s.triOeuf = 'rarete';
+  eq('par rareté, elle se range', bande(), 'epique rare commun commun');
+
+  /* LES CASES VIDES VONT AU BOUT : c'est là qu'on clique pour poser un œuf, elles n'ont rien
+     à faire au milieu de ce qui couve. */
+  s.incub = [null, { p: 0, kind: 'commun', line: 'crapaud' },
+             null, { p: 0, kind: 'epique', line: 'kraken' }];
+  eq('les vides se rangent derrière', bande(), 'epique commun vide vide');
+
+  /* LA SIGNATURE DE LA BANDE DOIT VOIR LE RÉGLAGE, sinon l'écran garde l'ancien ordre jusqu'au
+     prochain changement d'autre chose — un tri qui n'agit qu'au bout de dix secondes passe
+     pour cassé. */
+  jeu.refresh();
+  const avant = jeu.stripSig;
+  s.triOeuf = 'arrivee';
+  jeu.refresh();
+  ok('elle change avec le tri', jeu.stripSig !== avant);
+});
+
 scenario('œufs — acheté en dernier, couvé en dernier', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
