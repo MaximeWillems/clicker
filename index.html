@@ -149,6 +149,18 @@
       <div class="strip-titre">
         <h2>Couvaison</h2>
         <span id="compte-incub"></span>
+        <!-- IL VIT SUR LA BANDE DE COUVAISON, pas dans la boutique : c'est l'ordre de la FILE
+             qu'il règle — lequel des œufs en réserve part le premier quand une case se libère.
+             Le mettre en boutique aurait été le ranger avec ce qu'on achète, alors qu'il parle
+             de ce qui attend. Même place et même forme que le tri de l'enclos. -->
+        <div class="strip-tri" id="strip-tri-oeuf">
+          <span class="strip-tri-mot">d’abord</span>
+          <div class="tri" id="tri-oeuf" role="group" aria-label="Ordre de la file des œufs">
+            <button type="button" class="tri-opt" data-tri="rare">rare</button>
+            <button type="button" class="tri-opt" data-tri="commun">commun</button>
+            <button type="button" class="tri-opt" data-tri="stock">stock</button>
+          </div>
+        </div>
       </div>
       <div class="strip" id="strip-incub"></div>
     </div>
@@ -180,13 +192,6 @@
     <div class="panel-head">
       <button type="button" class="panel-plier" data-plie="boutique"><span class="plier">▾</span>
         <h2>Boutique</h2></button>
-      <!-- UN SEUL RÉGLAGE POUR DEUX CHOSES : l'ordre des œufs ici, et lequel part le premier
-           quand un incubateur se libère. Les séparer donnerait deux vérités. -->
-      <div class="tri" id="tri-oeuf" role="group" aria-label="Ordre des œufs">
-        <button type="button" class="tri-opt" data-tri="rare">rare</button>
-        <button type="button" class="tri-opt" data-tri="commun">commun</button>
-        <button type="button" class="tri-opt" data-tri="stock">stock</button>
-      </div>
     </div>
     <ul class="shop" id="shop"></ul>
   </section>

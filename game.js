@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.10.0';
+const VERSION = 'beta 4.10.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -4580,22 +4580,14 @@ function renderStrip() {
 }
 
 // Le segment de tri ne change qu'au clic : pas la peine de le repasser à chaque image.
-/* LA BOUTIQUE SE RÉORDONNE EN DÉPLAÇANT SES CASES, jamais en les refabriquant : elles portent
-   des écouteurs et des références que `tickView` relit dix fois par seconde. `appendChild` sur
-   un nœud déjà placé le DÉPLACE — c'est tout ce qu'il faut, et ça ne casse rien. */
+/* IL NE TOUCHE PAS À LA BOUTIQUE. La boutique est un ESCALIER DE PRIX — c'est écrit plus haut,
+   et c'est ce qui lui permet de désigner « la marche suivante ». La réordonner selon une
+   préférence de file aurait cassé ce repère pour régler autre chose. Ce tri-là ne parle que de
+   l'ordre dans lequel la réserve se vide, et il se lit sur la bande de couvaison, à l'endroit
+   même où le résultat se voit. */
 function syncTriOeuf() {
   for (const b of $('tri-oeuf').children) {
     b.setAttribute('aria-pressed', String(b.dataset.tri === state.triOeuf));
-  }
-  const shop = $('shop');
-  if (!refs.shop) return;
-  for (const e of oeufsTries()) {
-    const r = refs.shop['egg-' + e.key];
-    if (r) shop.appendChild(r.li);
-  }
-  for (const cle of ['incub', 'pen']) {
-    const r = refs.shop[cle];
-    if (r) shop.appendChild(r.li);
   }
 }
 
