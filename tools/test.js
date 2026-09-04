@@ -2878,10 +2878,16 @@ scenario('péage — le mur est à la première évolution, et le total ne bouge
      n'est pas une décision, c'est une facture. */
   const rare = peages(bete1('loup'));
   const total = rare.reduce((n, x) => n + x, 0);
-  ok('la première marche porte le mur', rare[0] / total > 0.5, (rare[0] / total).toFixed(2));
-  ok('et la dernière ne le porte plus', rare[3] / total < 0.2, (rare[3] / total).toFixed(2));
-  ok('chaque marche décroît', rare[0] > rare[1] && rare[1] >= rare[2] && rare[2] > rare[3],
+  ok('la première marche porte le mur', rare[0] === Math.max(...rare), rare.join(' '));
+
+  /* MAIS LA COURBE NE DÉCROÎT PAS POUR AUTANT — la première version le faisait, 60/15/15/10,
+     et le passage à l'âge 5 y coûtait MOINS que le précédent alors qu'il fait passer la bête
+     de 2 M à 8,45 M. Ce qu'une marche coûte doit suivre ce qu'elle ouvre. */
+  ok('la dernière marche reste la seconde plus chère',
+     rare[3] === Math.max(rare[1], rare[2], rare[3]), rare.join(' '));
+  ok('et le péage remonte après le souffle', rare[1] < rare[2] && rare[2] < rare[3],
      rare.join(' '));
+  ok('le souffle est juste derrière le mur', rare[1] === Math.min(...rare), rare.join(' '));
 
   /* LES COMMUNES GARDENT LEUR COURBE : elles vont bien, et l'ouverture du jeu est le dernier
      endroit où poser un mur. */

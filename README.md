@@ -67,7 +67,7 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.8.1** | le mur passe de la dernière évolution à la première, sans changer le total |
+| **beta 4.8.1** · **4.8.2** | le mur passe à la première évolution, et le péage remonte ensuite avec la valeur |
 | beta 4.8.0 | l’escalier des œufs remonte d’un cran : l’œuf rare passe de 300 000 à 50 M |
 | beta 4.7.2 | les négoces de rareté arrivent avec leur rareté, et non trois marches avant |
 | beta 4.7.1 | l’écran d’ascension : le bouton cesse de fuir, et les meilleures se prennent d’un geste |

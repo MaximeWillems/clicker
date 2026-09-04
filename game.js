@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.8.1';
+const VERSION = 'beta 4.8.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2956,9 +2956,23 @@ const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2')
    raretés, et c'est LUI qui tient la règle « faire grandir perd toujours à la vente, seule la
    rente rembourse ». On déplace le poids, on n'en ajoute ni n'en retire.
 
+   MAIS LA COURBE NE DOIT PAS DÉCROÎTRE POUR AUTANT, et la première version le faisait :
+   60 / 15 / 15 / 10. Le passage à l'âge 5 — celui qui fait passer une rare de 2 M à 8,45 M,
+   le plus gros saut de valeur de toute sa vie — y coûtait MOINS que le passage précédent.
+   Indéfendable : ce qu'une marche coûte doit suivre ce qu'elle ouvre.
+
+   La forme retenue tient les deux : un mur d'engagement à l'entrée, un palier presque gratuit
+   juste derrière pour atteindre vite l'âge où la rente commence, puis une remontée qui suit
+   la valeur.
+
+       1→2  40 %   le mur — je m'engage, ou je la revends
+       2→3   5 %   le souffle — on atteint vite l'âge qui rapporte
+       3→4  20 %   la valeur monte, le péage suit
+       4→5  35 %   le plus gros saut de valeur, le second plus gros péage
+
    LES COMMUNES GARDENT LEUR COURBE. Elles vont bien, c'est mesuré, et l'ouverture du jeu est
    le dernier endroit où l'on veut poser un mur. */
-const PARTS_MUR = [0.60, 0.15, 0.15, 0.10];
+const PARTS_MUR = [0.40, 0.05, 0.20, 0.35];
 const partsDe = c => rarityOf(c).rank > 0 ? PARTS_MUR : null;
 const peageTotal = c => EVOLVE.reduce((n, x) => n + (x || 0), 0) * rarityOf(c).mult;
 const evoCost   = c => {
