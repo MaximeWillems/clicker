@@ -106,8 +106,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **La rente** — sa NATURE, non son débit : elle est perpétuelle et gratuite, et trois réglages de débit n'y ont rien changé | rien | garder une bête doit-il rester le meilleur coup à tous les coups ? |
-| **L'absence** — l'équilibrage du hors-ligne, plus doux | la rente | revenir doit-il valoir plus qu'être resté ? |
+| **L'absence** — l'équilibrage du hors-ligne, plus doux | rien, depuis que la rente est écartée | revenir doit-il valoir plus qu'être resté ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 | **Les dix-huit dessins** | rien | — |
 | **L'écran au doigt** — voir plus bas, six marches | la planche, pour les cinq autres | est-ce que le jeu répond quand on le touche ? |
@@ -1010,7 +1009,7 @@ corvée au lieu de la supprimer.
 **Le verrou reste, mais il ne sert qu'à fondre.** Un cran sur une carte pour dire « celle-là,
 jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui montre tout.
 
-#### La garde illimitée est trop forte, et le vivier l'aggraverait
+#### La garde illimitée est trop forte — ET ON LA GARDE AINSI, décidé le 5 septembre 2026
 
 Le constat vient du jeu : une bête gardée rapporte **sa propre valeur de vente toutes les
 cinq minutes, indéfiniment, sans rien coûter** (`renteOf`, `RENTE_H = 300`). Une mythique
@@ -1031,19 +1030,31 @@ gratuite, monter le débit ne fait que rigidifier l'optimum de fin de partie. La
 gardées et ne plus jamais rien vendre. **La seule limite est le nombre d'enclos.**
 
 C'est ce qui condamne le **vivier** — garer une bête hors enclos contre un coût. L'idée
-supprimerait précisément la seule limite qui tient encore le système. Elle est donc EN ATTENTE,
-pas rejetée : elle redeviendra bonne le jour où la rente ne sera plus une rente perpétuelle.
+supprimerait précisément la seule limite qui tient encore le système. Elle était EN ATTENTE et
+non rejetée, parce qu'elle redevenait bonne le jour où la rente cesserait d'être perpétuelle.
+Ce jour n'arrivera pas — voir juste en dessous — donc elle est refusée pour de bon.
 
-Trois pistes pour la rente, à mesurer avant de choisir :
+Trois pistes avaient été écrites, et aucune ne sera prise :
 
-- **un coût d'entretien** par bête gardée, qui monte avec la rareté — garder devient une
-  décision qu'on refait, pas un état acquis ;
-- **une rente qui décroît** avec le temps passé dans l'enclos — la bête « produit » puis se
-  tarit, et vendre redevient la sortie normale ;
-- **un plafond de rente par enclos**, indépendant de la valeur de la bête — la place cesse
-  d'être le seul arbitrage.
+- **un coût d'entretien** par bête gardée, qui monte avec la rareté ;
+- **une rente qui décroît** avec le temps passé dans l'enclos ;
+- **un plafond de rente par enclos**, indépendant de la valeur de la bête.
 
-La première est la plus lisible, la deuxième la plus juste, la troisième la plus brutale.
+**LA RENTE SORT DU PLAN.** Ce n'est pas un report, c'est un refus : le constat ci-dessus reste
+vrai — garder bat vendre à tous les coups, et le débit à cinq minutes a rendu l'écart
+quatre-vingt-dix fois plus grand — et il est accepté tel quel. Un clicker a le droit d'avoir
+une fin de partie où l'on empile ; ce qui coûte cher, c'est de faire semblant d'en douter à
+chaque relecture du plan.
+
+Deux conséquences, qui ne sont pas des regrets mais des choses à savoir :
+
+- **Le vivier est refusé pour de bon**, et non plus « en attente ». Il supprimait la seule
+  limite qui tient encore le système — le nombre d'enclos. Cette limite est désormais la
+  DERNIÈRE, et rien ne doit y toucher : c'est elle, seule, qui borne la fin de partie.
+- **L'absence ne dépend plus de rien** et se traite pour elle-même. L'ordre écrit ici était
+  « la rente d'abord, l'absence ensuite, parce qu'un plafond posé sur l'absence ne corrigerait
+  qu'un symptôme ». Il n'y a plus de rente à traiter : le symptôme EST le sujet, et
+  `OFFLINE_CAP` se règle sans rien attendre.
 
 #### L'absence est trop généreuse, et son bandeau ne se ferme pas
 
@@ -2058,6 +2069,10 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
   reste écarté pour la seule raison qui vaille encore : rien ne le demande.
 - **Remonter les taux pour compenser.** Si l'éclosion paraît plate, la réponse est la couche
   d'événements, pas un retour en arrière qui redonnerait aux surprises leur banalité.
+- **Rendre la rente non perpétuelle.** Coût d'entretien, tarissement, plafond par enclos : les
+  trois pistes sont écrites plus haut et aucune ne sera prise. Garder une bête restera le
+  meilleur coup à tous les coups, et le nombre d'enclos restera la seule limite de la fin de
+  partie — donc la seule chose à laquelle on ne touche pas. Le vivier tombe avec.
 - **Découper `game.js` en modules.** Le fichier fait 3 800 lignes et part à la poubelle au
   jalon 1 : le scinder coûterait une demi-journée pour un confort qui ne survivrait pas au
   serveur. Ses dix sections commentées suffisent à s'y retrouver.
