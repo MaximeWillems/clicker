@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.13.1** | « elle ne rembourse jamais » était faux pour les quatre raretés payantes |
+| **beta 4.13.2** | une porte par règle : les quatre tables d’échelle ne se lisent plus qu’à deux endroits, et un scénario refuse la cinquième recopie |
+| beta 4.13.1 | « elle ne rembourse jamais » était faux pour les quatre raretés payantes |
 | beta 4.13.0 | l’idle et le combo : une minute sans clic met la ferme au calme, une série de clics monte en racine et tombe à quinze secondes |
 | beta 4.12.3 | l’absence devient un petit bonus : bornée à deux heures, rendue au quart, et un onglet caché compte comme une absence |
 | beta 4.12.2 | la montée en niveau passe du doigt à la machine : l’éleveur triple, le clic tombe au tiers sur la croissance seule |

@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.13.1';
+const VERSION = 'beta 4.13.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1347,9 +1347,7 @@ function prendreFaveur(cle) {
   e.pris = (e.pris || 0) + 1;
   e.main = [];                       // le tirage suivant se fera à la prochaine lecture
   oublierPrimes();
-  chord([440, 587, 740], 70);
-  const pt = centerOf($('subject'));
-  floatText(pt.x, pt.y - 60, f.glyphe + ' ' + f.nom, 'gain');
+  annoncerAchat(f, [440, 587, 740]);
   refresh();
   save();
   return true;
@@ -1489,7 +1487,7 @@ const NOTES = [
       fait: () => state.incub.some(o => o) || totalEggs() > 0 },
     'Vends, rachète, recommence. C’est la boucle qui te nourrira longtemps.',
   ] },
-  { cle: 'peage', test: () => state.coins >= EVOLVE[0] && state.pen.some(estMur), repliques: [
+  { cle: 'peage', test: () => state.coins >= peagesJusque('commune', 2) && state.pen.some(estMur), repliques: [
     { dit: 'Tu as de quoi payer un péage, maintenant.',
       fait: () => state.stats.evolutions > 0 },
     'Une bête qui le franchit garde tout — son niveau, sa taille, son nom — et vaudra douze fois plus. Mais elle t’immobilise un enclos pendant ce temps.',
@@ -3207,16 +3205,33 @@ const echelleHaute = c => rarityOf(c).rank > 0;
    Le menu annonçait 3,6 millions pour une épique adulte qui en valait 1,8 milliard — cinq
    cents fois moins, et le réglage le plus important du marchand se prenait sur ce chiffre-là.
    Une seule échelle, lue à un seul endroit. */
-const valeurMure   = (cle, age) => (RARITY[cle].rank > 0 ? VALEURS_RANG : VALUE)[age - 1]
-                                 * RARITY[cle].mult;
-const peagesJusque = (cle, age) => (RARITY[cle].rank > 0 ? PEAGES_RANG : EVOLVE)
-                                 .slice(0, age - 1).reduce((n, x) => n + (x || 0), 0)
-                                 * RARITY[cle].mult;
+/* DEUX PORTES, ET ELLES SONT LES SEULES. Quatre tables décrivent ce que vaut une bête et ce que
+   coûtent ses péages — `VALUE`/`EVOLVE` pour l'ère commune, `VALEURS_RANG`/`PEAGES_RANG` pour
+   les rangs — et CHOISIR LA BONNE EST UNE RÈGLE, pas une évidence. Elle a été écrite à la main
+   à quatre endroits, et elle y a été fausse quatre fois : le menu du marchand, le menu de
+   l'évolution, la note de valeur future et le seuil de remboursement lisaient tous l'échelle
+   DES COMMUNES pour les quatre raretés payantes — cinq cents fois à côté. Trois ont été
+   corrigés en `4.12.0`, le quatrième en `4.13.1`, et personne n'avait vu qu'ils étaient la même
+   faute recopiée.
+
+   Le remède n'est pas d'être plus attentif, c'est qu'il n'y ait plus qu'un endroit où se
+   tromper. Ces deux fonctions sont désormais les SEULES à indexer les quatre tables, et le
+   scénario `échelle` de `tools/test.js` monte la garde : toute autre lecture le fait échouer. */
+const echelleDe = cle => RARITY[cle].rank > 0 ? VALEURS_RANG : VALUE;
+const peagesDe  = cle => RARITY[cle].rank > 0 ? PEAGES_RANG  : EVOLVE;
+
+const valeurMure   = (cle, age) => echelleDe(cle)[age - 1] * RARITY[cle].mult;
+const peageDe      = (cle, age) => (peagesDe(cle)[age - 1] || 0) * RARITY[cle].mult;
+const peagesJusque = (cle, age) => peagesDe(cle).slice(0, age - 1)
+                                 .reduce((n, x) => n + (x || 0), 0) * RARITY[cle].mult;
 const valeurBase   = c => valeurMure(lineOf(c).rarity, c.age);
-const peageBase    = c => echelleHaute(c) ? PEAGES_RANG[c.age - 1] * rarityOf(c).mult
-                                          : EVOLVE[c.age - 1] * rarityOf(c).mult;
+const peageBase    = c => peageDe(lineOf(c).rarity, c.age);
 const evoCost   = c => {
-  if (EVOLVE[c.age - 1] === null) return null;
+  /* LE DERNIER ÂGE N'A PAS DE PÉAGE, et on le lit sur les âges plutôt que sur un `null` posé
+     au bout d'une table : `PEAGES_RANG` n'a que quatre entrées et rendrait `undefined`, donc
+     un NaN, si la garde tombait. La règle est « il n'y a rien après la légende », pas « la
+     case cinq de ce tableau-ci vaut null ». */
+  if (c.age >= AGES.length) return null;
   return Math.round(peageBase(c) * evoRemise() * (1 - bonusAlbum().peage)
                     * (1 - bonusPrimes().peage) * (1 - bonusCiel().peage));
 };
@@ -3285,9 +3300,7 @@ function choisirRoute(cleCarrefour, cleRoute) {
   state.coins -= p.prix;
   state.primes[o.cle] = true;
   oublierPrimes();
-  chord([392, 523, 659, 784], 80);
-  const pt = centerOf($('subject'));
-  floatText(pt.x, pt.y - 60, o.glyphe + ' ' + o.nom, 'gain');
+  annoncerAchat(o, [392, 523, 659, 784]);
   refresh();
   save();
   return true;
@@ -3806,6 +3819,16 @@ function select(key) {
    Effets — le clic doit être agréable
    ───────────────────────────────────────────── */
 
+/* CE QU'UN ACHAT UNIQUE ANNONCE. Trois endroits le disaient à l'identique — une faveur, une
+   route de carrefour, une prime — et les trois allaient chercher `$('subject')` eux-mêmes pour
+   trois lignes de mise en scène. Ce sont des RÈGLES D'ACHAT : elles décident d'une dépense,
+   elles n'ont pas à connaître le centre de l'écran. */
+function annoncerAchat(quoi, accord) {
+  chord(accord, accord.length > 3 ? 80 : 70);
+  const pt = centerOf($('subject'));
+  floatText(pt.x, pt.y - 60, quoi.glyphe + ' ' + quoi.nom, 'gain');
+}
+
 const fxLayer = $('fx');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let audioCtx = null;
@@ -4005,16 +4028,27 @@ function laverAssiette() {
   refresh();
 }
 
-function placeEgg(i, kind) {
-  kind = kind || bestStocked();
-  if (state.incub[i] || !kind || !eggStock(kind)) return;
-  /* ON RETIRE DE LA FILE AVANT DE DÉCOMPTER, pour la même raison qu'on y pousse avant de
-     compter : `fileOeufs` RÉCONCILIE la file avec les comptes. Décompter d'abord la laissait
-     plus longue d'un cran, donc jugée fausse, donc RECONSTRUITE — et l'ordre d'arrivée était
-     perdu à chaque œuf posé, silencieusement. */
+/* LA RÈGLE SEULE : sortir un œuf de la réserve et le poser. Ni son, ni redessin, ni sélection
+   — trois choses qui n'ont rien à faire dans une boucle d'automate, et c'est bien pourquoi la
+   boucle de vidage recopiait ce corps au lieu d'appeler `placeEgg`. Une recopie qui a coûté :
+   la garde `!kind` ne vivait que dans l'original, si bien que la copie inscrivait un NaN dans
+   les comptes et remplissait chaque case d'un œuf fantôme dès que la réserve ne désignait plus
+   rien. La règle est ici, une fois ; ce qui se voit et s'entend reste chez l'appelant.
+
+   ON RETIRE DE LA FILE AVANT DE DÉCOMPTER, pour la même raison qu'on y pousse avant de
+   compter : `fileOeufs` RÉCONCILIE la file avec les comptes. Décompter d'abord la laissait
+   plus longue d'un cran, donc jugée fausse, donc RECONSTRUITE — et l'ordre d'arrivée était
+   perdu à chaque œuf posé, silencieusement. */
+function poserOeuf(i, kind) {
+  if (state.incub[i] || !kind || !eggStock(kind)) return false;
   retirerFile(kind);
   state.eggs[kind]--;
   state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
+  return true;
+}
+
+function placeEgg(i, kind) {
+  if (!poserOeuf(i, kind || bestStocked())) return;
   // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
   // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
   if (!state.pen.length) state.sel = 'i:' + i;
@@ -4164,9 +4198,7 @@ function buyPrime(p) {
   state.primes[p.cle] = true;
   oublierPrimes();
   if (p.cle === 'nichoir' || p.cle === 'couvoir') syncIncub();
-  chord([392, 523, 659], 70);
-  const pt = centerOf($('subject'));
-  floatText(pt.x, pt.y - 60, p.glyphe + ' ' + p.nom, 'gain');
+  annoncerAchat(p, [392, 523, 659]);
   refresh();
   save();
 }
@@ -4351,17 +4383,13 @@ function runAutomations(dt) {
      l'achat à l'unité.
 
      La plus rare d'abord : un œuf cher acheté exprès ne doit pas attendre derrière du commun. */
+  /* ELLE NE RECOPIE PLUS `placeEgg`, elle appelle la règle que les deux partagent. Le `break`
+     dit « la réserve ne désigne plus rien » : `totalEggs` peut compter une sorte que
+     `bestStocked` ne sait pas servir, et c'est exactement le cas qui fabriquait des œufs
+     fantômes avant la `4.11.4`. */
   for (let i = 0; i < state.incub.length && totalEggs(); i++) {
     if (state.incub[i]) continue;
-    const kind = bestStocked();
-    /* MÊME GARDE QUE `placeEgg`, et pour la même raison : cette boucle en recopie le corps
-       sans passer par elle. Si le compte et la file divergeaient, `kind` valait `undefined`,
-       `state.eggs[undefined]--` inscrivait un NaN dans la réserve, et chaque incubateur libre
-       se remplissait d'un œuf fantôme qui éclosait en commune. */
-    if (!kind) break;
-    retirerFile(kind);
-    state.eggs[kind]--;
-    state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
+    if (!poserOeuf(i, bestStocked())) break;
   }
 
   /* L'acheteur prend le relais quand la réserve est sèche. C'est la seule moitié qui se paie,

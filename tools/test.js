@@ -209,6 +209,34 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
     c.cost = oeuf.price || 0;
     return jeu.seuilRentable(c);
   };
+  /* ── LA GARDE ────────────────────────────────────────────────────────────────
+     Une seule faute, quatre sites, deux versions pour la voir : choisir entre l'échelle des
+     communes et celle des rangs a été écrit à la main quatre fois, et faux quatre fois. Ce
+     bloc interdit la cinquième. Toute indexation de `VALUE[`, `EVOLVE[`, `VALEURS_RANG[` ou
+     `PEAGES_RANG[` en dehors des deux portes fait échouer le scénario.
+
+     On lit la SOURCE et non le comportement, parce que c'est la recopie qu'on veut interdire,
+     pas son résultat : un cinquième site copié serait juste le jour où on l'écrit, et faux au
+     premier changement d'échelle — c'est exactement ce qui est arrivé aux quatre autres. */
+  const portes = ['const echelleDe', 'const peagesDe'];
+  /* ON NE SCANNE QUE DU CODE. Les commentaires de `game.js` CITENT les tables pour expliquer
+     la règle — c'est même là qu'elle est écrite — et une prose qui explique n'applique rien.
+     Un état de bloc plutôt qu'un `replace` global : on garde les numéros de ligne, sans quoi
+     le message d'échec désignerait une ligne qui n'existe pas. */
+  let dansBloc = false;
+  const fautes = [];
+  lire('game.js').split(/\r?\n/).forEach((l, i) => {
+    const t = l.trim();
+    if (dansBloc) { if (t.indexOf('*/') >= 0) dansBloc = false; return; }
+    if (t.indexOf('/*') === 0) { if (t.indexOf('*/') < 0) dansBloc = true; return; }
+    if (t.indexOf('//') === 0) return;
+    if (!/(VALUE|EVOLVE|VALEURS_RANG|PEAGES_RANG)\s*\[/.test(l)) return;
+    if (portes.some(q => l.indexOf(q) === 0)) return;
+    fautes.push((i + 1) + ' : ' + t.slice(0, 60));
+  });
+  ok('les quatre tables ne se lisent que par leurs deux portes',
+     fautes.length === 0, fautes.join('  |  '));
+
   eq('une commune rembourse dès l’enfance', seuil('crapaud', 'commune'), 1);
   eq('une rare rembourse à l’âge adulte', seuil('loup', 'rare'), 3);
   eq('une épique à l’âge ancien', seuil('golem', 'epique'), 4);

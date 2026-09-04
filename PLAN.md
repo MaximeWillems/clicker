@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.13.1 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.13.2 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -88,10 +88,11 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Les cases fixes** | beta 2.2, 2.5, 3.1.1 | peut-on viser une vignette pendant que le marchand vend ? | oui — l'enclos devient des cases, et le tri revient une seconde après |
 | **Le mur de l'ascension** | beta 3.0, 3.1.0 | l'ascension peut-elle se rejouer ? | oui — les jetons se regagnent, et une bête menée au bout paie encore au clic |
 | **La constellation** | beta 4.0 → 4.7 | le jeton peut-il être autre chose qu'une carte ? | oui — un arbre à six directions et vingt-cinq nœuds, une reprise à l'unité près, et les faveurs quand la liste se termine |
-| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1, 4.13.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune |
+| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune |
 | **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi |
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
+| **Une porte par règle** | beta 4.13.1, 4.13.2 | une même faute peut-elle vivre à quatre endroits ? | plus maintenant. Choisir entre l'échelle des communes et celle des rangs était écrit à la main quatre fois, et faux quatre fois — jusqu'à annoncer « elle ne rembourse jamais » sur une bête payée un billion. Deux portes, et un scénario qui refuse la cinquième recopie |
 | **L'absence, l'idle et le combo** | beta 4.12.3, 4.13.0 | s'arrêter et s'acharner peuvent-ils tous deux valoir quelque chose, et revenir doit-il valoir plus qu'être resté ? | oui, et non. L'absence est bornée à deux heures rendues au quart — un onglet caché compris. Le calme pousse ce qui tourne, le combo pousse le clic, et les deux s'excluent par construction |
 
 ### Ce qui vient ensuite
@@ -2084,6 +2085,12 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
   trois pistes sont écrites plus haut et aucune ne sera prise. Garder une bête restera le
   meilleur coup à tous les coups, et le nombre d'enclos restera la seule limite de la fin de
   partie — donc la seule chose à laquelle on ne touche pas. Le vivier tombe avec.
+- **Optimiser la vitesse du jeu.** Mesuré sur une ferme de vingt-quatre enclos et huit
+  incubateurs : une image complète coûte 404 µs, soit **0,40 % d'un cœur** à dix images par
+  seconde. `refresh` en prend 158, `advance` 28, `runAutomations` 7 — et `renderStrip` 0,7,
+  parce que sa signature court-circuite déjà le redessin. Il n'y a rien à gagner et une
+  régression à risquer par ligne déplacée. Ce qui coûte dans ce fichier n'est pas le temps
+  machine, c'est **la duplication qui dérive** : voir « Une porte par règle ».
 - **Découper `game.js` en modules.** Le fichier fait 3 800 lignes et part à la poubelle au
   jalon 1 : le scinder coûterait une demi-journée pour un confort qui ne survivrait pas au
   serveur. Ses dix sections commentées suffisent à s'y retrouver.
