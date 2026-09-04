@@ -136,6 +136,52 @@ scenario('trois axes — âge, niveau et taille tiennent chacun leur colonne', (
   ok('un œuf n’a pas de colonnes', noeuds.get('stage-axes').hidden);
 });
 
+scenario('échelle des rangs — une bête achetée est à l’équilibre à l’âge adulte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  const ligne = {};
+  for (const l of jeu.LINES) if (!ligne[l.rarity]) ligne[l.rarity] = l.key;
+
+  /* LA RÈGLE : l'œuf plus les deux premiers péages valent exactement ce que la bête se vend
+     une fois mûre à l'âge adulte. C'est `mult` qui la tient — il porte la revente ET le péage,
+     donc un seul nombre par rareté suffit. La commune joue sur l'autre échelle et la rare
+     garde son prix de la 4.8.0 : toutes deux sont bénéficiaires, et c'est écrit dans game.js. */
+  for (const rar of ['epique', 'mythique']) {
+    const oeuf = jeu.EGG_KINDS.find(e => e.rarity === rar);
+    const c = { id: 1, line: ligne[rar], age: 1, p: 0, over: 0, cost: 0 };
+    let peages = 0;
+    s.pen = [c];
+    for (let a = 1; a <= 2; a++) { c.age = a; peages += jeu.evoCost(c); }
+    c.age = 3; c.p = jeu.bandTo(c);
+    const cout = oeuf.price + peages, vaut = jeu.sellValue(c);
+    ok(rar + ' est à l’équilibre à l’âge adulte mûr',
+       Math.abs(vaut - cout) / cout < 0.001, ((vaut - cout) / cout * 100).toFixed(3) + ' %');
+  }
+  eq('l’œuf épique vaut un billion', jeu.EGG_BY_KEY.epique.price, 1e12);
+
+  // l'escalier ne se retourne pas : ni les multiplicateurs, ni les prix
+  let m = 0;
+  for (const cle of Object.keys(jeu.RARITY).sort((a, b) => jeu.RARITY[a].rank - jeu.RARITY[b].rank)) {
+    ok('le multiplicateur monte avec le rang (' + cle + ')', jeu.RARITY[cle].mult >= m,
+       jeu.RARITY[cle].mult);
+    m = jeu.RARITY[cle].mult;
+  }
+  let prix = 0;
+  for (const e of jeu.OEUFS_VENDUS) { ok('le prix des œufs monte (' + e.key + ')', e.price > prix, e.price); prix = e.price; }
+
+  /* LES MENUS DU MARCHAND LISENT LA BONNE ÉCHELLE. Ils lisaient celle des communes pour toutes
+     les raretés — cinq cents fois à côté sur une épique adulte, sur le chiffre même qui sert à
+     régler la consigne. */
+  eq('une épique adulte mûre vaut ce que dit valeurBase',
+     jeu.valeurMure('epique', 3), jeu.VALEURS_RANG[2] * jeu.RARITY.epique.mult);
+  ok('et non l’échelle des communes',
+     jeu.valeurMure('epique', 3) !== jeu.VALUE[2] * jeu.RARITY.epique.mult);
+  eq('les péages jusqu’à l’âge adulte suivent la même échelle',
+     jeu.peagesJusque('epique', 3),
+     (jeu.PEAGES_RANG[0] + jeu.PEAGES_RANG[1]) * jeu.RARITY.epique.mult);
+  eq('une commune garde l’échelle des âges',
+     jeu.valeurMure('commune', 3), jeu.VALUE[2]);
+});
+
 scenario('noms — aucun ne reprend un mot d’âge ni de taille', () => {
   const jeu = neuf();
   const mots = new Set();

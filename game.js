@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.11.5';
+const VERSION = 'beta 4.12.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -112,14 +112,46 @@ const SLOT_MULT  = 1.6;
    on ne s'y met qu'une fois la ferme commune arrivée à maturité. Chaque rareté est une ère,
    pas un bonus.
 
+   ── LE MULTIPLICATEUR N'EST PLUS CHOISI, IL SE DÉDUIT DU PRIX DE L'ŒUF ──
+   `mult` porte À LA FOIS la revente et le péage — `valeurBase` et `peageBase` le lisent tous
+   les deux. C'est ce qui permet de tenir une ère entière avec un seul nombre : changer le prix
+   de l'œuf sans toucher au reste ferait mentir la moitié de l'échelle.
+
+   La règle qui le fixe tient en une phrase : UNE BÊTE ACHETÉE EST À L'ÉQUILIBRE QUAND ELLE
+   EST MÛRE À L'ÂGE ADULTE. On a payé l'œuf et les deux premiers péages ; elle vaut exactement
+   ça. Ni perte ni gain — la décision d'aller plus loin se prend là, sur une bête qui ne doit
+   plus rien.
+
+       mult = prix de l'œuf / (VALEURS_RANG[2] − PEAGES_RANG[0] − PEAGES_RANG[1])
+            = prix de l'œuf / 2 200 000
+
+   L'ÉPIQUE VAUT UN BILLION, et c'est de là que tout part : 1 000 000 000 000 / 2 200 000
+   donne 454 545. La mythique suit d'un cran de ×25, comme les crans précédents, ce qui pose
+   son œuf à vingt-cinq billions. La merveilleuse vaut exactement ce que vaut une mythique —
+   c'est un cran de rareté, pas de puissance, et la règle est écrite plus bas.
+
+   DEUX EXCEPTIONS, TOUTES DEUX ANTÉRIEURES À LA RÈGLE :
+   — la COMMUNE ne joue pas sur la même échelle (`VALUE`/`EVOLVE` et non `VALEURS_RANG`) et son
+     œuf à dix-huit pièces la laisse largement bénéficiaire dès l'âge adulte. C'est l'ère
+     d'apprentissage : on n'y apprend pas à perdre de l'argent ;
+   — la RARE garde son œuf à cinquante millions, hérité de l'escalier de la `4.8.0`. La règle
+     en demanderait cinquante-cinq : elle est donc bénéficiaire de 7 % à l'âge adulte, et non à
+     l'équilibre. Sept pour cent ne valent pas de casser un prix que le joueur connaît.
+
+   CE QUE ÇA FAIT AU SAUT D'ÈRE, et c'est le but : de la rare à l'épique, le multiplicateur
+   passe de 25 à 454 545. Une épique tombée par chance d'un œuf rare — une sur mille — naît
+   donc dans une ère qu'elle ne peut pas payer. Son premier péage vaut 22,7 milliards quand une
+   rare légende s'en vend un seul : vingt-trois bêtes de l'ère précédente, menées au bout,
+   pour la faire passer de l'enfance à l'adolescence. Le mur est là, et il est voulu.
+
    `plafond` ne sert qu'aux cartes de l'album : c'est ce qu'une capsule de cette rareté peut
    donner au mieux. Il monte bien plus doucement que `mult` — une carte mythique doit valoir
    mieux qu'une commune, pas quinze mille fois mieux. */
 const RARITY = {
   commune:  { name: 'commune',  plur: 'communes',  mult: 1,     rank: 0, plafond: 1 },
   rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1, plafond: 1.6 },
-  epique:   { name: 'épique',   plur: 'épiques',   mult: 600,   rank: 2, plafond: 2.5 },
-  mythique: { name: 'mythique', plur: 'mythiques', mult: 15000, rank: 3, plafond: 4 },
+  epique:   { name: 'épique',   plur: 'épiques',   mult: 454545,   rank: 2, plafond: 2.5 },
+  mythique: { name: 'mythique', plur: 'mythiques', mult: 11363636, rank: 3, plafond: 4 },
   /* LA MERVEILLEUSE VAUT EXACTEMENT CE QUE VAUT UNE MYTHIQUE, et c'est la décision la plus
      importante du rang. Elle est un cran de RARETÉ, pas un cran de PUISSANCE : elle ne rapporte
      pas plus, ne se vend pas plus cher, et sa carte ne plafonne pas plus haut.
@@ -129,7 +161,7 @@ const RARITY = {
      le plus haut du jeu se mettrait à peser sur l'équilibrage de tout le reste.
 
      Ce qu'elle a que les autres n'ont pas tient en une phrase : AUCUN ŒUF NE LA DONNE. */
-  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 15000, rank: 4, plafond: 4,
+  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 11363636, rank: 4, plafond: 4,
                   secret: true },
 };
 
@@ -222,10 +254,16 @@ const EGG_KINDS = [
   { key: 'rare', name: 'Œuf rare', price: 50000000, glyph: '🥚', rarity: 'rare',
     hatch: 180, odds: { rare: 0.999, epique: 0.001 },
     dit: 'Le premier qui se réfléchit avant de l’acheter.' },
-  { key: 'epique', name: 'Œuf épique', price: 1250000000, glyph: '🥚', rarity: 'epique',
+  /* UN BILLION, ET C'EST LE PRIX QUI COMMANDE L'ÈRE. Il valait 1,25 milliard, soit une
+     poignée de rares légendes : l'ère épique s'ouvrait avant que l'ère rare ait été jouée.
+     À mille milliards, elle demande une ferme rare entière qui tourne — et le multiplicateur
+     de la rareté se déduit de ce prix, si bien que la bête achetée est exactement à
+     l'équilibre le jour où elle est mûre à l'âge adulte. Voir la règle sous `RARITY`. */
+  { key: 'epique', name: 'Œuf épique', price: 1000000000000, glyph: '🥚', rarity: 'epique',
     hatch: 720, odds: { epique: 0.999, mythique: 0.001 },
     dit: 'On n’en achète pas par distraction.' },
-  { key: 'mythique', name: 'Œuf mythique', price: 30000000000, glyph: '🥚', rarity: 'mythique',
+  // vingt-cinq billions : le cran de ×25 de l'échelle, appliqué au prix comme au reste
+  { key: 'mythique', name: 'Œuf mythique', price: 25000000000000, glyph: '🥚', rarity: 'mythique',
     hatch: 2700, odds: { mythique: 1 },
     dit: 'Il en sort des dieux. Prends ton après-midi.' },
   /* CELUI-CI NE S'ACHÈTE PAS, et c'est toute la définition du rang. Il n'a pas de prix, donc il
@@ -1112,9 +1150,6 @@ const PRIMES = [
   { cle: 'valeur-4', prix: 2000000000, glyphe: '🏆', nom: 'On vient de loin',
     dit: 'Vingt pour cent de valeur en plus, et le compte est bon : cinquante pour cent en tout si tu as pris les quatre.',
     bonus: { valeur: 0.20 } },
-  { cle: 'negoce-epique', prix: 2500000000, glyphe: '🔮', nom: 'Négoce épique',
-    dit: 'Les épiques se vendent un quart plus cher.',
-    si: () => rareteVue('epique') },
   { cle: 'vitesse-4', prix: 5000000000, glyphe: '🌪️', nom: 'Sans relâche',
     dit: 'Vingt pour cent de vitesse en plus. La dernière du lot, et la quatrième qui compte.',
     bonus: { vitesse: 0.20 } },
@@ -1153,9 +1188,6 @@ const PRIMES = [
   { cle: 'oeuf-1', prix: 50000000000, glyphe: '🛒', nom: 'Marché de gros',
     dit: 'Les œufs de la boutique coûtent un quart de moins, quelle que soit leur rareté. Un mythique à cent trente-cinq millions au lieu de cent quatre-vingts.',
     bonus: { oeuf: 0.25 } },
-  { cle: 'negoce-mythique', prix: 60000000000, glyphe: '👑', nom: 'Négoce mythique',
-    dit: 'Les mythiques se vendent un quart plus cher.',
-    si: () => rareteVue('mythique') },
   { cle: 'pension-portee-2', prix: 80000000000, glyphe: '🍳', nom: 'Ponte triple',
     dit: 'Trois œufs par ponte. La chance de tirer autre chose, elle, reste attachée à la ponte et non à l’œuf.',
     si: () => prime('pension-portee-1') },
@@ -1194,6 +1226,19 @@ const PRIMES = [
   { cle: 'pension-riche-2', prix: 2000000000000, glyphe: '🧬', nom: 'Le sang ne pèse plus',
     dit: 'Huit fois moins. Deux mythiques couvent alors en dix minutes, et la pension cesse d’être plus lente que la boutique.',
     si: () => prime('pension-riche-1') },
+
+  /* LES DEUX DERNIERS NÉGOCES FERMENT LA LISTE, et ils ne l'ont pas toujours fermée : ils
+     vivaient au milieu, à 2,5 et 60 milliards. Un négoce vaut DEUX ŒUFS DE SA RARETÉ — c'est
+     ce qui en fait une décision plutôt qu'un cadeau — donc le prix de l'œuf épique les a
+     emportés avec lui. La table est un escalier de prix : ils prennent la marche qui leur
+     revient, tout en bas de la liste au lieu du milieu. */
+  { cle: 'negoce-epique', prix: 2200000000000, glyphe: '🔮', nom: 'Négoce épique',
+    dit: 'Les épiques se vendent un quart plus cher.',
+    si: () => rareteVue('epique') },
+
+  { cle: 'negoce-mythique', prix: 50000000000000, glyphe: '👑', nom: 'Négoce mythique',
+    dit: 'Les mythiques se vendent un quart plus cher.',
+    si: () => rareteVue('mythique') },
 ];
 /* COMBIEN DE PRIMES LA GRILLE MONTRE À LA FOIS. Cinq : c'est ce qu'on peut comparer d'un
    coup d'œil sans faire d'arbitrage, et ça tient sur une ligne de grille aux tailles usuelles.
@@ -3110,8 +3155,20 @@ const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2')
 const VALEURS_RANG = [80, 200000, 3000000, 11200000, 40000000];
 const PEAGES_RANG  = [50000, 750000, 8000000, 28000000];
 const echelleHaute = c => rarityOf(c).rank > 0;
-const valeurBase   = c => echelleHaute(c) ? VALEURS_RANG[c.age - 1] * rarityOf(c).mult
-                                          : VALUE[c.age - 1] * rarityOf(c).mult;
+
+/* CES DEUX-LÀ PRENNENT UNE CLÉ DE RARETÉ, ET NON UNE BÊTE, parce que les menus du marchand
+   parlent d'une rareté entière — « toutes les épiques mûres à l'âge adulte » — et n'ont aucune
+   bête sous la main. Ils calculaient donc à côté : `AGES[v].value * mult` et
+   `EVOLVE[…] * mult`, c'est-à-dire l'échelle DES COMMUNES appliquée à un rang qui a la sienne.
+   Le menu annonçait 3,6 millions pour une épique adulte qui en valait 1,8 milliard — cinq
+   cents fois moins, et le réglage le plus important du marchand se prenait sur ce chiffre-là.
+   Une seule échelle, lue à un seul endroit. */
+const valeurMure   = (cle, age) => (RARITY[cle].rank > 0 ? VALEURS_RANG : VALUE)[age - 1]
+                                 * RARITY[cle].mult;
+const peagesJusque = (cle, age) => (RARITY[cle].rank > 0 ? PEAGES_RANG : EVOLVE)
+                                 .slice(0, age - 1).reduce((n, x) => n + (x || 0), 0)
+                                 * RARITY[cle].mult;
+const valeurBase   = c => valeurMure(lineOf(c).rarity, c.age);
 const peageBase    = c => echelleHaute(c) ? PEAGES_RANG[c.age - 1] * rarityOf(c).mult
                                           : EVOLVE[c.age - 1] * rarityOf(c).mult;
 const evoCost   = c => {
@@ -4469,7 +4526,7 @@ const REGLAGES = [
         /* LE PRIX EST CELUI D'AUJOURD'HUI, primes et cartes comprises — c'est le chiffre
            qu'on compare pour décider. Le menu déroulant annonçait la valeur de base et ne
            bougeait jamais ; une consigne qui ment de trente pour cent ne se règle pas. */
-        ' — ' + fmt(AGES[v - 1].value * RARITY[cle].mult * (1 + bonusAlbum().valeur) *
+        ' — ' + fmt(valeurMure(cle, v) * (1 + bonusAlbum().valeur) *
                      (prime('negoce-' + cle) ? 1.25 : 1) * coef('valeur')) },
 
   { cle: 'taille', hote: 'reg-taille', champ: 'sellRank',
@@ -4488,7 +4545,7 @@ const REGLAGES = [
     dit: (cle, v) => !v ? 'Il n’y touche pas : c’est toi qui décides.'
       : 'Jusqu’à l’âge ' + AGES[v - 1].nom +
         (v === AGES.length ? ', la forme finale' : '') + ' — ' +
-        fmt(EVOLVE.slice(0, v - 1).reduce((n, x) => n + (x || 0), 0) * RARITY[cle].mult *
+        fmt(peagesJusque(cle, v) *
             evoRemise() * (1 - bonusAlbum().peage) * (1 - bonusPrimes().peage)) },
 ];
 
@@ -6443,7 +6500,7 @@ function ligneBoosts(sujet) {
 
 // ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
 function valeurAu(c, age) {
-  return Math.round(VALUE[age - 1] * rarityOf(c).mult * variantMult(c)
+  return Math.round(valeurMure(lineOf(c).rarity, age) * variantMult(c)
                     * (1 + bonusAlbum().valeur));
 }
 

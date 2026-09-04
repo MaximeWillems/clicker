@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.11.5** | la rente passe à cinq minutes : une décision de garde se paie dans la séance |
+| **beta 4.12.0** | l’œuf épique vaut un billion : le multiplicateur d’une rareté se déduit de son prix, et une bête achetée est à l’équilibre à l’âge adulte |
+| beta 4.11.5 | la rente passe à cinq minutes : une décision de garde se paie dans la séance |
 | beta 4.11.4 | l’œuf de merveille entre dans la réserve comme les autres, et passe devant tout le reste |
 | beta 4.11.3 | la réserve s’affiche dans l’ordre où elle se vide |
 | beta 4.11.0 → 4.11.2 | le tri des œufs prend les options de l’enclos, range la bande et la file — arrivée ou rareté — et la réserve garde sa file |
