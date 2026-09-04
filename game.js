@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.15.0';
+const VERSION = 'beta 4.16.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2209,7 +2209,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 24;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 25;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2446,6 +2446,13 @@ function load() {
     merged.eggs = typeof merged.eggs === 'number'
       ? Object.assign({}, vide, { commun: merged.eggs })
       : Object.assign({}, vide, merged.eggs || {});
+    /* LES BÊTES D'AVANT N'AVAIENT PAS DE STATS. On leur en tire, pour que la ferme soit
+       homogène : sans ça, une bête d'hier ferait toujours une carte moyenne et une bête de
+       demain une carte qui varie, sans que rien ne l'explique. Les CARTES déjà dans l'album,
+       elles, n'en reçoivent pas — `ivPart` leur rend la moyenne, donc leur qualité ne bouge
+       pas d'un centième. On tire pour ce qui est encore vivant, jamais pour ce qui est figé. */
+    for (const c of merged.pen || []) if (!c.iv) c.iv = rollIV();
+
     /* ── LES DOUZE PRIMES DE PENSION SONT DEVENUES QUATRE NŒUDS ──
        Une sauvegarde d'avant la `4.15.0` porte des primes qui n'existent plus. Les laisser
        inertes reviendrait à confisquer quatre mille milliards de pièces sans un mot ; on rend
@@ -2773,11 +2780,22 @@ const carteDe    = id => state.album.find(k => k.id === id) || null;
 const plafondDe  = k => RARITY[LINE_BY_KEY[k.line].rarity].plafond;
 const motifBonus = k => MOTIF_BONUS[MOTIFS[k.motif]] || MOTIF_BONUS.uni;
 
+/* LES STATS SONT LE CINQUIÈME AXE, ET ELLES N'AJOUTENT PAS DE PUISSANCE — elles prennent leur
+   poids aux autres. Le niveau descend de 0,50 à 0,40, la teinte et la taille de 0,20 à 0,15,
+   et les vingt centièmes libérés vont aux stats.
+
+   LA MOYENNE NE BOUGE PAS D'UN CENTIÈME, et c'est ce qui rend le changement sûr : des stats
+   moyennes valent 0,5, donc 0,20 × 0,5 = 0,10 — exactement ce qu'on a repris au niveau. Une
+   carte type (niveau cent, rien d'autre) valait 0,50 et vaut 0,50 ; une carte parfaite valait
+   1,00 et vaut 1,00. Ce qu'on ajoute n'est pas de la valeur, c'est de la VARIANCE : deux
+   bêtes menées au même bout ne font plus la même carte, et il devient possible d'en préférer
+   une sans que le jeu ait besoin de le dire. */
 function qualiteDe(k) {
-  const q = 0.50 * ((k.niv || 1) / NIV_MAX)
-          + 0.20 * ((k.tint || 0) / (TINTS.length - 1))
-          + 0.20 * ((k.rank || 0) / (RANKS.length - 1))
-          + 0.10 * (k.prodige ? 1 : 0);
+  const q = 0.40 * ((k.niv || 1) / NIV_MAX)
+          + 0.15 * ((k.tint || 0) / (TINTS.length - 1))
+          + 0.15 * ((k.rank || 0) / (RANKS.length - 1))
+          + 0.10 * (k.prodige ? 1 : 0)
+          + 0.20 * ivPart(k);
   return 0.4 + 0.6 * q;      // de 0,40 pour une carte bâclée à 1,00 pour un trophée
 }
 const puissanceDe = k => plafondDe(k) * ETOILES[(k.etoiles || 1) - 1] * qualiteDe(k);
@@ -2935,8 +2953,37 @@ function noterPonte(a, b, ligne) {
    garde reste tant que les taux ne sont pas mesurés en jeu — pas parce qu'il casserait
    quelque chose, mais parce que personne n'a encore décidé à partir de quel rythme un fond
    cesse d'être une rencontre. */
+/* ── LES QUATRE STATS ──────────────────────────────────────────────────────────
+   Quatre nombres tirés à l'éclosion, de 0 à 25, et gardés à vie comme la teinte et le
+   tempérament. Ce sont des IV au sens strict : ils ne montent pas, ils ne s'achètent pas,
+   ils ne se soignent pas. Deux crapauds nés le même jour ne sont pas la même bête.
+
+   ILS NE SE VOIENT PAS ENCORE, et c'est délibéré. Un nombre affiché est un nombre qu'on
+   optimise : montrer les stats avant qu'elles aient une lecture — une fiche, une comparaison,
+   un endroit où le choix se fait — apprendrait au joueur à relancer des œufs pour un chiffre
+   qu'il ne peut pas encore employer. Elles agissent d'abord, elles se montreront ensuite.
+
+   POURQUOI CES QUATRE-LÀ. Ce sont celles que la TOUR DE COMBAT demandera — le plan la décrit
+   comme le second mode de jeu, et note que la moitié de ses statistiques existe déjà : le
+   martelé est la frappe, l'ocellé la cadence. `force` et `vivacité` sont ces deux-là, nommées ;
+   `souffle` est ce qui tient, `instinct` ce qui arrive quand la chance s'en mêle. Les poser
+   maintenant coûte quatre nombres et évite de retirer une éclosion à toutes les bêtes du jeu
+   le jour où la tour ouvrira.
+
+   `fond` étant déjà pris par les décors, aucun de ces quatre noms n'entre en collision. */
+const IV_MAX  = 25;
+const IV_NOMS = ['force', 'vivacité', 'souffle', 'instinct'];
+const rollIV = () => IV_NOMS.map(() => Math.floor(Math.random() * (IV_MAX + 1)));
+
+/* CE QUE LES STATS VALENT POUR UNE CARTE, de 0 à 1. UNE ABSENCE VAUT LA MOYENNE, et c'est
+   toute la migration : une carte d'avant lit 0,5 et garde donc exactement la qualité qu'elle
+   avait hier. On ne déprécie pas en silence ce qui est déjà dans un album. */
+const ivPart = k => !k.iv || !k.iv.length ? 0.5
+                  : k.iv.reduce((n, v) => n + v, 0) / (IV_NOMS.length * IV_MAX);
+
 function rollVariants(achete) {
   return {
+    iv: rollIV(),
     tint: pickWeighted(TINTS),
     temper: Math.floor(Math.random() * TEMPERS.length),
     motif: Math.floor(Math.random() * MOTIFS.length),
@@ -5428,7 +5475,7 @@ const jetonsEnMain = () =>
 function capsuleBrute(c) {
   return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, tint: c.tint,
            temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige,
-           fond: c.fond || null, etoiles: 1 };
+           fond: c.fond || null, iv: (c.iv || rollIV()).slice(), etoiles: 1 };
 }
 
 /* PEINDRE UN FOND. Le décor est une classe et des particules : le dégradé vit dans la feuille
@@ -5980,6 +6027,14 @@ function fusionDe(cartes) {
     line: base.line, motif: base.motif, age, niv, temper, fond,
     tint: Math.round(moy(k => k.tint || 0)),
     rank: Math.round(moy(k => k.rank || 0)),
+    /* Les stats se moyennent stat par stat : trois cartes fortes en font une forte.
+       UNE STAT NULLE N'EST PAS UNE STAT ABSENTE, et `|| IV_MAX / 2` confondait les deux : un
+       zéro est faux en JavaScript, donc la pire carte du jeu se voyait rendre la moyenne à sa
+       place. C'est exactement la valeur qu'on veut pouvoir fondre — celle dont on se débarrasse. */
+    iv: IV_NOMS.map((n, i) => Math.round(moy(k => {
+      const v = (k.iv || [])[i];
+      return v === undefined ? IV_MAX / 2 : v;
+    }))),
     prodige: majorite(k => k.prodige),
     etoiles: (base.etoiles || 1) + 1,
   };

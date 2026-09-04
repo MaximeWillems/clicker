@@ -4959,10 +4959,14 @@ scenario('primes — elles ne traversent pas l’ascension, la migration ne perd
 /* Une carte au sommet de ce que le jeu peut produire : c'est là que les bornes se testent.
    Déclarée en `function` et non en `const` : les scénarios s'exécutent dans l'ordre du
    fichier, et celui de la plonge s'en sert avant d'arriver ici. */
+/* PARFAITE VEUT DIRE PARFAITE SUR LES CINQ AXES, stats comprises depuis qu'elles en sont un.
+   Sans elles, `ivPart` lit la moyenne et la carte plafonne à 0,90 de qualité : le scénario
+   mesurait alors un « bonus maximal » qui n'était pas le maximum. */
 function parfaite(jeu, motif, id) {
   return {
     id, line: 'ouroboros', age: 5, niv: 100, tint: jeu.TINTS.length - 1,
     rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif, temper: 0,
+    iv: jeu.IV_NOMS.map(() => jeu.IV_MAX),
   };
 }
 function equiper(jeu, motif, n) {
@@ -4970,6 +4974,75 @@ function equiper(jeu, motif, n) {
   for (let i = 1; i <= n; i++) { jeu.state.album.push(parfaite(jeu, motif, i)); jeu.state.slots.push(i); }
   jeu.oublierAlbum();
 }
+
+scenario('stats — quatre nombres tirés à l’éclosion, et la carte les porte', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20;
+
+  eq('quatre stats', jeu.IV_NOMS.length, 4);
+  eq('sur une échelle de vingt-cinq', jeu.IV_MAX, 25);
+
+  /* TIRÉES À L'ÉCLOSION ET GARDÉES À VIE, comme la teinte et le tempérament. */
+  const c = bete(jeu, 'crapaud', 1, 0);
+  eq('une bête a ses quatre stats', (c.iv || []).length, 4);
+  ok('toutes dans l’échelle', c.iv.every(v => Number.isInteger(v) && v >= 0 && v <= jeu.IV_MAX),
+     c.iv.join(' '));
+  const fige = c.iv.join(',');
+  c.age = 5; c.p = jeu.bandTo(c); c.over = 1e6;
+  eq('vieillir n’y touche pas', c.iv.join(','), fige);
+
+  /* ELLES VARIENT : deux cents éclosions ne peuvent pas rendre deux cents fois le même total. */
+  const totaux = new Set();
+  for (let i = 0; i < 200; i++) totaux.add(jeu.rollIV().reduce((n, v) => n + v, 0));
+  ok('elles ne sortent pas toutes pareilles', totaux.size > 20, totaux.size + ' totaux distincts');
+
+  /* LA CARTE LES FIGE, comme le reste de la bête. */
+  const k = jeu.capsuleBrute(c);
+  eq('la capsule les emporte', (k.iv || []).join(','), fige);
+
+  /* ── LA MOYENNE NE BOUGE PAS, ET C'EST TOUTE LA SÛRETÉ DU CHANGEMENT ──
+     Les stats prennent leur poids aux autres axes au lieu de s'y ajouter. Des stats moyennes
+     valent 0,5, donc 0,20 × 0,5 = 0,10 — exactement ce qu'on a repris au niveau. */
+  const carte = (iv, niv) => ({ line: 'ouroboros', age: 5, niv, tint: 0, rank: 0,
+                                prodige: false, etoiles: 1, motif: 0, temper: 0, iv });
+  const moyennes = jeu.IV_NOMS.map(() => jeu.IV_MAX / 2);
+  eq('une carte type vaut ce qu’elle valait', jeu.qualiteDe(carte(moyennes, 100)), 0.7);
+  ok('une carte sans stats la vaut aussi',
+     jeu.qualiteDe(carte(null, 100)) === jeu.qualiteDe(carte(moyennes, 100)),
+     jeu.qualiteDe(carte(null, 100)));
+
+  const pire = jeu.IV_NOMS.map(() => 0), mieux = jeu.IV_NOMS.map(() => jeu.IV_MAX);
+  const q0 = jeu.qualiteDe(carte(pire, 100)), q1 = jeu.qualiteDe(carte(mieux, 100));
+  ok('mais l’écart existe', q1 > q0, q0.toFixed(3) + ' → ' + q1.toFixed(3));
+  ok('et il vaut douze centièmes de qualité', Math.abs(q1 - q0 - 0.12) < 1e-9, q1 - q0);
+
+  /* LA CARTE PARFAITE RESTE À UN : on n'a pas ajouté de puissance, on a ajouté de la variance. */
+  const trophee = { line: 'ouroboros', age: 5, niv: jeu.NIV_MAX, tint: jeu.TINTS.length - 1,
+                    rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif: 0,
+                    temper: 0, iv: mieux };
+  eq('un trophée vaut toujours un', jeu.qualiteDe(trophee), 1);
+
+  /* LA FUSION LES MOYENNE, stat par stat, comme la teinte et la taille. */
+  const trois = [carte([0, 0, 0, 0], 100), carte([25, 25, 25, 25], 100),
+                 carte([10, 20, 0, 5], 100)];
+  eq('trois cartes fondues rendent leur moyenne',
+     jeu.fusionDe(trois).iv.join(','), [12, 15, 8, 10].join(','));
+});
+
+scenario('stats — une sauvegarde d’avant en reçoit, ses cartes non', () => {
+  /* On tire pour ce qui est encore VIVANT, jamais pour ce qui est figé : une carte déjà dans
+     l'album lit la moyenne, donc sa qualité ne bouge pas d'un centième. */
+  const vieux = neuf({
+    coins: 1e6,
+    pen: [{ id: 1, line: 'crapaud', age: 3, p: 10, over: 0, tint: 0, rank: 0, motif: 0,
+            temper: 0, prodige: false }],
+    album: [{ id: 1, line: 'loup', age: 5, niv: 100, tint: 0, rank: 0, motif: 0, temper: 0,
+              prodige: false, etoiles: 1 }],
+  });
+  eq('la bête reçoit ses quatre stats', (vieux.state.pen[0].iv || []).length, 4);
+  ok('la carte n’en reçoit pas', !vieux.state.album[0].iv);
+  eq('et elle vaut exactement ce qu’elle valait', vieux.qualiteDe(vieux.state.album[0]), 0.7);
+});
 
 scenario('album — une carte ressemble à une carte', () => {
   const jeu = neuf(); const s = jeu.state;

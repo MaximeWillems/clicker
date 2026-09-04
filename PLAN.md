@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.15.0 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.16.0 · sauvegarde v25 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -92,6 +92,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi |
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
+| **Les stats de créature** | beta 4.16.0 | deux bêtes menées au même bout font-elles la même carte ? | non — quatre stats tirées à l'éclosion, de 0 à 25, gardées à vie. Elles sont le cinquième axe de la qualité d'une carte et prennent leur poids aux quatre autres : la moyenne ne bouge pas d'un centième, seule la variance est neuve. Invisibles pour l'instant, et ce sont celles que la tour de combat demandera |
 | **La pension monte dans la constellation** | beta 4.15.0 | la fin de partie peut-elle parler d'autre chose que de la pension ? | oui — ses douze primes occupaient les dix dernières marches de l'escalier ; l'axe la porte maintenant en quatre crans, chacun levant les quatre cadrans d'un coup. Le bâtiment reste une prime, donc elle s'ouvre toujours au premier cycle. **Renverse la `4.5.0`**, qui refusait qu'un pan de jeu quitte le cycle |
 | **L'écran et le doigt** | beta 4.14.0 | peut-on voir ce qu'on change, avant de changer quoi que ce soit ? | la première marche sur six. La planche est posée ; les cinq autres sont du CSS et se jugent dessus. Le chantier reste OUVERT — 48 `:hover` pour 2 `:active`, zéro garde `@media (hover: hover)`, 30 informations qui n'existent que dans une infobulle |
 | **Une porte par règle** | beta 4.13.1, 4.13.2 | une même faute peut-elle vivre à quatre endroits ? | plus maintenant. Choisir entre l'échelle des communes et celle des rangs était écrit à la main quatre fois, et faux quatre fois — jusqu'à annoncer « elle ne rembourse jamais » sur une bête payée un billion. Deux portes, et un scénario qui refuse la cinquième recopie |
@@ -135,7 +136,7 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | les tempéraments à second effet, qui en sont le socle de statistiques ; et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
+| **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | **les quatre stats sont posées depuis la `4.16.0`** ; restent les tempéraments à second effet et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
 
 ### Le chantier qui barre la route : les dessins
 
