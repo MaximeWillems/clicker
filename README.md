@@ -67,7 +67,7 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.12.0** | la réserve s’affiche dans l’ordre où elle se vide |
+| **beta 4.11.3** | la réserve s’affiche dans l’ordre où elle se vide |
 | beta 4.11.0 → 4.11.2 | le tri des œufs prend les options de l’enclos, range la bande et la file — arrivée ou rareté — et la réserve garde sa file |
 | beta 4.10.0 · 4.10.1 | un tri pour la file des œufs, sur la bande de couvaison |
 | beta 4.9.1 | la rente triple : une bête rapporte sa valeur en vingt minutes, et les deux ères s’égalisent |
