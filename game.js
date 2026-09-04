@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.6.2';
+const VERSION = 'beta 4.7.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1656,6 +1656,36 @@ function acheterEtoile(cle) {
   refresh();
   save();
   return true;
+}
+
+/* ── LA REPRISE ────────────────────────────────────────────────────────────────
+   On défait toute sa constellation et on retrouve ses jetons, à l'unité près.
+
+   LE PLAN L'AVAIT LAISSÉE OUVERTE, et écrivait pourquoi : « dans un jeu à une seule
+   sauvegarde, un nœud pris par erreur se subit pour toujours. La reprise ne rend pas les choix
+   gratuits, elle les rend RÉVISABLES. » C'est la différence qui compte — on ne peut toujours
+   pas tout avoir, on peut seulement changer d'avis.
+
+   LE COMPTE EST EXACT, ET IL FAUT VOIR POURQUOI. Ce qu'on a en main vaut
+   `bourse + crédit du cycle − dépense`, et la dépense n'est PAS remise à zéro : elle enregistre
+   ce qui a été payé ce cycle, ce qui reste vrai. On ajoute donc le total à la bourse, et la
+   soustraction d'un côté est compensée par l'addition de l'autre. Remettre la dépense à zéro EN
+   PLUS rembourserait deux fois les nœuds pris ce cycle — c'est la même faute que le sommet
+   remis à zéro en 4.6.1, et elle se reproduit exactement de la même façon. */
+const prixDuCiel = () => Object.keys(state.ciel || {})
+  .reduce((n, cle) => n + ((ETOILE_BY_KEY[cle] || {}).prix || 0), 0);
+
+function reprendreCiel() {
+  const rendu = prixDuCiel();
+  if (!rendu) return false;
+  state.ciel = {};
+  state.asc.jetons = (state.asc.jetons || 0) + rendu;
+  oublierPrimes();
+  cielSig = '';
+  chord([784, 659, 523, 392], 90);
+  refresh();
+  save();
+  return rendu;
 }
 
 /* Ce que le tronc ajoute aux deux coefficients globaux. Une quatrième source à côté des
@@ -5042,6 +5072,13 @@ function renderCiel() {
 
   setText($('ciel-jetons'), '✦ ' + fmt(jetons) + (jetons > 1 ? ' jetons' : ' jeton'));
 
+  /* LE BOUTON N'EXISTE QUE S'IL Y A QUELQUE CHOSE À DÉFAIRE. Un « tout reprendre » sur un ciel
+     vide est un bouton qui ment sur ce qu'il fait. */
+  const pris = prixDuCiel();
+  const bout = $('ciel-reprendre');
+  bout.hidden = !pris;
+  if (pris) setText(bout, 'Tout reprendre · ✦ ' + fmt(pris));
+
   const hote = $('ciel-arbre');
   hote.textContent = '';
   const svg = svgEl('svg', {
@@ -8145,6 +8182,15 @@ function bindTools() {
   arbre.addEventListener('click', e => {
     if (cielGlisse) { cielGlisse = false; return; }
     cielClic(e);
+  });
+
+  $('ciel-reprendre').addEventListener('click', () => {
+    const rendu = prixDuCiel();
+    if (!rendu) return;
+    if (!confirm('Reprendre toute ta constellation ?\n\n' + rendu + ' jeton' +
+        (rendu > 1 ? 's te sont rendus' : ' t’est rendu') +
+        ', et tous les nœuds redeviennent à prendre.')) return;
+    reprendreCiel();
   });
   /* AU CLAVIER AUSSI. Les nœuds sont des `g` SVG, donc ni boutons ni liens : sans ceci, tout
      l'écran serait inatteignable sans souris. */

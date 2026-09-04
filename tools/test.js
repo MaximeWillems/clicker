@@ -3433,6 +3433,67 @@ scenario('constellation — chaque nœud change quelque chose de mesurable', () 
      j.PAR_AXE[j.AXES[0].cle][0].parent === 'etincelle');
 });
 
+scenario('constellation — on peut tout reprendre, et le compte est exact', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.coins = 1e12; jeu.crediterJetons();
+
+  /* ELLE NE REND PAS LES CHOIX GRATUITS, ELLE LES REND RÉVISABLES. Dans un jeu à une seule
+     sauvegarde, un nœud pris par erreur se subissait pour toujours. */
+  eq('rien à reprendre sur un ciel vide', jeu.prixDuCiel(), 0);
+  ok('et le bouton ne fait rien', !jeu.reprendreCiel());
+
+  const avant = jeu.jetonsEnMain();
+  jeu.acheterEtoile('etincelle');
+  jeu.acheterEtoile('poing');
+  eq('deux nœuds valent cinq jetons', jeu.prixDuCiel(), 5);
+  eq('et la bourse a fondu d’autant', jeu.jetonsEnMain(), avant - 5);
+
+  eq('la reprise rend les cinq', jeu.reprendreCiel(), 5);
+  eq('la bourse est comme avant', jeu.jetonsEnMain(), avant);
+  eq('et le ciel est vide', Object.keys(s.ciel).length, 0);
+
+  /* LE PIÈGE, ET C'EST LE MÊME QU'EN 4.6.1 : la dépense du cycle N'EST PAS remise à zéro. Elle
+     enregistre ce qui a été payé, ce qui reste vrai ; le remboursement s'ajoute par-dessus. La
+     remettre à zéro en plus rembourserait deux fois — et la boucle le montrerait aussitôt. */
+  for (let i = 0; i < 50; i++) jeu.crediterJetons();
+  eq('et la boucle ne rend rien de plus', jeu.jetonsEnMain(), avant);
+
+  /* CE QUI A ÉTÉ PRIS AU CYCLE PRÉCÉDENT SE REPREND AUSSI : la constellation traverse
+     l'ascension, donc son remboursement doit la traverser également. */
+  jeu.acheterEtoile('etincelle');
+  s.pens = 20;
+  s.pen = [bete(jeu, 'crapaud', 3, 3000)];
+  jeu.ascChoix = [-s.pen[0].id];
+  jeu.ascensionner();
+  ok('l’étincelle a franchi le saut', jeu.etoilePrise('etincelle'));
+  const apres = jeu.jetonsEnMain();
+  eq('elle se reprend quand même', jeu.reprendreCiel(), 1);
+  eq('et le jeton revient', jeu.jetonsEnMain(), apres + 1);
+});
+
+scenario('constellation — le bouton de reprise dit ce qu’il rend', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 500);
+  jeu.cielSig = '';
+  jeu.refresh();
+
+  const bout = noeuds.get('ciel-reprendre');
+  /* UN « TOUT REPRENDRE » SUR UN CIEL VIDE EST UN BOUTON QUI MENT SUR CE QU'IL FAIT. */
+  eq('rien à reprendre, rien à montrer', bout.hidden, true);
+
+  jeu.acheterEtoile('etincelle');
+  jeu.acheterEtoile('poing');
+  jeu.refresh();
+  eq('le bouton paraît', bout.hidden, false);
+  ok('et il annonce la somme', bout.textContent.indexOf('5') >= 0, bout.textContent);
+
+  jeu.reprendreCiel();
+  jeu.refresh();
+  eq('il se retire avec le dernier nœud', bout.hidden, true);
+});
+
 scenario('constellation — le ciel se dessine, et il est plus grand que l’écran', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

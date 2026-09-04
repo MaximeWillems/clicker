@@ -1153,6 +1153,16 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-family: var(--f-name); font-weight: 400; font-size: 1.15rem; color: var(--ink); margin: 0;
 }
 .ciel-dit { grid-column: 1; margin: 0; max-width: 46rem; color: var(--soft); font-size: 0.82rem; line-height: 1.5; }
+/* LA REPRISE. Discrète : c'est une sortie de secours, pas une action du jeu. Elle ne doit
+   jamais attirer l'œil autant qu'un nœud à prendre. */
+.ciel-reprendre {
+  grid-column: 2; justify-self: end;
+  font: inherit; font-size: 0.72rem; color: var(--soft);
+  background: none; border: 1px solid var(--rule); border-radius: 4px;
+  padding: 3px 8px; cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.ciel-reprendre:hover { color: var(--ink); border-color: var(--soft); }
+
 .ciel-jetons {
   grid-column: 2; grid-row: 1 / span 2;
   font-family: var(--f-num); font-size: 1rem; color: var(--accent);
