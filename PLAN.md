@@ -1071,6 +1071,40 @@ temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la quest
 l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
 arbre, ce sont les feuilles et la lumière, pas le corps.
 
+#### L'hydre de Lerne — et le rang se décide sur un argument, pas sur un goût
+
+**Mythique plutôt que merveille, et la raison est mesurable.** Le rang mythique n'a que trois
+lignées — chimère, béhémoth, ouroboros — et c'est lui qui fournit les PARENTS DE RECETTE. Le
+compte actuel :
+
+    ouroboros  2 recettes      golem  2 recettes
+    sphinx     1               chat   1
+
+**L'ouroboros est dans deux recettes sur trois**, et le plan a déjà trois merveilles qui
+cherchent des parents : Yggdrasil, Mimi, Mila. Une quatrième mythique soulage exactement ce
+goulot. Une quatrième merveille l'aggrave.
+
+Le prix à payer, et il est réel : l'œuf mythique ne donne que des mythiques, donc une lignée de
+plus **dilue le tirage d'un quart**. C'est le seul argument sérieux dans l'autre sens.
+
+**LE PIÈGE, ET IL EST DE VOCABULAIRE VISUEL** : l'identité de l'hydre, ce sont des têtes qui
+repoussent en double quand on les coupe — donc un compte qui monte avec l'âge. Or **la kitsune
+occupe déjà cette place exacte** : *Kitsune · à trois queues · à cinq queues · à sept queues ·
+la neuvième queue*. Deux lignées du haut de la table qui racontent « ça se compte » racontent
+la même chose, et c'est le genre de collision que ce fichier a déjà payée une fois avec
+« palier ».
+
+Il faut donc que l'hydre raconte autre chose, et son mythe en offre mieux : **ce n'est pas
+qu'elle a beaucoup de têtes, c'est qu'on ne peut pas la tuer.** Deux pistes, aucune tranchée :
+
+- **Une bête qui ne part pas.** Vendue, il en reste quelque chose — une repousse, une seconde
+  bête plus jeune. C'est un vrai pan de jeu, et il touche à la vente, donc à l'équilibrage de
+  la rente : à ne pas écrire avant ce chantier-là.
+- **Les cinq âges comme un cycle** plutôt qu'une montée : tête coupée, deux têtes, coupées,
+  quatre — le cinquième âge n'étant pas le plus gros mais le plus obstiné.
+
+Le couple `ETIQUETTES` va de soi : `['eau', 'écaille']`, comme la tarasque — le marais de Lerne.
+
 #### Mimi et Mila — les deux merveilles qui ne sont pas des dieux
 
 **Mimi**, la chatte noire aux yeux verts. **Mila**, la carline. Pas des divinités : deux
