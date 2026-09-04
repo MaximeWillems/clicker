@@ -2966,8 +2966,13 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   const rare = solde('loup', jeu.EGG_BY_KEY.rare.price);
   ok('l’enfant est un investissement', rare[0] < 0, rare[0]);
   ok('l’adolescent aussi', rare[1] < 0, rare[1]);
-  ok('l’adulte est bénéficiaire', rare[2] > 0, rare[2]);
-  ok('et tout ce qui suit l’est encore', rare[3] > rare[2] && rare[4] > rare[3], rare.join(' '));
+  /* L'ADULTE EST EXACTEMENT À L'ÉQUILIBRE, ET C'EST LA RÈGLE ELLE-MÊME depuis la `4.12.1` :
+     `mult = prix de l'œuf / 2 200 000`. Il était bénéficiaire de 7 % tant que l'œuf rare
+     valait 50 M au lieu des 55 M que la règle demande — un reste de la `4.8.0`, où le prix
+     était encore posé à la main. Zéro n'est pas un relâchement de l'exigence d'origine, c'est
+     l'endroit où la décision d'aller plus loin se prend : sur une bête qui ne doit plus rien. */
+  eq('l’adulte est exactement à l’équilibre', rare[2], 0);
+  ok('et tout ce qui suit est bénéficiaire', rare[3] > rare[2] && rare[4] > rare[3], rare.join(' '));
 
   /* LES COMMUNES SONT LE MODÈLE : bénéficiaires à CHAQUE âge, œuf compris. Elles ne changent
      pas — l'ouverture du jeu est le dernier endroit où l'on touche. */

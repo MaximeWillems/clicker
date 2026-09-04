@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.12.0';
+const VERSION = 'beta 4.12.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -130,13 +130,11 @@ const SLOT_MULT  = 1.6;
    son œuf à vingt-cinq billions. La merveilleuse vaut exactement ce que vaut une mythique —
    c'est un cran de rareté, pas de puissance, et la règle est écrite plus bas.
 
-   DEUX EXCEPTIONS, TOUTES DEUX ANTÉRIEURES À LA RÈGLE :
-   — la COMMUNE ne joue pas sur la même échelle (`VALUE`/`EVOLVE` et non `VALEURS_RANG`) et son
-     œuf à dix-huit pièces la laisse largement bénéficiaire dès l'âge adulte. C'est l'ère
-     d'apprentissage : on n'y apprend pas à perdre de l'argent ;
-   — la RARE garde son œuf à cinquante millions, hérité de l'escalier de la `4.8.0`. La règle
-     en demanderait cinquante-cinq : elle est donc bénéficiaire de 7 % à l'âge adulte, et non à
-     l'équilibre. Sept pour cent ne valent pas de casser un prix que le joueur connaît.
+   UNE SEULE EXCEPTION, ET ELLE EST VOULUE : la COMMUNE ne joue pas sur la même échelle
+   (`VALUE`/`EVOLVE` et non `VALEURS_RANG`) et son œuf à dix-huit pièces la laisse largement
+   bénéficiaire dès l'âge adulte. C'est l'ère d'apprentissage : on n'y apprend pas à perdre de
+   l'argent. La RARE en était une seconde — son œuf à cinquante millions, hérité de la `4.8.0`,
+   la laissait bénéficiaire de 7 % — et elle est tombée en `4.12.1` : 25 × 2 200 000 = 55 M.
 
    CE QUE ÇA FAIT AU SAUT D'ÈRE, et c'est le but : de la rare à l'épique, le multiplicateur
    passe de 25 à 454 545. Une épique tombée par chance d'un œuf rare — une sur mille — naît
@@ -248,10 +246,16 @@ const EGG_KINDS = [
      s'arrêtait le jour où elle commençait à fonctionner : UNE seule commune menée à l'âge 5
      se vend 371 644, donc une bête suffisait à ouvrir l'ère rare.
 
-     Il vaut cinquante millions, soit une quinzaine d'heures de cette même ferme. Les deux
-     étages du dessus suivent du même facteur — sinon l'œuf rare coûterait plus cher que
-     l'épique, et l'escalier se retournerait. */
-  { key: 'rare', name: 'Œuf rare', price: 50000000, glyph: '🥚', rarity: 'rare',
+     Il vaut cinquante-cinq millions, soit une quinzaine d'heures de cette même ferme.
+
+     CINQUANTE-CINQ ET NON CINQUANTE, DEPUIS QUE LA RÈGLE EXISTE. Le prix a été posé à la main
+     en `4.8.0`, avant que le multiplicateur ne se déduise du prix de l'œuf ; il laissait donc
+     la rare bénéficiaire de 7 % à l'âge adulte là où toutes les autres sont à l'équilibre.
+     Sept pour cent ne se voient pas en jouant, mais une règle qui souffre une exception cesse
+     d'en être une : le prochain à lire la table ne saurait plus si 2 200 000 est la règle ou
+     une coïncidence. 25 × 2 200 000 = 55 000 000, et la table n'a plus d'exception qu'à
+     l'ère commune, qui ne joue pas sur la même échelle. */
+  { key: 'rare', name: 'Œuf rare', price: 55000000, glyph: '🥚', rarity: 'rare',
     hatch: 180, odds: { rare: 0.999, epique: 0.001 },
     dit: 'Le premier qui se réfléchit avant de l’acheter.' },
   /* UN BILLION, ET C'EST LE PRIX QUI COMMANDE L'ÈRE. Il valait 1,25 milliard, soit une
@@ -1129,7 +1133,7 @@ const PRIMES = [
   { cle: 'rente-2', prix: 40000000, glyphe: '💧', nom: 'Abreuvoir',
     dit: 'Dix pour cent de rente en plus. Une bête qui boit à sa soif rapporte sans qu’on la touche.',
     bonus: { rente: 0.10 } },
-  { cle: 'negoce-rare', prix: 100000000, glyphe: '🔷', nom: 'Négoce rare',
+  { cle: 'negoce-rare', prix: 110000000, glyphe: '🔷', nom: 'Négoce rare',
     dit: 'Les rares se vendent un quart plus cher.',
     si: () => rareteVue('rare') },
   { cle: 'valeur-3', prix: 120000000, glyphe: '📯', nom: 'Renom',
