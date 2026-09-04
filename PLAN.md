@@ -122,6 +122,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
 | **Yggdrasil** — l'arbre-monde, et le sujet le moins cher à dessiner | sa recette | une merveille peut-elle ne pas être un animal ? |
 | **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
+| **Les stats se voient** — elles agissent depuis la `4.16.0` et rien ne les montre : une lecture sur la fiche, et la planche pour la vérifier | rien, les deux moitiés sont posées | peut-on préférer une bête à une autre ? |
 | **Les chromatismes** — plusieurs, là où il n'y a qu'un prodige | rien | une couleur rare peut-elle se chasser ? |
 | **Les tempéraments à second effet** — précoce, difficile, gourmand, précieux | rien | un tempérament peut-il se choisir plutôt que se subir ? |
 | **Cliquer pour aider la pension** | rien | la présence peut-elle servir là où elle ne sert à rien ? |
