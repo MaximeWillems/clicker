@@ -1406,10 +1406,19 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   display: flex; align-items: flex-start; justify-content: center;
   padding: 3vh 1rem; overflow-y: auto;
 }
+/* LA BOÎTE TIENT DANS L'ÉCRAN, ET SEULE LA LISTE DÉFILE.
+
+   Avant, la boîte grandissait avec le nombre de cartes et c'est TOUT L'ÉCRAN qui défilait : à
+   quinze bêtes, le bouton « Ascensionner » se trouvait deux hauteurs d'écran plus bas, et il
+   fallait redescendre à chaque changement d'avis. Le pied d'un écran de décision doit rester
+   sous les yeux pendant qu'on décide. */
 .asc-box {
   background: var(--ground); border: 1px solid var(--rule-hi); border-radius: 4px;
   width: min(46rem, 100%); padding: 1.4rem 1.6rem 1.6rem;
+  display: flex; flex-direction: column; max-height: 94vh;
 }
+.asc-box > .asc-sec { display: flex; flex-direction: column; min-height: 0; }
+.asc-choix { overflow-y: auto; min-height: 0; }
 /* ── LES PRIMES ────────────────────────────────────────────────────────────────
    Une grille de petites cases plutôt qu'une liste de lignes. La liste convient à ce qui monte
    — un prix, un niveau, une flèche — mais vingt achats uniques n'ont pas de niveau à montrer :
@@ -1878,7 +1887,18 @@ body.en-pause .subject { cursor: default; }
   border-top: 1px solid var(--rule);
 }
 
-.asc-foot { margin-top: 1.8rem; display: flex; justify-content: flex-end; }
+.asc-foot {
+  margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--rule);
+  display: flex; justify-content: flex-end; gap: 0.6rem; flex: none;
+}
+/* LA RAFLE EST UN RACCOURCI, PAS UNE ACTION : elle a le poids d'un lien, pas d'un bouton
+   vert. Ce qu'on décide ici reste « ascensionner », et rien ne doit le concurrencer. */
+.asc-rafle {
+  font: inherit; font-size: 0.78rem; color: var(--soft);
+  background: none; border: 1px solid var(--rule); border-radius: 3px;
+  padding: 0.5rem 0.9rem; cursor: pointer;
+}
+.asc-rafle:hover { color: var(--ink); border-color: var(--soft); }
 .asc-go {
   font-family: var(--f-num); font-size: 0.85rem; letter-spacing: 0.06em;
   background: var(--jade); color: var(--ground);

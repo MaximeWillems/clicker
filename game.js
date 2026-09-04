@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.7.0';
+const VERSION = 'beta 4.7.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -5694,7 +5694,29 @@ function renderAscension() {
   if (gardees) bouts.push(gardees + ' de tes cartes actuelles garde' + (gardees > 1 ? 'nt' : '') +
                           ' sa place.'.replace('sa', gardees > 1 ? 'leur' : 'sa'));
   setText($('asc-slots'), bouts.join(' '));
+
+  /* CHOISIR À LA MAIN QUINZE FOIS EST UNE CORVÉE, PAS UNE DÉCISION. La décision, c'est
+     « lesquelles » — et neuf fois sur dix la réponse est « les meilleures ». Le bouton la donne
+     d'un geste ; le choix fin reste possible en cliquant les cartes, comme avant. */
+  const plein = ascChoix.length >= Math.min(ap.max, dispo.length);
+  const rafle = $('asc-rafle');
+  rafle.hidden = dispo.length < 2;
+  setText(rafle, plein ? 'Tout enlever'
+                       : 'Prendre les ' + Math.min(ap.max, dispo.length) + ' meilleures');
 }
+
+/* LES MEILLEURES, ET SUR QUEL CRITÈRE. On trie sur ce que la carte VAUDRA — la rareté
+   d'abord, l'âge ensuite, le niveau pour départager. Trier sur le prix de vente serait faux :
+   une carte ne se vend pas, elle s'équipe, et deux cartes de même rareté ne diffèrent à
+   l'usage que par ce qu'elles portent. */
+const rangCarte = k => [rarityOf(k).rank, k.age || 0, k.niv || 0, k.etoiles || 1];
+const meilleuresCartes = (liste, n) => liste.slice()
+  .sort((a, b) => {
+    const x = rangCarte(b), y = rangCarte(a);
+    for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i];
+    return 0;
+  })
+  .slice(0, n).map(k => k.id);
 
 function ascensionner() {
   const ap = apercuAscension();
@@ -7761,6 +7783,12 @@ function bindTools() {
   $('asc-close').addEventListener('click', fermerAscension);
   $('ascension').addEventListener('click', e => {
     if (e.target === $('ascension')) fermerAscension();     // clic sur le fond
+  });
+  $('asc-rafle').addEventListener('click', () => {
+    const ap = apercuAscension();
+    const plein = ascChoix.length >= Math.min(ap.max, ap.neuves.length);
+    ascChoix = plein ? [] : meilleuresCartes(ap.neuves, ap.max);
+    renderAscension();
   });
   $('asc-go').addEventListener('click', () => {
     const n = state.pen.length;

@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.7.0** | la reprise : on défait sa constellation et on retrouve ses jetons, à l’unité près |
+| **beta 4.7.1** | l’écran d’ascension : le bouton cesse de fuir, et les meilleures se prennent d’un geste |
+| beta 4.7.0 | la reprise : on défait sa constellation et on retrouve ses jetons, à l’unité près |
 | beta 4.6.2 | audit de la constellation : trois textes mentaient sur les jetons, deux fautes au glisser |
 | beta 4.6.1 | la bourse cessait d’imprimer : chaque achat de nœud rendait tout le crédit du cycle |
 | beta 4.6.0 | les faveurs : un tirage de trois, repris sans fin, sur dix leviers distincts |

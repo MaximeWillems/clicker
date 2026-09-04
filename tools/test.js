@@ -3299,6 +3299,39 @@ scenario('sauvegarde — les bourses gonflées par le bug dégonflent', () => {
   eq('sans ascension, rien ne peut avoir été mis de côté', neuve.state.asc.jetons, 0);
 });
 
+scenario('ascension — les meilleures se prennent d’un geste', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20;
+  s.coins = 1e12; jeu.crediterJetons();
+
+  /* CHOISIR À LA MAIN QUINZE FOIS EST UNE CORVÉE, PAS UNE DÉCISION. Neuf fois sur dix la
+     réponse à « lesquelles » est « les meilleures ». */
+  const faible = bete(jeu, 'crapaud', 1, 10);
+  const moyenne = bete(jeu, 'crapaud', 3, 3000);
+  const forte = bete(jeu, 'loup', 5, 9999);
+  jeu.ouvrirAscension();
+
+  const rafle = noeuds.get('asc-rafle');
+  eq('le raccourci est là', rafle.hidden, false);
+  ok('et il annonce combien', /meilleures/.test(rafle.textContent), rafle.textContent);
+
+  const ap = jeu.apercuAscension();
+  jeu.ascChoix = jeu.meilleuresCartes(ap.neuves, 2);
+  eq('deux prises', jeu.ascChoix.length, 2);
+
+  /* LE TRI VA DU PLUS RARE AU MOINS RARE, puis de l'âge au niveau : une carte ne se vend pas,
+     elle s'équipe, donc c'est ce qu'elle vaudra à l'usage qui compte. */
+  const pris = ap.neuves.filter(k => jeu.ascChoix.indexOf(k.id) !== -1);
+  ok('la rare est dedans', pris.some(k => k.line === 'loup'), pris.map(k => k.line).join(' '));
+  ok('la plus jeune est dehors', !pris.some(k => k.age === 1),
+     pris.map(k => k.line + ':' + k.age).join(' '));
+
+  // et le même bouton vide la sélection quand elle est pleine
+  jeu.ascChoix = jeu.meilleuresCartes(ap.neuves, ap.max);
+  jeu.renderAscension();
+  ok('plein, il propose de tout enlever', /enlever/.test(rafle.textContent), rafle.textContent);
+});
+
 scenario('ascension — la porte, le nombre et la phrase disent tous la bourse', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 20;
