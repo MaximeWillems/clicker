@@ -906,39 +906,49 @@ et c'est ça qu'il faut corriger, pas trois nombres dans une table.
 > qui suit l'échelle. La seconde piste est la meilleure des deux — elle répare la cause au lieu
 > du symptôme — mais elle touche la même mécanique que le chantier de la rente.
 
-#### Les trois leviers mesurés, et il n'en reste qu'un
+#### Les trois leviers mesurés — et le verdict
 
-**LE PÉAGE EST DÉJÀ CALIBRÉ, ET C'EST LA MESURE QUI L'A MONTRÉ.** Le rapport entre ce que
-coûtent les péages d'une bête et ce qu'elle vaut une fois grandie :
+**D'ABORD UNE CORRECTION : LE BANC NE JOUAIT PAS LE JEU.** La première version de la simulation
+n'achetait **aucune prime** — elle mesurait donc une partie que personne ne joue. Avec les
+primes achetées (vingt-cinq sur la course), le rapport entre les deux ères tombe de **×2,70 à
+×1,89**. Tout ce qui suit est mesuré sur la version corrigée.
+
+**LE PÉAGE EST DÉJÀ CALIBRÉ.** Le rapport entre ce que coûtent les péages d'une bête et ce
+qu'elle vaut une fois grandie :
 
     commune    643 200  →     371 644     ×1,73
     rare        16,1 M  →      8,45 M     ×1,90
     épique     385,9 M  →     202,7 M     ×1,90
     mythique    9,65 Md →      5,07 Md    ×1,90
 
-**Le même nombre à toutes les raretés.** C'est ce qui tient la règle du jeu — faire grandir une
-bête PERD toujours de l'argent à la vente, et seule la rente rembourse. Baisser le péage des
-rares seules casserait cette règle pour elles et pour elles seules : la rare deviendrait la
-première bête qu'on élève pour la revendre. Le péage n'est donc pas un levier libre, il est
-porteur.
+Le même nombre à toutes les raretés, et c'est ce qui tient la règle du jeu : faire grandir une
+bête PERD toujours de l'argent à la vente, seule la rente rembourse. Baisser le péage des rares
+seules en ferait la première bête qu'on élève pour revendre. **Le péage n'est pas un levier
+libre, il est porteur.**
 
-**L'ŒUF NE PÈSE RIEN.** Trois cents mille contre seize millions de péages : l'œuf est 1,8 % du
-coût d'une rare menée à l'âge 5. Le balayage l'a confirmé — de 300 k à 30 M, le rapport entre
-les deux ères EMPIRE au lieu de s'améliorer, parce qu'il n'agit pas sur ce qui compte.
+**L'ŒUF NE PÈSE RIEN** : 300 000 contre 16,1 M de péages, soit **1,8 %** du coût d'une rare
+menée à l'âge 5. Le balayage l'a confirmé — de 300 k à 30 M, le rapport EMPIRE.
 
-**LE PÉAGE BAISSÉ NE SUFFIT MÊME PAS.** Poussé de ×25 à ×4 — donc en cassant la règle — le
-rapport tombe de ×2,70 à ×1,69 seulement. Il ne va pas jusqu'à la parité, et la simulation est
-trop bruitée en dessous pour régler finement.
+**LE RARE GRATUIT EST DÉJÀ TENU, ET C'EST LE PÉAGE QUI LE TIENT.** Un œuf commun donne une rare
+une fois sur mille. Deux mesures :
 
-> **IL NE RESTE QU'UN LEVIER, ET C'EST LA RENTE.** Les deux ères ne sont pas de la même nature :
-> l'ère commune est portée par le CLIC — le joueur part de zéro et fabrique sa première pièce à
-> la main — tandis que l'ère rare est portée par la RENTE de la ferme déjà bâtie. Ce qui décide
-> de la longueur de l'ère rare, ce n'est donc ni l'œuf ni le péage : c'est le débit qui la
-> finance. **Le chantier des rares EST le chantier de la rente**, vu depuis l'autre bout.
+    rendement par pièce investie en péages (rente/h ÷ péages payés)
+      âge 3     commune 1,88     rare 2,25
+      âge 4     commune 2,04     rare 2,22
+      âge 5     commune 0,53     rare 0,53
 
-C'est la troisième fois que ce fichier arrive à cette conclusion par un chemin différent — le
-vivier, la refonte de l'absence, et maintenant l'ère rare. Trois chantiers qui butent au même
-endroit, ce n'est plus une coïncidence, c'est un ordre de travail.
+**Le rendement est le même.** Une rare tombée par chance n'est pas plus RENTABLE qu'une commune,
+elle est seulement plus GROSSE — et pour en profiter il faut lui payer **1,08 M de péages**
+rien que pour l'amener à l'âge 4. Une ferme commune mûre rend 3,24 M/h ; tant qu'on ne l'a pas
+bâtie, on ne peut pas payer. Le verrou tient tout seul, et c'est une troisième raison de ne pas
+toucher au péage.
+
+> **VERDICT : LES DEUX CHANGEMENTS PRÉVUS PAR CE PLAN SONT RÉFUTÉS.** L'œuf rare « vers trente
+> millions » n'agit sur rien, et le péage « plus fort » casserait trois règles à la fois. Le
+> troisième souci — la rare gratuite — est déjà réglé par le design existant. Ce qui reste est
+> un écart de **×1,89** entre les deux ères, et il ne se ferme qu'en touchant à la rente ou aux
+> communes. **Ce chantier se referme donc sans changer une ligne**, ce qui est un résultat :
+> quatre mesures valent mieux qu'un réglage au jugé.
 
 ### Vingt idées relues, huit retenues
 
