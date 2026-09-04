@@ -2923,6 +2923,42 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
 });
 
+scenario('œufs — acheté en dernier, couvé en dernier', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.coins = 1e15; s.incubators = 1; s.incub = [null];
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0, merveille: 0 };
+  s.file = [];
+  s.triOeuf = 'arrivee';
+
+  /* LE BOGUE QUE CE SCÉNARIO TIENT. `buyEgg` posait dans l'incubateur la sorte QU'ON VENAIT
+     D'ACHETER, pas celle que la file désigne. Acheter un rare le mettait donc devant dix
+     communs qui attendaient depuis dix minutes — exactement ce que « par arrivée » promet de
+     ne pas faire. */
+  jeu.buyEgg('commun');                     // celui-là part tout de suite : la file était vide
+  eq('le premier occupe l’incubateur', s.incub[0].kind, 'commun');
+
+  jeu.buyEgg('commun'); jeu.buyEgg('commun');
+  jeu.buyEgg('rare');                       // le dernier acheté
+  eq('trois attendent, le rare en queue', s.file.join(), 'commun,commun,rare');
+
+  const sortir = () => { s.incub[0] = null; jeu.placeEgg(0); return s.incub[0].kind; };
+  eq('le plus ancien passe le premier', sortir(), 'commun');
+  eq('puis le suivant', sortir(), 'commun');
+  eq('et le rare en dernier, comme il est arrivé', sortir(), 'rare');
+  eq('la réserve est vide', s.file.length, 0);
+
+  /* PAR RARETÉ, LE MÊME ACHAT DOUBLE TOUT LE MONDE — c'est l'autre réglage, et il doit rester
+     franc lui aussi. */
+  s.incub[0] = null;
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0, merveille: 0 };
+  s.file = [];
+  s.triOeuf = 'rarete';
+  jeu.buyEgg('commun'); jeu.buyEgg('commun'); jeu.buyEgg('rare');
+  s.incub[0] = null; jeu.placeEgg(0);
+  eq('le rare passe devant', s.incub[0].kind, 'rare');
+});
+
 scenario('œufs — la file se trie comme l’enclos : arrivée, ou rareté', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

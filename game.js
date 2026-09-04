@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.11.0';
+const VERSION = 'beta 4.11.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3872,7 +3872,15 @@ function buyEgg(kind) {
   poserFile(kind);
   state.eggs[kind] = eggStock(kind) + 1;
   const free = state.incub.indexOf(null);
-  if (free !== -1) placeEgg(free, kind); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
+  /* ON POSE CE QUE LA FILE DÉSIGNE, PAS CE QU'ON VIENT D'ACHETER, et c'est tout le bogue du
+     tri par arrivée : `placeEgg(free, kind)` passait la sorte achetée, donc elle doublait
+     toute la réserve et partait en couvaison immédiatement. Acheter un rare le mettait devant
+     dix communs qui attendaient depuis dix minutes — exactement ce que « par arrivée » promet
+     de ne pas faire.
+
+     Sans sorte, `placeEgg` demande à `bestStocked`, donc au réglage. Réserve vide, le nouvel
+     œuf est de toute façon le seul en file : rien ne change pour qui n'a rien en attente. */
+  if (free !== -1) placeEgg(free); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
 }
 
 /* Une prime s'achète une fois, ne se revend pas, et n'a pas de niveau. La seule chose à
