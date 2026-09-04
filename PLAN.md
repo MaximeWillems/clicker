@@ -1071,37 +1071,49 @@ temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la quest
 l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
 arbre, ce sont les feuilles et la lumière, pas le corps.
 
-#### L'hydre de Lerne — et le rang se décide sur un argument, pas sur un goût
+#### L'hydre de Lerne — la première bête qui grandit par le mal qu'on lui fait
 
-**Mythique plutôt que merveille, et la raison est mesurable.** Le rang mythique n'a que trois
-lignées — chimère, béhémoth, ouroboros — et c'est lui qui fournit les PARENTS DE RECETTE. Le
-compte actuel :
+**Merveille, et le rang se décide sur la mécanique.** J'avais recommandé mythique pour soulager
+le goulot des parents de recette — l'ouroboros est dans deux recettes sur trois. L'argument
+tombe : le rang mythique se tire à l'œuf, donc une lignée mythique n'a pas de mécanique à elle.
+Le rang secret, lui, est le seul endroit du jeu où une lignée peut avoir sa propre règle. Une
+bête qui se joue autrement n'a rien à faire ailleurs.
 
-    ouroboros  2 recettes      golem  2 recettes
-    sphinx     1               chat   1
+**LE CONCEPT : ELLE GRANDIT PAR LES BLESSURES.** Plus elle est blessée, plus elle « évolue » et
+gagne ses têtes, comme dans la légende. C'est la première inversion de la boucle du jeu, et
+c'est ce qui la justifie : partout ailleurs une bête grandit parce qu'on s'en occupe.
 
-**L'ouroboros est dans deux recettes sur trois**, et le plan a déjà trois merveilles qui
-cherchent des parents : Yggdrasil, Mimi, Mila. Une quatrième mythique soulage exactement ce
-goulot. Une quatrième merveille l'aggrave.
+**D'où vient la blessure — c'est la seule question qui compte, et elle n'est pas tranchée.**
+Le jeu n'a aucun combat, donc rien qui blesse aujourd'hui. Trois sources possibles, par ordre
+de force :
 
-Le prix à payer, et il est réel : l'œuf mythique ne donne que des mythiques, donc une lignée de
-plus **dilue le tirage d'un quart**. C'est le seul argument sérieux dans l'autre sens.
+- **Ce que tu perds ailleurs.** Une bête vendue, une bête abandonnée à l'ascension — l'écran
+  d'ascension dit déjà « les N autres sont perdues ». Une créature qui se nourrit de ces
+  pertes-là est un vrai renversement : le pire moment du jeu devient le meilleur pour elle.
+- **Le clic lui-même, retourné.** Le même geste qui nourrit toutes les autres la frappe. Rien
+  de neuf à brancher, mais mécaniquement identique à la croissance ordinaire : ça ne raconte
+  que par le texte, et le texte ne suffit pas.
+- **L'impasse et la plonge.** Le fond du trou du jeu la nourrit. Joli, mais trop rare pour
+  porter une lignée.
 
-**LE PIÈGE, ET IL EST DE VOCABULAIRE VISUEL** : l'identité de l'hydre, ce sont des têtes qui
-repoussent en double quand on les coupe — donc un compte qui monte avec l'âge. Or **la kitsune
-occupe déjà cette place exacte** : *Kitsune · à trois queues · à cinq queues · à sept queues ·
-la neuvième queue*. Deux lignées du haut de la table qui racontent « ça se compte » racontent
-la même chose, et c'est le genre de collision que ce fichier a déjà payée une fois avec
-« palier ».
+La première est la bonne, et elle a l'avantage d'exister déjà : il y a un endroit du code où
+des bêtes disparaissent.
 
-Il faut donc que l'hydre raconte autre chose, et son mythe en offre mieux : **ce n'est pas
-qu'elle a beaucoup de têtes, c'est qu'on ne peut pas la tuer.** Deux pistes, aucune tranchée :
+**IL LUI FAUT UN CONTRE-FEU.** Héraclès ne l'a pas tuée en coupant — il a cautérisé. Une bête
+qui ne fait que monter sans qu'on puisse arrêter le compte est une bête qu'on ne décide jamais
+de vendre. Le geste qui FIGE la repousse est la moitié de la mécanique, pas un détail : sans
+lui, l'hydre est une rente de plus.
 
-- **Une bête qui ne part pas.** Vendue, il en reste quelque chose — une repousse, une seconde
-  bête plus jeune. C'est un vrai pan de jeu, et il touche à la vente, donc à l'équilibrage de
-  la rente : à ne pas écrire avant ce chantier-là.
-- **Les cinq âges comme un cycle** plutôt qu'une montée : tête coupée, deux têtes, coupées,
-  quatre — le cinquième âge n'étant pas le plus gros mais le plus obstiné.
+**LA COLLISION AVEC LA KITSUNE SE DISSOUT**, et c'est un bon signe. Les deux comptent des
+appendices avec l'âge, mais les queues de la kitsune sont une HORLOGE — une par siècle — et les
+têtes de l'hydre sont un COMPTE DE CICATRICES. La forme est la même, la cause se lit, et c'est
+la cause qu'on retient.
+
+**Le risque technique, à savoir avant de s'y mettre** : ce serait la première lignée dont la
+progression ne passe pas par le chemin commun. `advance`, `estMur`, `evolve` et `autoRate`
+supposent tous un seul modèle de croissance — le temps et le clic vers un plafond. Une bête qui
+monte sur un autre compteur les traverse tous. **À écrire après le chantier de la rente**, qui
+touche déjà la vente, c'est-à-dire la source de blessure retenue.
 
 Le couple `ETIQUETTES` va de soi : `['eau', 'écaille']`, comme la tarasque — le marais de Lerne.
 
