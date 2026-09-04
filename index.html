@@ -180,6 +180,13 @@
     <div class="panel-head">
       <button type="button" class="panel-plier" data-plie="boutique"><span class="plier">▾</span>
         <h2>Boutique</h2></button>
+      <!-- UN SEUL RÉGLAGE POUR DEUX CHOSES : l'ordre des œufs ici, et lequel part le premier
+           quand un incubateur se libère. Les séparer donnerait deux vérités. -->
+      <div class="tri" id="tri-oeuf" role="group" aria-label="Ordre des œufs">
+        <button type="button" class="tri-opt" data-tri="rare">rare</button>
+        <button type="button" class="tri-opt" data-tri="commun">commun</button>
+        <button type="button" class="tri-opt" data-tri="stock">stock</button>
+      </div>
     </div>
     <ul class="shop" id="shop"></ul>
   </section>

@@ -73,8 +73,13 @@ function el(tag) {
        no-op, si bien que le banc ne pouvait pas voir une vignette QUITTER la bande : elle
        s'accumulait, et un scénario qui comptait les enfants d'une bande comptait des fantômes.
        Trois lignes de plus, et tout ce qui se retire devient observable. */
-    appendChild(c) { c.parent = this; this.children.push(c); return c; },
-    append(...cs) { cs.forEach(c => { c.parent = this; this.children.push(c); }); },
+    /* AJOUTER UN NŒUD DÉJÀ PLACÉ LE DÉPLACE, il ne le duplique pas. Le banc l'empilait
+       simplement, si bien qu'un écran qui se RÉORDONNE — la boutique, quand on change le tri
+       des œufs — semblait fonctionner tout en gardant l'ancien ordre et en doublant ses cases.
+       Le scénario a montré la tache aveugle avant qu'elle ne cache une fonctionnalité, ce qui
+       est déjà arrivé trois fois à ce fichier. */
+    appendChild(c) { if (c.parent) c.parent.removeChild(c); c.parent = this; this.children.push(c); return c; },
+    append(...cs) { cs.forEach(c => this.appendChild(c)); },
     replaceChildren(...cs) { cs.forEach(c => { c.parent = this; }); this.children = cs; },
     remove() { if (this.parent) this.parent.removeChild(this); },
     insertBefore(n, ref) {

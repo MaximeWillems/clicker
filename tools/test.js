@@ -2918,6 +2918,53 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
 });
 
+scenario('œufs — un seul tri gouverne la boutique et la file', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.eggs = { commun: 5, rare: 2, epique: 1 };
+
+  /* LE MÊME RÉGLAGE DÉCIDE DE DEUX CHOSES QUI N'EN FONT QU'UNE : l'ordre des œufs dans la
+     boutique, et lequel part le premier quand un incubateur se libère. Les séparer aurait
+     donné deux vérités — on lit une liste, la file en suit une autre. */
+  eq('par défaut, le plus rare part le premier', jeu.bestStocked(), 'epique');
+
+  s.triOeuf = 'commun';
+  eq('à l’envers, c’est le commun', jeu.bestStocked(), 'commun');
+
+  s.triOeuf = 'stock';
+  eq('par le stock, c’est la plus grosse pile', jeu.bestStocked(), 'commun');
+  s.eggs = { commun: 1, rare: 7 };
+  eq('et elle suit ce qu’on a', jeu.bestStocked(), 'rare');
+
+  /* ET LA BOUTIQUE SUIT LE MÊME ORDRE : c'est toute la promesse du réglage unique. */
+  const cases = () => noeuds.get('shop').children
+    .map(li => li.children[0])
+    .filter(b => (b.className || '').indexOf('egg-') >= 0)
+    .map(b => (b.className.match(/egg-([a-z]+)/) || [])[1]);
+
+  s.triOeuf = 'rare';
+  jeu.syncTriOeuf();
+  eq('la boutique met le rare devant', cases()[0], 'mythique');
+  s.triOeuf = 'commun';
+  jeu.syncTriOeuf();
+  eq('et le commun devant, à l’envers', cases()[0], 'commun');
+
+  /* L'INCUBATEUR ET L'ENCLOS RESTENT AU BOUT : ce ne sont pas des œufs, ils ne se trient pas
+     avec eux. */
+  const tout = noeuds.get('shop').children.map(li => li.children[0]);
+  ok('les deux derniers ne sont pas des œufs',
+     (tout[tout.length - 1].className || '').indexOf('egg-') < 0 &&
+     (tout[tout.length - 2].className || '').indexOf('egg-') < 0);
+
+  /* LE RÉGLAGE TRAVERSE L'ASCENSION, comme celui de l'enclos : c'est une préférence, pas une
+     ressource. */
+  s.pens = 20; s.coins = 1e12; jeu.crediterJetons();
+  s.pen = [bete(jeu, 'crapaud', 3, 3000)];
+  jeu.ascChoix = [-s.pen[0].id];
+  jeu.ascensionner();
+  eq('il survit au saut', jeu.state.triOeuf, 'commun');
+});
+
 scenario('primes — un négoce n’arrive jamais avant sa rareté', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

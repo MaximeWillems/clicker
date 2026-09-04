@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.9.1';
+const VERSION = 'beta 4.10.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2237,6 +2237,7 @@ function freshState() {
        réglage unique obligeait à trancher pour tout le monde. 0 = dès la maturité. */
     sellRank: parRarete(0),
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
+    triOeuf: 'rare',    // l'ordre des œufs, boutique ET file — voir TRIS_OEUF
     /* Le mode histoire. `tuto` l'allume, `vu` retient ce qui a déjà été dit ET ce qui a déjà
        été dévoilé — les deux se marquent une fois pour toutes, et rien ne revient en arrière.
        Ils traversent l'ascension : on ne réapprend pas le jeu au deuxième cycle. */
@@ -2940,7 +2941,28 @@ function fullName(c) {
 const eggStock  = k => (state.eggs && state.eggs[k]) || 0;
 const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 // la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
-const bestStocked = () => (EGG_KINDS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
+/* ── L'ORDRE DES ŒUFS, ET IL N'Y EN A QU'UN ────────────────────────────────────
+   Le même réglage décide de DEUX choses qui n'en font qu'une : l'ordre des œufs dans la
+   boutique, et lequel part le premier quand un incubateur se libère. Les séparer aurait donné
+   deux vérités — on lit une liste, la file en suit une autre, et le joueur ne comprend jamais
+   pourquoi c'est le commun qui est parti.
+
+   « La plus rare d'abord » était écrit en dur, avec une bonne raison : un œuf cher acheté
+   exprès ne doit pas attendre derrière du commun. Mais c'est UNE façon de jouer, pas la
+   seule — on peut vouloir brûler son stock commun tant qu'on regarde, et garder les rares
+   pour un moment où l'on sera là. C'est exactement le débat que le tri de l'enclos a déjà
+   tranché en le rendant réglable. */
+const TRIS_OEUF = {
+  rare:   (a, b) => RARITY[b.rarity].rank - RARITY[a.rarity].rank,
+  commun: (a, b) => RARITY[a.rarity].rank - RARITY[b.rarity].rank,
+  stock:  (a, b) => eggStock(b.key) - eggStock(a.key)
+                 || RARITY[b.rarity].rank - RARITY[a.rarity].rank,
+};
+const oeufsTries = () => {
+  const f = TRIS_OEUF[state.triOeuf] || TRIS_OEUF.rare;
+  return OEUFS_VENDUS.slice().sort(f);
+};
+const bestStocked = () => (oeufsTries().find(e => eggStock(e.key)) || {}).key;
 // Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
 // l'âge légende pour le prix d'une commune, et toute la progression se court-circuitait.
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
@@ -4558,6 +4580,25 @@ function renderStrip() {
 }
 
 // Le segment de tri ne change qu'au clic : pas la peine de le repasser à chaque image.
+/* LA BOUTIQUE SE RÉORDONNE EN DÉPLAÇANT SES CASES, jamais en les refabriquant : elles portent
+   des écouteurs et des références que `tickView` relit dix fois par seconde. `appendChild` sur
+   un nœud déjà placé le DÉPLACE — c'est tout ce qu'il faut, et ça ne casse rien. */
+function syncTriOeuf() {
+  for (const b of $('tri-oeuf').children) {
+    b.setAttribute('aria-pressed', String(b.dataset.tri === state.triOeuf));
+  }
+  const shop = $('shop');
+  if (!refs.shop) return;
+  for (const e of oeufsTries()) {
+    const r = refs.shop['egg-' + e.key];
+    if (r) shop.appendChild(r.li);
+  }
+  for (const cle of ['incub', 'pen']) {
+    const r = refs.shop[cle];
+    if (r) shop.appendChild(r.li);
+  }
+}
+
 function syncTri() {
   for (const b of $('tri').children) b.setAttribute('aria-pressed', String(b.dataset.tri === state.tri));
 }
@@ -5913,7 +5954,8 @@ function ascensionner() {
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers,
            jetons: Math.max(0, ap.jetons - coutCartes(neuves.length)),
            sommet: 0, depense: 0 },
-    seen: state.seen, dex: state.dex, tri: state.tri, achat: state.achat, sound: state.sound,
+    seen: state.seen, dex: state.dex, tri: state.tri, triOeuf: state.triOeuf,
+    achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
     // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
@@ -5945,6 +5987,7 @@ function ascensionner() {
   remplirMenus();          // les prix des œufs bougent avec le zébré
   syncReglages();
   syncTri();
+  syncTriOeuf();
   refresh();
   save();
   chord([392, 523, 659, 784], 90);
@@ -8293,6 +8336,14 @@ function bindTools() {
     if (!choisirForge(parseInt(carte.dataset.id, 10))) blip(300, 0.05, 'sine', 0.03);
   });
 
+  $('tri-oeuf').addEventListener('click', e => {
+    const b = e.target.closest('.tri-opt');
+    if (!b || b.dataset.tri === state.triOeuf) return;
+    state.triOeuf = b.dataset.tri in TRIS_OEUF ? b.dataset.tri : 'rare';
+    syncTriOeuf();
+    refresh();
+    save();
+  });
   $('carrefour-close').addEventListener('click', fermerCarrefour);
   $('carrefour').addEventListener('click', e => {
     if (e.target === $('carrefour')) fermerCarrefour();     // clic sur le fond
@@ -8421,8 +8472,10 @@ function start() {
   $('btn-tuto').setAttribute('aria-pressed', String(state.tuto));
   syncReglages();
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
+  if (!(state.triOeuf in TRIS_OEUF)) state.triOeuf = 'rare';
   if (ACHATS.indexOf(state.achat) === -1) state.achat = 1;
   syncTri();
+  syncTriOeuf();
   syncAchat();
 
   catchUp();
