@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.13.0 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.13.1 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -88,7 +88,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Les cases fixes** | beta 2.2, 2.5, 3.1.1 | peut-on viser une vignette pendant que le marchand vend ? | oui — l'enclos devient des cases, et le tri revient une seconde après |
 | **Le mur de l'ascension** | beta 3.0, 3.1.0 | l'ascension peut-elle se rejouer ? | oui — les jetons se regagnent, et une bête menée au bout paie encore au clic |
 | **La constellation** | beta 4.0 → 4.7 | le jeton peut-il être autre chose qu'une carte ? | oui — un arbre à six directions et vingt-cinq nœuds, une reprise à l'unité près, et les faveurs quand la liste se termine |
-| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune |
+| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1, 4.13.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune |
 | **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi |
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |

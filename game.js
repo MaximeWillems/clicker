@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.13.0';
+const VERSION = 'beta 4.13.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2953,16 +2953,29 @@ function rollVariants(achete) {
 }
 
 /* À partir de quel âge la bête rembourse l'œuf dont elle sort. Un œuf cher n'est pas un lot
-   à encaisser : enfant, une mythique payée 200 000 ne vaut que 1 600. Tous les œufs payants
-   se remboursent à l'âge ancien, jamais avant — autant le dire plutôt que de laisser le
-   joueur le découvrir en perdant sa mise. */
+   à encaisser : enfant, une épique payée un billion n'en vaut que trente-six millions — autant
+   le dire plutôt que de laisser le joueur le découvrir en perdant sa mise.
+
+   ELLE LISAIT L'ÉCHELLE DES COMMUNES POUR TOUTES LES RARETÉS, quatrième site de la faute que
+   la `4.12.0` avait corrigée à trois endroits et manquée ici. `VALUE` et `EVOLVE` ne valent que
+   pour le rang zéro ; les autres ont `VALEURS_RANG` et `PEAGES_RANG`, cinq cents fois plus
+   hauts. Elle calculait donc une valeur cinq cents fois trop basse et rendait `null` — « elle
+   ne rembourse jamais » — pour LES QUATRE raretés payantes, alors qu'une rare rembourse à
+   l'âge adulte et une épique à l'âge ancien.
+
+   Ce n'est pas un détail d'affichage : c'est la phrase qui dit au joueur quand il peut vendre
+   sans perdre, sur une bête qu'il vient de payer un billion.
+
+   Et le seuil d'une rare est maintenant l'ÂGE ADULTE et non l'ancien, parce que c'est
+   exactement ce que la règle de la `4.12.1` construit — l'œuf et ses deux premiers péages
+   valent ce que la bête se vend une fois mûre à cet âge-là. Les deux se répondent, et cette
+   fonction le vérifie sur les nombres au lieu de le répéter. */
 function seuilRentable(c) {
-  const rar = rarityOf(c).mult, b = bonusAlbum();
-  const mult = rar * variantMult(c) * (1 + b.valeur);
-  let cumul = 0;
+  const cle = lineOf(c).rarity, b = bonusAlbum();
+  const gain = variantMult(c) * (1 + b.valeur);
   for (let a = 1; a <= AGES.length; a++) {
-    if (a > 1) cumul += (EVOLVE[a - 2] || 0) * rar * (1 - b.peage);
-    if (VALUE[a - 1] * mult - cumul >= (c.cost || 0)) return a;
+    const cumul = peagesJusque(cle, a) * (1 - b.peage);
+    if (valeurMure(cle, a) * gain - cumul >= (c.cost || 0)) return a;
   }
   return null;
 }

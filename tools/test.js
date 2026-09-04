@@ -193,6 +193,26 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
      (jeu.PEAGES_RANG[0] + jeu.PEAGES_RANG[1]) * jeu.RARITY.epique.mult);
   eq('une commune garde l’échelle des âges',
      jeu.valeurMure('commune', 3), jeu.VALUE[2]);
+
+  /* LE SEUIL DE REMBOURSEMENT LIT LA MÊME ÉCHELLE — c'était le quatrième site de la faute, et
+     le pire : il rendait `null` pour les quatre raretés payantes, c'est-à-dire « elle ne
+     rembourse jamais », sur une bête qu'on vient de payer un billion. Le seuil d'une rare est
+     l'âge adulte, et ce n'est pas un réglage : c'est la règle du multiplicateur qui retombe
+     sur ses pieds — l'œuf et ses deux premiers péages valent la bête mûre à cet âge-là. */
+  const s2 = jeu.state; s2.tuto = false; s2.pens = 8;
+  const seuil = (ligne, rar) => {
+    const oeuf = jeu.EGG_KINDS.find(e => e.rarity === rar);
+    s2.incub[0] = { line: ligne, p: 9999, kind: oeuf.key };
+    jeu.hatchAll();
+    const c = s2.pen[s2.pen.length - 1];
+    c.tint = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false; c.fond = null;
+    c.cost = oeuf.price || 0;
+    return jeu.seuilRentable(c);
+  };
+  eq('une commune rembourse dès l’enfance', seuil('crapaud', 'commune'), 1);
+  eq('une rare rembourse à l’âge adulte', seuil('loup', 'rare'), 3);
+  eq('une épique à l’âge ancien', seuil('golem', 'epique'), 4);
+  eq('une mythique aussi', seuil('ouroboros', 'mythique'), 4);
 });
 
 scenario('noms — aucun ne reprend un mot d’âge ni de taille', () => {
