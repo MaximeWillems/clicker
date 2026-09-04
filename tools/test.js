@@ -197,8 +197,35 @@ scenario('réserve d’œufs — elle se vide toute seule, et gratuitement', () 
   eq('l’acheteur remplit', s.incub.filter(Boolean).length, 4);
   ok('et il a payé', s.coins < avant, s.coins);
 
-  // il ne brade jamais la consigne
+  /* LA MERVEILLE EST DANS LA RÉSERVE COMME LES AUTRES. Elle n'a pas de prix, donc elle
+     n'était pas dans `OEUFS_VENDUS` — la liste de ce qui S'ACHÈTE — et c'est sur celle-là que
+     la file et la priorité se lisaient. Le rang le plus haut du jeu passait derrière du
+     commun, et une réserve qui n'en contenait que des merveilles ne désignait plus rien : la
+     boucle inscrivait un NaN dans les comptes et remplissait chaque case d'un œuf fantôme. */
+  s.primes.acheteur = false;
   s.incub = [null, null, null, null];
+  s.eggs = { commun: 3, rare: 0, epique: 0, mythique: 0, merveille: 1 };
+  s.file = [];
+  eq('la merveille est en tête de la réserve', jeu.reserveEnOrdre()[0], 'merveille');
+  eq('et c’est elle que le jeu désigne', jeu.bestStocked(), 'merveille');
+  jeu.runAutomations(0.1);
+  eq('elle part la première', s.incub[0].kind, 'merveille');
+  eq('la réserve n’en a plus', s.eggs.merveille, 0);
+  ok('et les trois communes suivent', s.incub.slice(1).every(o => o && o.kind === 'commun'));
+
+  // une réserve qui n'a que des merveilles se vide, elle ne fabrique pas de fantômes
+  s.incub = [null, null, null, null];
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0, merveille: 2 };
+  s.file = [];
+  jeu.runAutomations(0.1);
+  eq('les deux merveilles couvent', s.incub.filter(o => o && o.kind === 'merveille').length, 2);
+  eq('et rien d’autre n’a été posé', s.incub.filter(Boolean).length, 2);
+  eq('le compte reste juste', s.eggs.merveille, 0);
+
+  // il ne brade jamais la consigne
+  s.primes.acheteur = true;
+  s.incub = [null, null, null, null];
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0, merveille: 0 };
   s.buyKind = 'rare';
   s.coins = jeu.prixOeuf(jeu.EGG_BY_KEY.rare) * 2 + 5;
   jeu.runAutomations(0.1);
