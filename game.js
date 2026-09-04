@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.16.0';
+const VERSION = 'beta 4.17.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2053,6 +2053,25 @@ const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
      crapaud: { 1: 'crapaud-tetard.png', 3: 'crapaud-buffle.png', 5: 'crapaud-gama.png' },
 */
 const ART = {
+  /* LES DEUX PREMIÈRES LIGNÉES QUI NE VIENNENT PAS D'UNE PLANCHE GÉNÉRÉE. Elles sont décrites
+     en formes géométriques — `tools/formes-behemoth.js`, `tools/formes-araignee.js` — puis
+     rastérisées et contournées par la filière ordinaire. Le SVG est donc REPRODUCTIBLE : on
+     corrige une patte en changeant un nombre, et `node tools/pixel.js formes <lignée>` refait
+     la grille. C'est la voie que le crapaud avait ouverte et que personne n'avait reprise. */
+  behemoth: {
+    1: 'behemoth-1-ossement.svg',              // Ossement
+    2: 'behemoth-2-saurien.svg',               // Saurien
+    3: 'behemoth-3-behemoth.svg',              // Béhémoth
+    4: 'behemoth-4-behemoth-eternel.svg',      // Béhémoth éternel
+    5: 'behemoth-5-behemoth-primordial.svg',   // Béhémoth primordial
+  },
+  araignee: {
+    1: 'araignee-1-nymphe.svg',                // Nymphe
+    2: 'araignee-2-araignee.svg',              // Araignée
+    3: 'araignee-3-veuve-noire.svg',           // Veuve noire
+    4: 'araignee-4-tisseuse-d-ombre.svg',      // Tisseuse d’ombre
+    5: 'araignee-5-arachne.svg',               // Arachné, fileuse du sort
+  },
   crapaud: {
     1: 'crapaud-1-tetard.png',
     2: 'crapaud-2-crapaud.png',

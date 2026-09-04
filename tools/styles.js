@@ -56,6 +56,29 @@ const STYLES = {
                c:'#e1aa4d', b:'#d1b687', n:'#eedab0', p:'#000000' },
   },
 
+  /* ── Deux palettes de lignée ──────────────────────────────────────────────
+     Une palette par lignée est une entorse à la règle du dessus — un style habille TOUTES les
+     silhouettes, et c'est ce qui rend la comparaison honnête. `idole` l'avait déjà prise, en
+     relevant les couleurs de source-ouroboros.png : une bête dont la couleur EST l'identité
+     ne peut pas se peindre en vert de crapaud. Une veuve noire verte n'est pas une veuve.
+
+     Elles ne se comparent donc pas aux quatre autres, elles se lisent avec leur lignée. */
+  behemoth: {
+    nom: 'Béhémoth',
+    dit: 'Ardoise profonde et un seul accent d’or. Le registre idole, pour la lignée du Béhémoth.',
+    taille: 32, contour: 'plein',
+    palette: { o:'#0d1016', v:'#26323f', V:'#3a4d5f', c:'#556c81', b:'#8296a8',
+               n:'#efe3c6', p:'#0d1016', r:'#c9a227', t:'#7d6c48' },
+  },
+
+  araignee: {
+    nom: 'Araignée',
+    dit: 'Noir bleuté, un rouge pour le sablier, un or pour les fils d’Arachné.',
+    taille: 32, contour: 'plein',
+    palette: { o:'#07070b', v:'#15151f', V:'#242435', c:'#39394f', b:'#57577a',
+               n:'#f4efe4', p:'#07070b', r:'#c0392b', t:'#d9b44a' },
+  },
+
   // ── Deux couleurs, gros pixels ───────────────────────────────────────────
   retro: {
     nom: 'Rétro 16',
