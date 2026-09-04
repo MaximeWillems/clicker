@@ -1084,12 +1084,23 @@ tableau d'affichage où gagne celui qui a la plus grosse mythique, et la montée
 rien. Avec elle, la tour est une partie neuve à chaque fois — ce que la ferme n'est plus après
 le premier cycle.
 
-**Mais alors, à quoi sert de CHOISIR son combattant ?** C'est la question que la règle
-soulève, et elle a une réponse propre : la bête n'apporte pas de la PUISSANCE, elle apporte une
-IDENTITÉ. Sa lignée, son tempérament, son motif, son chromatisme — tout ce que le jeu fabrique
-déjà et qui ne se réduit pas à un nombre. On n'emmène pas sa plus forte, on emmène celle dont
-la nature va bien avec la façon dont on veut monter. C'est la seule lecture qui rend le choix
-intéressant sans rouvrir la porte à la ferme.
+**LA LIGNE N'EST PAS ENTRE LA BÊTE ET LA FERME, ELLE EST ENTRE CE QU'ON EST ET CE QU'ON A
+ACCUMULÉ.** La rareté de la bête et ses statistiques comptent dans ses dégâts. En revanche
+**aucune amélioration de la ferme n'entre dans la tour** : ni la force du clic, ni les
+auto-clics, ni les automates. C'est la formulation juste, et elle est meilleure que « la ferme
+ne donne rien » : une bête est ce qu'on a ÉLEVÉ, une boutique est ce qu'on a EMPILÉ. La
+première mérite d'être emmenée, la seconde non — sinon la tour se gagne au portefeuille.
+
+**LES STATISTIQUES SONT « À INVENTER », MAIS LA MOITIÉ EXISTE DÉJÀ**, et c'est une trouvaille :
+deux motifs de carte parlent DÉJÀ en termes de combat. Le **martelé** augmente ce que vaut un
+clic — c'est la frappe. L'**ocellé** clique tout seul — c'est la cadence. Les six tempéraments
+(docile, nerveux, placide, glouton, farouche, rêveur) portent déjà `grow` et `fat` ; il leur
+manque un troisième champ, pas une table neuve. Le chantier « tempéraments à second effet »,
+déjà au plan, devient donc **le socle des statistiques de combat** au lieu d'une idée isolée.
+
+Reste à trancher ce que la rareté vaut : le multiplicateur de valeur va de ×1 à ×15 000, ce qui
+est un écart impossible à porter tel quel dans un combat. Il faudra une échelle À PART — le
+rang (0 à 4), pas le multiplicateur.
 
 **LES BOOSTS SONT DES FAVEURS À L'ENVERS, et il ne faut surtout pas leur donner les mêmes
 nombres.** La forme existe déjà — un tirage, on en prend un, ça recommence : l'écran des
@@ -1105,17 +1116,25 @@ compare enfin à « chaque étage prend cinq secondes de moins ». Reste à tran
 pour toute la montée, ou un par étage. Le premier fait une course, le second fait une pression
 constante.
 
-**LE VRAI DANGER EST AILLEURS : L'ASCENSION AURAIT UN TROISIÈME ÉVIER.** Les jetons en ont déjà
-deux — le prix doré des cartes et la constellation — et l'arbitrage entre les deux est
-exactement ce que la `4.0.0` cherchait à créer. Un troisième les dilue tous les deux. Deux
-sorties, à trancher avant d'écrire une ligne :
+**LES BOOSTS D'ASCENSION SONT UNE BRANCHE DE PLUS DANS LA CONSTELLATION**, et cela règle d'un
+coup le danger que j'avais soulevé : ce n'est pas un TROISIÈME évier pour les jetons, c'est un
+septième axe du second. Rien à recalculer, l'arbitrage reste entre les cartes et l'arbre — la
+tour entre simplement en concurrence avec les six autres directions, ce qui est exactement le
+genre de décision que l'arbre est fait pour porter.
 
-- **Une monnaie à elle**, gagnée dans la tour et dépensée dans la tour. La ferme et la tour ne
-  se touchent alors jamais, ce qui est cohérent avec « la ferme ne donne rien » — mais alors
-  l'ascension ne donne rien non plus, et la demande initiale tombe.
-- **Un troisième évier assumé**, et le budget de jetons se recalcule pour trois. Le compte
-  existe déjà dans la section du dimensionnement : deux à quatre jetons par ascension
-  atteignent la constellation. Il n'y a pas la place pour un troisième sans augmenter le débit.
+Deux conséquences concrètes, à ne pas découvrir en codant :
+
+- **La géométrie de l'écran change.** Six axes tiennent à 60° l'un de l'autre ; sept demandent
+  51,4°, donc un recalcul des angles dans `AXES` et un semis d'étoiles qui reste lisible entre
+  des branches plus serrées.
+- **Le budget de l'arbre monte d'un sixième.** Vingt-cinq nœuds coûtent 358 jetons pour un
+  débit de deux à quatre par ascension ; quatre nœuds de plus ne cassent rien, mais la section
+  du dimensionnement doit être refaite avec le nouveau total.
+
+**ET LA BÊTE PEUT RESSORTIR DE LA TOUR AVEC DES BOOSTS**, en cas de bonne performance — à
+imaginer. C'est le seul chemin de retour vers la ferme, et il est bien orienté : ce n'est pas
+la ferme qui alimente la tour, c'est la tour qui récompense la bête. Une carte gagnée à l'étage
+trente vaut alors quelque chose qu'aucun élevage ne donne.
 
 **CE QU'EST « COMBATTRE » ICI, ET IL FAUT LE DIRE TÔT** : le jeu n'a aucun système de combat et
 n'a pas besoin d'en avoir un. Un étage peut être un SEUIL — un nombre à dépasser dans le temps
