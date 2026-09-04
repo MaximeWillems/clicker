@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.10.1';
+const VERSION = 'beta 4.11.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2237,7 +2237,8 @@ function freshState() {
        réglage unique obligeait à trancher pour tout le monde. 0 = dès la maturité. */
     sellRank: parRarete(0),
     tri: 'arrivee',     // l'ordre de la bande — voir TRIS
-    triOeuf: 'rare',    // l'ordre des œufs, boutique ET file — voir TRIS_OEUF
+    triOeuf: 'arrivee', // l'ordre de la file des œufs — voir TRIS_OEUF
+    file: [],           // les sortes en réserve, dans l'ordre où elles sont arrivées
     /* Le mode histoire. `tuto` l'allume, `vu` retient ce qui a déjà été dit ET ce qui a déjà
        été dévoilé — les deux se marquent une fois pour toutes, et rien ne revient en arrière.
        Ils traversent l'ascension : on ne réapprend pas le jeu au deuxième cycle. */
@@ -2941,28 +2942,48 @@ function fullName(c) {
 const eggStock  = k => (state.eggs && state.eggs[k]) || 0;
 const totalEggs = () => EGG_KINDS.reduce((n, e) => n + eggStock(e.key), 0);
 // la plus rare d'abord : un œuf cher acheté exprès ne doit pas dormir en réserve
-/* ── L'ORDRE DES ŒUFS, ET IL N'Y EN A QU'UN ────────────────────────────────────
-   Le même réglage décide de DEUX choses qui n'en font qu'une : l'ordre des œufs dans la
-   boutique, et lequel part le premier quand un incubateur se libère. Les séparer aurait donné
-   deux vérités — on lit une liste, la file en suit une autre, et le joueur ne comprend jamais
-   pourquoi c'est le commun qui est parti.
+/* ── L'ORDRE DE LA FILE DES ŒUFS ───────────────────────────────────────────────
+   Les mêmes deux ordres que l'enclos, et pas d'autres : par ARRIVÉE, ou par RARETÉ. C'est le
+   même geste sur la même page, il ne doit pas avoir deux vocabulaires.
 
    « La plus rare d'abord » était écrit en dur, avec une bonne raison : un œuf cher acheté
-   exprès ne doit pas attendre derrière du commun. Mais c'est UNE façon de jouer, pas la
-   seule — on peut vouloir brûler son stock commun tant qu'on regarde, et garder les rares
-   pour un moment où l'on sera là. C'est exactement le débat que le tri de l'enclos a déjà
-   tranché en le rendant réglable. */
-const TRIS_OEUF = {
-  rare:   (a, b) => RARITY[b.rarity].rank - RARITY[a.rarity].rank,
-  commun: (a, b) => RARITY[a.rarity].rank - RARITY[b.rarity].rank,
-  stock:  (a, b) => eggStock(b.key) - eggStock(a.key)
-                 || RARITY[b.rarity].rank - RARITY[a.rarity].rank,
+   exprès ne doit pas attendre derrière du commun. Mais c'est UNE façon de jouer — on peut
+   vouloir vider sa réserve dans l'ordre où elle s'est remplie, et c'est exactement le débat
+   que le tri de l'enclos a déjà tranché en le rendant réglable.
+
+   L'ARRIVÉE A DEMANDÉ UNE FILE, parce que la réserve ne gardait que des COMPTES : trois
+   communs et deux rares, sans savoir lesquels sont arrivés en premier. `state.file` retient
+   donc les sortes dans l'ordre où elles entrent. Elle se répare toute seule si elle diverge
+   des comptes — une sauvegarde d'avant n'en a pas, et un bogue ne doit pas bloquer la
+   réserve. */
+const TRIS_OEUF = { arrivee: null, rarete: true };
+
+/* LA FILE SE RECONSTRUIT PLUTÔT QUE DE SE PLAINDRE. On ne peut pas retrouver l'ordre d'une
+   réserve qu'on n'a jamais enregistré : on repart des comptes, du plus commun au plus rare,
+   ce qui est l'ordre dans lequel on les a très probablement achetés. */
+function fileOeufs() {
+  const f = (state.file || []).filter(k => EN_VENTE[k]);
+  const compte = {}, voulu = {};
+  for (const k of f) compte[k] = (compte[k] || 0) + 1;
+  for (const e of OEUFS_VENDUS) voulu[e.key] = eggStock(e.key);
+  const juste = OEUFS_VENDUS.every(e => (compte[e.key] || 0) === voulu[e.key]);
+  if (juste) return (state.file = f);
+  const neuve = [];
+  for (const e of OEUFS_VENDUS) for (let i = 0; i < voulu[e.key]; i++) neuve.push(e.key);
+  return (state.file = neuve);
+}
+const poserFile = kind => { fileOeufs().push(kind); };
+const retirerFile = kind => {
+  const f = fileOeufs(), i = f.indexOf(kind);
+  if (i >= 0) f.splice(i, 1);
 };
-const oeufsTries = () => {
-  const f = TRIS_OEUF[state.triOeuf] || TRIS_OEUF.rare;
-  return OEUFS_VENDUS.slice().sort(f);
+
+/* CE QUI PART LE PREMIER. Par rareté : la plus rare en réserve. Par arrivée : la tête de file,
+   quelle que soit sa sorte. */
+const bestStocked = () => {
+  if (state.triOeuf === 'arrivee') return fileOeufs()[0];
+  return (OEUFS_VENDUS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
 };
-const bestStocked = () => (oeufsTries().find(e => eggStock(e.key)) || {}).key;
 // Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
 // l'âge légende pour le prix d'une commune, et toute la progression se court-circuitait.
 // L'intendant s'applique par-dessus, en remise qui approche la moitié sans jamais l'atteindre :
@@ -3719,6 +3740,7 @@ function placeEgg(i, kind) {
   kind = kind || bestStocked();
   if (state.incub[i] || !kind || !eggStock(kind)) return;
   state.eggs[kind]--;
+  retirerFile(kind);
   state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
   // On ne quitte jamais une bête vivante pour un œuf : le joueur veut voir son animal.
   // Si le joueur regardait justement cet incubateur, il y reste — sa sélection n'a pas bougé.
@@ -3843,6 +3865,11 @@ function buyEgg(kind) {
   // le plafond de réserve vaut pour l'achat comme pour la ponte
   if (eggStock(kind) >= PLAFOND_OEUFS) return;
   state.coins -= prix;
+  /* ON POUSSE DANS LA FILE AVANT DE COMPTER, et l'ordre n'est pas anodin : `poserFile` passe
+     par `fileOeufs`, qui RÉCONCILIE la file avec les comptes. Compter d'abord lui faisait voir
+     le nouvel œuf comme un manquant, elle le rajoutait, puis on le poussait une seconde fois.
+     Deux entrées pour un œuf, et la file dérivait à chaque achat. */
+  poserFile(kind);
   state.eggs[kind] = eggStock(kind) + 1;
   const free = state.incub.indexOf(null);
   if (free !== -1) placeEgg(free, kind); else { blip(300, 0.04, 'sine', 0.03); refresh(); }
@@ -4042,6 +4069,7 @@ function runAutomations(dt) {
     if (state.incub[i]) continue;
     const kind = bestStocked();
     state.eggs[kind]--;
+  retirerFile(kind);
     state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
   }
 
@@ -6936,6 +6964,7 @@ const sorteDe = ligne => {
 function pondre(ligne) {
   const sorte = sorteDe(ligne);
   if (eggStock(sorte) >= PLAFOND_OEUFS) return false;
+  poserFile(sorte);
   state.eggs[sorte] = eggStock(sorte) + 1;
   state.pension.dus = state.pension.dus || {};
   (state.pension.dus[sorte] = state.pension.dus[sorte] || []).push(ligne);
@@ -8331,7 +8360,7 @@ function bindTools() {
   $('tri-oeuf').addEventListener('click', e => {
     const b = e.target.closest('.tri-opt');
     if (!b || b.dataset.tri === state.triOeuf) return;
-    state.triOeuf = b.dataset.tri in TRIS_OEUF ? b.dataset.tri : 'rare';
+    state.triOeuf = b.dataset.tri in TRIS_OEUF ? b.dataset.tri : 'arrivee';
     syncTriOeuf();
     refresh();
     save();
@@ -8464,7 +8493,7 @@ function start() {
   $('btn-tuto').setAttribute('aria-pressed', String(state.tuto));
   syncReglages();
   if (!(state.tri in TRIS)) state.tri = 'arrivee';
-  if (!(state.triOeuf in TRIS_OEUF)) state.triOeuf = 'rare';
+  if (!(state.triOeuf in TRIS_OEUF)) state.triOeuf = 'arrivee';
   if (ACHATS.indexOf(state.achat) === -1) state.achat = 1;
   syncTri();
   syncTriOeuf();

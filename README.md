@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.10.0** · **4.10.1** | un seul tri pour les œufs, sur la bande de couvaison : il gouverne l’ordre de la file |
+| **beta 4.11.0** | le tri des œufs prend les options de l’enclos — arrivée ou rareté — et la réserve garde sa file |
+| beta 4.10.0 · 4.10.1 | un tri pour la file des œufs, sur la bande de couvaison |
 | beta 4.9.1 | la rente triple : une bête rapporte sa valeur en vingt minutes, et les deux ères s’égalisent |
 | beta 4.9.0 | une bête vaut plus que son œuf : l’échelle des raretés refaite, rentable dès l’âge adulte |
 | beta 4.8.1 · 4.8.2 | le mur passe à la première évolution, et le péage remonte ensuite avec la valeur |

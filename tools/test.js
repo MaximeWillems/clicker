@@ -172,6 +172,11 @@ scenario('réserve d’œufs — elle se vide toute seule, et gratuitement', () 
   s.tuto = false; s.coins = 1e6; s.incubators = 4; s.pens = 8;
   s.incub = [null, null, null, null];
   s.eggs = { commun: 10, rare: 2, epique: 0, mythique: 0 };
+  s.file = [];
+  /* L'ORDRE DE LA FILE EST DÉSORMAIS RÉGLABLE, et par défaut c'est l'ARRIVÉE — comme
+     l'enclos. Ce scénario tenait le comportement d'avant, qui était écrit en dur : il tient
+     maintenant la route « rareté », qui est celle qu'il décrivait. */
+  s.triOeuf = 'rarete';
   const avant = s.coins;
   jeu.runAutomations(0.1);
   eq('les quatre incubateurs se remplissent', s.incub.filter(Boolean).length, 4);
@@ -2918,44 +2923,50 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
 });
 
-scenario('œufs — un seul tri gouverne la file, et la boutique n’y touche pas', () => {
+scenario('œufs — la file se trie comme l’enclos : arrivée, ou rareté', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
-  s.eggs = { commun: 5, rare: 2, epique: 1 };
+  s.coins = 1e15;
+  s.incub = [null, null];
 
-  /* LE MÊME RÉGLAGE DÉCIDE DE DEUX CHOSES QUI N'EN FONT QU'UNE : l'ordre des œufs dans la
-     boutique, et lequel part le premier quand un incubateur se libère. Les séparer aurait
-     donné deux vérités — on lit une liste, la file en suit une autre. */
-  eq('par défaut, le plus rare part le premier', jeu.bestStocked(), 'epique');
+  /* LES MÊMES DEUX ORDRES QUE L'ENCLOS, ET PAS D'AUTRES. C'est le même geste sur la même page,
+     il ne doit pas avoir deux vocabulaires. */
+  eq('deux ordres, comme l’enclos', Object.keys(jeu.TRIS_OEUF).sort().join(), 'arrivee,rarete');
+  eq('et les mêmes noms', ['arrivee', 'rarete'].every(k => k in jeu.TRIS), true);
 
-  s.triOeuf = 'commun';
-  eq('à l’envers, c’est le commun', jeu.bestStocked(), 'commun');
+  jeu.buyEgg('rare'); jeu.buyEgg('commun'); jeu.buyEgg('commun'); jeu.buyEgg('epique');
+  // les deux premiers sont partis en couvaison, les deux autres attendent
+  eq('la réserve retient ce qui reste', s.file.join(), 'commun,epique');
 
-  s.triOeuf = 'stock';
-  eq('par le stock, c’est la plus grosse pile', jeu.bestStocked(), 'commun');
-  s.eggs = { commun: 1, rare: 7 };
-  eq('et elle suit ce qu’on a', jeu.bestStocked(), 'rare');
+  s.triOeuf = 'arrivee';
+  eq('par arrivée, la tête de file part', jeu.bestStocked(), 'commun');
+  s.triOeuf = 'rarete';
+  eq('par rareté, le plus rare part', jeu.bestStocked(), 'epique');
 
-  /* IL NE TOUCHE PAS À LA BOUTIQUE, et c'est délibéré : la boutique est un ESCALIER DE PRIX,
-     c'est ce qui lui permet de désigner « la marche suivante ». La réordonner selon une
-     préférence de file aurait cassé ce repère pour régler autre chose. */
+  /* L'ARRIVÉE A DEMANDÉ UNE FILE : la réserve ne gardait que des COMPTES — trois communs et
+     deux rares, sans savoir lesquels sont arrivés en premier. */
+  s.triOeuf = 'arrivee';
+  s.incub[0] = null;
+  jeu.placeEgg(0);
+  eq('elle se vide par la tête', s.file.join(), 'epique');
+  eq('et c’est bien le commun qui est parti', s.incub[0].kind, 'commun');
+
+  /* ELLE SE RÉPARE SEULE SI ELLE DIVERGE DES COMPTES : une sauvegarde d'avant n'en a pas, et
+     un bogue ne doit jamais bloquer la réserve. */
+  s.file = [];
+  s.eggs = { commun: 2, rare: 1, epique: 0, mythique: 0, merveille: 0 };
+  eq('reconstruite du plus commun au plus rare', jeu.fileOeufs().join(), 'commun,commun,rare');
+  ok('et la file repart', !!jeu.bestStocked());
+
+  /* IL NE TOUCHE PAS À LA BOUTIQUE : elle est un ESCALIER DE PRIX, et c'est ce qui lui permet
+     de désigner « la marche suivante ». */
   const cases = () => noeuds.get('shop').children
     .map(li => li.children[0])
     .filter(b => (b.className || '').indexOf('egg-') >= 0)
     .map(b => (b.className.match(/egg-([a-z]+)/) || [])[1]);
   const avant = cases().join(' ');
-  s.triOeuf = 'rare';   jeu.syncTriOeuf();
+  s.triOeuf = 'rarete'; jeu.syncTriOeuf();
   eq('la boutique ne bouge pas', cases().join(' '), avant);
-  s.triOeuf = 'commun'; jeu.syncTriOeuf();
-  eq('ni dans l’autre sens', cases().join(' '), avant);
-
-  /* LES TROIS BOUTONS EXISTENT DANS LA PAGE. On ne peut pas vérifier ici lequel est enfoncé :
-     LE BANC N'IMBRIQUE PAS LE BALISAGE STATIQUE — `$('tri-oeuf').children` y est vide, comme
-     pour le tri de l'enclos depuis toujours. La limite est réelle et vaut pour les deux
-     groupes ; elle est notée plutôt que contournée par du code moins clair. */
-  const opts = [...document.querySelectorAll('.tri-opt')]
-    .filter(b => b.dataset.tri in jeu.TRIS_OEUF);
-  eq('trois ordres proposés', opts.length, 3);
 
   /* LE RÉGLAGE TRAVERSE L'ASCENSION, comme celui de l'enclos : c'est une préférence, pas une
      ressource. */
@@ -2963,7 +2974,7 @@ scenario('œufs — un seul tri gouverne la file, et la boutique n’y touche pa
   s.pen = [bete(jeu, 'crapaud', 3, 3000)];
   jeu.ascChoix = [-s.pen[0].id];
   jeu.ascensionner();
-  eq('il survit au saut', jeu.state.triOeuf, 'commun');
+  eq('il survit au saut', jeu.state.triOeuf, 'rarete');
 });
 
 scenario('primes — un négoce n’arrive jamais avant sa rareté', () => {
