@@ -35,6 +35,16 @@ numéro se décide au moment du commit, là où la règle sait quoi en faire.
 Le détail version par version est dans le [README](README.md#ce-qui-est-sorti). Ce tableau
 regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 
+**IL S'ÉTAIT ARRÊTÉ À LA `beta 1.10`**, c'est-à-dire trente-cinq versions plus tôt, et ce
+n'était pas un oubli isolé : chaque version se notait au README, où la liste est plate et
+chronologique, et personne ne remontait ensuite au chantier auquel elle appartenait. Une liste
+plate dit ce qui a été fait ; elle ne dit pas ce qu'on a CHERCHÉ à faire, ni si on l'a obtenu.
+C'est la seule chose que ce tableau-ci apporte, et c'est pour ça qu'il doit se tenir à jour :
+sa dernière colonne est un jugement, et un jugement qu'on porte deux ans après ne vaut rien.
+
+La règle est donc la même que pour le numéro de version — **on regroupe au moment du commit**,
+dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
+
 | Chantier | Versions | La question qu'il posait | Réponse |
 |---|---|---|---|
 | **Les cinq âges** | 1.0 → 1.4 | est-ce que la progression cesse de reculer ? | oui — plus rien ne redescend, par construction |
@@ -71,6 +81,17 @@ regroupe par chantier, parce que c'est ainsi qu'on s'en souvient.
 | **Le rang secret** | beta 1.0.1 | la cinquième rareté se découvre-t-elle, ou s'annonce-t-elle ? | elle se découvre : cinq fuites fermées, et la règle est portée par la table |
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
 | **L'encyclopédie** | beta 1.9, 1.10 | la collection peut-elle dire autre chose que « combien m'en manque-t-il » ? | oui — une fiche par lignée, dans une vue à elle |
+| **Les merveilles jouables** | beta 1.1 → 1.5 | une merveille peut-elle se viser plutôt que se rencontrer ? | oui — la chimère devient un joker, la tarasque n'a pas de recette, et `tools/pixel.js` sert les planches |
+| **Le rabot de l'interface** | beta 1.11, 2.3, 2.4 | un réglage se prend-il d'un coup d'œil ? | oui — seize menus deviennent des segments, et deux passages de rabot sur le texte |
+| **Le chantier graphique** | beta 1.12 → 1.14, 2.4.1 | une carte, un œuf, une bête ressemblent-ils à quelque chose ? | oui — cadre et illustration, huit fonds animés, cinq coquilles, et le Kitsune ouvre les merveilleuses |
+| **L'atelier de forge** | beta 2.0, 2.1 | trois cartes ratées peuvent-elles en faire une bonne ? | oui — et l'atelier se désigne carte par carte |
+| **Les cases fixes** | beta 2.2, 2.5, 3.1.1 | peut-on viser une vignette pendant que le marchand vend ? | oui — l'enclos devient des cases, et le tri revient une seconde après |
+| **Le mur de l'ascension** | beta 3.0, 3.1.0 | l'ascension peut-elle se rejouer ? | oui — les jetons se regagnent, et une bête menée au bout paie encore au clic |
+| **La constellation** | beta 4.0 → 4.7 | le jeton peut-il être autre chose qu'une carte ? | oui — un arbre à six directions et vingt-cinq nœuds, une reprise à l'unité près, et les faveurs quand la liste se termine |
+| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune |
+| **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi |
+| **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
+| **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
 
 ### Ce qui vient ensuite
 
@@ -85,7 +106,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **La rente** — elle est perpétuelle, gratuite et trop forte | rien | garder une bête doit-il rester le meilleur coup à tous les coups ? |
+| **La rente** — sa NATURE, non son débit : elle est perpétuelle et gratuite, et trois réglages de débit n'y ont rien changé | rien | garder une bête doit-il rester le meilleur coup à tous les coups ? |
 | **L'absence** — l'équilibrage du hors-ligne, plus doux | la rente | revenir doit-il valoir plus qu'être resté ? |
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
 | **Les dix-huit dessins** | rien | — |
@@ -98,7 +119,6 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
 | **Yggdrasil** — l'arbre-monde, et le sujet le moins cher à dessiner | sa recette | une merveille peut-elle ne pas être un animal ? |
 | **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
-| **L'équilibrage des rares** — l'œuf rare vers 30 M, et un péage à l'évolution | une partie menée jusqu'à l'ère rare | la deuxième ère se sent-elle comme une ère ? |
 | **Les chromatismes** — plusieurs, là où il n'y a qu'un prodige | rien | une couleur rare peut-elle se chasser ? |
 | **Les tempéraments à second effet** — précoce, difficile, gourmand, précieux | rien | un tempérament peut-il se choisir plutôt que se subir ? |
 | **Cliquer pour aider la pension** | rien | la présence peut-elle servir là où elle ne sert à rien ? |
@@ -2114,8 +2134,9 @@ Quatre écarts avec le plan d'origine, tous volontaires :
   au lieu d'une.
 - **Rien ne se nourrit contre des pièces.** Une bête grandit au clic et au temps.
 - **L'album et l'ascension sont arrivés avant la pension**, alors qu'ils étaient prévus après.
-  La pension a suivi en 3.0.0, mais sans les merveilleuses : elle sert à viser une lignée, pas
-  encore à débloquer une rareté.
+  La pension a suivi en 3.0.0 ; les merveilleuses sont arrivées juste après — Kitsune et Sun
+  Wukong en `alpha 3.1.0`, la Tarasque en `beta 1.4.0` — si bien qu'elle fait maintenant les
+  deux : viser une lignée, et débloquer la seule rareté qui ne s'achète pas.
 - **Un mode histoire est apparu**, qui n'était nulle part au plan. Le jeu ouvrait sur quatorze
   boutons dont treize inachetables ; il ouvre maintenant sur un œuf et quelqu'un qui parle.
 
