@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.11.3';
+const VERSION = 'beta 4.11.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -244,6 +244,14 @@ const EGG_BY_KEY = Object.fromEntries(EGG_KINDS.map(e => [e.key, e]));
 // les quatre qu'on peut acheter : la boutique, l'acheteur et les dévoilements ne voient qu'eux
 const OEUFS_VENDUS = EGG_KINDS.filter(e => e.price);
 const EN_VENTE = Object.fromEntries(OEUFS_VENDUS.map(e => [e.key, e]));
+/* LA RÉSERVE, ELLE, LES CONNAÎT TOUS. `OEUFS_VENDUS` répond à « qu'est-ce qui s'achète » et
+   n'a rien à dire sur « qu'est-ce qui couve ensuite » : la merveille n'a pas de prix, donc
+   elle en sortait, donc la file et la priorité ne la voyaient pas. Le rang le plus haut du
+   jeu passait derrière du commun, et une réserve qui n'en contenait que des merveilles
+   désignait un œuf INEXISTANT. Du plus rare au plus commun, et par le rang plutôt que par
+   l'ordre de déclaration : un rang ajouté se range tout seul. */
+const OEUFS_HAUT_EN_BAS = EGG_KINDS.slice()
+  .sort((a, b) => RARITY[b.rarity].rank - RARITY[a.rarity].rank);
 
 /* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
@@ -2962,14 +2970,14 @@ const TRIS_OEUF = { arrivee: null, rarete: true };
    réserve qu'on n'a jamais enregistré : on repart des comptes, du plus commun au plus rare,
    ce qui est l'ordre dans lequel on les a très probablement achetés. */
 function fileOeufs() {
-  const f = (state.file || []).filter(k => EN_VENTE[k]);
+  const f = (state.file || []).filter(k => EGG_BY_KEY[k]);
   const compte = {}, voulu = {};
   for (const k of f) compte[k] = (compte[k] || 0) + 1;
-  for (const e of OEUFS_VENDUS) voulu[e.key] = eggStock(e.key);
-  const juste = OEUFS_VENDUS.every(e => (compte[e.key] || 0) === voulu[e.key]);
+  for (const e of EGG_KINDS) voulu[e.key] = eggStock(e.key);
+  const juste = EGG_KINDS.every(e => (compte[e.key] || 0) === voulu[e.key]);
   if (juste) return (state.file = f);
   const neuve = [];
-  for (const e of OEUFS_VENDUS) for (let i = 0; i < voulu[e.key]; i++) neuve.push(e.key);
+  for (const e of EGG_KINDS) for (let i = 0; i < voulu[e.key]; i++) neuve.push(e.key);
   return (state.file = neuve);
 }
 const poserFile = kind => { fileOeufs().push(kind); };
@@ -2987,7 +2995,7 @@ const poserFile = kind => { fileOeufs().push(kind); };
 function reserveEnOrdre() {
   if (state.triOeuf === 'arrivee') return fileOeufs().slice();
   const out = [];
-  for (const e of OEUFS_VENDUS.slice().reverse()) {
+  for (const e of OEUFS_HAUT_EN_BAS) {
     for (let i = 0; i < eggStock(e.key); i++) out.push(e.key);
   }
   return out;
@@ -2999,7 +3007,7 @@ function reserveEnOrdre() {
 function reserveDite() {
   const file = reserveEnOrdre();
   if (!file.length) return '';
-  const nom = k => (EGG_BY_KEY[k] || {}).name ? EGG_BY_KEY[k].name.replace('Œuf ', '') : k;
+  const nom = k => (EGG_BY_KEY[k] || {}).name ? EGG_BY_KEY[k].name.replace(/^Œuf (de )?/, '') : k;
   const groupes = [];
   for (const k of file) {
     const d = groupes[groupes.length - 1];
@@ -3018,7 +3026,7 @@ const retirerFile = kind => {
    quelle que soit sa sorte. */
 const bestStocked = () => {
   if (state.triOeuf === 'arrivee') return fileOeufs()[0];
-  return (OEUFS_VENDUS.slice().reverse().find(e => eggStock(e.key)) || {}).key;
+  return (OEUFS_HAUT_EN_BAS.find(e => eggStock(e.key)) || {}).key;
 };
 // Le coût d'évolution suit la rareté : sans ça, une rare obtenue par chance se montait au
 // l'âge légende pour le prix d'une commune, et toute la progression se court-circuitait.
@@ -4137,6 +4145,11 @@ function runAutomations(dt) {
   for (let i = 0; i < state.incub.length && totalEggs(); i++) {
     if (state.incub[i]) continue;
     const kind = bestStocked();
+    /* MÊME GARDE QUE `placeEgg`, et pour la même raison : cette boucle en recopie le corps
+       sans passer par elle. Si le compte et la file divergeaient, `kind` valait `undefined`,
+       `state.eggs[undefined]--` inscrivait un NaN dans la réserve, et chaque incubateur libre
+       se remplissait d'un œuf fantôme qui éclosait en commune. */
+    if (!kind) break;
     retirerFile(kind);
     state.eggs[kind]--;
     state.incub[i] = Object.assign({ p: 0, kind }, tireLigne(kind));
