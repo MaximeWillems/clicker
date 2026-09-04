@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.9.0';
+const VERSION = 'beta 4.9.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -312,7 +312,18 @@ const AGE_SCALE  = [1, 1.06, 1.12, 1.18, 1.25];   // le bond visible à chaque �
    le seul à recevoir un bonus par-dessus : c'est LA bête qu'un joueur garde. */
 const AGE_RENTE     = 3;      // âge minimal : adulte. En deçà, rien du tout.
 const NIV_RENTE     = AGES[AGE_RENTE - 2].niv + 1;   // le niveau 36, qu'on annonce d'avance
-const RENTE_H       = 3600;   // une bête rapporte sa propre valeur en une heure
+/* UNE BÊTE RAPPORTE SA PROPRE VALEUR EN VINGT MINUTES, et c'était une heure.
+
+   Le défaut se voyait au sommet : une commune légende vaut 1,5 million, on manie des millions
+   pour l'élever — six cent mille de péages rien que pour sa dernière évolution — et elle
+   rendait QUATRE CENT SEIZE PIÈCES PAR SECONDE. Huit d'entre elles, une ferme entière menée
+   au bout, faisaient trois mille pièces la seconde. L'échelle de ce qu'on manipule et celle
+   de ce qu'on gagne n'étaient pas la même, et c'est ce décalage qui se sent, pas le nombre.
+
+   Vingt minutes plutôt qu'une heure : la garde reste un pari long — il faut toujours laisser
+   la bête en vie trois fois plus longtemps que le temps de la vendre — mais le débit cesse
+   d'être ridicule devant ce qu'on paie. */
+const RENTE_H       = 1200;
 const RENTE_PRODIGE = 2;      // un chromatique double la sienne
 
 /* ── Variantes ────────────────────────────────────────────────────────────────
