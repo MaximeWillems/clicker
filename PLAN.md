@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.6.2 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.7.0 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -524,10 +524,12 @@ chaque système nouveau soit posé à côté des autres.
 - **Ce qu'on voit avant de pouvoir l'acheter.** Le jeu a une doctrine là-dessus : la boutique
   montre « la marche suivante », les primes n'en montrent que cinq, les merveilles ne se nomment
   pas avant d'être vues. Un arbre qui montre tout d'un coup contredirait tout le reste.
-- **L'absence de reprise.** Retenue pour l'instant, et il faut savoir ce qu'elle coûte : dans un
-  jeu à une seule sauvegarde, un nœud pris par erreur se subit pour toujours. Le jour où ça se
-  sentira, la reprise à chaque ascension est la sortie la moins chère — elle ne rend pas les
-  choix gratuits, elle les rend RÉVISABLES.
+- ~~**L'absence de reprise.**~~ **Livrée en `beta 4.7.0`**, et pour la raison écrite ici : dans
+  un jeu à une seule sauvegarde, un nœud pris par erreur se subissait pour toujours. Elle ne
+  rend pas les choix gratuits, elle les rend RÉVISABLES. **Ce qui reste ouvert, c'est sa
+  limite** : elle est aujourd'hui gratuite et sans compteur, ce qui convient pour essayer le
+  jeu mais retire tout poids à l'arbre si ça reste. Une reprise par ascension est la borne la
+  plus naturelle — à poser le jour où l'équilibrage viendra.
 
 #### Ce qu'il faut mesurer avant d'écrire une ligne
 
