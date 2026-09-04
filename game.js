@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.12.3';
+const VERSION = 'beta 4.13.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3344,11 +3344,79 @@ const FRENESIE_X   = 2;             // le clic compte double, et c'est tout
 
 const enFrenesie = () => (state.frenesie || 0) > 0;
 
+/* ── LES DEUX BOUTS DU MÊME CADRAN ─────────────────────────────────────────────
+   S'ARRÊTER ET S'ACHARNER DOIVENT TOUS DEUX VALOIR QUELQUE CHOSE, et le jeu ne payait ni
+   l'un ni l'autre : cliquer pesait un pour cent d'une heure de ferme, et poser le doigt ne
+   changeait rien du tout. Deux états, donc, et ils sont EXCLUSIFS PAR CONSTRUCTION — on ne
+   peut pas cliquer et ne pas cliquer en même temps, si bien qu'ils n'ont pas à s'équilibrer
+   l'un contre l'autre.
+
+       COMBO   chaque clic le monte, quinze secondes sans clic le perdent
+               il multiplie la force du clic, plafonnée
+       IDLE    une minute sans un seul clic l'allume, le premier clic l'éteint
+               il multiplie tout ce qui tourne : couvaison, croissance, engraissement, ponte
+
+   LE GAIN DU COMBO SUIT UNE RACINE, et le motif n'est pas « rendements décroissants » — c'est
+   la LISIBILITÉ. En pente droite, cent clics mènent au plafond et les vingt premiers ne se
+   voient pas : ×1,18 sur un clic qui ne pèse déjà rien, personne ne découvre que la mécanique
+   existe. En racine, trois clics donnent déjà ×1,35 et neuf donnent ×1,60. Une mécanique
+   qu'on ne remarque pas n'existe pas. C'est aussi l'idiome de la maison — `sizeFactor` est
+   logarithmique pour la même raison.
+
+   Ce que la racine déplace, et c'est voulu : le dixième clic vaut trois fois le quatre-vingt-
+   dixième, donc le combo cesse de dire « plus tu enchaînes, mieux c'est » et dit « atteins le
+   plateau vite, puis TIENS-LE ». C'est exactement ce que la règle des quinze secondes décrit
+   déjà : un mécanisme de maintien, pas de croissance. Les deux vont ensemble.
+
+   NI L'UN NI L'AUTRE NE SE SAUVEGARDE. Un rechargement est une absence : le combo tombe, et
+   l'idle repart de zéro. Les garder aurait fait d'un aller-retour un raccourci.
+
+   LA CARTE OCELLÉE EST NEUTRE AUX DEUX. Elle clique à ta place : sans règle, elle monterait
+   le combo toute seule et empêcherait l'idle à vie — la carte deviendrait une malédiction, et
+   la mécanique une automatisation de plus. La doctrine existe déjà dans ce fichier, écrite
+   pour la bête finie et pour la plonge : CE QUI RÉCOMPENSE LA PRÉSENCE NE S'AUTOMATISE PAS.
+   Ses clics ne montent donc pas le combo, et ne cassent pas l'idle. */
+const COMBO_MAX    = 3;      // le plafond du multiplicateur
+const COMBO_PLEIN  = 100;    // les clics qui y mènent
+const COMBO_FIN    = 15;     // secondes sans clic avant de tout perdre
+const IDLE_SEUIL   = 60;     // secondes sans clic avant que la ferme se mette au calme
+const IDLE_X       = 1.5;    // ce que le calme vaut sur tout ce qui tourne
+
+let combo = 0, dernierClic = 0;
+
+const comboMult = () => 1 + (COMBO_MAX - 1) * Math.sqrt(Math.min(1, combo / COMBO_PLEIN));
+
+/* LE CLIC QUI COMPTE EST CELUI DE LA MAIN, et il ne compte que sur un SUJET — une bête ou un
+   œuf. Acheter une amélioration, régler le marchand, ouvrir un panneau : rien de tout cela ne
+   monte le combo, et rien ne casse l'idle. C'est la demande telle qu'elle a été posée, et elle
+   est juste : gérer sa ferme n'est pas s'acharner dessus. */
+function noterClic() {
+  dernierClic = Date.now();
+  if (combo < COMBO_PLEIN) combo++;
+}
+
+const enIdle = () => !rattrapage && dernierClic > 0 &&
+                     Date.now() - dernierClic >= IDLE_SEUIL * 1000;
+
+/* L'IDLE NE S'APPLIQUE PAS AU RATTRAPAGE, et c'est la distinction que ces deux états posent :
+   s'arrêter n'est pas partir. Une absence est le cas idle parfait — une minute sans clic, par
+   définition — donc sans cette garde elle aurait repris d'une main ce que la `4.12.3` venait
+   de borner de l'autre. */
+const coefIdle = () => enIdle() ? IDLE_X : 1;
+
+/* Il commence ARRÊTÉ et non plein : `dernierClic` vaut zéro tant qu'on n'a pas cliqué une
+   première fois, sinon le jeu s'ouvrirait en idle sur un joueur qui n'a encore rien fait —
+   une récompense de présence donnée avant la présence. */
+function tickCombo() {
+  if (combo && Date.now() - dernierClic >= COMBO_FIN * 1000) combo = 0;
+}
+
 /* Le doublement se pose ICI, à la source : clickGain en découle, et `remaining()` compte
    déjà en clics à partir de la même fonction — la frénésie annonce donc toute seule qu'il
    reste deux fois moins de clics à donner, sans une ligne de plus. */
 const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
                           (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1) *
+                          comboMult() *
                           (1 + bonusAlbum().clic + bonusPrimes().clic + bonusCiel().clic);
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
@@ -3367,7 +3435,9 @@ const albumVitesse = s => {
 
 // La vitesse réellement observée : celle des automates, poussée par l'album. C'est elle
 // qu'il faut afficher, sinon le panneau annonce une durée que la barre ne tient pas.
-const autoReel = s => autoRate(s) * albumVitesse(s);
+/* La vitesse RÉELLEMENT observée : les automates, poussés par l'album — et par le calme, sinon
+   le panneau annonce une durée que la barre ne tient pas dès que la ferme se met en idle. */
+const autoReel = s => autoRate(s) * albumVitesse(s) * coefIdle();
 
 /* Un clic vaut toujours le même temps réel, quoi qu'on ait automatisé. Sans ça les
    automates nerfaient le clic au moment même où on payait pour aller plus vite :
@@ -3835,7 +3905,11 @@ function tapStage() {
     const dure = hatchTime(s.slot);
     if (s.slot.p >= dure) return;
     s.slot.p = Math.min(dure, s.slot.p + power);
-    if (!mainDeCarte) state.stats.clics++;
+    /* LE COMBO SE NOTE APRÈS COUP, jamais avant : `power` est déjà pris, donc un clic ne se
+       paie pas lui-même. C'est ce que « une série de clics donne un boost » veut dire — le
+       boost vient de la série DÉJÀ faite. Et il se note exactement là où le compteur de clics
+       se note, parce que ces lignes disent déjà « la main du joueur a cliqué ». */
+    if (!mainDeCarte) { state.stats.clics++; noterClic(); }
     flash(el, 'shake');
     floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
     blip(220 + Math.random() * 60, 0.035, 'square', 0.02);
@@ -3864,6 +3938,7 @@ function tapStage() {
     state.coins += gain;
     state.stats.gagne += gain;
     state.stats.clics++;
+    noterClic();
     flash(el, 'shake');
     floatText(jitter(), pt.y - 20, '+' + fmt(gain), 'gain');
     blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
@@ -3878,7 +3953,7 @@ function tapStage() {
      qu'elle avale part alors dans l'embonpoint, et n'y sera pas perdu. */
   if (avantMur) c.over = (c.over || 0) + power;
   else c.p = Math.min(bandTo(c), c.p + power * growRate(c));
-  if (!mainDeCarte) state.stats.clics++;
+  if (!mainDeCarte) { state.stats.clics++; noterClic(); }
   flash(el, 'shake');
   floatText(jitter(), pt.y - 20, '+' + fmt(power) + ' s');
   blip(180 + Math.random() * 50, 0.035, 'square', 0.02);
@@ -4140,8 +4215,13 @@ function advance(dt) {
   const ardeur = coef('vitesse');
   const cl = bonusCiel();
   const bp = bonusPrimes();
-  const couve = force('couveuse') * (1 + b.couvee + cl.couvee + bp.couvee) * ardeur;
-  const eleve = force('eleveur') * ELEVEUR_X * (1 + b.pousse + cl.pousse + bp.pousse) * ardeur;
+  /* L'IDLE PASSE PAR LE MÊME CHEMIN QUE L'ARDEUR, et c'est voulu : il pousse ce qui TOURNE,
+     jamais ce qu'on fait à la main. Un bonus au clic ne survit pas à la partie — la ferme
+     finit aux automates, à la rente et à la pension — donc récompenser le calme par un clic
+     plus fort n'aurait rien récompensé du tout passé la première heure. */
+  const calme = coefIdle();
+  const couve = force('couveuse') * (1 + b.couvee + cl.couvee + bp.couvee) * ardeur * calme;
+  const eleve = force('eleveur') * ELEVEUR_X * (1 + b.pousse + cl.pousse + bp.pousse) * ardeur * calme;
   if (couve) {
     for (const slot of state.incub) {
       if (!slot) continue;
@@ -4166,7 +4246,7 @@ function advance(dt) {
   if (rente) { state.coins += rente * dt; state.stats.gagne += rente * dt; }
   /* La pension avance ICI et non dans la boucle : elle tourne aussi pendant une absence. Une
      couvaison est une attente, pas un geste — c'est la différence avec le bonheur. */
-  avancePension(dt);
+  avancePension(dt * calme);
   /* La frénésie s'écoule ICI et non dans tickJoie : advance tourne aussi pendant un
      rattrapage, si bien qu'une frénésie en cours au moment où l'on ferme la page a bien
      brûlé ses trente secondes quand on revient. Trente secondes de clic double ne doivent
@@ -4246,7 +4326,7 @@ function runAutomations(dt) {
   // gratuitement et sans jamais s'arrêter. Ce qu'elle coûte, c'est la place d'enclos.
   if (lvl('mangeoire')) {
     const debit = dt * FATTEN_X * force('mangeoire')
-                * (1 + bonusAlbum().gras + bonusPrimes().gras) * coef('vitesse');
+                * (1 + bonusAlbum().gras + bonusPrimes().gras) * coef('vitesse') * coefIdle();
     for (const c of state.pen) {
       if (estMur(c) && !enPension(c)) c.over = (c.over || 0) + debit * temperOf(c).fat;
     }
@@ -4407,6 +4487,7 @@ function loop() {
   if (dt <= 0) return;
   advance(dt);
   runAutomations(dt);
+  tickCombo();
   tickJoie(dt);
   tickOcelle(dt);
   verifierTrophees();
@@ -6580,6 +6661,13 @@ function ligneBoosts(sujet) {
   if (cvit > 1) bouts.push('vitesse ×' + dec(cvit, 2));
   if (alb > 1) bouts.push('album ×' + dec(alb, 2));
   if (enFrenesie()) bouts.push('frénésie ×' + FRENESIE_X);
+  /* LES DEUX ÉTATS SE LISENT ICI, sur la ligne qui dit déjà ce qui multiplie quoi. Un état
+     invisible n'existe pas : le joueur ne peut ni le viser, ni comprendre pourquoi sa ferme
+     vient de changer de vitesse. Le compte des clics accompagne le combo — sans lui, on voit
+     un nombre monter sans savoir ce qui le fait monter, ni ce qu'il reste avant le plafond. */
+  if (combo) bouts.push('combo ×' + dec(comboMult(), 2) +
+                        ' (' + combo + (combo >= COMBO_PLEIN ? ', au max' : '/' + COMBO_PLEIN) + ')');
+  if (enIdle()) bouts.push('calme ×' + dec(IDLE_X, 2) + ' — la ferme tourne mieux sans toi');
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
   return bouts.join('  ·  ');
 }

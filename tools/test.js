@@ -55,6 +55,19 @@ function bete(jeu, ligne, age, p) {
   return c;
 }
 
+/* SATURER LE COMBO AVANT DE MESURER AUTRE CHOSE. Depuis qu'un clic monte le combo, deux clics
+   consécutifs ne valent plus la même chose — c'est le but de la mécanique, et c'est un poison
+   pour tout scénario qui compare un clic à un autre. Au plafond, `comboMult` ne bouge plus :
+   les deux clics redeviennent comparables. On repose ensuite ce que les clics ont poussé. */
+function saturerCombo(jeu) {
+  const s = jeu.state, sujet = jeu.current();
+  const p = sujet && sujet.c ? sujet.c.p : 0, over = sujet && sujet.c ? sujet.c.over : 0;
+  const oeuf = s.incub[0] ? s.incub[0].p : null;
+  for (let i = 0; i < jeu.COMBO_PLEIN; i++) jeu.tapStage();
+  if (sujet && sujet.c) { sujet.c.p = p; sujet.c.over = over; }
+  if (oeuf !== null && s.incub[0]) s.incub[0].p = oeuf;
+}
+
 /* ───────────────────────────── le socle ───────────────────────────── */
 
 scenario('démarrage — chaque id demandé existe dans index.html', () => {
@@ -344,6 +357,121 @@ scenario('absence — bornée, et elle ne rend qu’un quart de ce qu’elle a d
   ok('et elle rend quand même quelque chose', nuit > 0, nuit);
 });
 
+scenario('combo — il monte en racine, plafonne, et tombe à quinze secondes', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const c = bete(jeu, 'crapaud', 1, 0);
+  jeu.select('c:' + c.id);
+  eq('rien tant qu’on n’a pas cliqué', jeu.comboMult(), 1);
+
+  /* LA RACINE PLUTÔT QUE LA PENTE DROITE, ET C'EST UNE QUESTION DE LISIBILITÉ : en pente
+     droite, neuf clics donnent ×1,18 sur un clic qui ne pèse déjà rien, et personne ne
+     découvre que la mécanique existe. En racine ils donnent ×1,60. */
+  const mult = n => { for (let i = 0; i < n; i++) jeu.tapStage(); return jeu.comboMult(); };
+  const a9 = mult(9);
+  ok('neuf clics valent déjà 1,60', Math.abs(a9 - 1.6) < 0.01, a9);
+  const a25 = mult(16);
+  ok('vingt-cinq en valent 2,00', Math.abs(a25 - 2) < 0.01, a25);
+
+  /* LE DIXIÈME CLIC VAUT TROIS FOIS LE QUATRE-VINGT-DIXIÈME : c'est ce que la racine déplace,
+     et c'est voulu. Le combo ne dit pas « plus tu enchaînes, mieux c'est », il dit « atteins
+     le plateau vite, puis tiens-le » — ce que la règle des quinze secondes décrit déjà. */
+  const pente = n => {
+    const j = neuf(); j.state.tuto = false;
+    const b = bete(j, 'crapaud', 1, 0); j.select('c:' + b.id);
+    for (let i = 0; i < n - 1; i++) j.tapStage();
+    const avant = j.comboMult(); j.tapStage();
+    return j.comboMult() - avant;
+  };
+  ok('le dixième clic vaut trois fois le quatre-vingt-dixième',
+     Math.abs(pente(10) / pente(90) - 3.1) < 0.2, (pente(10) / pente(90)).toFixed(2));
+
+  mult(200);
+  eq('il plafonne, et le compte avec lui', jeu.combo, jeu.COMBO_PLEIN);
+  eq('au plafond exact', jeu.comboMult(), jeu.COMBO_MAX);
+
+  /* QUINZE SECONDES SANS CLIC ET TOUT TOMBE — pas une décroissance, une chute. On déplace
+     l'horloge plutôt que d'attendre. */
+  const vrai = Date.now;
+  try {
+    Date.now = () => vrai() + (jeu.COMBO_FIN - 1) * 1000;
+    jeu.tickCombo();
+    eq('quatorze secondes ne suffisent pas', jeu.combo, jeu.COMBO_PLEIN);
+    Date.now = () => vrai() + (jeu.COMBO_FIN + 1) * 1000;
+    jeu.tickCombo();
+    eq('quinze secondes emportent tout', jeu.combo, 0);
+    eq('et le multiplicateur avec', jeu.comboMult(), 1);
+  } finally { Date.now = vrai; }
+
+  /* IL NE SE SAUVEGARDE PAS : un rechargement est une absence, et garder la série en ferait
+     un raccourci. C'est une variable de module, pas un champ de `state`. */
+  ok('il ne vit pas dans l’état sauvegardé', !('combo' in s), Object.keys(s).join(' '));
+});
+
+scenario('combo et idle — la carte ocellée est neutre aux deux', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const c = bete(jeu, 'crapaud', 1, 0);
+  jeu.select('c:' + c.id);
+
+  /* CE QUI RÉCOMPENSE LA PRÉSENCE NE S'AUTOMATISE PAS. La doctrine est déjà celle de la bête
+     finie et de la plonge : sans elle, l'ocellé monterait le combo tout seul et interdirait
+     l'idle à vie — la carte deviendrait une malédiction. */
+  equiper(jeu, jeu.MOTIFS.indexOf('ocellé'), 5);
+  ok('la carte clique bien toute seule', jeu.bonusAlbum().clicAuto > 0, jeu.bonusAlbum().clicAuto);
+
+  const avantP = c.p;
+  for (let i = 0; i < 100; i++) jeu.tickOcelle(0.1);        // dix secondes de clics de carte
+  ok('elle a bien cliqué', c.p > avantP, c.p - avantP);
+  eq('et pourtant le combo n’a pas bougé', jeu.combo, 0);
+  eq('donc le multiplicateur non plus', jeu.comboMult(), 1);
+
+  /* ELLE NE CASSE PAS L'IDLE NON PLUS, et c'est la même règle vue de l'autre côté : sans ça,
+     équiper la carte interdirait l'état de calme pour toujours. */
+  jeu.tapStage();                                          // une vraie main, pour amorcer
+  const vrai = Date.now;
+  try {
+    Date.now = () => vrai() + (jeu.IDLE_SEUIL + 1) * 1000;
+    eq('l’idle s’allume malgré la carte', jeu.enIdle(), true);
+    for (let i = 0; i < 100; i++) jeu.tickOcelle(0.1);
+    eq('et ses cent clics ne l’éteignent pas', jeu.enIdle(), true);
+  } finally { Date.now = vrai; }
+});
+
+scenario('idle — une minute sans clic, et la ferme tourne mieux', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.up.couveuse = 30; s.up.eleveur = 30; s.up.mangeoire = 30;
+  const c = bete(jeu, 'crapaud', 1, 0);
+  jeu.select('c:' + c.id);
+
+  eq('le jeu ne s’ouvre pas en idle', jeu.enIdle(), false);
+  ok('même après une minute sans avoir jamais cliqué', !jeu.enIdle());
+
+  jeu.tapStage();
+  eq('un clic l’éteint', jeu.enIdle(), false);
+  eq('et le multiplicateur retombe à un', jeu.coefIdle(), 1);
+
+  /* LE SEUIL SE LIT SUR L'HORLOGE, donc on la déplace plutôt que d'attendre une minute. */
+  const vrai = Date.now;
+  try {
+    Date.now = () => vrai() + (jeu.IDLE_SEUIL + 1) * 1000;
+    eq('une minute sans clic l’allume', jeu.enIdle(), true);
+    eq('et la ferme tourne une fois et demie plus vite', jeu.coefIdle(), jeu.IDLE_X);
+
+    // ce qui tourne tourne mieux, et ça se mesure
+    s.incub[0] = { line: 'crapaud', p: 0, kind: 'commun' };
+    jeu.advance(1);
+    const calme = s.incub[0].p;
+    Date.now = vrai;
+    jeu.tapStage(); // on éteint l'idle
+    s.incub[0].p = 0;
+    jeu.advance(1);
+    ok('la couvaison suit le calme', Math.abs(calme / s.incub[0].p - jeu.IDLE_X) < 0.01,
+       calme / s.incub[0].p);
+  } finally { Date.now = vrai; }
+});
+
 scenario('bonheur — la jauge monte pour la bête en scène, et pour elle seule', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 4;
@@ -364,6 +492,7 @@ scenario('frénésie — le clic compte double, partout, et rien d’autre ne bo
   s.frenesie = 30;
   eq('la puissance du clic double', jeu.clickPower(), nu * jeu.FRENESIE_X);
 
+  saturerCombo(jeu);
   // sur la croissance
   s.frenesie = 0; c.p = 5; jeu.tapStage(); const pousseNue = c.p - 5;
   s.frenesie = 30; c.p = 5; jeu.tapStage();
@@ -2938,6 +3067,7 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
 
   /* CE QU'UN CLIC REND ALORS : de la monnaie, et plus de l'embonpoint. */
   jeu.select('c:' + c.id);
+  saturerCombo(jeu);
   const avant = s.coins, gras = c.over;
   jeu.tapStage();
   ok('le clic paie', s.coins > avant, s.coins - avant);
@@ -3997,6 +4127,7 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
 
   /* CE QU'UN CLIC REND ALORS : de la monnaie, et plus de l'embonpoint. */
   jeu.select('c:' + c.id);
+  saturerCombo(jeu);
   const avant = s.coins, gras = c.over;
   jeu.tapStage();
   ok('le clic paie', s.coins > avant, s.coins - avant);
