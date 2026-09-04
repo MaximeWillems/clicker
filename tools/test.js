@@ -2863,54 +2863,59 @@ scenario('sauvegarde — les nœuds retirés rendent leurs jetons', () => {
   eq('et rien ne lui est crédité', vieille.state.asc.jetons, 0);
 });
 
-scenario('péage — le mur est à la première évolution, et le total ne bouge pas', () => {
+scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge adulte', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
-  /* L'ENCLOS SE VIDE ENTRE DEUX : sans ca `hatchAll` refuse d'eclore sur un enclos plein et
-     l'on mesure deux fois la meme bete — ce qui est arrive, et le scenario l'a dit. */
   const bete1 = l => { s.pens = 20; s.pen = []; s.incub[0] = { line: l, p: 9999, kind: 'commun' };
-                       jeu.hatchAll(); return s.pen[s.pen.length - 1]; };
-  const peages = c => [1, 2, 3, 4].map(a => jeu.evoCost(Object.assign({}, c, { age: a })));
+                       jeu.hatchAll(); const c = s.pen[s.pen.length - 1];
+                       c.tint = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false;
+                       return c; };
+  const vente = (c, a) => jeu.sellValue(Object.assign({}, c, { age: a, p: 1e6 }));
+  const peage = (c, a) => jeu.evoCost(Object.assign({}, c, { age: a }));
 
-  /* QUATRE-VINGT-TREIZE POUR CENT DU PÉAGE ÉTAIT SUR LA DERNIÈRE MARCHE, rien sur la première.
-     C'est le pire endroit : on investit, on monte trois âges sans rien décider, et on découvre
-     le mur à l'arrivée — quand on a déjà tout payé. Une dépense qu'on ne peut plus refuser
-     n'est pas une décision, c'est une facture. */
-  const rare = peages(bete1('loup'));
-  const total = rare.reduce((n, x) => n + x, 0);
-  ok('la première marche porte le mur', rare[0] === Math.max(...rare), rare.join(' '));
+  /* UN ŒUF NE DOIT PAS COÛTER PLUS QUE LA BÊTE NE VAUDRA JAMAIS, et c'était le cas : l'œuf
+     rare valait 50 M pour une bête qui plafonnait à 43,1 M. Achetée, élevée jusqu'au bout,
+     vendue, elle laissait 23 millions de perte — à TOUS les âges, sans exception. */
+  const solde = (l, oeuf) => {
+    const c = bete1(l);
+    let cum = oeuf;
+    return [1, 2, 3, 4, 5].map(a => {
+      if (a > 1) cum += peage(c, a - 1);
+      return vente(c, a) - cum;
+    });
+  };
 
-  /* MAIS LA COURBE NE DÉCROÎT PAS POUR AUTANT — la première version le faisait, 60/15/15/10,
-     et le passage à l'âge 5 y coûtait MOINS que le précédent alors qu'il fait passer la bête
-     de 2 M à 8,45 M. Ce qu'une marche coûte doit suivre ce qu'elle ouvre. */
-  ok('la dernière marche reste la seconde plus chère',
-     rare[3] === Math.max(rare[1], rare[2], rare[3]), rare.join(' '));
-  ok('et le péage remonte après le souffle', rare[1] < rare[2] && rare[2] < rare[3],
-     rare.join(' '));
-  ok('le souffle est juste derrière le mur', rare[1] === Math.min(...rare), rare.join(' '));
+  const rare = solde('loup', jeu.EGG_BY_KEY.rare.price);
+  ok('l’enfant est un investissement', rare[0] < 0, rare[0]);
+  ok('l’adolescent aussi', rare[1] < 0, rare[1]);
+  ok('l’adulte est bénéficiaire', rare[2] > 0, rare[2]);
+  ok('et tout ce qui suit l’est encore', rare[3] > rare[2] && rare[4] > rare[3], rare.join(' '));
 
-  /* LES COMMUNES GARDENT LEUR COURBE : elles vont bien, et l'ouverture du jeu est le dernier
-     endroit où poser un mur. */
-  const commune = peages(bete1('crapaud'));
-  eq('la commune paie toujours deux cents d’abord', commune[0], 200);
-  eq('et six cent mille en dernier', commune[3], 600000);
+  /* LES COMMUNES SONT LE MODÈLE : bénéficiaires à CHAQUE âge, œuf compris. Elles ne changent
+     pas — l'ouverture du jeu est le dernier endroit où l'on touche. */
+  const commune = solde('crapaud', jeu.EGG_BY_KEY.commun.price);
+  ok('la commune gagne dès l’enfant', commune.every(x => x > 0), commune.join(' '));
+  const c0 = bete1('crapaud');
+  eq('et son péage n’a pas bougé', peage(c0, 1), 200);
+  eq('ni le dernier', peage(c0, 4), 600000);
 
-  /* LE TOTAL NE BOUGE PAS D'UNE PIÈCE, et c'est ce qui rend la redistribution sûre : le
-     rapport péages / valeur à l'âge 5 tient la règle « faire grandir perd toujours à la
-     vente, seule la rente rembourse ». */
-  const base = jeu.EVOLVE.reduce((n, x) => n + (x || 0), 0);
-  for (const [ligne, nom] of [['loup', 'rare'], ['kraken', 'épique'], ['behemoth', 'mythique']]) {
-    const c = bete1(ligne);
-    const t = peages(c).reduce((n, x) => n + x, 0);
-    ok('le total ' + nom + ' est inchangé', Math.abs(t - base * jeu.rarityOf(c).mult) <= 4,
-       t + ' vs ' + base * jeu.rarityOf(c).mult);
+  /* CHAQUE ÉVOLUTION COÛTE PLUSIEURS FOIS CE QUE LA BÊTE VAUT À CET INSTANT : c'est un
+     investissement, jamais quelque chose qu'on finance en la revendant. Et la première est un
+     mur — c'est elle qui verrouille la rare tombée par chance. */
+  const r = bete1('loup');
+  for (let a = 1; a <= 4; a++) {
+    ok('le péage ' + a + '→' + (a + 1) + ' dépasse la valeur du moment',
+       peage(r, a) > vente(r, a), peage(r, a) + ' vs ' + vente(r, a));
   }
+  ok('la rare trouvée se vend pour peu', vente(r, 1) < 5000, vente(r, 1));
+  ok('mais la garder coûte une fortune', peage(r, 1) > 1e6, peage(r, 1));
 
-  /* ET LA RARE TOMBÉE PAR CHANCE POSE ENFIN SA QUESTION : la revendre pour un petit gain, ou
-     s'engager pour un prix qu'on n'a pas encore. */
-  const trouvee = bete1('loup');
-  ok('elle se vend pour peu', jeu.sellValue(trouvee) < 2000, jeu.sellValue(trouvee));
-  ok('mais la garder coûte une fortune', jeu.evoCost(trouvee) > 5e6, jeu.evoCost(trouvee));
+  /* L'ÉCHELLE SE PROPAGE PAR `mult`, donc elle ne peut plus se retourner : ce qui vaut plus
+     cher à l'œuf vaut plus cher sur pied, à tous les rangs. */
+  const val = l => vente(bete1(l), 5);
+  ok('la rare dépasse la commune', val('loup') > val('crapaud'));
+  ok('l’épique dépasse la rare', val('kraken') > val('loup'));
+  ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
 });
 
 scenario('primes — un négoce n’arrive jamais avant sa rareté', () => {

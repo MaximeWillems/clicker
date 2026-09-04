@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.8.2';
+const VERSION = 'beta 4.9.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2785,7 +2785,7 @@ const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1) *
 // Une prime de négoce par rareté : c'est le seul bonus du jeu qui ne vaut que pour une
 // partie du bestiaire, et c'est ce qui lui donne un sens de choix plutôt que de cumul.
 const negoce    = c => prime('negoce-' + lineOf(c).rarity) ? 1.25 : 1;
-const baseValue = c => VALUE[c.age - 1] * rarityOf(c).mult * variantMult(c)
+const baseValue = c => valeurBase(c) * variantMult(c)
                      * (1 + bonusAlbum().valeur) * negoce(c) * coef('valeur');
 
 function pickWeighted(list) {
@@ -2972,15 +2972,44 @@ const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2')
 
    LES COMMUNES GARDENT LEUR COURBE. Elles vont bien, c'est mesuré, et l'ouverture du jeu est
    le dernier endroit où l'on veut poser un mur. */
-const PARTS_MUR = [0.40, 0.05, 0.20, 0.35];
-const partsDe = c => rarityOf(c).rank > 0 ? PARTS_MUR : null;
-const peageTotal = c => EVOLVE.reduce((n, x) => n + (x || 0), 0) * rarityOf(c).mult;
+/* ── CE QU'UNE BÊTE VAUT, AU-DESSUS DE LA COMMUNE ──────────────────────────────
+   UN ŒUF NE DOIT PAS COÛTER PLUS QUE LA BÊTE NE VAUDRA JAMAIS, et c'était le cas : l'œuf rare
+   valait 50 M pour une bête qui plafonnait à 43,1 M. Achetée, élevée jusqu'au bout, vendue,
+   elle laissait 23 millions de perte — à TOUS les âges, sans exception.
+
+   Les communes, elles, sont bénéficiaires à CHAQUE âge, œuf compris : +12 dès l'enfant,
+   +856 782 à la légende. C'est le modèle, et les raretés ne le suivaient pas.
+
+   LA COURBE EST DONC REFAITE POUR TOUT CE QUI EST AU-DESSUS DE LA COMMUNE, et elle se lit
+   d'une seule façon : chaque évolution coûte plusieurs fois ce que la bête vaut à l'instant
+   où on la paie, et la vente qui suit dépasse le cumul. Pour une rare, œuf à 50 M :
+
+       fin d'âge      vente        évolution       cumul       solde
+       enfant     15   2,00 M        1,25 M       51,3 M     −49,3 M
+       adolescent 35   5,00 M       18,75 M       70,0 M     −65,0 M
+       adulte     65  75,0 M       200,0 M       70,0 M      +5,0 M   ← elle devient rentable
+       ancien     85 280,0 M       700,0 M      270,0 M     +10,0 M
+       légende   100   1,00 Md         —         970,0 M     +30,0 M
+
+   ELLE DEVIENT RENTABLE À L'ÂGE ADULTE, et pas avant : les deux premiers âges sont un
+   investissement, ce qui donne son sens au mur. Le reste de sa vie est du bénéfice.
+
+   LES CHIFFRES SONT PAR UNITÉ DE `mult`, donc l'échelle se propage seule : l'œuf épique vaut
+   600 unités comme la lignée épique, le mythique 15 000. Le rapport œuf/valeur est le même à
+   tous les rangs, et l'escalier ne peut plus se retourner.
+
+   LES COMMUNES GARDENT TOUT — valeurs ET péages. Elles vont bien, c'est mesuré, et l'ouverture
+   du jeu ne se touche pas. */
+const VALEURS_RANG = [80, 200000, 3000000, 11200000, 40000000];
+const PEAGES_RANG  = [50000, 750000, 8000000, 28000000];
+const echelleHaute = c => rarityOf(c).rank > 0;
+const valeurBase   = c => echelleHaute(c) ? VALEURS_RANG[c.age - 1] * rarityOf(c).mult
+                                          : VALUE[c.age - 1] * rarityOf(c).mult;
+const peageBase    = c => echelleHaute(c) ? PEAGES_RANG[c.age - 1] * rarityOf(c).mult
+                                          : EVOLVE[c.age - 1] * rarityOf(c).mult;
 const evoCost   = c => {
   if (EVOLVE[c.age - 1] === null) return null;
-  const parts = partsDe(c);
-  const brut = parts ? peageTotal(c) * parts[c.age - 1]
-                     : EVOLVE[c.age - 1] * rarityOf(c).mult;
-  return Math.round(brut * evoRemise() * (1 - bonusAlbum().peage)
+  return Math.round(peageBase(c) * evoRemise() * (1 - bonusAlbum().peage)
                     * (1 - bonusPrimes().peage) * (1 - bonusCiel().peage));
 };
 
