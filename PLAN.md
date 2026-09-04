@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.7.2 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.8.0 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -945,12 +945,24 @@ rien que pour l'amener à l'âge 4. Une ferme commune mûre rend 3,24 M/h ; tant
 bâtie, on ne peut pas payer. Le verrou tient tout seul, et c'est une troisième raison de ne pas
 toucher au péage.
 
-> **VERDICT : LES DEUX CHANGEMENTS PRÉVUS PAR CE PLAN SONT RÉFUTÉS.** L'œuf rare « vers trente
-> millions » n'agit sur rien, et le péage « plus fort » casserait trois règles à la fois. Le
-> troisième souci — la rare gratuite — est déjà réglé par le design existant. Ce qui reste est
-> un écart de **×1,89** entre les deux ères, et il ne se ferme qu'en touchant à la rente ou aux
-> communes. **Ce chantier se referme donc sans changer une ligne**, ce qui est un résultat :
-> quatre mesures valent mieux qu'un réglage au jugé.
+> **CORRECTION — LE VERDICT « ON NE CHANGE RIEN » ÉTAIT PRÉMATURÉ.** Il reposait sur un
+> balayage fait AVANT que le banc n'achète des primes, et ce balayage disait que renchérir
+> l'œuf empirait le rapport entre les deux ères. Refait avec les primes, il dit l'inverse :
+
+    œuf rare 300 000  →  ×1,89        œuf rare 50 M  →  ×1,79
+
+**L'ŒUF RARE VAUT DONC CINQUANTE MILLIONS depuis la `beta 4.8.0`**, et les deux étages du
+dessus suivent du même facteur — l'épique à 1,25 Md, le mythique à 30 Md. Sans ça l'œuf rare
+aurait coûté plus cher que l'épique et l'escalier se serait retourné.
+
+Ce que ça change, et c'est ce qui était demandé : **une seule commune menée à l'âge 5 se vend
+371 644**. À 300 000, une bête suffisait à ouvrir l'ère rare — l'ère commune s'arrêtait le jour
+où elle commençait à fonctionner. À 50 M il faut une quinzaine d'heures de ferme commune mûre,
+et l'œuf rare redevient ce que sa fiche annonce : « le premier qui se réfléchit avant de
+l'acheter ».
+
+**Ce qui ne bouge pas** : les communes, et le péage. Les trois mesures qui suivent restent
+vraies, et deux d'entre elles expliquent pourquoi le péage n'a pas été touché.
 
 ### Vingt idées relues, huit retenues
 

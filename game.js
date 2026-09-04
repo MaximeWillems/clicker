@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.7.2';
+const VERSION = 'beta 4.8.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -210,13 +210,22 @@ const EGG_KINDS = [
   { key: 'commun', name: 'Œuf commun', price: 18, glyph: '🥚', rarity: 'commune',
     hatch: 45, odds: { commune: 0.999, rare: 0.001 },
     dit: 'C’est par là que tout le monde commence.' },
-  { key: 'rare', name: 'Œuf rare', price: 300000, glyph: '🥚', rarity: 'rare',
+  /* ── L'ESCALIER DES ŒUFS A ÉTÉ REMONTÉ D'UN CRAN ──
+     L'œuf rare valait 300 000, soit SIX MINUTES d'une ferme commune mûre — mesuré. À ce
+     prix-là il ne se réfléchissait pas, il s'achetait par distraction, et l'ère commune
+     s'arrêtait le jour où elle commençait à fonctionner : UNE seule commune menée à l'âge 5
+     se vend 371 644, donc une bête suffisait à ouvrir l'ère rare.
+
+     Il vaut cinquante millions, soit une quinzaine d'heures de cette même ferme. Les deux
+     étages du dessus suivent du même facteur — sinon l'œuf rare coûterait plus cher que
+     l'épique, et l'escalier se retournerait. */
+  { key: 'rare', name: 'Œuf rare', price: 50000000, glyph: '🥚', rarity: 'rare',
     hatch: 180, odds: { rare: 0.999, epique: 0.001 },
     dit: 'Le premier qui se réfléchit avant de l’acheter.' },
-  { key: 'epique', name: 'Œuf épique', price: 7500000, glyph: '🥚', rarity: 'epique',
+  { key: 'epique', name: 'Œuf épique', price: 1250000000, glyph: '🥚', rarity: 'epique',
     hatch: 720, odds: { epique: 0.999, mythique: 0.001 },
     dit: 'On n’en achète pas par distraction.' },
-  { key: 'mythique', name: 'Œuf mythique', price: 180000000, glyph: '🥚', rarity: 'mythique',
+  { key: 'mythique', name: 'Œuf mythique', price: 30000000000, glyph: '🥚', rarity: 'mythique',
     hatch: 2700, odds: { mythique: 1 },
     dit: 'Il en sort des dieux. Prends ton après-midi.' },
   /* CELUI-CI NE S'ACHÈTE PAS, et c'est toute la définition du rang. Il n'a pas de prix, donc il
@@ -996,9 +1005,6 @@ const PRIMES = [
   /* PREMIER CARREFOUR. Trois routes qui ne se comparent pas : un PRIX qui baisse, une VITESSE
      qui monte, un GESTE qui pèse. C'est ce qui en fait un choix plutôt qu'un menu — on ne peut
      pas dire laquelle est « la plus grosse », il faut dire comment on joue. */
-  { cle: 'negoce-rare', prix: 650000, glyphe: '🔷', nom: 'Négoce rare',
-    dit: 'Les rares se vendent un quart plus cher.',
-    si: () => rareteVue('rare') },
   { cle: 'carrefour-1', prix: 700000, glyphe: '🜁', nom: 'Le premier carrefour',
     dit: 'Trois routes. Tu en prends une, les deux autres se ferment jusqu’à la prochaine ascension.',
     choix: [
@@ -1033,9 +1039,6 @@ const PRIMES = [
   { cle: 'vitesse-2', prix: 15000000, glyphe: '⚡', nom: 'Ardeur',
     dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse. Elle ne remplace aucun automate, elle les multiplie.',
     bonus: { vitesse: 0.10 } },
-  { cle: 'negoce-epique', prix: 16000000, glyphe: '🔮', nom: 'Négoce épique',
-    dit: 'Les épiques se vendent un quart plus cher.',
-    si: () => rareteVue('epique') },
   { cle: 'pension-sang', prix: 20000000, glyphe: '🩸', nom: 'Sang dominant',
     dit: 'À la pension, la lignée du parent le plus rare sort deux fois plus souvent. Jamais plus d’une fois sur deux.',
     si: () => prime('pension') },
@@ -1060,6 +1063,9 @@ const PRIMES = [
   { cle: 'rente-2', prix: 40000000, glyphe: '💧', nom: 'Abreuvoir',
     dit: 'Dix pour cent de rente en plus. Une bête qui boit à sa soif rapporte sans qu’on la touche.',
     bonus: { rente: 0.10 } },
+  { cle: 'negoce-rare', prix: 100000000, glyphe: '🔷', nom: 'Négoce rare',
+    dit: 'Les rares se vendent un quart plus cher.',
+    si: () => rareteVue('rare') },
   { cle: 'valeur-3', prix: 120000000, glyphe: '📯', nom: 'Renom',
     dit: 'Quinze pour cent de valeur en plus. À ce stade, ce n’est plus toi qui cherches des acheteurs.',
     bonus: { valeur: 0.15 } },
@@ -1068,9 +1074,6 @@ const PRIMES = [
   { cle: 'vitesse-3', prix: 300000000, glyphe: '👟', nom: 'Bon pied',
     dit: 'Quinze pour cent de vitesse en plus. Le temps ne se rattrape pas, mais il se serre.',
     bonus: { vitesse: 0.15 } },
-  { cle: 'negoce-mythique', prix: 360000000, glyphe: '👑', nom: 'Négoce mythique',
-    dit: 'Les mythiques se vendent un quart plus cher.',
-    si: () => rareteVue('mythique') },
   { cle: 'pension-place-1', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
     dit: 'Un couple de plus à la fois. La première prime qui te dispense de choisir.',
     si: () => prime('pension') },
@@ -1081,6 +1084,9 @@ const PRIMES = [
   { cle: 'valeur-4', prix: 2000000000, glyphe: '🏆', nom: 'On vient de loin',
     dit: 'Vingt pour cent de valeur en plus, et le compte est bon : cinquante pour cent en tout si tu as pris les quatre.',
     bonus: { valeur: 0.20 } },
+  { cle: 'negoce-epique', prix: 2500000000, glyphe: '🔮', nom: 'Négoce épique',
+    dit: 'Les épiques se vendent un quart plus cher.',
+    si: () => rareteVue('epique') },
   { cle: 'vitesse-4', prix: 5000000000, glyphe: '🌪️', nom: 'Sans relâche',
     dit: 'Vingt pour cent de vitesse en plus. La dernière du lot, et la quatrième qui compte.',
     bonus: { vitesse: 0.20 } },
@@ -1119,6 +1125,9 @@ const PRIMES = [
   { cle: 'oeuf-1', prix: 50000000000, glyphe: '🛒', nom: 'Marché de gros',
     dit: 'Les œufs de la boutique coûtent un quart de moins, quelle que soit leur rareté. Un mythique à cent trente-cinq millions au lieu de cent quatre-vingts.',
     bonus: { oeuf: 0.25 } },
+  { cle: 'negoce-mythique', prix: 60000000000, glyphe: '👑', nom: 'Négoce mythique',
+    dit: 'Les mythiques se vendent un quart plus cher.',
+    si: () => rareteVue('mythique') },
   { cle: 'pension-portee-2', prix: 80000000000, glyphe: '🍳', nom: 'Ponte triple',
     dit: 'Trois œufs par ponte. La chance de tirer autre chose, elle, reste attachée à la ponte et non à l’œuf.',
     si: () => prime('pension-portee-1') },
@@ -4778,7 +4787,7 @@ const prixVoir = cle => cle.startsWith('up:') ? UP_BY_KEY[cle.slice(3)].base
 
 /* Tout ce qui se dévoile, RANGÉ PAR PRIX et non par table. L'ordre décide de « la marche
    suivante », et la table mettait les quatre œufs devant : la marche de la boutique était donc
-   l'œuf rare à 300 000 dès les premières pièces — sept mille fois la bourse d'un débutant —
+   l'œuf rare dès les premières pièces — des millions de fois la bourse d'un débutant —
    pendant que l'incubateur à 150 et l'enclos à 400, les vraies marches, ne pouvaient JAMAIS
    être désignés. Deux branches mortes et un repère absurde.
 
