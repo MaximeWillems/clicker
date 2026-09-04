@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.13.2** | une porte par règle : les quatre tables d’échelle ne se lisent plus qu’à deux endroits, et un scénario refuse la cinquième recopie |
+| **beta 4.14.0** | la planche : chaque composant dans chaque état, contre le vrai `style.css` — la première des six marches de l’écran |
+| beta 4.13.2 | une porte par règle : les quatre tables d’échelle ne se lisent plus qu’à deux endroits, et un scénario refuse la cinquième recopie |
 | beta 4.13.1 | « elle ne rembourse jamais » était faux pour les quatre raretés payantes |
 | beta 4.13.0 | l’idle et le combo : une minute sans clic met la ferme au calme, une série de clics monte en racine et tombe à quinze secondes |
 | beta 4.12.3 | l’absence devient un petit bonus : bornée à deux heures, rendue au quart, et un onglet caché compte comme une absence |
@@ -223,8 +224,26 @@ le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est
 voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
 rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
-Quarante-huit scénarios, sept cent quatre-vingt-sept vérifications. Passer un mot en argument ne joue que
-les scénarios dont le nom le contient : `node tools/test.js frénésie`.
+Cent quarante-deux scénarios, deux mille vingt-trois vérifications. Passer un mot en argument ne joue
+que les scénarios dont le nom le contient : `node tools/test.js frénésie`.
+
+Et pour vérifier ce qui ne se teste pas — le rendu :
+
+```
+tools/planche.html
+```
+
+Une page à ouvrir dans un navigateur. Elle charge le **vrai** `style.css` et pose à la main le
+balisage que le jeu produit : chaque bouton, chaque vignette, chaque carte, dans chaque état
+qu'on peut écrire. Aucun JS de jeu, aucune partie en cours. C'est le seul endroit où l'on voit
+ce qu'une retouche de CSS fait à tout le reste — et où l'on constate qu'un `:hover` n'a pas
+son `:active`. En pied de page, la même planche à 375, 768 et 1400 px, pour juger le
+responsive sans redimensionner quoi que ce soit.
+
+Son défaut est connu : elle **dérive**, puisqu'elle recopie un balisage à la main.
+`node tools/planche.js` relève les classes que le jeu pose réellement et dit lesquelles la
+planche ne montre jamais. Ce n'est pas un test — une classe absente n'est pas une faute,
+c'est un trou.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
 navigateur : `tools/banc.js` fait tourner `game.js` sous Node avec un DOM minimal et les

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.13.2 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.14.0 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -92,6 +92,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi |
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
+| **L'écran et le doigt** | beta 4.14.0 | peut-on voir ce qu'on change, avant de changer quoi que ce soit ? | la première marche sur six. La planche est posée ; les cinq autres sont du CSS et se jugent dessus. Le chantier reste OUVERT — 48 `:hover` pour 2 `:active`, zéro garde `@media (hover: hover)`, 30 informations qui n'existent que dans une infobulle |
 | **Une porte par règle** | beta 4.13.1, 4.13.2 | une même faute peut-elle vivre à quatre endroits ? | plus maintenant. Choisir entre l'échelle des communes et celle des rangs était écrit à la main quatre fois, et faux quatre fois — jusqu'à annoncer « elle ne rembourse jamais » sur une bête payée un billion. Deux portes, et un scénario qui refuse la cinquième recopie |
 | **L'absence, l'idle et le combo** | beta 4.12.3, 4.13.0 | s'arrêter et s'acharner peuvent-ils tous deux valoir quelque chose, et revenir doit-il valoir plus qu'être resté ? | oui, et non. L'absence est bornée à deux heures rendues au quart — un onglet caché compris. Le calme pousse ce qui tourne, le combo pousse le clic, et les deux s'excluent par construction |
 
@@ -213,7 +214,7 @@ Ce n'est plus « la boutique est sous tout le reste », c'est « rien ne répond
 
 | | Ce qui tombe | La question qu'elle pose | Coût |
 |---|---|---|---|
-| **1** | **La planche** — chaque composant dans chaque état, contre le vrai `style.css`, en une page | est-ce qu'on peut enfin *voir* ce qu'on change ? | une soirée |
+| **1** | ~~**La planche**~~ — **posée en `beta 4.14.0`** : `tools/planche.html`, et `node tools/planche.js` pour la liste de ses trous | est-ce qu'on peut enfin *voir* ce qu'on change ? | ✔ |
 | **2** | **Le doigt** — un `:active` partout où il y a un `:hover`, les survols sous garde, 44 px minimum | est-ce que le jeu répond quand on le touche ? | une soirée |
 | **3** | **Le survol qui cache** — la rareté, l'âge, l'état d'un bouton sortent des infobulles | l'information survit-elle au retrait de la souris ? | une soirée |
 | **4** | **L'échec de sauvegarde qui se voit** — remplir le `catch` de `save()` | perdre sa partie en silence redevient-il impossible ? | une heure |
@@ -1878,7 +1879,7 @@ d'essai, qui a longtemps vécu dans un dossier temporaire et se refabriquait de 
 chaque session. Il est dans le dépôt depuis la revue de structure.
 
 ```
-node tools/test.js              les 128 scénarios, 1882 vérifications
+node tools/test.js              les 142 scénarios, 2023 vérifications
 node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur »
 ```
 
@@ -1886,6 +1887,13 @@ node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur �
   dans `index.html`, et **tout ce que `game.js` déclare au premier niveau exposé
   automatiquement**. La liste d'exports était écrite à la main et se périmait à chaque
   fonction ajoutée — un test échouait alors pour une raison qui ressemblait à un bug du jeu.
+- **`tools/planche.html`** est la planche : le vrai `style.css`, le balisage du jeu écrit à la
+  main, aucun script de jeu. C'est le seul outil du dépôt qui se REGARDE au lieu de se lire, et
+  la seule réponse à la dette du rendu — cinq des six marches de l'écran sont du CSS, et on ne
+  corrige pas du CSS qu'on ne peut pas voir. Son risque est la dérive : `node tools/planche.js`
+  relève les classes que le jeu pose et liste celles qu'elle ne montre jamais. Au premier
+  relevé, 109 montrées sur 266 — les écrans entiers manquent (ascension, forge, encyclopédie,
+  constellation), les composants de la ferme y sont.
 - **`tools/test.js`** porte les scénarios. Ils ont été écrits au fil des versions, chacun le
   jour où quelque chose s'est cassé : ils visent des endroits précis plutôt que de couvrir
   uniformément.

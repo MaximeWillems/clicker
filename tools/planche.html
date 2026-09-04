@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Éclosion — la planche</title>
+
+<!-- LE VRAI STYLE, ET RIEN D'AUTRE. C'est toute la raison d'être de cette page : ce qu'on voit
+     ici est ce que le jeu rend. Aucun style de composant n'est redéfini plus bas — seule la
+     chrome de la planche l'est, et elle porte le préfixe `pl-`. Une règle de cette feuille qui
+     corrigerait un composant ferait mentir la planche, et une planche qui ment est pire que
+     pas de planche : on croit avoir vérifié. -->
+<link rel="stylesheet" href="../style.css">
+
+<style>
+  body.pl { margin: 0; padding: 0 0 4rem; background: var(--ground); color: var(--ink);
+            font-family: var(--f-ui); }
+  .pl-tete { position: sticky; top: 0; z-index: 50; background: var(--sunken);
+             border-bottom: 1px solid var(--rule); padding: .9rem 1.2rem; }
+  .pl-tete h1 { margin: 0 0 .25rem; font-family: var(--f-name); font-size: 1.15rem; font-weight: 400; }
+  .pl-tete p  { margin: 0; color: var(--soft); font-size: .78rem; line-height: 1.6; max-width: 78ch; }
+  .pl-tete code, .pl-sec code { font-family: var(--f-num); color: var(--accent); font-size: .95em; }
+  .pl-sec { padding: 1.8rem 1.2rem 0; }
+  .pl-sec > h2 { font-family: var(--f-name); font-weight: 400; font-size: 1rem;
+                 margin: 0 0 .25rem; }
+  .pl-sec > p { margin: 0 0 1rem; color: var(--soft); font-size: .78rem; max-width: 72ch;
+                line-height: 1.6; }
+  .pl-grille { display: flex; flex-wrap: wrap; gap: .9rem; align-items: flex-start; }
+  .pl-cas { border: 1px dashed var(--rule); border-radius: 6px; padding: .55rem;
+            background: var(--sunken); margin: 0; min-width: 0; }
+  .pl-cas > figcaption { color: var(--faint); font-family: var(--f-num); font-size: .62rem;
+                         letter-spacing: .04em; margin: .5rem 0 0; text-align: center; }
+  .pl-cas.pl-large { flex: 1 1 24rem; }
+  .pl-vues { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+  .pl-vue { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+            background: var(--ground); }
+  .pl-vue > span { display: block; padding: .3rem .5rem; background: var(--sunken);
+                   color: var(--faint); font-family: var(--f-num); font-size: .62rem; }
+  .pl-vue > iframe { display: block; border: 0; height: 34rem; }
+  .pl-cas .strip { max-height: 9rem; }
+</style>
+</head>
+
+<body class="pl">
+
+<header class="pl-tete">
+  <h1>La planche — Éclosion</h1>
+  <p>
+    Chaque composant, dans chaque état qu'on peut poser à la main, contre le <b>vrai</b>
+    <code>style.css</code>. Aucun JS de jeu, aucun état de partie : le balisage est écrit ici,
+    à l'identique de ce que <code>game.js</code> produit.
+    <b>Survole et appuie sur les spécimens</b> — c'est ici, et nulle part ailleurs, qu'on voit
+    ce qu'un <code>:hover</code> fait et ce qu'un <code>:active</code> ne fait pas encore.
+    Ce que la planche ne montre pas : <code>node tools/planche.js</code>.
+  </p>
+</header>
+
+<section class="pl-sec">
+  <h2>1 · Les boutons</h2>
+  <p>Tout ce qui se clique. La marche 2 pose la règle : « un <code>:hover</code> sans
+     <code>:active</code> est un bug ». Chaque cas est ici au repos ; l'appui se juge sur le
+     spécimen lui-même.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas"><button type="button" class="buy">
+      <span class="t">Couveuse automatique</span><span class="s">niv. 12</span>
+      <span class="p">4 500</span><span class="d">Niveau 12 → 13 · 4,00 → 4,33 × la vitesse de couvaison</span>
+      </button><figcaption>.buy</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="buy" disabled>
+      <span class="t">Éleveur automatique</span><span class="s">niv. 3</span>
+      <span class="p">18 000</span><span class="d">Les bêtes grandissent toutes seules.</span>
+      </button><figcaption>.buy [disabled]</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="buy" disabled>
+      <span class="t">Force du clic</span><span class="s">niv. 40</span>
+      <span class="p">—</span><span class="d">Au maximum · 41 s gagnées par clic.</span>
+      </button><figcaption>.buy au maximum</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="prime">
+      <span class="prime-glyphe">🛏️</span><span class="prime-nom">Litière profonde</span>
+      <span class="prime-prix">2,50 M</span>
+      </button><figcaption>.prime</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="prime" disabled>
+      <span class="prime-glyphe">👑</span><span class="prime-nom">Négoce mythique</span>
+      <span class="prime-prix">50,00 T</span>
+      </button><figcaption>.prime [disabled]</figcaption></figure>
+  </div>
+
+  <div class="pl-grille" style="margin-top:.9rem">
+    <figure class="pl-cas"><div class="tri" role="group" aria-label="Ordre de l’enclos">
+      <button type="button" class="tri-opt" aria-pressed="true">arrivée</button>
+      <button type="button" class="tri-opt" aria-pressed="false">rareté</button>
+      <button type="button" class="tri-opt" aria-pressed="false">âge</button>
+      </div><figcaption>.tri-opt [aria-pressed]</figcaption></figure>
+
+    <figure class="pl-cas"><div class="seg">
+      <button type="button" class="seg-opt" aria-pressed="false">jamais</button>
+      <button type="button" class="seg-opt" aria-pressed="true">adulte</button>
+      <button type="button" class="seg-opt" aria-pressed="false">légende</button>
+      </div><figcaption>.seg-opt</figcaption></figure>
+
+    <figure class="pl-cas"><div class="onglets">
+      <button type="button" class="onglet" aria-selected="true">La ferme</button>
+      <button type="button" class="onglet" aria-selected="false">L’encyclopédie</button>
+      </div><figcaption>.onglet</figcaption></figure>
+
+    <figure class="pl-cas"><div class="tools">
+      <button type="button" class="tool" title="Arrêter la ferme">⏸</button>
+      <button type="button" class="tool" aria-pressed="true" title="Couper le son">🔊</button>
+      <button type="button" class="tool tool-danger" title="Effacer la partie">🗑</button>
+      </div><figcaption>.tool · .tool-danger</figcaption></figure>
+
+    <figure class="pl-cas"><div class="stage-acts">
+      <button type="button" class="act grow">Faire grandir</button>
+      <button type="button" class="act sell">Vendre · 1,50 M</button>
+      <button type="button" class="act keep">☆ Garder</button>
+      </div><figcaption>.act</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="panel-plier" aria-expanded="true">
+      <span class="plier">▾</span><h2 style="display:inline;font-size:.85rem">Album</h2>
+      </button><figcaption>.panel-plier</figcaption></figure>
+  </div>
+</section>
+
+<section class="pl-sec">
+  <h2>2 · Les vignettes</h2>
+  <p>La bande de l'enclos et celle de la couvaison. <code>done</code> marque ce qui est prêt,
+     <code>finie</code> une bête menée au bout, <code>aria-current</code> la sélection.
+     C'est la cible la plus petite du jeu, donc celle que la marche 2 mesure en premier.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas pl-large"><div class="strip">
+      <button type="button" class="thumb"><span class="thumb-glyph">🐸</span>
+        <span class="thumb-bar"><i style="width:38%"></i></span><span class="thumb-tag">24/35</span></button>
+      <button type="button" class="thumb" aria-current="true"><span class="thumb-glyph">🐺</span>
+        <span class="thumb-bar"><i style="width:72%"></i></span><span class="thumb-tag">51/65</span></button>
+      <button type="button" class="thumb done"><span class="thumb-glyph">🦎</span>
+        <span class="thumb-bar"><i style="width:100%"></i></span><span class="thumb-tag">65/65 ✦</span></button>
+      <button type="button" class="thumb finie"><span class="thumb-glyph">🐲</span>
+        <span class="thumb-bar"><i style="width:100%"></i></span><span class="thumb-tag">100/100 ✹</span></button>
+      <span class="thumb thumb-vide"></span>
+      </div><figcaption>.thumb · .done · .finie · [aria-current] · .thumb-vide</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="strip">
+      <button type="button" class="thumb egg-commun"><span class="thumb-glyph">🥚</span>
+        <span class="thumb-bar"><i style="width:20%"></i></span><span class="thumb-tag">œuf</span></button>
+      <button type="button" class="thumb egg-rare"><span class="thumb-glyph">🥚</span>
+        <span class="thumb-bar"><i style="width:55%"></i></span><span class="thumb-tag">œuf</span></button>
+      <button type="button" class="thumb egg-epique"><span class="thumb-glyph">🥚</span>
+        <span class="thumb-bar"><i style="width:31%"></i></span><span class="thumb-tag">œuf</span></button>
+      <button type="button" class="thumb egg-mythique done"><span class="thumb-glyph">🥚</span>
+        <span class="thumb-bar"><i style="width:100%"></i></span><span class="thumb-tag">prêt</span></button>
+      <button type="button" class="thumb egg-merveille"><span class="thumb-glyph">🥚</span>
+        <span class="thumb-bar"><i style="width:8%"></i></span><span class="thumb-tag">œuf</span></button>
+      </div><figcaption>.thumb.egg-* — les cinq coquilles</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="strip">
+      <button type="button" class="thumb gardee"><span class="thumb-glyph">🦊</span>
+        <span class="thumb-bar"><i style="width:100%"></i></span><span class="thumb-tag">100/100 ✹</span></button>
+      <button type="button" class="thumb empty"><span class="thumb-glyph"></span>
+        <span class="thumb-bar"><i style="width:0%"></i></span><span class="thumb-tag"></span></button>
+      </div><figcaption>.thumb.gardee (☆) · .thumb.empty (case libre)</figcaption></figure>
+  </div>
+</section>
+
+<section class="pl-sec">
+  <h2>3 · La scène</h2>
+  <p>Le plus grand objet de la page, au téléphone comme sur écran large — c'est la troisième
+     règle du chantier. La classe de rareté teinte le halo et la jauge ; <code>ready</code> dit
+     qu'une décision attend.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas pl-large"><div class="stage rar-mythique ready">
+      <div class="stage-col">
+        <button type="button" class="subject">
+          <span class="subject-glow"></span>
+          <span class="subject-scale"><span class="subject-glyph">🐲</span></span>
+        </button>
+        <p class="subject-name">Ouroboros, l’anneau</p>
+        <p class="subject-meta">mythique · légende · démesuré</p>
+      </div>
+      <div class="stage-bar"><i style="width:100%"></i></div>
+      <p class="stage-timer done">prêt</p>
+      <p class="stage-boost">album ×1,40 · combo ×2,41 (58/100) · un clic vaut 12 s</p>
+      <p class="stage-hint">Elle est menée au bout : chaque clic paie.</p>
+      </div><figcaption>.stage.rar-mythique.ready</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="stage rar-commune">
+      <div class="stage-col">
+        <button type="button" class="subject">
+          <span class="subject-glow"></span>
+          <span class="subject-scale"><span class="subject-glyph">🐸</span></span>
+        </button>
+        <p class="subject-name">Crapaud</p>
+        <p class="subject-meta">commune · adolescent · normale</p>
+      </div>
+      <div class="stage-bar"><i style="width:41%"></i></div>
+      <p class="stage-timer">3 min 20 s</p>
+      <p class="stage-boost">calme ×1,50 — la ferme tourne mieux sans toi</p>
+      <p class="stage-hint">Tu as 3 œufs en réserve.</p>
+      </div><figcaption>.stage.rar-commune — au repos</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="stage rar-epique cracking">
+      <div class="stage-col">
+        <button type="button" class="subject">
+          <span class="subject-glow"></span>
+          <span class="subject-scale"><span class="subject-glyph">🥚</span></span>
+        </button>
+        <p class="subject-name">Œuf épique</p>
+        <p class="subject-meta">il craque</p>
+      </div>
+      <div class="stage-bar"><i style="width:82%"></i></div>
+      <p class="stage-timer">2 min 04 s</p>
+      <p class="stage-hint alerte">Ton enclos est plein : rien ne peut éclore.</p>
+      </div><figcaption>.stage.cracking · .stage-hint.alerte</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="stage rar-merveilleuse apex prodige">
+      <div class="stage-col">
+        <button type="button" class="subject">
+          <span class="subject-glow"></span>
+          <span class="subject-scale"><span class="subject-glyph">🦊</span></span>
+        </button>
+        <p class="subject-name">Kitsune à neuf queues</p>
+        <p class="subject-meta">merveilleuse · légende · chromatique</p>
+      </div>
+      <div class="stage-bar"><i style="width:100%"></i></div>
+      <p class="stage-timer done">au bout</p>
+      </div><figcaption>.stage.apex.prodige — la forme finale</figcaption></figure>
+  </div>
+
+  <div class="pl-grille" style="margin-top:.9rem">
+    <figure class="pl-cas"><span class="rar rar-commune">commune</span></figure>
+    <figure class="pl-cas"><span class="rar rar-rare">rare</span></figure>
+    <figure class="pl-cas"><span class="rar rar-epique">épique</span></figure>
+    <figure class="pl-cas"><span class="rar rar-mythique">mythique</span></figure>
+    <figure class="pl-cas"><span class="rar rar-merveilleuse">merveilleuse</span>
+      <figcaption>.rar-* — les cinq rangs</figcaption></figure>
+  </div>
+</section>
+
+<section class="pl-sec">
+  <h2>4 · Les cartes de l’album</h2>
+  <p>Une carte par rareté, plus le trou du plan de travail. Les étoiles vont de une à trois.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas"><div class="carte rar-rare">
+      <span class="carte-bande"></span>
+      <span class="carte-haut"><span class="carte-fond"></span><span class="carte-bete">🐺</span>
+        <i class="carte-etoiles">★★☆</i></span>
+      <span class="carte-bas"><b class="carte-nom">Loup d’hiver</b>
+        <i class="carte-eff">+18 % de valeur</i><i class="carte-rar">rare · zébré</i></span>
+      <span class="carte-actes"><button type="button" class="carte-acte fondre">Fondre</button></span>
+      </div><figcaption>.carte.rar-rare</figcaption></figure>
+
+    <figure class="pl-cas"><div class="carte rar-mythique">
+      <span class="carte-bande"></span>
+      <span class="carte-haut"><span class="carte-fond"></span><span class="carte-bete">🐲</span>
+        <i class="carte-etoiles">★★★</i></span>
+      <span class="carte-bas"><b class="carte-nom">Ouroboros</b>
+        <i class="carte-eff">+40 % de clic automatique</i><i class="carte-rar">mythique · ocellé</i></span>
+      </div><figcaption>.carte.rar-mythique — sans actes</figcaption></figure>
+
+    <figure class="pl-cas"><div class="carte rar-merveilleuse">
+      <span class="carte-bande"></span>
+      <span class="carte-haut"><span class="carte-fond"></span><span class="carte-bete">🦊</span>
+        <i class="carte-etoiles">★☆☆</i></span>
+      <span class="carte-bas"><b class="carte-nom">Kitsune</b>
+        <i class="carte-eff">+6 % de rente</i><i class="carte-rar">merveilleuse · nacré</i></span>
+      </div><figcaption>.carte.rar-merveilleuse</figcaption></figure>
+
+    <figure class="pl-cas"><div class="carte rar-epique a-fond">
+      <span class="carte-bande"></span>
+      <span class="carte-haut"><span class="carte-fond fond fond-aurore"><i class="fond-p"></i></span>
+        <span class="carte-bete">🗿</span><i class="carte-etoiles">★★☆</i></span>
+      <span class="carte-bas"><b class="carte-nom">Golem</b>
+        <i class="carte-eff">+12 % de couvaison</i><i class="carte-rar">épique · tacheté</i></span>
+      </div><figcaption>.carte.a-fond — un décor derrière la bête</figcaption></figure>
+
+    <figure class="pl-cas"><div class="carte carte-trou"></div>
+      <figcaption>.carte-trou</figcaption></figure>
+  </div>
+</section>
+
+<section class="pl-sec">
+  <h2>5 · Les listes qui se choisissent</h2>
+  <p>Routes de carrefour, nœuds de la constellation, trophées, fiches de l'encyclopédie.
+     Toutes portent un glyphe, un nom, un prix ou une phrase — et toutes se cliquent.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas"><button type="button" class="route">
+      <span class="route-glyphe">🔥</span><span class="route-nom">La grande couvée</span>
+      <span class="route-dit">Les œufs couvent 30 % plus vite.</span>
+      </button><figcaption>.route</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="etoile">
+      <span class="etoile-rond"><span class="etoile-icone">🌊</span></span>
+      <span class="etoile-nom">Torrent</span><span class="etoile-prix">26 jetons</span>
+      </button><figcaption>.etoile</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="etoile owned">
+      <span class="etoile-rond"><span class="etoile-icone">🔥</span></span>
+      <span class="etoile-nom">Chaleur</span><span class="etoile-prix">pris</span>
+      </button><figcaption>.etoile.owned</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="etoile verrou">
+      <span class="etoile-rond"><span class="etoile-icone">🌱</span></span>
+      <span class="etoile-nom">Sève</span><span class="etoile-prix">15 jetons</span>
+      </button><figcaption>.etoile.verrou — le parent manque</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="prime prete">
+      <span class="prime-glyphe">🍳</span><span class="prime-nom">Ponte triple</span>
+      <span class="prime-prix">80,00 G</span>
+      </button><figcaption>.prime.prete — de quoi la payer</figcaption></figure>
+
+    <figure class="pl-cas"><div class="trophee">
+      <span class="trophee-glyphe">🏆</span>
+      <span class="trophee-txt"><b class="trophee-nom">Une première couvée</b>
+        <i class="trophee-dit">Poser un œuf dans un incubateur.</i></span>
+      </div><figcaption>.trophee</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="dex-carte rar-rare connue">
+      <span class="dex-glyphe">🐺</span>
+      <span class="dex-txt"><b class="dex-nom">Loup</b>
+        <span class="dex-pips"><i class="dex-pip on"></i><i class="dex-pip on"></i>
+          <i class="dex-pip"></i><i class="dex-pip"></i><i class="dex-pip"></i></span></span>
+      </button><figcaption>.dex-carte.connue</figcaption></figure>
+
+    <figure class="pl-cas"><button type="button" class="dex-carte rar-epique inconnue">
+      <span class="dex-glyphe">？</span>
+      <span class="dex-txt"><b class="dex-nom">—</b>
+        <span class="dex-pips"><i class="dex-pip"></i><i class="dex-pip"></i>
+          <i class="dex-pip"></i><i class="dex-pip"></i><i class="dex-pip"></i></span></span>
+      </button><figcaption>.dex-carte.inconnue</figcaption></figure>
+  </div>
+</section>
+
+<section class="pl-sec">
+  <h2>6 · La pension</h2>
+  <p>Le nid où l'on dépose deux parents, et la ligne d'un couple au travail.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas pl-large"><div class="nid">
+      <div class="nid-case"><span class="nid-bete">🐺</span><span class="nid-nom">Loup d’hiver</span></div>
+      <div class="nid-case nid-vide"><span class="nid-vide-mot">vide</span>
+        <span class="nid-vide-sous">dépose une bête</span></div>
+      </div><figcaption>.nid-case · .nid-vide</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="couple">
+      <div class="couple-parents">
+        <span class="couple-p rar-rare">🐺 Loup d’hiver</span>
+        <span class="couple-p rar-epique">🗿 Golem</span>
+      </div>
+      <div class="couple-bas"><span class="couple-txt">Il en sortira un œuf épique</span>
+        <span class="couple-reste">4 h 12</span></div>
+      <div class="couple-bar"><i style="width:63%"></i></div>
+      </div><figcaption>.couple</figcaption></figure>
+  </div>
+</section>
+
+<section class="pl-sec">
+  <h2>7 · Ce qui parle au joueur</h2>
+  <p>Bandeaux, dialogue et textes qui montent. La marche 3 pose la règle : si l'information
+     disparaît quand on retire la souris, elle n'est pas affichée.</p>
+
+  <div class="pl-grille">
+    <figure class="pl-cas pl-large">
+      <p class="offline-note"><span><b>Pendant ton absence</b> — ta ferme a tourné 30 min
+        (le maximum) : 4 œufs ont éclos, ton marchand a vendu 3 bêtes pour 12,4 M pièces.</span>
+        <button type="button" class="note-x" title="Fermer">✕</button></p>
+      <figcaption>.offline-note · .note-x</figcaption></figure>
+
+    <figure class="pl-cas pl-large"><div class="dial">
+      <div class="dial-boite">
+        <span class="dial-face">🧑‍🔬</span>
+        <div class="dial-texte"><b class="dial-nom">La professeure</b>
+          <p class="dial-dit">Clique sur l’œuf. Il n’éclora pas tout seul, pas encore.</p></div>
+        <button type="button" class="dial-passer" title="Passer">Passer</button>
+      </div></div><figcaption>.dial</figcaption></figure>
+
+    <figure class="pl-cas">
+      <span class="float gain" style="position:static;display:inline-block">+1,50 M à la vente</span>
+      <figcaption>.float.gain</figcaption></figure>
+  </div>
+</section>
+
+<footer class="pl-sec pl-pied">
+  <h2>8 · Les trois largeurs</h2>
+  <p>La même planche à 375 px (le pouce), 768 px (la tablette) et 1400 px (l'écran large), pour
+     que le responsive se juge sans redimensionner quoi que ce soit. Les ruptures sont celles
+     de <code>style.css</code> : la planche n'en pose aucune.</p>
+  <div class="pl-vues">
+    <div class="pl-vue"><span>375 px — le pouce</span>
+      <iframe src="planche.html?nu" width="375" title="La planche à 375 px"></iframe></div>
+    <div class="pl-vue"><span>768 px — la tablette</span>
+      <iframe src="planche.html?nu" width="768" title="La planche à 768 px"></iframe></div>
+    <div class="pl-vue"><span>1400 px — l’écran large</span>
+      <iframe src="planche.html?nu" width="1400" title="La planche à 1400 px"></iframe></div>
+  </div>
+</footer>
+
+<script>
+  /* LES TROIS VUES CHARGENT CETTE PAGE-CI, donc elle doit savoir se couper la sienne : sans
+     ça, chaque vue en contiendrait trois, et celles-là trois autres. C'est le seul script de
+     la planche, et il ne parle pas du jeu. */
+  if (location.search.indexOf('nu') >= 0) {
+    var pied = document.querySelector('.pl-pied');
+    if (pied) pied.remove();
+    document.querySelector('.pl-tete').style.position = 'static';
+  }
+</script>
+</body>
+</html>
