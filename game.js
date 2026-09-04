@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.11.2';
+const VERSION = 'beta 4.12.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2973,6 +2973,42 @@ function fileOeufs() {
   return (state.file = neuve);
 }
 const poserFile = kind => { fileOeufs().push(kind); };
+
+/* LA RÉSERVE, DANS L'ORDRE OÙ ELLE SE VIDERA. C'est le défaut que le joueur a fini par
+   nommer : « la réserve ne se vide pas dans l'ordre affiché ». Elle ne s'affichait qu'en
+   BOUTIQUE, une case par sorte, rangée par PRIX — et elle se vide par arrivée ou par rareté.
+   Deux ordres pour une seule chose : on lit l'un, le jeu applique l'autre, et le réglage passe
+   pour cassé alors qu'il fait exactement ce qu'il dit.
+
+   La boutique ne peut pas se réordonner : elle est un escalier de prix, et c'est ce qui lui
+   permet de désigner « la marche suivante ». La réserve a donc son propre affichage, sous la
+   bande de couvaison, à côté du réglage qui la gouverne. Par construction, l'ordre lu est
+   l'ordre appliqué — il sort de la même fonction. */
+function reserveEnOrdre() {
+  if (state.triOeuf === 'arrivee') return fileOeufs().slice();
+  const out = [];
+  for (const e of OEUFS_VENDUS.slice().reverse()) {
+    for (let i = 0; i < eggStock(e.key); i++) out.push(e.key);
+  }
+  return out;
+}
+
+/* On compacte les suites : « commun ×3 · rare · commun ×2 » se lit, douze mots ne se lisent
+   pas. Au-delà de cinq groupes on coupe — la fin d'une file de quarante œufs n'apprend rien
+   que le total ne dise déjà. */
+function reserveDite() {
+  const file = reserveEnOrdre();
+  if (!file.length) return '';
+  const nom = k => (EGG_BY_KEY[k] || {}).name ? EGG_BY_KEY[k].name.replace('Œuf ', '') : k;
+  const groupes = [];
+  for (const k of file) {
+    const d = groupes[groupes.length - 1];
+    if (d && d.k === k) d.n++; else groupes.push({ k, n: 1 });
+  }
+  const vus = groupes.slice(0, 5).map(g => nom(g.k) + (g.n > 1 ? ' ×' + g.n : ''));
+  if (groupes.length > 5) vus.push('…');
+  return file.length + ' en réserve · ' + vus.join(' · ');
+}
 const retirerFile = kind => {
   const f = fileOeufs(), i = f.indexOf(kind);
   if (i >= 0) f.splice(i, 1);
@@ -6527,7 +6563,7 @@ function tickView() {
   setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
   // La réserve n'existe que si on a acheté des œufs d'avance : pas de ligne vide sinon.
   $('strip-meta').hidden = !stock;
-  if (stock) setText($('strip-meta'), stock + ' œuf' + (stock > 1 ? 's' : '') + ' en réserve');
+  if (stock) setText($('strip-meta'), reserveDite());
 
   /* LA MARCHE SUIVANTE, ÉTEINTE. On affiche tout ce qui est dévoilé, plus le PREMIER achat
      qui ne l'est pas — grisé, avec son prix, sans sa description. Ce qui vient après lui

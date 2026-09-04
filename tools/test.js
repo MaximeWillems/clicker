@@ -2923,6 +2923,46 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
 });
 
+scenario('œufs — la réserve s’affiche dans l’ordre où elle se vide', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.eggs = { commun: 3, rare: 2, epique: 1, mythique: 0, merveille: 0 };
+  s.file = ['commun', 'commun', 'rare', 'commun', 'epique', 'rare'];
+
+  /* LE DÉFAUT QUE CE SCÉNARIO TIENT, et c'est le joueur qui l'a nommé : « la réserve ne se
+     vide pas dans l'ordre affiché ». Elle ne s'affichait qu'en BOUTIQUE, une case par sorte,
+     rangée par PRIX — et elle se vide par arrivée ou par rareté. Deux ordres pour une seule
+     chose : on lit l'un, le jeu applique l'autre, et le réglage passe pour cassé. */
+  const dit = () => { jeu.refresh(); return noeuds.get('strip-meta').textContent; };
+
+  s.triOeuf = 'arrivee';
+  eq('par arrivée, l’ordre d’entrée', jeu.reserveEnOrdre().join(),
+     'commun,commun,rare,commun,epique,rare');
+  ok('et l’écran le dit', dit().indexOf('commun ×2 · rare · commun') >= 0, dit());
+  eq('le premier à sortir est le premier affiché',
+     jeu.bestStocked(), jeu.reserveEnOrdre()[0]);
+
+  s.triOeuf = 'rarete';
+  eq('par rareté, du plus rare au plus commun', jeu.reserveEnOrdre().join(),
+     'epique,rare,rare,commun,commun,commun');
+  ok('et l’écran le dit aussi', dit().indexOf('épique · rare ×2 · commun ×3') >= 0, dit());
+  eq('le premier à sortir est encore le premier affiché',
+     jeu.bestStocked(), jeu.reserveEnOrdre()[0]);
+
+  /* L'ORDRE LU EST L'ORDRE APPLIQUÉ PAR CONSTRUCTION : les deux sortent de la même fonction.
+     On le vérifie en vidant la réserve pour de bon. */
+  s.incubators = 6; s.incub = [null, null, null, null, null, null];
+  const attendu = jeu.reserveEnOrdre().join();
+  jeu.runAutomations(0.1);
+  eq('la réserve se vide dans cet ordre exact',
+     s.incub.filter(Boolean).map(o => o.kind).join(), attendu);
+
+  /* ET LE COMPTE SE DIT AVANT LE DÉTAIL : c'est le seul chiffre qu'on cherche en passant. */
+  s.eggs = { commun: 2, rare: 0, epique: 0, mythique: 0, merveille: 0 };
+  s.file = ['commun', 'commun'];
+  ok('le total ouvre la ligne', /^2 en réserve/.test(dit()), dit());
+});
+
 scenario('œufs — le tri range la bande, pas seulement la file', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
