@@ -993,9 +993,15 @@ jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui
 #### La garde illimitée est trop forte, et le vivier l'aggraverait
 
 Le constat vient du jeu : une bête gardée rapporte **sa propre valeur de vente toutes les
-heures, indéfiniment, sans rien coûter** (`renteOf`, `RENTE_H = 3600`). Une mythique à
-180 millions rend donc 180 millions par heure, pour toujours, et `☆ garder` la met à l'abri du
-marchand. La stratégie optimale de fin de partie est donc : remplir tous les enclos de bêtes
+vingt minutes, indéfiniment, sans rien coûter** (`renteOf`, `RENTE_H = 1200`). Une mythique à
+180 millions rend donc 540 millions par heure, pour toujours, et `☆ garder` la met à l'abri du
+marchand.
+
+**LA `4.9.1` A TRIPLÉ LA RENTE, ELLE N'A PAS TRAITÉ CE CHANTIER — elle l'a agrandi.** Le
+paragraphe disait « toutes les heures » et `RENTE_H = 3600` ; c'était vrai jusqu'à la `4.9.0`.
+Ce qui s'est joué là est le NIVEAU de la rente, réglé pour que les deux ères s'égalisent. Ce
+qui suit porte sur sa NATURE : perpétuelle et gratuite. Les deux se règlent séparément, et
+monter l'une sans toucher l'autre rend l'optimum de fin de partie trois fois plus rigide. La stratégie optimale de fin de partie est donc : remplir tous les enclos de bêtes
 gardées et ne plus jamais rien vendre. **La seule limite est le nombre d'enclos.**
 
 C'est ce qui condamne le **vivier** — garer une bête hors enclos contre un coût. L'idée
