@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.11.4 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.11.5 · sauvegarde v24 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -993,15 +993,21 @@ jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui
 #### La garde illimitée est trop forte, et le vivier l'aggraverait
 
 Le constat vient du jeu : une bête gardée rapporte **sa propre valeur de vente toutes les
-vingt minutes, indéfiniment, sans rien coûter** (`renteOf`, `RENTE_H = 1200`). Une mythique à
-180 millions rend donc 540 millions par heure, pour toujours, et `☆ garder` la met à l'abri du
-marchand.
+cinq minutes, indéfiniment, sans rien coûter** (`renteOf`, `RENTE_H = 300`). Une mythique
+légende vaut 600 milliards : elle en rend 7 200 par heure, pour toujours, et `☆ garder` la met
+à l'abri du marchand.
 
-**LA `4.9.1` A TRIPLÉ LA RENTE, ELLE N'A PAS TRAITÉ CE CHANTIER — elle l'a agrandi.** Le
-paragraphe disait « toutes les heures » et `RENTE_H = 3600` ; c'était vrai jusqu'à la `4.9.0`.
-Ce qui s'est joué là est le NIVEAU de la rente, réglé pour que les deux ères s'égalisent. Ce
-qui suit porte sur sa NATURE : perpétuelle et gratuite. Les deux se règlent séparément, et
-monter l'une sans toucher l'autre rend l'optimum de fin de partie trois fois plus rigide. La stratégie optimale de fin de partie est donc : remplir tous les enclos de bêtes
+**DEUX RÉGLAGES DE NIVEAU ONT DÉJÀ EU LIEU, ET AUCUN N'EST CE CHANTIER — ils l'ont agrandi.**
+`RENTE_H` valait 3600 jusqu'à la `4.9.0`, 1200 depuis la `4.9.1`, 300 depuis la `4.11.5`. Ce
+qui se joue là est le DÉBIT de la rente ; ce qui suit porte sur sa NATURE : perpétuelle et
+gratuite. Les deux se règlent séparément.
+
+**Le choix de la `4.11.5` est délibéré et assumé** : une décision de garde doit se payer dans
+la séance, et vingt minutes dépassaient ce qu'on passe devant l'écran entre deux gestes. Le
+prix à payer est mesuré et il est lourd — **garder une case rapporte quatre-vingt-dix fois le
+débit d'un cycle élevage-et-vente**, à toutes les raretés, contre vingt-deux fois avant. Le
+chantier ci-dessous n'en devient que plus nécessaire : tant que la rente reste perpétuelle et
+gratuite, monter le débit ne fait que rigidifier l'optimum de fin de partie. La stratégie optimale de fin de partie est donc : remplir tous les enclos de bêtes
 gardées et ne plus jamais rien vendre. **La seule limite est le nombre d'enclos.**
 
 C'est ce qui condamne le **vivier** — garer une bête hors enclos contre un coût. L'idée

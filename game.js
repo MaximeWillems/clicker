@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.11.4';
+const VERSION = 'beta 4.11.5';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -303,24 +303,26 @@ const AGE_SCALE  = [1, 1.06, 1.12, 1.18, 1.25];   // le bond visible à chaque �
    garde est un enclos qui ne tourne pas. La rente est la seule règle qui paie pour NE PAS
    vendre — sans elle, garder une mythique chromatique était un pur sacrifice sentimental.
 
-   Elle s'ouvre à L'ÂGE ADULTE — niveau 36 — et vaut la valeur de la bête étalée sur une
-   heure. Elle était auparavant branchée sur l'embonpoint (« énorme »), c'est-à-dire sur la
+   Elle s'ouvre à L'ÂGE ADULTE — niveau 36 — et vaut la valeur de la bête étalée sur cinq
+   minutes. Elle était auparavant branchée sur l'embonpoint (« énorme »), c'est-à-dire sur la
    mauvaise échelle : un seuil que personne ne devine, et qui obligeait à comprendre la
    mangeoire avant de toucher le premier revenu passif. L'âge ouvre la rente, la taille
    l'augmente — l'embonpoint est déjà dans la valeur de vente, donc il la pousse tout seul.
 
-   C'est peu : un enclos qui enchaîne les cycles rapporte deux à trois fois plus. Au moment
-   où elle s'ouvre, elle pèse environ 2 % du revenu du joueur, qui vient justement de payer
-   3 200 pièces d'évolutions pour ce premier adulte — elle arrive comme une confirmation,
-   pas comme un raccourci. Elle ne remplace jamais l'élevage : elle récompense la poignée de
-   bêtes qu'on avait de toute façon décidé de ne pas vendre.
+   CE PARAGRAPHE DISAIT « C'EST PEU », ET CE N'EST PLUS VRAI DEPUIS LONGTEMPS. Il datait de
+   l'heure, où un enclos qui enchaînait les cycles rapportait deux à trois fois plus que la
+   même case gardée. Mesuré aujourd'hui, à cinq minutes : garder rapporte QUATRE-VINGT-DIX
+   FOIS le débit d'un cycle élevage-et-vente, à toutes les raretés — et l'écart se creuse
+   encore si l'on déduit du cycle le prix de l'œuf et les péages. La rente ne récompense donc
+   plus « la poignée de bêtes qu'on avait décidé de ne pas vendre » : elle EST la ferme, et
+   l'élevage n'est plus qu'un moyen de la peupler.
 
    Ses facteurs sont déjà ceux du prix de vente — niveau, âge, rareté, teinte et taille —
    si bien qu'une bête rapporte à proportion exacte de ce qu'elle vaut. Le chromatique est
    le seul à recevoir un bonus par-dessus : c'est LA bête qu'un joueur garde. */
 const AGE_RENTE     = 3;      // âge minimal : adulte. En deçà, rien du tout.
 const NIV_RENTE     = AGES[AGE_RENTE - 2].niv + 1;   // le niveau 36, qu'on annonce d'avance
-/* UNE BÊTE RAPPORTE SA PROPRE VALEUR EN VINGT MINUTES, et c'était une heure.
+/* UNE BÊTE RAPPORTE SA PROPRE VALEUR EN CINQ MINUTES. C'était une heure, puis vingt minutes.
 
    Le défaut se voyait au sommet : une commune légende vaut 1,5 million, on manie des millions
    pour l'élever — six cent mille de péages rien que pour sa dernière évolution — et elle
@@ -328,10 +330,17 @@ const NIV_RENTE     = AGES[AGE_RENTE - 2].niv + 1;   // le niveau 36, qu'on anno
    au bout, faisaient trois mille pièces la seconde. L'échelle de ce qu'on manipule et celle
    de ce qu'on gagne n'étaient pas la même, et c'est ce décalage qui se sent, pas le nombre.
 
-   Vingt minutes plutôt qu'une heure : la garde reste un pari long — il faut toujours laisser
-   la bête en vie trois fois plus longtemps que le temps de la vendre — mais le débit cesse
-   d'être ridicule devant ce qu'on paie. */
-const RENTE_H       = 1200;
+   CINQ MINUTES, PARCE QU'UNE DÉCISION DE GARDE DOIT SE PAYER DANS LA SÉANCE. Vingt minutes,
+   c'est plus long que ce qu'on passe devant l'écran entre deux gestes : on gardait une bête
+   sans jamais voir le moment où le pari devient gagnant, et un pari dont on ne voit pas le
+   terme ne se prend pas — il se subit. Cinq minutes, on le voit.
+
+   CE QUE ÇA NE RÈGLE PAS, et il faut l'écrire ici parce que le plan dit l'inverse : la rente
+   reste PERPÉTUELLE ET GRATUITE, donc garder bat toujours vendre à l'infini, et ce chiffre-ci
+   rend l'écart quatre fois plus grand. Le chantier de la rente porte sur sa NATURE — coût
+   d'entretien, tarissement ou plafond — et il reste entier. On règle ici le débit, pas la
+   règle. Voir PLAN.md, « La garde illimitée est trop forte ». */
+const RENTE_H       = 300;
 const RENTE_PRODIGE = 2;      // un chromatique double la sienne
 
 /* ── Variantes ────────────────────────────────────────────────────────────────
