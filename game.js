@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.14.0';
+const VERSION = 'beta 4.15.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1106,9 +1106,6 @@ const PRIMES = [
   { cle: 'rente-1', prix: 2500000, glyphe: '🛏️', nom: 'Litière profonde',
     dit: 'Cinq pour cent de rente en plus. Ne touche pas au prix de vente : ça ne paie que si tu gardes.',
     bonus: { rente: 0.05 } },
-  { cle: 'pension-vite-1', prix: 3000000,  glyphe: '🔥', nom: 'Nid tiède',
-    dit: 'Les couvaisons vont moitié plus vite. Ne raccourcit pas un couple déjà parti.',
-    si: () => prime('pension') },
   { cle: 'intendance2', prix: 5000000, glyphe: '📜', nom: 'Grande intendance',
     dit: 'Encore un quart de moins sur chaque évolution, par-dessus l’Intendance.' },
   { cle: 'valeur-2', prix: 8000000, glyphe: '🪧', nom: 'Enseigne peinte',
@@ -1119,9 +1116,6 @@ const PRIMES = [
   { cle: 'vitesse-2', prix: 15000000, glyphe: '⚡', nom: 'Ardeur',
     dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse. Elle ne remplace aucun automate, elle les multiplie.',
     bonus: { vitesse: 0.10 } },
-  { cle: 'pension-sang', prix: 20000000, glyphe: '🩸', nom: 'Sang dominant',
-    dit: 'À la pension, la lignée du parent le plus rare sort deux fois plus souvent. Jamais plus d’une fois sur deux.',
-    si: () => prime('pension') },
   /* SECOND CARREFOUR, même règle et trois natures différentes : un péage qui baisse, une
      valeur qui monte, une rente qui porte. Il tombe assez tard pour que les trois routes
      décrivent des fins de partie distinctes, et pas trois façons d'aller au même endroit. */
@@ -1154,10 +1148,6 @@ const PRIMES = [
   { cle: 'vitesse-3', prix: 300000000, glyphe: '👟', nom: 'Bon pied',
     dit: 'Quinze pour cent de vitesse en plus. Le temps ne se rattrape pas, mais il se serre.',
     bonus: { vitesse: 0.15 } },
-  { cle: 'pension-place-1', prix: 500000000, glyphe: '🪹', nom: 'Second nid',
-    dit: 'Un couple de plus à la fois. La première prime qui te dispense de choisir.',
-    si: () => prime('pension') },
-
   { cle: 'rente-3', prix: 800000000, glyphe: '🛋️', nom: 'Patience',
     dit: 'Quinze pour cent de rente en plus. La seule prime du jeu qui paie uniquement pour ne rien faire.',
     bonus: { rente: 0.15 } },
@@ -1167,12 +1157,6 @@ const PRIMES = [
   { cle: 'vitesse-4', prix: 5000000000, glyphe: '🌪️', nom: 'Sans relâche',
     dit: 'Vingt pour cent de vitesse en plus. La dernière du lot, et la quatrième qui compte.',
     bonus: { vitesse: 0.20 } },
-  { cle: 'pension-portee-1', prix: 6000000000, glyphe: '🐣', nom: 'Ponte double',
-    dit: 'Chaque ponte rend deux œufs au lieu d’un. La pension cesse d’être un outil pour devenir une production.',
-    si: () => prime('pension') },
-  { cle: 'pension-vite-2', prix: 10000000000, glyphe: '🌡️', nom: 'Nid chauffé',
-    dit: 'Les couvaisons vont quatre fois plus vite qu’à l’origine. Remplace le Nid tiède, elle ne s’y ajoute pas.',
-    si: () => prime('pension-vite-1') },
   { cle: 'rente-4', prix: 15000000000, glyphe: '🌝', nom: 'Rien ne presse',
     dit: 'Vingt pour cent de rente en plus. La prime la plus chère du jeu, pour la façon de jouer la plus lente.',
     bonus: { rente: 0.20 } },
@@ -1196,24 +1180,12 @@ const PRIMES = [
   { cle: 'peage-1', prix: 20000000000, glyphe: '🗝️', nom: 'Le grand œuvre',
     dit: 'Faire monter une bête d’un âge coûte un quart de moins. Le péage se paie à chaque évolution : c’est là qu’une fin de partie se joue.',
     bonus: { peage: 0.25 } },
-  { cle: 'pension-place-2', prix: 30000000000, glyphe: '🏘️', nom: 'Rangée de nids',
-    dit: 'Quatre couples à la fois. Huit enclos immobilisés en permanence : c’est là qu’est le prix.',
-    si: () => prime('pension-place-1') },
   { cle: 'oeuf-1', prix: 50000000000, glyphe: '🛒', nom: 'Marché de gros',
     dit: 'Les œufs de la boutique coûtent un quart de moins, quelle que soit leur rareté. Un mythique à cent trente-cinq millions au lieu de cent quatre-vingts.',
     bonus: { oeuf: 0.25 } },
-  { cle: 'pension-portee-2', prix: 80000000000, glyphe: '🍳', nom: 'Ponte triple',
-    dit: 'Trois œufs par ponte. La chance de tirer autre chose, elle, reste attachée à la ponte et non à l’œuf.',
-    si: () => prime('pension-portee-1') },
   { cle: 'clic-1', prix: 120000000000, glyphe: '🤜', nom: 'Poing d’acier',
     dit: 'Chacun de tes clics porte deux fois plus loin. En fin de partie, une bête menée au bout paie au clic — et c’est ce qui rend ce poing utile.',
     bonus: { clic: 1 } },
-  { cle: 'pension-vite-3', prix: 150000000000, glyphe: '🌋', nom: 'Nid ardent',
-    dit: 'Douze fois plus vite qu’à l’origine. Une couvaison de seize heures tombe à quatre-vingts minutes.',
-    si: () => prime('pension-vite-2') },
-  { cle: 'pension-riche-1', prix: 250000000000, glyphe: '🍅', nom: 'Lignées fécondes',
-    dit: 'La richesse d’un couple pèse quatre fois moins sur sa durée. C’est ce qui rend les hautes raretés produisibles au lieu d’attendables.',
-    si: () => prime('pension-vite-2') },
   /* TROISIÈME CARREFOUR, et il arrive assez tard pour que les trois routes décrivent trois
      fins de partie et non trois façons d'aller au même endroit. Même règle que les deux
      autres : un prix, une vitesse, un geste — trois grandeurs qui ne se comparent pas. */
@@ -1230,17 +1202,6 @@ const PRIMES = [
         dit: 'Tes clics portent trois fois plus loin. La ferme travaille, mais c’est ta main qui frappe.',
         bonus: { clic: 2 } },
     ] },
-  { cle: 'pension-place-3', prix: 600000000000, glyphe: '🏙️', nom: 'Le bâtiment entier',
-    dit: 'Huit couples à la fois, seize enclos qui ne rapportent plus rien. À ce stade tu n’élèves plus, tu produis.',
-    si: () => prime('pension-place-2') },
-  { cle: 'pension-portee-3', prix: 1000000000000, glyphe: '🧺', nom: 'Ponte pleine',
-    dit: 'Cinq œufs par ponte, et c’est le bout. La prime la plus chère du jeu.',
-    si: () => prime('pension-portee-2') },
-
-  { cle: 'pension-riche-2', prix: 2000000000000, glyphe: '🧬', nom: 'Le sang ne pèse plus',
-    dit: 'Huit fois moins. Deux mythiques couvent alors en dix minutes, et la pension cesse d’être plus lente que la boutique.',
-    si: () => prime('pension-riche-1') },
-
   /* LES DEUX DERNIERS NÉGOCES FERMENT LA LISTE, et ils ne l'ont pas toujours fermée : ils
      vivaient au milieu, à 2,5 et 60 milliards. Un négoce vaut DEUX ŒUFS DE SA RARETÉ — c'est
      ce qui en fait une décision plutôt qu'un cadeau — donc le prix de l'œuf épique les a
@@ -1706,21 +1667,35 @@ const CIEL = [
      d'une ascension ce qui doit soulager AVANT la première. La forge est du même bois : c'est
      là que va la poussière, elle s'ouvre à la première carte, rien ne doit s'interposer.
 
-     CE QUI RESTE ICI EST CE QU'UN CYCLE NE PEUT PAS ACHETER. Huit nids sont le plafond des
-     primes ; le neuvième ne s'achète nulle part ailleurs. C'est la différence entre ouvrir un
-     pan de jeu — qui était déjà ouvert — et le pousser au-delà de son mur. */
+     CE QUI RESTE ICI EST CE QU'UN CYCLE NE PEUT PAS ACHETER. Huit nids étaient le plafond des
+     primes ; le neuvième ne s'achetait nulle part ailleurs. C'était la différence entre ouvrir
+     un pan de jeu — qui était déjà ouvert — et le pousser au-delà de son mur.
+
+     ── ET LA PENSION EST PASSÉE DE L'AUTRE CÔTÉ DE CETTE LIGNE, LE 5 SEPTEMBRE 2026 ──
+     Les douze primes qui la réglaient sont montées ici. La règle du dessus n'est pas abrogée,
+     elle est PRÉCISÉE : ce qui doit rester dans le cycle, c'est ce qui SOULAGE LA PREMIÈRE
+     HEURE — l'acheteur, le marchand, l'évolution, la forge, sans quoi l'ouverture se joue au
+     poignet. La pension n'est pas de ce bois : elle est ce qu'on fait QUAND on n'a plus rien à
+     acheter, et ses douze primes occupaient les dix dernières marches de l'escalier, si bien
+     que la fin de partie n'avait plus qu'un seul sujet.
+
+     LE BÂTIMENT RESTE UNE PRIME, en pièces, et c'est ce qui empêche le renversement d'aller
+     trop loin : la pension s'ouvre toujours dans le premier cycle. Ce qui monte ici est son
+     ESCALADE, et chaque nœud la lève d'un cran entier — places, portée, vitesse et richesse
+     ensemble. On n'achète pas un nid, puis une couveuse, puis un régime : on agrandit la
+     pension. */
   { cle: 'nid-plus', axe: 'pension', parent: 'etincelle', prix: 6, glyphe: '🪹',
-    nom: 'Un nid de plus',
-    dit: 'Un couple de plus à la pension, par-dessus le plafond d’un cycle.' },
+    nom: 'Le second nid',
+    dit: 'Deux couples à la fois, deux œufs par ponte, et les couvaisons moitié plus rapides.' },
   { cle: 'ponte-plus', axe: 'pension', parent: 'nid-plus', prix: 12, glyphe: '🥚',
-    nom: 'Une ponte de plus',
-    dit: 'Un œuf de plus à chaque ponte, à toutes les pensions à la fois.' },
+    nom: 'La rangée de nids',
+    dit: 'Quatre couples, trois œufs par ponte, quatre fois plus vite — et la richesse d’un couple pèse quatre fois moins sur sa durée.' },
   { cle: 'sang-epais', axe: 'pension', parent: 'ponte-plus', prix: 20, glyphe: '🩸',
     nom: 'Le sang épais',
-    dit: 'Les lignées rares pèsent deux fois moins sur la durée d’une ponte : un couple mythique cesse d’être un pari.' },
+    dit: 'Huit couples, cinq œufs par ponte, douze fois plus vite. La lignée du parent le plus rare sort deux fois plus souvent.' },
   { cle: 'nid-vif', axe: 'pension', parent: 'sang-epais', prix: 30, glyphe: '🌡',
-    nom: 'Le nid vif',
-    dit: 'La pension pond moitié plus vite, par-dessus tout ce que tu as acheté ce cycle.' },
+    nom: 'Le bâtiment entier',
+    dit: 'Neuf couples, six œufs, dix-huit fois plus vite, et le sang ne pèse plus. Deux mythiques couvent en dix minutes.' },
 
   // ── L'ALBUM · ce qui traverse ──
 /* L'ATELIER DE FORGE A ÉTÉ UN NŒUD PENDANT DEUX VERSIONS, et c'était la même faute : c'est
@@ -2471,6 +2446,30 @@ function load() {
     merged.eggs = typeof merged.eggs === 'number'
       ? Object.assign({}, vide, { commun: merged.eggs })
       : Object.assign({}, vide, merged.eggs || {});
+    /* ── LES DOUZE PRIMES DE PENSION SONT DEVENUES QUATRE NŒUDS ──
+       Une sauvegarde d'avant la `4.15.0` porte des primes qui n'existent plus. Les laisser
+       inertes reviendrait à confisquer quatre mille milliards de pièces sans un mot ; on rend
+       donc le cran équivalent dans la constellation. C'est généreux — un nœud est PERMANENT
+       là où une prime tombait à l'ascension — et c'est le bon sens de l'erreur : on ne
+       dépossède pas un joueur pour une décision de conception.
+
+       Le cran est le plus haut des quatre cadrans, pas leur somme : quelqu'un qui n'avait
+       monté que la vitesse récupère la vitesse, et le reste avec. C'est ce que le nœud fait
+       désormais, et on ne peut pas rendre un demi-nœud. */
+    const CRANS_PENSION = ['nid-plus', 'ponte-plus', 'sang-epais', 'nid-vif'];
+    const combien = prefixe => [1, 2, 3].filter(i => merged.primes[prefixe + i]).length;
+    const rang = Math.min(4, Math.max(
+      combien('pension-place-'), combien('pension-portee-'), combien('pension-vite-'),
+      merged.primes['pension-riche-2'] ? 4 : merged.primes['pension-riche-1'] ? 2 : 0,
+      merged.primes['pension-sang'] ? 3 : 0));
+    if (rang) {
+      merged.ciel = merged.ciel || {};
+      for (let i = 0; i < rang; i++) merged.ciel[CRANS_PENSION[i]] = true;
+    }
+    for (const k of Object.keys(merged.primes)) {
+      if (k.startsWith('pension-')) delete merged.primes[k];
+    }
+
     /* '' est une consigne valable — l'acheteur arrêté — et ne doit pas se faire corriger.
        Tout le reste se vérifie contre ce qui SE VEND, et non contre les sortes d'œufs : l'œuf de
        merveille en est une, il n'a pas de prix, et le faire racheter rendrait NaN de pièces. */
@@ -7143,12 +7142,49 @@ const echelle = (paliers, prefixe) => {
   for (let i = 1; i < paliers.length; i++) if (prime(prefixe + i)) v = paliers[i];
   return v;
 };
-const placesPension  = () => echelle([1, 2, 4, 8], 'pension-place-') +
-                            (etoilePrise('nid-plus') ? 1 : 0);
-const vitessePension = () => echelle([1, 1.5, 4, 12], 'pension-vite-') *
-                            (etoilePrise('nid-vif') ? 1.5 : 1);
-const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-') +
-                            (etoilePrise('ponte-plus') ? 1 : 0);
+/* ── LA PENSION MONTE D'UN CRAN ENTIER, ET ELLE MONTE DANS LA CONSTELLATION ────
+   Douze primes la réglaient — trois de places, trois de portée, trois de vitesse, deux de
+   richesse, une de sang — et elles occupaient les DIX DERNIÈRES MARCHES de l'escalier des
+   primes. Arrivé là, il n'y avait plus rien à acheter qui ne soit de la pension, et plus rien
+   à viser : une liste de cinquante et un achats qui se termine sur une monoculture.
+
+   Elles sont maintenant les quatre nœuds de l'axe pension, et chaque nœud lève LES QUATRE
+   CADRANS D'UN CRAN. C'est aussi ce que le bâtiment raconte mieux : on n'achète pas un nid,
+   puis une couveuse, puis un régime — on agrandit la pension.
+
+       cran        places   portée   vitesse   richesse
+       aucun          1        1        ×1        ×1
+       1er nœud       2        2       ×1,5       ×1
+       2e             4        3        ×4        ×4
+       3e             8        5       ×12        ×8      (et le sang dominant)
+       4e             9        6       ×18       ×16
+
+   Le plafond ne bouge pas d'un cran : c'est exactement ce que les douze primes et les quatre
+   nœuds donnaient ensemble. Ce qui change est la MONNAIE et la PERMANENCE.
+
+   ── CE QUE ÇA RENVERSE, ET IL FAUT L'ÉCRIRE ──
+   La `4.5.0` avait posé l'inverse, et le commentaire de `CIEL` le disait ainsi : « une
+   constellation qui possède un pan de jeu — même seulement pour le rendre permanent — le
+   déplace hors de la partie où il appartient, et fait dépendre d'une ascension ce qui doit
+   soulager AVANT la première ». La règle valait pour l'automatisation, qui doit être là dès la
+   première boucle sinon l'heure d'ouverture se joue au poignet.
+
+   ELLE NE VAUT PAS POUR LA PENSION, et c'est la décision du 5 septembre 2026 : la pension
+   n'est pas ce qui soulage la première heure, c'est ce qu'on fait QUAND on n'a plus rien à
+   acheter. Le bâtiment lui-même reste une prime en pièces — il s'ouvre donc dans le premier
+   cycle, comme avant. Ce qui monte, c'est son escalade.
+
+   Le prix en jetons n'a pas bougé — 6, 12, 20, 30 — alors que chaque nœud porte trois fois
+   plus qu'avant. C'est un réglage à part, et un seul chiffre à tourner le jour où la mesure
+   dira que la pension s'ouvre trop vite. */
+const rangPension = () => ['nid-plus', 'ponte-plus', 'sang-epais', 'nid-vif']
+                          .filter(etoilePrise).length;
+
+const cranPension = paliers => paliers[Math.min(rangPension(), paliers.length - 1)];
+
+const placesPension  = () => cranPension([1, 2, 4, 8, 9]);
+const vitessePension = () => cranPension([1, 1.5, 4, 12, 18]);
+const porteePension  = () => cranPension([1, 2, 3, 5, 6]);
 /* LA RICHESSE, ET POURQUOI ELLE SE DESSERRE SANS SE LEVER. Le multiplicateur de rareté — ×64
    pour deux mythiques — est ce qui empêche la pension d'être une imprimante à billets, et
    c'était mesuré avant de l'ouvrir. Mais c'est aussi ce qui la laissait à trente œufs
@@ -7158,8 +7194,7 @@ const porteePension  = () => echelle([1, 2, 3, 5], 'pension-portee-') +
    pension rend alors 240 œufs mythiques l'heure, contre 480 pour un acheteur de douze
    incubateurs. Elle devient un vrai choix. Le compte reste perdant — 43 Md/h de valeur
    produite contre 396 Md/h de rente abandonnée par seize enclos — et c'est ce qui tient. */
-const richessePension = () => echelle([1, 4, 8], 'pension-riche-') *
-                             (etoilePrise('sang-epais') ? 2 : 1);
+const richessePension = () => cranPension([1, 1, 4, 8, 16]);
 
 /* CE QUE LES PRIMES CHANGENT À LA PENSION.
 
@@ -7180,7 +7215,7 @@ const richessePension = () => echelle([1, 4, 8], 'pension-riche-') *
    chance de toutes les merveilles d'un coup. */
 const chancePension = ecart =>
   Math.min(0.5, PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)] *
-                (prime('pension-sang') ? 2 : 1));
+                (rangPension() >= 3 ? 2 : 1));
 
 // Une bête parquée : elle est dans un couple, donc dans la pension.
 const enPension  = c => couples().some(k => k.a === c.id || k.b === c.id);
@@ -7990,8 +8025,16 @@ function renderEncyclopedie() {
      qu'elle a quitté l'écran modal : sans garde, elle se rebâtirait dix fois par seconde — le
      défaut de la 1.8.2, qu'on ne refait pas deux fois. Le carnet de la lignée y entre en
      entier, ce qui est peu de chose pour une seule entrée, et le compte des primes avec :
-     les pourcentages de la pension se recalculent, donc ils bougent quand on achète. */
+     les pourcentages de la pension se recalculent, donc ils bougent quand on achète.
+
+     LA CONSTELLATION Y EST ENTRÉE AVEC LA PENSION. Cette ligne comptait les primes parce que
+     c'est là que vivaient les douze réglages de la pension ; depuis qu'ils sont des nœuds, une
+     signature qui ne regarde que les primes fige le pourcentage sur sa valeur d'avant l'achat.
+     La fiche annonçait donc 99 % pour un couple qui en était à 98, jusqu'au prochain
+     dévoilement. La règle est plus courte que l'oubli : ce que la fiche CALCULE doit être dans
+     ce qu'elle SIGNE. */
   const sig = cle + '|' + seenCount() + '|' + Object.keys(state.primes || {}).length +
+              '|' + Object.keys(state.ciel || {}).length +
               '|' + JSON.stringify(dexVu(cle) || 0);
   if (sig === encySig) return;
   encySig = sig;

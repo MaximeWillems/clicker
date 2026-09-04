@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.14.0** | la planche : chaque composant dans chaque état, contre le vrai `style.css` — la première des six marches de l’écran |
+| **beta 4.15.0** | la pension monte dans la constellation : douze primes deviennent quatre crans, et la liste des primes cesse de finir en monoculture |
+| beta 4.14.0 | la planche : chaque composant dans chaque état, contre le vrai `style.css` — la première des six marches de l’écran |
 | beta 4.13.2 | une porte par règle : les quatre tables d’échelle ne se lisent plus qu’à deux endroits, et un scénario refuse la cinquième recopie |
 | beta 4.13.1 | « elle ne rembourse jamais » était faux pour les quatre raretés payantes |
 | beta 4.13.0 | l’idle et le combo : une minute sans clic met la ferme au calme, une série de clics monte en racine et tombe à quinze secondes |
