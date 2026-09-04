@@ -1146,6 +1146,58 @@ blessure, dans un jeu sans combat — trouve ici sa réponse : la tour EST l'end
 des coups. L'hydre n'est donc pas une lignée de plus, c'est la bête du second mode, et les deux
 idées se tiennent debout ensemble ou pas du tout.
 
+#### Les statistiques — la bête devient un individu
+
+**Deux couches, et c'est la seconde qui fait le jeu.** Chaque famille porte ses statistiques de
+base — attaque, défense, vie, vitesse : tous les béhémoths se ressemblent. Par-dessus, un
+système d'INDIVIDUALITÉ, à la manière des IV : chaque bête a les siennes. Le but devient la
+créature parfaite.
+
+**ET ÇA DONNE ENFIN SA RAISON D'ÊTRE À LA PENSION.** Le plan écrit noir sur blanc que la
+pension est « toujours perdante en argent » et qu'elle ne sert qu'à viser une lignée. Avec les
+statistiques individuelles, elle devient le seul endroit où l'on SÉLECTIONNE. La règle
+proposée : l'enfant hérite de statistiques proches de celles des parents, un peu meilleures —
+**40 % moins bien, 60 % mieux**.
+
+Le chantier « l'hérédité », déjà au plan, et celui-ci **sont le même chantier**. Il faut les
+fusionner : transmettre teinte, tempérament et motif, c'est le même mécanisme que transmettre
+quatre nombres, et l'écrire deux fois donnerait deux règles d'héritage qui divergeront.
+
+> **UN CLIQUET SANS BUTÉE MONTE POUR TOUJOURS.** 60 % de chances de faire mieux à chaque
+> génération, c'est une dérive positive garantie : la statistique moyenne monte de 0,2 cran par
+> ponte, indéfiniment. Il faut un PLAFOND par statistique — et mieux qu'un plafond sec, un
+> progrès qui se resserre en approchant : les derniers crans doivent coûter des dizaines de
+> pontes, sinon la créature parfaite s'obtient en une soirée et le jeu s'arrête. C'est
+> exactement la faute qui a fait de la pension une imprimante à billets, et elle a été mesurée
+> avant d'être corrigée. **À chiffrer avant d'écrire une ligne.**
+
+**CENT VINGT NOMBRES À INVENTER — OU HUIT RÈGLES.** Trente lignées × quatre statistiques, c'est
+un travail d'auteur ingrat et une table que personne ne saura rééquilibrer. Or `ETIQUETTES`
+donne déjà à chaque lignée un couple **milieu / peau** :
+
+    terre eau ciel                    nu · poil · plume · écaille · carapace · pierre
+
+Une écaille défend, une carapace défend plus et ralentit, une plume est rapide et fragile, la
+pierre encaisse tout et ne bouge pas. **La peau distribue, le milieu module, et le rang donne
+le budget total** — quatre stats déduites de deux étiquettes et d'un rang, au lieu de cent
+vingt valeurs à la main. La table reste modifiable au cas par cas pour les exceptions.
+
+**Le rang, pas le multiplicateur** : la rareté vaut de ×1 à ×15 000 en valeur marchande, ce qui
+ne peut pas porter un combat. C'est le rang (0 à 4) qui donne le budget.
+
+**Ce que ça coûte en sauvegarde** : quatre nombres de plus par bête ET par carte d'album, donc
+une migration. Les bêtes existantes n'ont pas d'individualité — il faudra décider si elles en
+reçoivent une au hasard (elles deviennent jouables mais moyennes) ou une parfaite (cadeau
+d'ancienneté). La première, par cohérence avec toutes les migrations de ce fichier.
+
+**Où les stats se montrent, et où elles ne se montrent pas.** Quatre nombres par bête sur un
+écran qu'on vient d'alléger, c'est le chemin le plus court pour le réencombrer. Elles n'ont
+leur place qu'à deux endroits : **la tour**, où elles décident, et **l'écran de la pension**, où
+l'on compare deux parents. Nulle part ailleurs — surtout pas sur la vignette.
+
+**La constellation peut aussi en vendre**, ce qui lui donne un contenu naturel pour son
+septième axe, celui de la tour.
+
 #### L'hydre de Lerne — la première bête qui grandit par le mal qu'on lui fait
 
 **Merveille, et le rang se décide sur la mécanique.** J'avais recommandé mythique pour soulager
