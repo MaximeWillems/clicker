@@ -5204,6 +5204,108 @@ scenario('hérédité — le nid dit ce que le couple transmet', () => {
      jeu.ditDeLHeritage(a, c));
 });
 
+scenario('achromatiques — quatre gris, aucun brûlé, la même teinte sur toute lignée', () => {
+  /* ON SIMULE LE NAVIGATEUR, parce que la faute était invisible autrement. `brightness(1.95)`
+     envoyait à un blanc PUR tout ce qui dépassait 0,51 : sur le wukong, 43 % du dessin — le
+     nuage entier et les mèches claires — sortaient à `#ffffff`, une seule valeur pour cinq
+     clartés différentes. Rien dans le jeu ne pouvait le dire ; il fallait refaire le calcul.
+
+     ON INTERDIT LE PALIER, PAS UN RÉGLAGE. Un test qui figerait les nombres empêcherait de
+     retoucher un gris, ce qui est justement ce qu'on veut pouvoir faire. Ce qu'on interdit,
+     c'est qu'une chaîne rende la même sortie pour des entrées différentes : ça, ce n'est
+     jamais voulu, quel que soit le réglage. */
+  const jeu = neuf();
+  const cl = v => Math.max(0, Math.min(1, v));
+  const mul = (m, p) => [m[0]*p[0]+m[1]*p[1]+m[2]*p[2],
+                         m[3]*p[0]+m[4]*p[1]+m[5]*p[2],
+                         m[6]*p[0]+m[7]*p[1]+m[8]*p[2]];
+  const sat = s => [0.213+0.787*s, 0.715-0.715*s, 0.072-0.072*s,
+                    0.213-0.213*s, 0.715+0.285*s, 0.072-0.072*s,
+                    0.213-0.213*s, 0.715-0.715*s, 0.072+0.928*s];
+  const sep = a => { const r = 1 - a; return [
+    0.393+0.607*r, 0.769-0.769*r, 0.189-0.189*r,
+    0.349-0.349*r, 0.686+0.314*r, 0.168-0.168*r,
+    0.272-0.272*r, 0.534-0.534*r, 0.131+0.869*r]; };
+  const rot = a => { const c = Math.cos(a*Math.PI/180), s = Math.sin(a*Math.PI/180); return [
+    0.213+c*0.787-s*0.213, 0.715-c*0.715-s*0.715, 0.072-c*0.072+s*0.928,
+    0.213-c*0.213+s*0.143, 0.715+c*0.285+s*0.140, 0.072-c*0.072-s*0.283,
+    0.213-c*0.213-s*0.787, 0.715-c*0.715+s*0.715, 0.072+c*0.928+s*0.072]; };
+
+  function passe(chaine, rgb) {
+    let p = rgb.slice();
+    for (const m of chaine.matchAll(/(hue-rotate|saturate|brightness|contrast|grayscale|sepia)\(([-\d.]+)/g)) {
+      const v = parseFloat(m[2]);
+      if (m[1] === 'brightness')    p = p.map(x => x * v);
+      else if (m[1] === 'contrast') p = p.map(x => (x - 0.5) * v + 0.5);
+      else p = mul(m[1] === 'saturate' ? sat(v) : m[1] === 'grayscale' ? sat(1 - v)
+                 : m[1] === 'sepia' ? sep(v) : rot(v), p);
+      p = p.map(cl);
+    }
+    return p;
+  }
+  const clarte = p => 0.213*p[0] + 0.715*p[1] + 0.072*p[2];
+
+  const gris = jeu.CHROMAS.filter(c => c.hue === null);
+  eq('quatre crans hors de la roue', gris.length, 4);
+
+  const niveaux = [];
+  for (const g of gris) {
+    const f = jeu.filtreCouleur(g);
+
+    /* LA TEINTE DU DESSIN DOIT ÊTRE EFFACÉE D'ABORD. Sans ça la chaîne garde un résidu de la
+       bête, et le même nom rend deux couleurs selon la lignée — c'était le cas de la perle et
+       de l'ardoise, à 0,21 l'une de l'autre entre un wukong et un kitsune. */
+    ok(g.name + ' commence par tout effacer', /^grayscale\(1\)/.test(f), f);
+
+    /* UNE COULEUR ET LE GRIS DE MÊME CLARTÉ DOIVENT SORTIR IDENTIQUES : c'est exactement ce
+       que veut dire « la teinte du dessin ne compte pas ». Comparer deux couleurs entre elles
+       ne dirait rien — n'ayant pas la même clarté, elles ont le droit de différer. */
+    let derive = 0;
+    for (const c of [[0.80, 0.20, 0.20], [0.20, 0.20, 0.80], [0.25, 0.70, 0.30]]) {
+      const L = clarte(c);
+      const a = passe(f, c), b = passe(f, [L, L, L]);
+      derive = Math.max(derive, ...[0, 1, 2].map(i => Math.abs(a[i] - b[i])));
+    }
+    ok(g.name + ' rend la même chose quelle que soit la teinte d’origine', derive < 0.02,
+       'dérive ' + derive.toFixed(3));
+
+    let seuil = null, palier = 0, avant = null;
+    for (let x = 0; x <= 1.0001; x += 0.02) {
+      const p = passe(f, [x, x, x]);
+      if (seuil === null && p.every(v => v > 0.99)) seuil = x;
+      if (avant !== null && Math.abs(clarte(p) - avant) < 0.002) palier++;
+      avant = clarte(p);
+    }
+    /* LA SUR-EXPOSITION SE CHIFFRE : c'est l'entrée à partir de laquelle plusieurs clartés
+       différentes sortent au même blanc pur. Le blanc l'atteignait à 0,508 et la perle à
+       0,708, quand les dessins montent à 0,884 — d'où 43 % du wukong aplatis sur une seule
+       valeur. Au-delà de 0,90 le palier ne touche plus rien de ce qui est dessiné, et un
+       sommet qui blanchit tout à fait n'est pas une faute : c'en est un de le faire avant. */
+    ok(g.name + ' ne brûle pas dans la plage des dessins', seuil === null || seuil >= 0.90,
+       'blanc pur dès ' + (seuil === null ? '—' : seuil.toFixed(2)));
+    ok(g.name + ' garde du modelé sur toute la rampe', palier <= 4, palier + ' paliers sur 50');
+
+    niveaux.push({ nom: g.name, l: clarte(passe(f, [0.5, 0.5, 0.5])) });
+  }
+
+  /* QUATRE CRANS QUI N'EN MONTRENT QUE TROIS SONT TROIS CRANS AVEC UN NOM DE TROP. Le blanc et
+     la perle sortaient à 0,110 l'un de l'autre — quatre fois moins que les deux autres écarts,
+     et sans différence de teinte pour rattraper. */
+  niveaux.sort((a, b) => b.l - a.l);
+  eq('du plus clair au plus sombre', niveaux.map(n => n.nom).join(' '), 'blanc perle ardoise onyx');
+  for (let i = 0; i < niveaux.length - 1; i++) {
+    const e = niveaux[i].l - niveaux[i+1].l;
+    ok(niveaux[i].nom + ' et ' + niveaux[i+1].nom + ' se distinguent', e > 0.08, 'écart ' + e.toFixed(3));
+  }
+
+  /* L'ONYX NE DOIT PAS ÊTRE UN TROU. La pièce d'incubation est à `#0E1310`, soit 0,07 de
+     clarté : une bête qui passerait entièrement sous ce niveau ne serait qu'un contour cerclé
+     d'un halo. On regarde son point le plus clair, pas sa moyenne. */
+  const onyx = gris.find(g => g.key === 'onyx');
+  const sommet = clarte(passe(jeu.filtreCouleur(onyx), [0.884, 0.884, 0.884]));
+  ok('l’onyx se lit encore sur la pièce', sommet > 0.15, 'sommet ' + sommet.toFixed(3) + ' contre 0,07');
+});
+
 scenario('couleur — le ton se dit une seule fois dans le filtre', () => {
   /* LA FAUTE DE LA 4.22.0, ET POURQUOI ELLE SE GARDE ICI. `PRODIGE_FILTER` commençait par
      `saturate(2.4) brightness(1.3)` — le `TON_FILTRE.vif` de la table, au mot près — et

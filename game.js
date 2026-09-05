@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.22.2';
+const VERSION = 'beta 4.23.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -468,6 +468,38 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    LE REGISTRE NE VARIE PAS : des matières, des pigments et des pierres. Jamais « bleu clair »
    ni « rouge foncé » — un nom de couleur qui décrit sa position sur une échelle est un nom
    qu'on oublie. Le grenat referme le cercle en ramenant vers l'écarlate. */
+/* ── LE MOTEUR DES ACHROMATIQUES ───────────────────────────────────────────────
+   Les quatre gris ne sont pas des teintes de la roue : ils se fabriquent autrement, et cette
+   fonction est le seul endroit qui sait comment.
+
+   IL COMMENCE PAR TOUT EFFACER, ET C'EST LE POINT. Ils s'écrivaient `saturate(.12)`, ce qui ne
+   POSE pas une teinte : ça en GARDE un huitième — celle du dessin. La perle d'un kitsune
+   écarlate et la perle d'un wukong sortaient donc à 0,207 l'une de l'autre, soit plus loin que
+   deux crans voisins de l'échelle. Un nom de couleur qui rend deux choses selon la bête n'est
+   pas un nom de couleur. Après `grayscale(1)`, la suite ne voit plus qu'une clarté, et la
+   perle est la même perle partout.
+
+   PUIS IL COMPRIME AU LIEU DE MULTIPLIER. Le blanc était `brightness(1.95)` : une
+   multiplication envoie à un blanc PUR tout ce qui dépasse 0,51, et sur le wukong ça faisait
+   43 % du dessin — le nuage entier et toutes les mèches claires, aplatis sur une seule valeur.
+   C'est ça, la sur-exposition : pas « trop clair », mais plusieurs clartés d'entrée pour une
+   seule de sortie, donc du modelé perdu qu'aucun réglage ne rend. `contrast()` en dessous de 1
+   RESSERRE la plage, `brightness()` la replace : ensemble ils tiennent les deux bouts, le
+   contour et le point le plus clair, sans jamais buter.
+
+     teinte   la dose de sépia — la matière de la teinte, avant qu'on la tourne
+     angle    où on l'emmène : 175° pour un gris froid, 335° pour une nacre chaude
+     force    combien on la voit ; au-delà, un « gris » cesse d'être gris
+     serre    le resserrement de la plage — c'est lui qui empêche de brûler
+     niveau   où le cran se pose sur l'échelle du clair au sombre
+
+   L'ONYX RESTE AU-DESSUS DE LA PIÈCE, et c'est chiffré : son point le plus clair sort à 0,24
+   de clarté quand le fond `#0E1310` est à 0,07. Une bête vraiment noire y serait un trou
+   cerclé d'un halo ; celle-ci se lit. */
+const filtreGris = (teinte, angle, force, serre, niveau) =>
+  'grayscale(1) sepia(' + teinte + ') hue-rotate(' + angle + 'deg) saturate(' + force + ') '
+  + 'contrast(' + serre + ') brightness(' + niveau + ')';
+
 const CHROMAS = [
   // ── LA ROUE · seize teintes à 22,5°, et leurs indices ne bougent jamais ──
   { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0,   ton: 'vif' },
@@ -496,10 +528,10 @@ const CHROMAS = [
      d'incubation est à #0E1310. Une bête vraiment noire y serait un trou cerclé d'un halo
      doré — on verrait le contour et rien d'autre. Onyx est donc un gris très sombre, et son
      nom l'assume : un onyx est noir sans être un vide. */
-  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, filtre: 'saturate(0) brightness(1.95)' },
-  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, filtre: 'saturate(.12) brightness(1.4)' },
-  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, filtre: 'saturate(.12) brightness(.82)' },
-  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, filtre: 'saturate(0) brightness(.5)' },
+  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, filtre: filtreGris(.15, 175, 1.2, .62, 1.28) },
+  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, filtre: filtreGris(.15, 335, 2.6, .66, 1.02) },
+  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, filtre: filtreGris(.15, 175, 2.6, .76, .56) },
+  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, filtre: filtreGris(.15, 175, 1.2, .86, .28) },
 
   /* ── LES RECETTES · ce qu'une teinte donne croisée avec un blanc ou un onyx ──
      ELLES NE PORTENT QUE SUR UN CRAN SUR DEUX DE LA ROUE, et c'est délibéré à deux titres.
