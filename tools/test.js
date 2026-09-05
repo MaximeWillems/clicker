@@ -5204,7 +5204,7 @@ scenario('hérédité — le nid dit ce que le couple transmet', () => {
      jeu.ditDeLHeritage(a, c));
 });
 
-scenario('achromatiques — quatre gris, aucun brûlé, la même teinte sur toute lignée', () => {
+scenario('couleurs — aucune ne blanchit, et les quatre gris partent du même gris', () => {
   /* ON SIMULE LE NAVIGATEUR, parce que la faute était invisible autrement. `brightness(1.95)`
      envoyait à un blanc PUR tout ce qui dépassait 0,51 : sur le wukong, 43 % du dessin — le
      nuage entier et les mèches claires — sortaient à `#ffffff`, une seule valeur pour cinq
@@ -5304,6 +5304,26 @@ scenario('achromatiques — quatre gris, aucun brûlé, la même teinte sur tout
   const onyx = gris.find(g => g.key === 'onyx');
   const sommet = clarte(passe(jeu.filtreCouleur(onyx), [0.884, 0.884, 0.884]));
   ok('l’onyx se lit encore sur la pièce', sommet > 0.15, 'sommet ' + sommet.toFixed(3) + ' contre 0,07');
+
+  /* ── ET AUCUNE DES TRENTE-SIX NE BLANCHIT ─────────────────────────────────────
+     La même faute vivait dans les tons de la roue. `clair` était `brightness(1.72)` : il
+     blanchissait tout ce qui dépassait 0,576, et sur un crapaud — déjà pâle — ça faisait 60 %
+     du dessin. Les huit recettes claires rendaient donc huit fois la même grenouille blanche à
+     liseré coloré, ce qui est la façon la plus coûteuse de n'avoir qu'une couleur. Le `vif`
+     blanchissait 32 % du même crapaud.
+
+     LES DESSINS MONTENT À 0,884. Au-delà de 0,90, le palier ne touche plus rien de ce qui est
+     peint — c'est le même seuil que pour les gris, et c'est le même défaut. */
+  for (const c of jeu.CHROMAS) {
+    const f = jeu.filtreCouleur(c);
+    let blanchit = null;
+    for (let x = 0.40; x <= 1.0001; x += 0.01) {
+      if (passe(f, [x, x, x]).every(v => v > 0.99)) { blanchit = x; break; }
+    }
+    ok(c.name + ' ne blanchit pas dans la plage des dessins',
+       blanchit === null || blanchit >= 0.90,
+       'blanc pur dès ' + (blanchit === null ? '—' : blanchit.toFixed(2)));
+  }
 });
 
 scenario('couleur — le ton se dit une seule fois dans le filtre', () => {

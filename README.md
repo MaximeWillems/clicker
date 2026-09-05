@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.23.0** | les quatre achromatiques cessent d’être de l’exposition : le blanc ne brûle plus la moitié du dessin, et blanc, perle, ardoise et onyx portent chacun sa teinte, la même sur toute lignée |
+| **beta 4.23.1** | les tons cessent de blanchir : le `clair` aplatissait 60 % d’un crapaud sur du blanc pur, et ses huit recettes rendaient huit fois la même bête |
+| beta 4.23.0 | les quatre achromatiques cessent d’être de l’exposition : le blanc ne brûle plus la moitié du dessin, et blanc, perle, ardoise et onyx portent chacun sa teinte, la même sur toute lignée |
 | beta 4.22.2 | les pages d’outil reprennent leur défilement — elles héritaient du cadre « application » de `style.css` et se coupaient au premier écran ; l’atelier gagne la bande des trente-six, une taille réglable et un fond au choix |
 | beta 4.22.1 | la couleur des chromatiques n’est plus appliquée deux fois : le ton se dit dans la table, le halo dans le halo |
 | beta 4.22.0 | l’atelier : une lignée dans toutes ses variantes, pour juger à l’œil ce qu’aucun scénario ne peut poser |

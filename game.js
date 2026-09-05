@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.23.0';
+const VERSION = 'beta 4.23.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -549,7 +549,7 @@ const CHROMAS = [
   { key: 'beige',      name: 'beige',      fem: 'beige',      hue:  45, ton: 'clair' },
   { key: 'sepia',      name: 'sépia',      fem: 'sépia',      hue:  45, ton: 'sombre' },
   { key: 'argent',     name: 'argent',     fem: 'argent',     hue:  90, ton: 'clair',
-    filtre: 'hue-rotate(90deg) saturate(.22) brightness(1.62)' },
+    filtre: 'hue-rotate(90deg) saturate(.22) contrast(.52) brightness(1.4)' },
   { key: 'bronze',     name: 'bronze',     fem: 'bronze',     hue:  90, ton: 'sombre' },
   { key: 'menthe',     name: 'menthe',     fem: 'menthe',     hue: 135, ton: 'clair' },
   { key: 'malachite',  name: 'malachite',  fem: 'malachite',  hue: 135, ton: 'sombre' },
@@ -572,9 +572,29 @@ const GRIS = CHROMAS.filter(c => c.hue === null);
 const estGris = i => CHROMAS[i] && CHROMAS[i].hue === null;
 
 // Le ton donne le filtre ; un `filtre` écrit à la main l'emporte, pour l'argent et les gris.
+/* LE TON PLACE LA COULEUR SUR L'ÉCHELLE DU CLAIR AU SOMBRE, ET IL COMPRIME AU LIEU DE
+   MULTIPLIER. `brightness()` seul multiplie : au-delà de `1/valeur`, toutes les clartés
+   sortent au même blanc pur. Le ton `clair` était `brightness(1.72)`, donc il blanchissait
+   tout ce qui dépassait 0,576 — sur un crapaud, déjà pâle, ça faisait 60 % du dessin, et les
+   huit recettes claires rendaient huit fois la même grenouille blanche à liseré coloré. Le
+   `vif` blanchissait 32 % du même crapaud.
+
+   `contrast()` en dessous de 1 RESSERRE la plage avant que `brightness()` ne la remonte : les
+   deux ensemble tiennent le sommet sous le blanc pur, et le corps garde sa couleur. Le seuil
+   de blanchiment passe de 0,576 à 0,912 pour le clair et de 0,762 à 0,991 pour le vif — dans
+   les deux cas au-delà de ce que les dessins montent (0,884).
+
+   LE SOMBRE NE COMPRIME PAS, ET C'EST VOULU : il descend, donc il ne peut pas brûler. Lui
+   ajouter un `contrast()` par symétrie ne ferait que lui retirer de la vivacité.
+
+   CE N'EST PAS LE MOTEUR DES GRIS, ET LA DIFFÉRENCE COMPTE. Les gris commencent par
+   `grayscale(1)`, ce qui rend leur couleur indépendante du dessin. Les teintes gardent
+   `hue-rotate`, qui déplace CHAQUE couleur de la bête : c'est lui qui fait que seize teintes
+   restent seize teintes distinctes. Le prix est connu et non payé ici — le nom ne dit pas la
+   couleur obtenue, puisqu'on tourne la teinte du dessin au lieu de la remplacer. */
 const TON_FILTRE = {
-  vif:    'saturate(2.4) brightness(1.3)',
-  clair:  'saturate(1.05) brightness(1.72)',
+  vif:    'saturate(2.6) contrast(.72) brightness(1.16)',
+  clair:  'saturate(1.6) contrast(.52) brightness(1.4)',
   sombre: 'saturate(1.9) brightness(.62)',
 };
 const filtreCouleur = k => k.filtre || 'hue-rotate(' + k.hue + 'deg) ' + TON_FILTRE[k.ton];
