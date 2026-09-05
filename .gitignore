@@ -14,3 +14,5 @@ Desktop.ini
 # Python (outils)
 __pycache__/
 art/apercu-*.png
+# les planches ecartees restent sur le disque, pas dans le depot
+art/rejet-*.png

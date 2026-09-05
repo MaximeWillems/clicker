@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.17.1';
+const VERSION = 'beta 4.17.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2053,6 +2053,13 @@ const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
      crapaud: { 1: 'crapaud-tetard.png', 3: 'crapaud-buffle.png', 5: 'crapaud-gama.png' },
 */
 const ART = {
+  araignee: {
+    1: 'araignee-1-nymphe.png',              // Nymphe
+    2: 'araignee-2-araignee.png',            // Araignée
+    3: 'araignee-3-veuve-noire.png',         // Veuve noire
+    4: 'araignee-4-tisseuse-d-ombre.png',    // Tisseuse d’ombre
+    5: 'araignee-5-arachne.png',             // Arachné, fileuse du sort
+  },
   crapaud: {
     1: 'crapaud-1-tetard.png',
     2: 'crapaud-2-crapaud.png',

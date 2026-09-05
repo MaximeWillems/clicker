@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.17.1** | le Béhémoth et l’Arachné ressortent : décrits en formes plutôt que dessinés, ils ne tenaient pas au regard |
+| **beta 4.17.2** | l’Araignée entre en jeu, cinq stades dessinés — la treizième lignée illustrée |
+| beta 4.17.1 | le Béhémoth et l’Arachné ressortent : décrits en formes plutôt que dessinés, ils ne tenaient pas au regard |
 | beta 4.16.0 | les stats de créature : quatre nombres tirés à l’éclosion, invisibles, qui décident de la qualité d’une carte |
 | beta 4.15.0 | la pension monte dans la constellation : douze primes deviennent quatre crans, et la liste des primes cesse de finir en monoculture |
 | beta 4.14.0 | la planche : chaque composant dans chaque état, contre le vrai `style.css` — la première des six marches de l’écran |

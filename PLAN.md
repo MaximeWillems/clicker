@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.17.1 · sauvegarde v25 · 12 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.17.2 · sauvegarde v25 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -144,9 +144,9 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
 affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**18 lignées sur 30 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
-serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
-sphinx, cheval), les trois mythiques (chimère, béhémoth, ouroboros) et la tarasque.
+**17 lignées sur 30 n'ont pas de dessin** — les neuf rares (loup, méduse, salamandre,
+serpent, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem, sphinx,
+cheval), les trois mythiques (chimère, béhémoth, ouroboros) et la tarasque.
 
 **LA VOIE DES FORMES GÉOMÉTRIQUES A ÉTÉ ESSAYÉE ET REFUSÉE, en `4.17.0` puis retirée.** Le
 béhémoth et l'arachné ont été décrits en ellipses et polygones plutôt que générés, rastérisés
@@ -171,7 +171,7 @@ planche générée : c'est, au mieux, un outil de retouche une fois la grille im
 - **une silhouette coupée par le bord** se lit comme un cadrage raté, jamais comme une bête
   qui déborde.
 
-Les douze faites : les dix communes, plus le kitsune et le wukong.
+Les treize faites : les dix communes, le kitsune, le wukong, et l'araignée depuis la `4.17.2`.
 
 C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
 poubelle au jalon 1, les PNG resteront tels quels dans le vrai jeu. Chaque heure passée là est
