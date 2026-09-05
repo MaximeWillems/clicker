@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.21.0** | trente-six couleurs : quatre gris hors de la roue, et seize recettes pour ce que la roue ne sait pas mélanger |
+| **beta 4.22.0** | l’atelier : une lignée dans toutes ses variantes, pour juger à l’œil ce qu’aucun scénario ne peut poser |
+| beta 4.21.0 | trente-six couleurs : quatre gris hors de la roue, et seize recettes pour ce que la roue ne sait pas mélanger |
 | beta 4.20.0 | l’enclos redevient une place qu’on arbitre : une gardée compte, une confiée non, et une place de plus coûte enfin quelque chose |
 | beta 4.19.1 | le nid dit ce qu’un couple transmet — sans ça l’hérédité était invisible et personne ne composait un couple exprès |
 | beta 4.19.0 | l’hérédité : un petit reçoit une distribution centrée sur le mélange de ses parents — couleur, caractère, motif, fond et statistiques |
@@ -254,6 +255,24 @@ Son défaut est connu : elle **dérive**, puisqu'elle recopie un balisage à la 
 `node tools/planche.js` relève les classes que le jeu pose réellement et dit lesquelles la
 planche ne montre jamais. Ce n'est pas un test — une classe absente n'est pas une faute,
 c'est un trou.
+
+Et pour regarder les BÊTES plutôt que les composants :
+
+```
+node tools/atelier.js
+```
+
+Il écrit `tools/atelier.html` : une lignée au choix dans toutes ses variantes — les trente-six
+couleurs, les cinq âges, les huit fonds, les six tailles — chacune doublée d'une vignette de
+24 px, la taille de la bande. C'est là qu'on répond à la seule question qu'aucun scénario ne
+peut poser : **est-ce que ça se distingue à l'œil ?** Deux chromatiques voisins à 22,5° d'écart
+peuvent être le même pixel une fois réduits, et rien d'autre ne le dira.
+
+Contrairement à la planche, elle est **générée** — et c'est le bon sens inverse. La planche
+montre du balisage, qu'il faut pouvoir comparer à ce que le jeu produit ; l'atelier montre des
+données, et les recopier à la main serait garantir qu'elles dérivent au premier ajout. Elle
+passe par le banc, donc les tables lues sont les vraies, jusqu'au filtre CSS de chaque
+couleur.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
 navigateur : `tools/banc.js` fait tourner `game.js` sous Node avec un DOM minimal et les

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.21.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.22.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -1918,6 +1918,13 @@ node tools/test.js bonheur      seulement ceux dont le nom contient « bonheur �
   relève les classes que le jeu pose et liste celles qu'elle ne montre jamais. Au premier
   relevé, 109 montrées sur 266 — les écrans entiers manquent (ascension, forge, encyclopédie,
   constellation), les composants de la ferme y sont.
+- **`tools/atelier.html`**, écrite par `node tools/atelier.js`, montre les BÊTES là où la
+  planche montre les composants : une lignée au choix dans ses trente-six couleurs, ses cinq
+  âges, ses huit fonds et ses six tailles, chacune doublée d'une vignette de 24 px. Elle est
+  GÉNÉRÉE, et c'est l'inverse de la planche à dessein : la planche montre du balisage, qu'il
+  faut pouvoir comparer à ce que le jeu produit ; l'atelier montre des données, et les recopier
+  à la main serait garantir qu'elles dérivent au premier ajout — un tableau de couleurs périmé
+  ressemble à un tableau de couleurs.
 - **`tools/test.js`** porte les scénarios. Ils ont été écrits au fil des versions, chacun le
   jour où quelque chose s'est cassé : ils visent des endroits précis plutôt que de couvrir
   uniformément.
