@@ -205,7 +205,7 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
     s2.incub[0] = { line: ligne, p: 9999, kind: oeuf.key };
     jeu.hatchAll();
     const c = s2.pen[s2.pen.length - 1];
-    c.tint = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false; c.fond = null;
+    c.chroma = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false; c.fond = null;
     c.cost = oeuf.price || 0;
     return jeu.seuilRentable(c);
   };
@@ -388,7 +388,7 @@ scenario('absence — bornée, et elle ne rend qu’un quart de ce qu’elle a d
       j.hatchAll();
       const c = s.pen[s.pen.length - 1];
       c.age = 5; c.p = j.bandTo(c); c.keep = true;
-      c.tint = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false;
+      c.chroma = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false;
     }
     s.incub = [null, null, null, null];
     s.coins = 0;
@@ -1843,18 +1843,23 @@ scenario('pension — la bête posée au nid quitte la bande tout de suite', () 
   eq('et toujours dans l’enclos', s.pen.length, 2);
 });
 
-scenario('pension — on voit ce qu’on a confié : teinte, caractère, motif', () => {
+scenario('pension — on voit ce qu’on a confié : caractère, motif, état', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
   const [a, b] = couple(jeu, 'loup', 'ours');
-  a.tint = 2; a.temper = 4; a.motif = 4; a.prodige = false;   // écarlate, farouche, un motif
+  a.chroma = 2; a.temper = 4; a.motif = 4; a.prodige = false;   // farouche, un motif, gris
   b.prodige = true;
 
   /* LE NOM NE DIT QU'UNE CHOSE — la règle de l'épithète unique, et elle est bonne. La pension
      est un inventaire, pas un nom : il faut pouvoir dire LAQUELLE des trois louves on a prise.
      D'où la ligne de signes, qui dit tout ce que le nom a laissé de côté. */
+  /* DEPUIS QUE LES TEINTES ONT DISPARU, LE CARACTÈRE EST MONTÉ DANS LE NOM. L'épithète
+     unique prenait la teinte en priorité ; elle n'existe plus, donc une bête grise et
+     farouche s'appelle « Louve farouche ». La ligne des signes ne le répète donc plus — elle
+     dit ce que le nom a laissé de côté, et c'est toujours la règle. */
+  eq('le caractère est passé dans le nom', jeu.epithetOf(a), 'farouche');
   const sg = jeu.signesDe(a);
-  ok('le caractère y est', /farouche/.test(sg), sg);
+  ok('donc la ligne ne le répète pas', !/farouche/.test(sg), sg);
   ok('le motif aussi', sg.includes(jeu.MOTIFS[a.motif]), jeu.MOTIFS[a.motif] + ' | ' + sg);
   ok('et l’état', /adulte|ancien|légende|enfant|adolescent/.test(sg), sg);
   ok('mais pas ce que le nom dit déjà',
@@ -1883,7 +1888,10 @@ scenario('pension — on voit ce qu’on a confié : teinte, caractère, motif',
 
   const signes = sousArbre(ligne, 'couple-signes').map(n => n.textContent);
   eq('deux lignes de signes', signes.length, 2);
-  ok('celle du premier parent dit son caractère', /farouche/.test(signes[0]), signes[0]);
+  /* Le caractère est dans le NOM depuis la disparition des teintes ; la ligne de signes dit
+     ce qui reste — l'état et le motif. C'est la même règle, appliquée à un nom plus riche. */
+  ok('celle du premier parent dit son motif', /marbré/.test(signes[0]), signes[0]);
+  ok('et son nom porte le caractère', /farouche/.test(noms[0]), noms[0]);
 
   // la rareté se lit sur chaque parent, comme partout ailleurs
   const p = sousArbre(ligne, 'couple-p');
@@ -1896,7 +1904,7 @@ scenario('pension — on voit ce qu’on a confié : teinte, caractère, motif',
   jeu.pensionSig = '';
   jeu.refresh();
   const dit = sousArbre(noeuds.get('pension'), 'nid-dit').map(n => n.textContent).join(' | ');
-  ok('le nid montre les mêmes signes', /farouche/.test(dit), dit);
+  ok('le nid montre les mêmes signes', /marbré/.test(dit), dit);
   ok('et garde les étiquettes, qui décident de la durée', /poil|terre|écaille|plume|nu/.test(dit), dit);
 });
 
@@ -2596,7 +2604,7 @@ scenario('merveilles — un cran de rareté, jamais un cran de puissance', () =>
      jeu.RARITY.merveilleuse.plafond, jeu.RARITY.mythique.plafond);
 
   const w = bete(jeu, 'wukong', 3, 20000), o = bete(jeu, 'ouroboros', 3, 20000);
-  w.tint = o.tint; w.niv = o.niv; w.over = o.over = 0; w.temper = o.temper; w.prodige = o.prodige = false;
+  w.chroma = o.chroma; w.niv = o.niv; w.over = o.over = 0; w.temper = o.temper; w.prodige = o.prodige = false;
   eq('donc elle se vend au même prix', jeu.sellValue(w), jeu.sellValue(o));
 
   // et les trois consignes du marchand ont bien leur clef, sinon elles seraient muettes
@@ -2945,24 +2953,26 @@ scenario('encyclopédie — un carnet, jamais un manuel', () => {
   const d = jeu.dexVu('loup');
   ok('le carnet s’ouvre à la première éclosion', !!d);
   eq('une éclosion comptée', d.nes, 1);
-  eq('sa teinte est notée', d.teintes[c.tint], 1);
-  eq('son caractère aussi', d.caracteres[c.temper], 1);
+  eq('son caractère est noté', d.caracteres[c.temper], 1);
   eq('son motif aussi', d.motifs[c.motif], 1);
-  eq('et rien d’autre en teintes', Object.keys(d.teintes).length, 1);
+  /* UNE BÊTE GRISE N'A PAS DE COULEUR À NOTER. Le carnet compte les CHROMATISMES CROISÉS, et
+     une bête sur huit mille en est un : le carnet reste donc vide sur cette rangée pendant
+     des heures, et c'est exactement ce que le rang veut dire depuis que les teintes ont
+     disparu. Ce qui se compte est ce qu'on a rencontré, pas ce que la bête porte en latence. */
+  eq('mais sa couleur latente ne compte pas', Object.keys(d.chromas).length, 0);
 
   const f = fiche(jeu, 'loup');
   eq('la lignée a un nom', f.titre, 'Loup');
   ok('une seule forme rencontrée', /1 forme sur 5/.test(f.dit), f.dit);
   ok('les quatre autres restent des points d’interrogation',
      (f.tout.match(/？/g) || []).length >= 4, f.tout);
-  ok('la teinte croisée s’affiche',
-     f.tout.indexOf(jeu.TINTS[c.tint].name || 'sans teinte') !== -1, f.tout);
-  ok('et le compte des teintes dit ce qui manque', /Teintes — 1 \/ 8/.test(f.tout), f.tout);
+  ok('le compte des chromatismes dit ce qui manque', /Chromatismes — 0 \/ 8/.test(f.tout), f.tout);
 
-  /* DEUX ÉCLOSIONS DE LA MÊME TEINTE COMPTENT DEUX FOIS, elles ne se dédoublent pas. */
-  const avant = d.teintes[c.tint];
-  jeu.noterEclosion({ line: 'loup', tint: c.tint, temper: c.temper, motif: c.motif });
-  eq('le compte monte', jeu.dexVu('loup').teintes[c.tint], avant + 1);
+  /* DEUX CHROMATIQUES DE LA MÊME COULEUR COMPTENT DEUX FOIS, ils ne se dédoublent pas. */
+  jeu.noterEclosion({ line: 'loup', chroma: 3, prodige: true, temper: c.temper, motif: c.motif });
+  eq('un chromatique se note', jeu.dexVu('loup').chromas[3], 1);
+  jeu.noterEclosion({ line: 'loup', chroma: 3, prodige: true, temper: c.temper, motif: c.motif });
+  eq('le compte monte', jeu.dexVu('loup').chromas[3], 2);
   eq('et l’éclosion aussi', jeu.dexVu('loup').nes, d.nes);
 });
 
@@ -3132,7 +3142,7 @@ scenario('colonne — les réglages gardent leurs titres et la revente', () => {
 
 /* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
 function pave(jeu, id, ligne, etoiles) {
-  return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
+  return { id, line: ligne || 'crapaud', age: 5, niv: 100, chroma: 7, rank: 5,
            prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
 }
 
@@ -3207,7 +3217,7 @@ scenario('sauvegarde — les nœuds retirés rendent leurs jetons', () => {
      elle ne l'avait jamais payé. */
   const vieille = neuf({
     v: 21, coins: 0, asc: { n: 1, paliers: 1, jetons: 0, sommet: 0 },
-    album: [{ id: 1, line: 'crapaud', age: 5, niv: 100, tint: 0, rank: 0, motif: 0, temper: 0, etoiles: 1 }],
+    album: [{ id: 1, line: 'crapaud', age: 5, niv: 100, chroma: 0, rank: 0, motif: 0, temper: 0, etoiles: 1 }],
   });
   ok('elle ne garde pas un nœud qui n’existe plus', !vieille.etoilePrise('forge'));
   eq('et rien ne lui est crédité', vieille.state.asc.jetons, 0);
@@ -3218,7 +3228,7 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   s.tuto = false;
   const bete1 = l => { s.pens = 20; s.pen = []; s.incub[0] = { line: l, p: 9999, kind: 'commun' };
                        jeu.hatchAll(); const c = s.pen[s.pen.length - 1];
-                       c.tint = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false;
+                       c.chroma = 0; c.rank = 0; c.motif = 0; c.temper = 0; c.prodige = false;
                        return c; };
   const vente = (c, a) => jeu.sellValue(Object.assign({}, c, { age: a, p: 1e6 }));
   const peage = (c, a) => jeu.evoCost(Object.assign({}, c, { age: a }));
@@ -4202,7 +4212,7 @@ scenario('constellation — le ciel se dessine, et il est plus grand que l’éc
 
 /* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
 function pave(jeu, id, ligne, etoiles) {
-  return { id, line: ligne || 'crapaud', age: 5, niv: 100, tint: 7, rank: 5,
+  return { id, line: ligne || 'crapaud', age: 5, niv: 100, chroma: 7, rank: 5,
            prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
 }
 
@@ -4532,7 +4542,7 @@ scenario('poussière — la rareté s’annule des deux côtés', () => {
   eq('un chromatique rend trois fois plus', jeu.poussiereDe(chroma), jeu.poussiereDe(nu) * 3);
 
   /* LA QUALITÉ N'ENTRE PAS : niveau, teinte et rang décident déjà de la puissance. */
-  const bacle = Object.assign(pave(jeu, 3, 'crapaud'), { niv: 1, tint: 0, rank: 0 });
+  const bacle = Object.assign(pave(jeu, 3, 'crapaud'), { niv: 1, chroma: 0, rank: 0 });
   eq('une carte bâclée rend autant qu’une parfaite', jeu.poussiereDe(bacle), jeu.poussiereDe(nu));
   ok('mais elle est bien plus faible', jeu.puissanceDe(bacle) < jeu.puissanceDe(nu));
 });
@@ -4636,28 +4646,38 @@ scenario('forge — même lignée, même motif, même rang, et rien d’équipé
   ok('et rien de tout ça n’est forgeable', s.album.every(k => !jeu.forgeable(k)));
 });
 
-scenario('forge — ce qui entre se moyenne, et la teinte se dilue', () => {
+scenario('forge — ce qui entre se moyenne, et la couleur suit la roue', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.poussiere = 1e9; s.slots = [];
 
   const trois = [
-    Object.assign(pave(jeu, 1), { age: 5, niv: 100, tint: 7, rank: 5, prodige: true }),
-    Object.assign(pave(jeu, 2), { age: 1, niv: 15,  tint: 0, rank: 0 }),
-    Object.assign(pave(jeu, 3), { age: 5, niv: 100, tint: 2, rank: 3 }),
+    Object.assign(pave(jeu, 1), { age: 5, niv: 100, chroma: 7, rank: 5, prodige: true }),
+    Object.assign(pave(jeu, 2), { age: 1, niv: 15,  chroma: 0, rank: 0 }),
+    Object.assign(pave(jeu, 3), { age: 5, niv: 100, chroma: 2, rank: 3 }),
   ];
   s.album = trois;
   const vu = jeu.fusionDe(trois);
   eq('l’âge est la moyenne', vu.age, 4);
-  eq('la teinte aussi', vu.tint, 3);
+/* LA COULEUR NE SE MOYENNE PAS COMME UN INDICE : seule la carte CHROMATIQUE en donne une,
+     les deux grises n'ont qu'une couleur latente. Ici une seule des trois est chromatique,
+     donc c'est la sienne qui sort — magenta, l'indice 7. */
+  eq('la couleur vient de la seule carte chromatique', vu.chroma, 7);
   eq('le rang aussi', vu.rank, 3);
   /* LE NIVEAU SE REPLIE DANS SA TRANCHE : la moyenne de trois âges différents tombe volontiers
      hors des bornes de l'âge retenu, et une bête de niveau 12 à l'âge légende n'existe pas. */
   ok('le niveau tient dans son âge', vu.niv > 65 && vu.niv <= 85, vu.niv);
   eq('l’étoile monte', vu.etoiles, 2);
 
-  /* LA TEINTE SE DILUE, et c'est la seule façon de garder une belle teinte rare : il en faut
-     trois pour en sortir une. Sinon la forge serait un automatisme au lieu d'une décision. */
-  ok('albâtre ne survit pas à deux ordinaires', vu.tint < 7, vu.tint);
+  /* ET DEUX COULEURS OPPOSÉES SE MÉLANGENT PAR L'ARC COURT, jamais par la moyenne des
+     indices : entre l'écarlate (0) et le magenta (7), la moyenne donnerait du jade, à
+     l'exact opposé des deux. Sur la roue ils sont voisins, et leur milieu est l'écarlate. */
+  eq('le milieu de deux voisins est entre eux', jeu.milieuRoue([0, 2]), 1);
+  /* L'ARC COURT PASSE PAR LE ZÉRO : entre indigo (5) et écarlate (0) le milieu est magenta
+     (7), pas jade (2) — c'est toute la différence entre une roue et une moyenne d'indices. */
+  eq('et il passe par le zéro quand c’est le plus court', jeu.milieuRoue([6, 0]), 7);
+  /* DEUX COULEURS DIAMÉTRALEMENT OPPOSÉES N'ONT PAS DE MILIEU : les deux arcs se valent, et
+     aucun calcul ne peut les départager. On rend la première plutôt qu'un zéro arbitraire. */
+  eq('deux opposées rendent la première', jeu.milieuRoue([3, 7]), 3);
 
   /* LE CHROMATIQUE SE DÉCIDE À LA MAJORITÉ : on ne peut pas être aux deux tiers chromatique,
      et un chromatique perdu au milieu de deux ordinaires ne se transmet pas. */
@@ -4674,7 +4694,7 @@ scenario('forge — ce qui entre se moyenne, et la teinte se dilue', () => {
   // ce que l'écran montrait est bien ce qui sort
   const promis = jeu.fusionDe(trois);
   jeu.forger([1, 2, 3]);
-  eq('la carte forgée est celle qu’on avait vue', s.album[0].tint, promis.tint);
+  eq('la carte forgée est celle qu’on avait vue', s.album[0].chroma, promis.chroma);
   eq('et son âge aussi', s.album[0].age, promis.age);
 });
 
@@ -4964,7 +4984,7 @@ scenario('primes — elles ne traversent pas l’ascension, la migration ne perd
    mesurait alors un « bonus maximal » qui n'était pas le maximum. */
 function parfaite(jeu, motif, id) {
   return {
-    id, line: 'ouroboros', age: 5, niv: 100, tint: jeu.TINTS.length - 1,
+    id, line: 'ouroboros', age: 5, niv: 100, chroma: 0,
     rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif, temper: 0,
     iv: jeu.IV_NOMS.map(() => jeu.IV_MAX),
   };
@@ -5003,10 +5023,14 @@ scenario('stats — quatre nombres tirés à l’éclosion, et la carte les port
   /* ── LA MOYENNE NE BOUGE PAS, ET C'EST TOUTE LA SÛRETÉ DU CHANGEMENT ──
      Les stats prennent leur poids aux autres axes au lieu de s'y ajouter. Des stats moyennes
      valent 0,5, donc 0,20 × 0,5 = 0,10 — exactement ce qu'on a repris au niveau. */
-  const carte = (iv, niv) => ({ line: 'ouroboros', age: 5, niv, tint: 0, rank: 0,
+  const carte = (iv, niv) => ({ line: 'ouroboros', age: 5, niv, chroma: 0, rank: 0,
                                 prodige: false, etoiles: 1, motif: 0, temper: 0, iv });
   const moyennes = jeu.IV_NOMS.map(() => jeu.IV_MAX / 2);
-  eq('une carte type vaut ce qu’elle valait', jeu.qualiteDe(carte(moyennes, 100)), 0.7);
+  /* LA CARTE TYPE MONTE DE TROIS POUR CENT, et c'est voulu : l'axe de la teinte a disparu
+     avec les teintes, son poids s'est reversé sur le niveau, la taille et les stats, et un
+     trophée devait rester à 1,00. Tenir la moyenne EXACTEMENT aurait plafonné le trophée à
+     0,93. Le mouvement est entièrement vers le haut : aucune carte n'est dépréciée. */
+  eq('une carte type monte au lieu de baisser', jeu.qualiteDe(carte(moyennes, 100)), 0.745);
   ok('une carte sans stats la vaut aussi',
      jeu.qualiteDe(carte(null, 100)) === jeu.qualiteDe(carte(moyennes, 100)),
      jeu.qualiteDe(carte(null, 100)));
@@ -5014,10 +5038,10 @@ scenario('stats — quatre nombres tirés à l’éclosion, et la carte les port
   const pire = jeu.IV_NOMS.map(() => 0), mieux = jeu.IV_NOMS.map(() => jeu.IV_MAX);
   const q0 = jeu.qualiteDe(carte(pire, 100)), q1 = jeu.qualiteDe(carte(mieux, 100));
   ok('mais l’écart existe', q1 > q0, q0.toFixed(3) + ' → ' + q1.toFixed(3));
-  ok('et il vaut douze centièmes de qualité', Math.abs(q1 - q0 - 0.12) < 1e-9, q1 - q0);
+  ok('et il vaut quinze centièmes de qualité', Math.abs(q1 - q0 - 0.15) < 1e-9, q1 - q0);
 
   /* LA CARTE PARFAITE RESTE À UN : on n'a pas ajouté de puissance, on a ajouté de la variance. */
-  const trophee = { line: 'ouroboros', age: 5, niv: jeu.NIV_MAX, tint: jeu.TINTS.length - 1,
+  const trophee = { line: 'ouroboros', age: 5, niv: jeu.NIV_MAX, chroma: 0,
                     rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif: 0,
                     temper: 0, iv: mieux };
   eq('un trophée vaut toujours un', jeu.qualiteDe(trophee), 1);
@@ -5041,7 +5065,7 @@ scenario('stats — une sauvegarde d’avant en reçoit, ses cartes non', () => 
   });
   eq('la bête reçoit ses quatre stats', (vieux.state.pen[0].iv || []).length, 4);
   ok('la carte n’en reçoit pas', !vieux.state.album[0].iv);
-  eq('et elle vaut exactement ce qu’elle valait', vieux.qualiteDe(vieux.state.album[0]), 0.7);
+  eq('et elle vaut ce que la redistribution lui donne', vieux.qualiteDe(vieux.state.album[0]), 0.745);
 });
 
 scenario('album — une carte ressemble à une carte', () => {

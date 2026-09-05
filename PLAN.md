@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.17.2 · sauvegarde v25 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.18.0 · sauvegarde v26 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -93,6 +93,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
 | **Les stats de créature** | beta 4.16.0 | deux bêtes menées au même bout font-elles la même carte ? | non — quatre stats tirées à l'éclosion, de 0 à 25, gardées à vie. Elles sont le cinquième axe de la qualité d'une carte et prennent leur poids aux quatre autres : la moyenne ne bouge pas d'un centième, seule la variance est neuve. Invisibles pour l'instant, et ce sont celles que la tour de combat demandera |
+| **Une seule couleur par bête** | beta 4.18.0 | la couleur est-elle un ornement ou un trophée ? | un trophée. Il y avait DEUX systèmes de couleur qui ne se parlaient pas — les teintes sur 47 % des bêtes, le prodige sur une sur huit mille — et une ligne de rendu tranchait déjà en silence. Les teintes disparaissent ; le chromatisme devient une couleur sur une ROUE, ce que l'hérédité exigeait. Prix assumé : les premières heures n'ont plus une bête colorée |
 | **La pension monte dans la constellation** | beta 4.15.0 | la fin de partie peut-elle parler d'autre chose que de la pension ? | oui — ses douze primes occupaient les dix dernières marches de l'escalier ; l'axe la porte maintenant en quatre crans, chacun levant les quatre cadrans d'un coup. Le bâtiment reste une prime, donc elle s'ouvre toujours au premier cycle. **Renverse la `4.5.0`**, qui refusait qu'un pan de jeu quitte le cycle |
 | **L'écran et le doigt** | beta 4.14.0 | peut-on voir ce qu'on change, avant de changer quoi que ce soit ? | la première marche sur six. La planche est posée ; les cinq autres sont du CSS et se jugent dessus. Le chantier reste OUVERT — 48 `:hover` pour 2 `:active`, zéro garde `@media (hover: hover)`, 30 informations qui n'existent que dans une infobulle |
 | **Une porte par règle** | beta 4.13.1, 4.13.2 | une même faute peut-elle vivre à quatre endroits ? | plus maintenant. Choisir entre l'échelle des communes et celle des rangs était écrit à la main quatre fois, et faux quatre fois — jusqu'à annoncer « elle ne rembourse jamais » sur une bête payée un billion. Deux portes, et un scénario qui refuse la cinquième recopie |
@@ -111,7 +112,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
+| **L'hérédité** — couleur, tempérament, motif, fond et stats transmis par les parents, sur une distribution centrée sur le mélange | **la roue des couleurs est posée depuis la `4.18.0`** | est-ce qu'on a envie de sélectionner ? |
 | **Les dix-sept dessins** | rien | — |
 | **L'écran au doigt** — voir plus bas, six marches | la planche, pour les cinq autres | est-ce que le jeu répond quand on le touche ? |
 
@@ -123,7 +124,6 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Yggdrasil** — l'arbre-monde, et le sujet le moins cher à dessiner | sa recette | une merveille peut-elle ne pas être un animal ? |
 | **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **Les stats se voient** — elles agissent depuis la `4.16.0` et rien ne les montre : une lecture sur la fiche, et la planche pour la vérifier | rien, les deux moitiés sont posées | peut-on préférer une bête à une autre ? |
-| **Les chromatismes** — plusieurs, là où il n'y a qu'un prodige | rien | une couleur rare peut-elle se chasser ? |
 | **Les tempéraments à second effet** — précoce, difficile, gourmand, précieux | rien | un tempérament peut-il se choisir plutôt que se subir ? |
 | **Cliquer pour aider la pension** | rien | la présence peut-elle servir là où elle ne sert à rien ? |
 | **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |

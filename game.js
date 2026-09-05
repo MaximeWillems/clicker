@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.17.2';
+const VERSION = 'beta 4.18.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -404,15 +404,42 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    visible sans un seul dessin. Le TEMPÉRAMENT et le MOTIF ne sont que du texte : ils
    donnent une identité à chaque bête sans rien demander aux graphismes. */
 
-const TINTS = [
-  { key: 'ordinaire', name: '',          fem: '',          filter: '',                                                 mult: 1,    poids: 100 },
-  { key: 'cendre',    name: 'cendré',    fem: 'cendrée',   filter: 'saturate(.3) brightness(.88)',                     mult: 1.10, poids: 22 },
-  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  filter: 'hue-rotate(-40deg) saturate(1.7)',                 mult: 1.15, poids: 18 },
-  { key: 'azur',      name: 'azur',      fem: 'azur',      filter: 'hue-rotate(150deg) saturate(1.4)',                 mult: 1.15, poids: 18 },
-  { key: 'jade',      name: 'jade',      fem: 'jade',      filter: 'hue-rotate(80deg) saturate(1.5)',                  mult: 1.20, poids: 14 },
-  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', filter: 'hue-rotate(230deg) saturate(1.5)',                 mult: 1.25, poids: 10 },
-  { key: 'dore',      name: 'doré',      fem: 'dorée',     filter: 'hue-rotate(25deg) saturate(2.2) brightness(1.15)', mult: 1.30, poids: 6 },
-  { key: 'albatre',   name: 'albâtre',   fem: 'albâtre',   filter: 'saturate(0) brightness(1.4)',                      mult: 1.40, poids: 3 },
+/* ── LA COULEUR D'UNE BÊTE ─────────────────────────────────────────────────────
+   IL Y AVAIT DEUX SYSTÈMES DE COULEUR, ET ILS NE SE PARLAIENT PAS. Les TEINTES donnaient une
+   nuance à quarante-sept pour cent des bêtes, avec un multiplicateur de valeur de 1,10 à 1,40 ;
+   le PRODIGE, une sur huit mille, en donnait une autre à ×25. Une bête pouvait être azur ET
+   chromatique, et rien ne disait ce que ça faisait — sauf une ligne de rendu, tout au fond,
+   qui tranchait en silence : le prodige écrasait la teinte. Le jeu avait donc déjà décidé
+   qu'il n'y avait qu'une couleur par bête, sans que la règle soit écrite nulle part.
+
+   ELLE EST ÉCRITE ICI, ET LES TEINTES DISPARAISSENT. Une bête est grise, ou elle est
+   CHROMATIQUE — une sur huit mille cent quatre-vingt-douze, et c'est tout. La couleur cesse
+   d'être un ornement fréquent pour devenir un événement.
+
+   CE QUE ÇA COÛTE, ET IL FAUT LE SAVOIR EN OUVRANT LE JEU : une bête sur deux avait une
+   couleur, une sur huit mille en aura une. Au plafond de la pension c'est un chromatique
+   toutes les quatre heures ; sans pension ni acheteur, jamais. Les premières heures de jeu
+   n'ont plus une seule bête colorée. C'est le prix d'un trophée, et il est assumé.
+
+   LA ROUE, ET POURQUOI IL EN FAUT UNE. Le chromatisme n'est plus un booléen mais une TEINTE
+   SUR UN CERCLE, à intervalles réguliers. C'est l'hérédité qui l'exige : deux parents ne
+   peuvent donner « un mélange des deux » et « un voisin » que si les couleurs sont placées
+   les unes par rapport aux autres. Un jeu de noms sans géométrie ne saurait mélanger un rouge
+   et un bleu.
+
+   TOUTES LES COULEURS SE VALENT. Aucune ne rapporte plus qu'une autre — seul le fait d'être
+   chromatique paie, et il paie ×25. Donner un multiplicateur par couleur recréerait l'échelle
+   de rareté des teintes qu'on vient de retirer, et ferait d'une couleur un chiffre à
+   optimiser au lieu d'une identité à chasser. */
+const CHROMAS = [
+  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0 },
+  { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45 },
+  { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90 },
+  { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135 },
+  { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180 },
+  { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225 },
+  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270 },
+  { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315 },
 ];
 
 /* Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
@@ -489,7 +516,29 @@ const FOND_ODDS = 1 / 800;
 const fondDe = c => (c && c.fond && FOND_BY_KEY[c.fond]) || null;
 
 const PRODIGE_MULT  = 25;
+/* LE HALO DIT « CHROMATIQUE », LA ROTATION DIT LAQUELLE. Le halo ne bouge pas d'une couleur à
+   l'autre : c'est lui qu'on reconnaît de loin dans une bande de quarante vignettes, et le
+   faire varier rendrait le rang lui-même illisible. */
 const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
+const chromaOf   = c => CHROMAS[c && c.chroma] || null;
+
+/* LE MILIEU DE DEUX COULEURS EST UN PROBLÈME DE CERCLE, PAS DE MOYENNE. Entre l'écarlate (0)
+   et le magenta (7), la moyenne arithmétique donne 3,5 — du jade, à l'exact opposé de ces
+   deux-là. Sur une roue, ils sont VOISINS : leur milieu est écarlate. On moyenne donc des
+   VECTEURS et non des indices, ce qui revient à prendre le milieu de l'arc COURT — celui que
+   l'œil appelle « un mélange ». Un rouge et un bleu donnent du violet, jamais du vert. */
+function milieuRoue(indices) {
+  if (!indices || !indices.length) return 0;
+  const n = CHROMAS.length, pas = 2 * Math.PI / n;
+  let x = 0, y = 0;
+  for (const i of indices) { x += Math.cos(i * pas); y += Math.sin(i * pas); }
+  // deux couleurs diamétralement opposées s'annulent : aucun milieu ne les départage,
+  // et on rend la première plutôt qu'un zéro qui serait de l'écarlate arbitraire
+  if (Math.abs(x) < 1e-9 && Math.abs(y) < 1e-9) return indices[0];
+  return ((Math.round(Math.atan2(y, x) / pas) % n) + n) % n;
+}
+const filtreDe   = c => !c || !c.prodige ? ''
+                      : 'hue-rotate(' + (chromaOf(c) || CHROMAS[0]).hue + 'deg) ' + PRODIGE_FILTER;
 
 // grow : divise la durée de croissance. fat : multiplie la vitesse d'engraissement.
 const TEMPERS = [
@@ -2216,7 +2265,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 25;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 26;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2459,6 +2508,19 @@ function load() {
        elles, n'en reçoivent pas — `ivPart` leur rend la moyenne, donc leur qualité ne bouge
        pas d'un centième. On tire pour ce qui est encore vivant, jamais pour ce qui est figé. */
     for (const c of merged.pen || []) if (!c.iv) c.iv = rollIV();
+    /* LES TEINTES ONT DISPARU, ET AVEC ELLES `tint`. Chaque bête reçoit une COULEUR LATENTE —
+       celle qu'elle montrerait si elle était chromatique, et celle que ses petits pourront
+       hériter. C'est ce qui permet à deux bêtes grises de donner un chromatique coloré : sans
+       couleur latente, l'hérédité n'aurait rien à transmettre tant qu'aucun parent n'est
+       chromatique lui-même, et la chasse d'une couleur précise serait fermée. */
+    for (const c of merged.pen || []) {
+      if (c.chroma === undefined) c.chroma = Math.floor(Math.random() * CHROMAS.length);
+      delete c.tint;
+    }
+    for (const k of merged.album || []) {
+      if (k.chroma === undefined) k.chroma = Math.floor(Math.random() * CHROMAS.length);
+      delete k.tint;
+    }
 
     /* ── LES DOUZE PRIMES DE PENSION SONT DEVENUES QUATRE NŒUDS ──
        Une sauvegarde d'avant la `4.15.0` porte des primes qui n'existent plus. Les laisser
@@ -2749,7 +2811,6 @@ const $ = id => document.getElementById(id);
 
 const lineOf    = c => LINE_BY_KEY[c.line];
 const rarityOf  = c => RARITY[lineOf(c).rarity];
-const tintOf    = c => TINTS[c.tint] || TINTS[0];
 const temperOf  = c => TEMPERS[c.temper] || TEMPERS[0];
 const motifOf   = c => MOTIFS[c.motif] || MOTIFS[0];
 
@@ -2797,12 +2858,21 @@ const motifBonus = k => MOTIF_BONUS[MOTIFS[k.motif]] || MOTIF_BONUS.uni;
    1,00 et vaut 1,00. Ce qu'on ajoute n'est pas de la valeur, c'est de la VARIANCE : deux
    bêtes menées au même bout ne font plus la même carte, et il devient possible d'en préférer
    une sans que le jeu ait besoin de le dire. */
+/* L'AXE DE LA TEINTE A DISPARU AVEC LES TEINTES, et son poids se reverse sur les axes que
+   TOUTE bête possède — niveau, taille, stats. Le chromatique garde le sien.
+
+   ON NE PEUT PAS TENIR LES DEUX PROMESSES À LA FOIS, et c'est la seule chose à comprendre ici.
+   La teinte pesait 0,15 mais ne rapportait que 0,031 en moyenne, parce qu'une bête sur deux
+   était « ordinaire ». Garder la moyenne exactement constante demanderait de la remplacer par
+   une constante de 0,031 — et un trophée plafonnerait alors à 0,93 au lieu de 1,00. On garde
+   donc le TROPHÉE À UN, et la carte moyenne monte d'environ trois pour cent. Le mouvement est
+   entièrement vers le haut : aucune carte d'album n'est dépréciée par le changement, ce qui
+   compense à peu près exactement la teinte que ces cartes viennent de perdre. */
 function qualiteDe(k) {
-  const q = 0.40 * ((k.niv || 1) / NIV_MAX)
-          + 0.15 * ((k.tint || 0) / (TINTS.length - 1))
-          + 0.15 * ((k.rank || 0) / (RANKS.length - 1))
+  const q = 0.45 * ((k.niv || 1) / NIV_MAX)
+          + 0.20 * ((k.rank || 0) / (RANKS.length - 1))
           + 0.10 * (k.prodige ? 1 : 0)
-          + 0.20 * ivPart(k);
+          + 0.25 * ivPart(k);
   return 0.4 + 0.6 * q;      // de 0,40 pour une carte bâclée à 1,00 pour un trophée
 }
 const puissanceDe = k => plafondDe(k) * ETOILES[(k.etoiles || 1) - 1] * qualiteDe(k);
@@ -2908,7 +2978,7 @@ function bonusAlbum() {
   return (bonusCache = b);
 }
 
-const variantMult = c => tintOf(c).mult * (c.prodige ? PRODIGE_MULT : 1) *
+const variantMult = c => (c.prodige ? PRODIGE_MULT : 1) *
                          (fondDe(c) ? fondDe(c).mult : 1);
 // Une prime de négoce par rareté : c'est le seul bonus du jeu qui ne vaut que pour une
 // partie du bestiaire, et c'est ce qui lui donne un sens de choix plutôt que de cumul.
@@ -2929,7 +2999,7 @@ function pickWeighted(list) {
 const dexDe = cle => {
   state.dex = state.dex || {};
   return (state.dex[cle] = state.dex[cle] ||
-    { teintes: {}, caracteres: {}, motifs: {}, fonds: {}, prodiges: 0, nes: 0, couples: {} });
+    { chromas: {}, caracteres: {}, motifs: {}, fonds: {}, prodiges: 0, nes: 0, couples: {} });
 };
 const dexVu = cle => (state.dex && state.dex[cle]) || null;
 
@@ -2937,7 +3007,7 @@ const dexVu = cle => (state.dex && state.dex[cle]) || null;
 function noterEclosion(c) {
   const d = dexDe(c.line);
   d.nes++;
-  d.teintes[c.tint] = (d.teintes[c.tint] || 0) + 1;
+  if (c.prodige) d.chromas[c.chroma || 0] = (d.chromas[c.chroma || 0] || 0) + 1;
   d.caracteres[c.temper] = (d.caracteres[c.temper] || 0) + 1;
   d.motifs[c.motif] = (d.motifs[c.motif] || 0) + 1;
   if (c.fond) { d.fonds = d.fonds || {}; d.fonds[c.fond] = (d.fonds[c.fond] || 0) + 1; }
@@ -2991,7 +3061,8 @@ const ivPart = k => !k.iv || !k.iv.length ? 0.5
 function rollVariants(achete) {
   return {
     iv: rollIV(),
-    tint: pickWeighted(TINTS),
+    // la couleur ne se tire que si le chromatisme tombe : une bête grise n'en a pas
+    chroma: Math.floor(Math.random() * CHROMAS.length),
     temper: Math.floor(Math.random() * TEMPERS.length),
     motif: Math.floor(Math.random() * MOTIFS.length),
     fond: achete && Math.random() < FOND_ODDS
@@ -3071,7 +3142,7 @@ function signesDe(c) {
   const fem = form(c.line, c.age)[2] === 'f';
   return [etatOf(c),
           c.prodige ? 'chromatique' : '',
-          tintOf(c).name ? accord(tintOf(c), c) : '',
+          c.prodige && chromaOf(c) ? accord(chromaOf(c), c) : '',
           accord(temperOf(c), c),
           motifOf(c) + (fem ? 'e' : ''),
           c.fond ? FOND_BY_KEY[c.fond].nom : '']
@@ -3079,9 +3150,16 @@ function signesDe(c) {
     .join(' · ');
 }
 
+/* L'ÉPITHÈTE D'UN CHROMATIQUE EST SA COULEUR, ET NON LE MOT « CHROMATIQUE ». Deux raisons.
+   Le halo dit déjà le rang — c'est ce qu'on voit de loin, et le nom n'a pas à le répéter ;
+   et « Louve écarlate » distingue deux chromatiques l'un de l'autre là où « Louve
+   chromatique » les confond. Le mot reste dans la ligne des signes, où il n'est pas perdu.
+
+   Cette fonction portait ici deux lignes dont la seconde était morte — `if (c.prodige)` puis
+   `if (c.prodige && …)`. C'est le genre de branche que la disparition des teintes laisse
+   derrière elle : elle testait un cas qui n'existe plus. */
 function epithetOf(c) {
-  if (c.prodige) return 'chromatique';
-  if (tintOf(c).name) return accord(tintOf(c), c);
+  if (c.prodige) return accord(chromaOf(c) || CHROMAS[0], c);
   if (temperOf(c).key !== 'docile') return accord(temperOf(c), c);
   const motif = motifOf(c);
   return motif === 'uni' ? '' : motif + (form(c.line, c.age)[2] === 'f' ? 'e' : '');
@@ -5195,7 +5273,7 @@ function peindreVignette(t, s) {
     b.classList.add('rar-' + lineOf(s.c).rarity);
     if (s.c.prodige) b.classList.add('prodige');
     if (s.c.keep) b.classList.add('gardee');
-    t.glyph.style.filter = s.c.prodige ? PRODIGE_FILTER : tintOf(s.c).filter;
+    t.glyph.style.filter = filtreDe(s.c);
     setCreature(t.glyph, artFor(s.c), glyphOf(s.c));
     /* L'ÂGE d'une vignette ne se lit que dans la forme du dessin, ce qui suppose de connaître
        la lignée. Le survol le nomme. Il est posé ici et non dans tickView : l'âge ne change
@@ -5480,7 +5558,7 @@ const jetonsEnMain = () =>
    d'ascension en fabrique une par bête pour montrer ce que le saut donnera, et ces
    aperçus-là sont jetés si le joueur referme sans valider. */
 function capsuleBrute(c) {
-  return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, tint: c.tint,
+  return { line: c.line, age: c.age, niv: niveau(c), motif: c.motif, chroma: c.chroma,
            temper: c.temper, rank: rankOf(sizeFactor(c)).i, prodige: !!c.prodige,
            fond: c.fond || null, iv: (c.iv || rollIV()).slice(), etoiles: 1 };
 }
@@ -5582,7 +5660,7 @@ function carteEl(k, actes) {
 
   const bete = el.querySelector('.carte-bete');
   setCreature(bete, artAt(k.line, k.age), form(k.line, k.age)[1]);
-  bete.style.filter = k.prodige ? PRODIGE_FILTER : (TINTS[k.tint] || TINTS[0]).filter;
+  bete.style.filter = filtreDe(k);
 
   el.querySelector('.carte-nom').textContent = nomCarte(k);
   el.querySelector('.carte-eff').textContent = effetCarte(k);
@@ -6032,7 +6110,12 @@ function fusionDe(cartes) {
 
   return {
     line: base.line, motif: base.motif, age, niv, temper, fond,
-    tint: Math.round(moy(k => k.tint || 0)),
+    /* LA COULEUR SE MOYENNE SUR LA ROUE, et seules les cartes CHROMATIQUES y participent :
+       une carte grise n'a pas de couleur à donner, elle a une couleur latente. Si aucune des
+       trois n'est chromatique, on garde celle de la base — elle ressortira le jour où une
+       fusion tombera sur un chromatique. */
+    chroma: milieuRoue(cartes.filter(k => k.prodige).map(k => k.chroma || 0)) ||
+            (base.chroma || 0),
     rank: Math.round(moy(k => k.rank || 0)),
     /* Les stats se moyennent stat par stat : trois cartes fortes en font une forte.
        UNE STAT NULLE N'EST PAS UNE STAT ABSENTE, et `|| IV_MAX / 2` confondait les deux : un
@@ -6578,7 +6661,7 @@ function renderBete(s) {
   peindreFond($('stage-fond'), c);
   // point décimal obligatoire : le CSS ne sait pas lire « 1,5 »
   setVar(subject, '--sz', visualScale(c).toFixed(3));
-  setFilter($('stage-glyph'), c.prodige ? PRODIGE_FILTER : tintOf(c).filter);
+  setFilter($('stage-glyph'), filtreDe(c));
   stage.classList.toggle('prodige', !!c.prodige);
   setCreature($('stage-glyph'), artFor(c), glyphOf(c));
   setText($('stage-name'), fullName(c));
@@ -7849,7 +7932,7 @@ function batirPension(a, b, ouvert, portee) {
       g.className = 'couple-bete';
       if (p) {
         setCreature(g, artFor(p), glyphOf(p));
-        g.style.filter = p.prodige ? PRODIGE_FILTER : tintOf(p).filter;
+        g.style.filter = filtreDe(p);
       } else g.textContent = '—';
       const t = document.createElement('span');
       t.className = 'couple-txt';
@@ -7903,7 +7986,7 @@ function batirPension(a, b, ouvert, portee) {
       const g = document.createElement('span');
       g.className = 'nid-bete';
       setCreature(g, artFor(c), glyphOf(c));
-      g.style.filter = c.prodige ? PRODIGE_FILTER : tintOf(c).filter;
+      g.style.filter = filtreDe(c);
       const t = document.createElement('span');
       t.className = 'nid-txt';
       const n = document.createElement('b');
@@ -8141,7 +8224,7 @@ function renderEncyclopedie() {
   if (!vus) return;
 
   // ── ce qu'on a croisé sur cette lignée, et seulement sur elle ──
-  encyRangee(hote, 'Teintes', TINTS, i => TINTS[i].name || 'sans teinte', d && d.teintes);
+  encyRangee(hote, 'Chromatismes', CHROMAS, i => CHROMAS[i].name, d && d.chromas);
   encyRangee(hote, 'Caractères', TEMPERS, i => TEMPERS[i].name, d && d.caracteres);
   encyRangee(hote, 'Motifs', MOTIFS, i => MOTIFS[i], d && d.motifs);
   /* UN OBJET DE COLLECTION A BESOIN D'UN ENDROIT OÙ ÊTRE COLLECTIONNÉ. Sans cette rangée,
