@@ -66,14 +66,7 @@ const fonds = FONDS.map(f => ({ key: f.key, nom: f.nom, sens: f.sens, n: f.n }))
 const tailles = RANKS.map((r, i) => ({ nom: r.name || 'ordinaire', at: r.at, i }));
 const ages = AGES.map(a => a.nom);
 
-/* CE QUE LA 4.22.0 COLLAIT EN TROP — et on le LIT au lieu de le retaper. `PRODIGE_FILTER`
-   commençait par le `TON_FILTRE.vif` de la table, mot pour mot, et `filtreDe` collait les deux
-   bouts : toute teinte vive partait au carré. La case « le doublon » remet cette chaîne pour
-   qu'on puisse basculer d'un rendu à l'autre — c'est la seule façon de juger un correctif de
-   couleur, et c'est justement ce qu'aucun scénario ne sait faire. */
-const doublon = jeu.TON_FILTRE.vif;
-
-const donnees = JSON.stringify({ lignees, couleurs, bande, fonds, tailles, ages, doublon }, null, 0);
+const donnees = JSON.stringify({ lignees, couleurs, bande, fonds, tailles, ages }, null, 0);
 
 const page = `<!DOCTYPE html>
 <html lang="fr">
@@ -161,7 +154,6 @@ const page = `<!DOCTYPE html>
       </select>
     </label>
     <label><input type="checkbox" id="at-halo" checked> le halo du chromatique</label>
-    <label><input type="checkbox" id="at-avant"> le doublon de la 4.22.0</label>
   </div>
 </header>
 
@@ -181,10 +173,9 @@ const page = `<!DOCTYPE html>
   <p>Un chromatique sur huit mille, et sa couleur vient de ses parents. Chaque case porte la
      grande vue et la vignette de 24 px, la taille de la bande du jeu — <b>la question à
      trancher est en bas :</b> deux voisines s'y distinguent-elles encore ?</p>
-  <p><b>Coche « le doublon » pour voir la 4.22.0.</b> Le ton y était appliqué deux fois — les
-     teintes vives partaient en <code>saturate(5,76)</code>, et 76 % des pixels d'une bête
-     butaient contre du blanc ou du magenta purs. Trois bruns différents ressortaient à
-     l'identique : c'est ce qui rendait le Sun Wukong pourpre tout plat.</p>
+  <p>Depuis la <code>4.24.0</code> la couleur ne dépend plus du dessin : la chaîne commence par
+     <code>grayscale(1)</code>, donc <b>la même couleur rend la même chose sur toutes les
+     lignées</b>. Change de lignée dans le menu du haut pour le vérifier.</p>
   <div id="at-couleurs"></div>
 </section>
 
@@ -257,20 +248,7 @@ function halo(filtre) {
   return filtre.replace(/ ?drop-shadow\\([^)]*\\)/, '');
 }
 
-/* LE DOUBLON SE REMET DEVANT LE HALO, là où il était. Recollé après le drop-shadow il
-   teinterait l'ombre elle-même, et la comparaison ne dirait plus rien de ce qu'on répare. */
-function rendu(filtre) {
-  const f = halo(filtre);
-  if (!$('at-avant').checked) return f;
-  const i = f.indexOf('drop-shadow');
-  return i < 0 ? f + ' ' + D.doublon
-               : f.slice(0, i) + D.doublon + ' ' + f.slice(i);
-}
-
-/* La bande se juge à la taille du jeu, pas à celle du curseur : 24 px dans la liste, 16 px
-   dans les endroits serrés. Deux rangées, donc, et non un réglage — c'est un constat qu'on
-   veut, pas une molette. */
-const TAILLES_BANDE = [24, 16];
+const rendu = filtre => halo(filtre);
 
 function peindreBande() {
   const f = forme();
@@ -357,7 +335,7 @@ D.lignees.forEach((l, i) => {
 });
 D.ages.forEach((a, i) => { const o = el('option', null, a); o.value = i; $('at-age').appendChild(o); });
 $('at-age').value = 2;
-for (const id of ['at-lignee', 'at-age', 'at-halo', 'at-avant', 'at-fond']) $(id).addEventListener('change', peindre);
+for (const id of ['at-lignee', 'at-age', 'at-halo', 'at-fond']) $(id).addEventListener('change', peindre);
 $('at-px').addEventListener('input', peindre);
 peindre();
 </script>

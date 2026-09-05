@@ -5204,7 +5204,7 @@ scenario('hérédité — le nid dit ce que le couple transmet', () => {
      jeu.ditDeLHeritage(a, c));
 });
 
-scenario('couleurs — aucune ne blanchit, et les quatre gris partent du même gris', () => {
+scenario('couleurs — le nom décrit le pixel, et rien ne blanchit', () => {
   /* ON SIMULE LE NAVIGATEUR, parce que la faute était invisible autrement. `brightness(1.95)`
      envoyait à un blanc PUR tout ce qui dépassait 0,51 : sur le wukong, 43 % du dessin — le
      nuage entier et les mèches claires — sortaient à `#ffffff`, une seule valeur pour cinq
@@ -5324,6 +5324,54 @@ scenario('couleurs — aucune ne blanchit, et les quatre gris partent du même g
        blanchit === null || blanchit >= 0.90,
        'blanc pur dès ' + (blanchit === null ? '—' : blanchit.toFixed(2)));
   }
+
+  /* ── ET LE NOM DÉCRIT LE PIXEL ────────────────────────────────────────────────
+     LA FAUTE QUI A TENU LE PLUS LONGTEMPS. `hue-rotate(0deg)` ne veut pas dire « rouge », il
+     veut dire « ne tourne rien » : l'écarlate ne peignait pas la bête en rouge, elle lui
+     rendait sa propre couleur. Sur un crapaud vert, l'écarlate était verte. Mesuré sur l'aplat
+     le plus large de chaque lignée : 65° d'écart moyen entre le nom et la teinte obtenue, 108°
+     au pire, quand un cran de la roue en vaut 22,5.
+
+     ON VÉRIFIE LA TEINTE, PAS LA CHAÎNE. Le réglage a le droit de bouger — la force, le
+     serrement, le niveau. Ce qui n'a pas le droit de bouger, c'est que « jade » sorte à 135°.
+     Et on le vérifie sur un GRIS MOYEN : puisque toute chaîne commence par `grayscale(1)`, ce
+     gris est le point de départ commun à toutes les bêtes, donc la teinte obtenue ne dépend
+     d'aucun dessin. C'est exactement la propriété qui manquait. */
+  const teinteDe = p => {
+    const haut = Math.max(p[0], p[1], p[2]), bas = Math.min(p[0], p[1], p[2]);
+    if (haut - bas < 1e-9) return null;
+    const d = haut - bas;
+    const h = p[0] === haut ? (p[1] - p[2]) / d
+            : p[1] === haut ? 2 + (p[2] - p[0]) / d
+            :                 4 + (p[0] - p[1]) / d;
+    return ((h * 60) % 360 + 360) % 360;
+  };
+  const distance = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+
+  let pireEcart = 0, pire = '';
+  for (const c of jeu.CHROMAS) {
+    if (c.hue === null) continue;                 // les gris ne sont sur aucune roue
+    const f = jeu.filtreCouleur(c);
+    ok(c.name + ' efface la teinte du dessin avant de peindre', /^grayscale\(1\)/.test(f), f);
+    const h = teinteDe(passe(f, [0.5, 0.5, 0.5]));
+    const e = h === null ? 180 : distance(h, c.hue);
+    if (e > pireEcart) { pireEcart = e; pire = c.name + ' vise ' + c.hue + '° et rend ' +
+                                              (h === null ? 'du gris' : h.toFixed(0) + '°'); }
+  }
+  ok('les trente-deux teintes sortent à la teinte qu’elles annoncent',
+     pireEcart <= 4, 'pire : ' + pire + ' (' + pireEcart.toFixed(1) + '°)');
+
+  /* DEUX CRANS VOISINS DOIVENT RESTER DEUX CRANS. Résoudre l'angle par lignée — l'autre
+     rattrapage possible — tassait la roue : sur le crapaud, cinq crans tombaient dans dix-huit
+     degrés. Ici les angles sont résolus une fois pour toutes sur un gris, donc l'écart tient. */
+  const vifs = jeu.CHROMAS.filter(c => c.ton === 'vif')
+                          .map(c => +(/hue-rotate\(([-\d.]+)/.exec(jeu.filtreCouleur(c))[1]));
+  let serre = 360;
+  for (let i = 0; i < vifs.length; i++) {
+    const g = (vifs[(i + 1) % vifs.length] - vifs[i] + 360) % 360;
+    if (g < serre) serre = g;
+  }
+  ok('deux teintes voisines gardent leur écart', serre >= 10, 'le plus serré : ' + serre.toFixed(1) + '°');
 });
 
 scenario('couleur — le ton se dit une seule fois dans le filtre', () => {

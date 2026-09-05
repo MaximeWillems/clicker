@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.23.1';
+const VERSION = 'beta 4.24.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -496,9 +496,117 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    L'ONYX RESTE AU-DESSUS DE LA PIÈCE, et c'est chiffré : son point le plus clair sort à 0,24
    de clarté quand le fond `#0E1310` est à 0,07. Une bête vraiment noire y serait un trou
    cerclé d'un halo ; celle-ci se lit. */
-const filtreGris = (teinte, angle, force, serre, niveau) =>
+/* ── PEINDRE UNE TEINTE, ET NON TOURNER CELLE DU DESSIN ────────────────────────
+   C'EST LA FAUTE QUI A TENU LE PLUS LONGTEMPS, et elle se résume en une phrase :
+   `hue-rotate(0deg)` ne veut pas dire « rouge », il veut dire « ne tourne rien ». L'écarlate
+   ne peignait donc pas la bête en rouge, elle lui rendait sa propre couleur. Sur un crapaud
+   vert, l'écarlate était verte. Le nom ne décrivait pas le pixel : il décrivait un ANGLE
+   appliqué à une couleur inconnue.
+
+   Mesuré sur l'aplat le plus large de chaque lignée : 65° d'écart moyen entre le nom et la
+   teinte obtenue, 108° au pire. Un cran de la roue vaut 22,5° — le nom se trompait donc de
+   trois à cinq crans, et pas du même nombre selon la bête.
+
+   LES DEUX RATTRAPAGES ÉVIDENTS ÉCHOUENT, et les avoir mesurés vaut d'être écrit.
+   Tourner de `cible − teinte du dessin` laisse encore 27° d'écart moyen, parce que
+   `hue-rotate` est une rotation dans un espace linéaire et non un déplacement de teinte :
+   tourner de trente degrés ne déplace pas la teinte de trente degrés. Et RÉSOUDRE l'angle
+   exact par lignée marche — à 1° près — mais tasse la roue : sur le crapaud, cinq crans
+   voisins tombaient dans dix-huit degrés, donc cinq couleurs pour une.
+
+   ON EFFACE DONC AVANT DE PEINDRE, comme pour les gris depuis la `4.23.0`. `grayscale(1)`
+   ramène toute bête au même point de départ, `sepia(1)` donne une matière colorée, et l'angle
+   est RÉSOLU pour que la teinte obtenue soit celle qu'annonce le nom. Écarlate est rouge sur
+   un crapaud comme sur un wukong.
+
+   CE QUE ÇA COÛTE, ET POURQUOI ON LE PAIE. La bête ne garde plus ses couleurs propres : elle
+   prend une teinte et son modelé. On y perd la variété interne — un wukong chromatique n'a
+   plus sa robe rouge et son armure d'ardoise en même temps. On y gagne que le nom dit la
+   couleur, ce sans quoi une collection de trente-six ne se collectionne pas. Le modelé, lui,
+   survit entièrement : c'est la clarté qui le porte, et on n'y touche pas.
+
+   LA SUITE EST CONNUE : peindre par ZONE rend les deux à la fois — la crinière prend la teinte
+   exacte, le reste de la bête garde ses couleurs. C'est écrit au plan. */
+
+const _cl  = v => v < 0 ? 0 : v > 1 ? 1 : v;
+const _mul = (m, p) => [m[0]*p[0] + m[1]*p[1] + m[2]*p[2],
+                        m[3]*p[0] + m[4]*p[1] + m[5]*p[2],
+                        m[6]*p[0] + m[7]*p[1] + m[8]*p[2]].map(_cl);
+const _sat = s => [.213+.787*s, .715-.715*s, .072-.072*s,
+                   .213-.213*s, .715+.285*s, .072-.072*s,
+                   .213-.213*s, .715-.715*s, .072+.928*s];
+const _SEPIA = [.393, .769, .189, .349, .686, .168, .272, .534, .131];
+const _rot = a => { const c = Math.cos(a * Math.PI / 180), s = Math.sin(a * Math.PI / 180);
+  return [.213+c*.787-s*.213, .715-c*.715-s*.715, .072-c*.072+s*.928,
+          .213-c*.213+s*.143, .715+c*.285+s*.140, .072-c*.072-s*.283,
+          .213-c*.213-s*.787, .715-c*.715+s*.715, .072+c*.928+s*.072]; };
+
+/* LA TEINTE QUE LE NAVIGATEUR AFFICHERA, prédite ici plutôt que devinée. On fait passer un gris
+   moyen dans la chaîne exacte — clamp compris, car c'est lui qui déforme — et on lit la teinte
+   du résultat. Sans cette prédiction, l'angle ne serait qu'un nombre magique de plus. */
+function _teintePeinte(angle, t) {
+  let p = _mul(_SEPIA, [.5, .5, .5]);
+  p = _mul(_rot(angle), p);
+  p = _mul(_sat(t.force), p);
+  p = p.map(x => _cl((x - .5) * t.serre + .5));
+  p = p.map(x => _cl(x * t.niveau));
+  const haut = Math.max(p[0], p[1], p[2]), bas = Math.min(p[0], p[1], p[2]);
+  if (haut - bas < 1e-9) return 0;
+  const d = haut - bas;
+  const h = p[0] === haut ? (p[1] - p[2]) / d
+          : p[1] === haut ? 2 + (p[2] - p[0]) / d
+          :                 4 + (p[0] - p[1]) / d;
+  return ((h * 60) % 360 + 360) % 360;
+}
+
+const _dist = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+
+/* L'ANGLE QUI AMÈNE LA TEINTE SUR SA CIBLE. Balayage au demi-degré puis affinage : le clamp
+   pose des paliers sur la courbe, donc une bissection seule s'y perdrait. */
+function _angleVers(cible, t) {
+  let best = 0, ecart = 1e9;
+  for (let a = 0; a < 360; a += 0.5) {
+    const d = _dist(_teintePeinte(a, t), cible);
+    if (d < ecart) { ecart = d; best = a; }
+  }
+  for (let pas = 0.25; pas > 0.004; pas /= 2) {
+    for (const a of [best - pas, best + pas]) {
+      const d = _dist(_teintePeinte(a, t), cible);
+      if (d < ecart) { ecart = d; best = (a + 360) % 360; }
+    }
+  }
+  return Math.round(best * 10) / 10;
+}
+
+/* LES QUATRE LEVIERS, LES MÊMES POUR LES TRENTE-SIX COULEURS :
+     teinte   la dose de sépia — la matière de la couleur avant qu'on la tourne
+     force    combien on la voit
+     serre    le resserrement de la plage — c'est lui qui empêche de blanchir
+     niveau   où la couleur se pose entre le clair et le sombre */
+const peindre = (teinte, angle, force, serre, niveau) =>
   'grayscale(1) sepia(' + teinte + ') hue-rotate(' + angle + 'deg) saturate(' + force + ') '
   + 'contrast(' + serre + ') brightness(' + niveau + ')';
+
+/* LE SOMBRE NE SERRE PAS SOUS 1 : il descend, donc il ne peut pas blanchir. Le clair serre
+   beaucoup, parce que c'est lui qui montait le plus haut et brûlait le plus.
+   L'ARGENT EST UNE QUATRIÈME ENTRÉE, et non un quatrième ton : il n'a pas sa place dans
+   l'échelle sombre → vif → clair dont l'hérédité se sert, mais il lui faut ses propres
+   leviers — l'or blanc EST de l'argent, donc on lui retire presque toute la force. */
+const TON_PEINT = {
+  vif:    { teinte: 1, force: 4.5,  serre: .95, niveau: 1.00 },
+  clair:  { teinte: 1, force: 2.40, serre: .60, niveau: 1.24 },
+  sombre: { teinte: 1, force: 5.0,  serre: 1.0, niveau: .60 },
+  argent: { teinte: 1, force: 0.55, serre: .60, niveau: 1.28 },
+};
+
+// On résout une fois par couple teinte-ton, pas une fois par bête : trente-six chaînes en tout.
+const _peintes = {};
+function peindreTeinte(hue, ton) {
+  const cle = hue + ':' + ton;
+  if (_peintes[cle]) return _peintes[cle];
+  const t = TON_PEINT[ton];
+  return (_peintes[cle] = peindre(t.teinte, _angleVers(hue, t), t.force, t.serre, t.niveau));
+}
 
 const CHROMAS = [
   // ── LA ROUE · seize teintes à 22,5°, et leurs indices ne bougent jamais ──
@@ -528,10 +636,10 @@ const CHROMAS = [
      d'incubation est à #0E1310. Une bête vraiment noire y serait un trou cerclé d'un halo
      doré — on verrait le contour et rien d'autre. Onyx est donc un gris très sombre, et son
      nom l'assume : un onyx est noir sans être un vide. */
-  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, filtre: filtreGris(.15, 175, 1.2, .62, 1.28) },
-  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, filtre: filtreGris(.15, 335, 2.6, .66, 1.02) },
-  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, filtre: filtreGris(.15, 175, 2.6, .76, .56) },
-  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, filtre: filtreGris(.15, 175, 1.2, .86, .28) },
+  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, filtre: peindre(.15, 175, 1.2, .62, 1.28) },
+  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, filtre: peindre(.15, 335, 2.6, .66, 1.02) },
+  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, filtre: peindre(.15, 175, 2.6, .76, .56) },
+  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, filtre: peindre(.15, 175, 1.2, .86, .28) },
 
   /* ── LES RECETTES · ce qu'une teinte donne croisée avec un blanc ou un onyx ──
      ELLES NE PORTENT QUE SUR UN CRAN SUR DEUX DE LA ROUE, et c'est délibéré à deux titres.
@@ -549,7 +657,7 @@ const CHROMAS = [
   { key: 'beige',      name: 'beige',      fem: 'beige',      hue:  45, ton: 'clair' },
   { key: 'sepia',      name: 'sépia',      fem: 'sépia',      hue:  45, ton: 'sombre' },
   { key: 'argent',     name: 'argent',     fem: 'argent',     hue:  90, ton: 'clair',
-    filtre: 'hue-rotate(90deg) saturate(.22) contrast(.52) brightness(1.4)' },
+    peint: 'argent' },
   { key: 'bronze',     name: 'bronze',     fem: 'bronze',     hue:  90, ton: 'sombre' },
   { key: 'menthe',     name: 'menthe',     fem: 'menthe',     hue: 135, ton: 'clair' },
   { key: 'malachite',  name: 'malachite',  fem: 'malachite',  hue: 135, ton: 'sombre' },
@@ -571,7 +679,6 @@ const ROUE = CHROMAS.filter(c => c.ton === 'vif');
 const GRIS = CHROMAS.filter(c => c.hue === null);
 const estGris = i => CHROMAS[i] && CHROMAS[i].hue === null;
 
-// Le ton donne le filtre ; un `filtre` écrit à la main l'emporte, pour l'argent et les gris.
 /* LE TON PLACE LA COULEUR SUR L'ÉCHELLE DU CLAIR AU SOMBRE, ET IL COMPRIME AU LIEU DE
    MULTIPLIER. `brightness()` seul multiplie : au-delà de `1/valeur`, toutes les clartés
    sortent au même blanc pur. Le ton `clair` était `brightness(1.72)`, donc il blanchissait
@@ -592,12 +699,10 @@ const estGris = i => CHROMAS[i] && CHROMAS[i].hue === null;
    `hue-rotate`, qui déplace CHAQUE couleur de la bête : c'est lui qui fait que seize teintes
    restent seize teintes distinctes. Le prix est connu et non payé ici — le nom ne dit pas la
    couleur obtenue, puisqu'on tourne la teinte du dessin au lieu de la remplacer. */
-const TON_FILTRE = {
-  vif:    'saturate(2.6) contrast(.72) brightness(1.16)',
-  clair:  'saturate(1.6) contrast(.52) brightness(1.4)',
-  sombre: 'saturate(1.9) brightness(.62)',
-};
-const filtreCouleur = k => k.filtre || 'hue-rotate(' + k.hue + 'deg) ' + TON_FILTRE[k.ton];
+/* UNE COULEUR SE DEMANDE ICI, ET NULLE PART AILLEURS. Un `filtre` écrit à la main l'emporte —
+   c'est le cas des quatre gris, qui ne sont sur aucune roue. Un `peint` désigne des leviers
+   particuliers, pour l'argent. Tout le reste passe par le ton. */
+const filtreCouleur = k => k.filtre || peindreTeinte(k.hue, k.peint || k.ton);
 
 /* CE QU'UNE TEINTE DONNE DANS UN TON, ou la teinte pure quand la recette n'existe pas. Les
    huit crans intercalaires n'en ont aucune : un vermillon clair n'est pas une couleur du jeu,
