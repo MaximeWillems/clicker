@@ -112,7 +112,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **L'hérédité** — teintes, tempérament, motif transmis par les parents | rien | est-ce qu'on a envie de sélectionner ? |
-| **Les dix-huit dessins** | rien | — |
+| **Les dix-sept dessins** | rien | — |
 | **L'écran au doigt** — voir plus bas, six marches | la planche, pour les cinq autres | est-ce que le jeu répond quand on le touche ? |
 
 **Ce qui ne dépend que de soi** :
