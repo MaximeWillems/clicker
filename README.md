@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.18.0** | une bête est grise ou chromatique : les teintes disparaissent, la couleur devient un événement et se place sur une roue |
+| **beta 4.18.1** | seize couleurs au lieu de huit : l’hérédité a besoin de place entre deux parents |
+| beta 4.18.0 | une bête est grise ou chromatique : les teintes disparaissent, la couleur devient un événement et se place sur une roue |
 | beta 4.17.2 | l’Araignée entre en jeu, cinq stades dessinés — la treizième lignée illustrée |
 | beta 4.17.1 | le Béhémoth et l’Arachné ressortent : décrits en formes plutôt que dessinés, ils ne tenaient pas au regard |
 | beta 4.16.0 | les stats de créature : quatre nombres tirés à l’éclosion, invisibles, qui décident de la qualité d’une carte |

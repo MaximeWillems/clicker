@@ -2966,7 +2966,8 @@ scenario('encyclopédie — un carnet, jamais un manuel', () => {
   ok('une seule forme rencontrée', /1 forme sur 5/.test(f.dit), f.dit);
   ok('les quatre autres restent des points d’interrogation',
      (f.tout.match(/？/g) || []).length >= 4, f.tout);
-  ok('le compte des chromatismes dit ce qui manque', /Chromatismes — 0 \/ 8/.test(f.tout), f.tout);
+  ok('le compte des chromatismes dit ce qui manque',
+     new RegExp('Chromatismes — 0 / ' + jeu.CHROMAS.length).test(f.tout), f.tout);
 
   /* DEUX CHROMATIQUES DE LA MÊME COULEUR COMPTENT DEUX FOIS, ils ne se dédoublent pas. */
   jeu.noterEclosion({ line: 'loup', chroma: 3, prodige: true, temper: c.temper, motif: c.motif });
@@ -4671,13 +4672,18 @@ scenario('forge — ce qui entre se moyenne, et la couleur suit la roue', () => 
   /* ET DEUX COULEURS OPPOSÉES SE MÉLANGENT PAR L'ARC COURT, jamais par la moyenne des
      indices : entre l'écarlate (0) et le magenta (7), la moyenne donnerait du jade, à
      l'exact opposé des deux. Sur la roue ils sont voisins, et leur milieu est l'écarlate. */
+/* CES TROIS CAS S'ÉCRIVENT EN FONCTION DE LA TAILLE DE LA ROUE, jamais en indices en dur :
+     elle est passée de huit à seize crans en `4.18.1`, et des indices fixes auraient fait
+     échouer le scénario pour une raison qui n'est pas une faute. */
+  const n = jeu.CHROMAS.length;
   eq('le milieu de deux voisins est entre eux', jeu.milieuRoue([0, 2]), 1);
-  /* L'ARC COURT PASSE PAR LE ZÉRO : entre indigo (5) et écarlate (0) le milieu est magenta
-     (7), pas jade (2) — c'est toute la différence entre une roue et une moyenne d'indices. */
-  eq('et il passe par le zéro quand c’est le plus court', jeu.milieuRoue([6, 0]), 7);
+  /* L'ARC COURT PASSE PAR LE ZÉRO : entre l'avant-dernière couleur et la première, le milieu
+     est la dernière, et non le point diamétralement opposé. C'est toute la différence entre
+     une roue et une moyenne d'indices. */
+  eq('et il passe par le zéro quand c’est le plus court', jeu.milieuRoue([n - 2, 0]), n - 1);
   /* DEUX COULEURS DIAMÉTRALEMENT OPPOSÉES N'ONT PAS DE MILIEU : les deux arcs se valent, et
      aucun calcul ne peut les départager. On rend la première plutôt qu'un zéro arbitraire. */
-  eq('deux opposées rendent la première', jeu.milieuRoue([3, 7]), 3);
+  eq('deux opposées rendent la première', jeu.milieuRoue([3, 3 + n / 2]), 3);
 
   /* LE CHROMATIQUE SE DÉCIDE À LA MAJORITÉ : on ne peut pas être aux deux tiers chromatique,
      et un chromatique perdu au milieu de deux ordinaires ne se transmet pas. */

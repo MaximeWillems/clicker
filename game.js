@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.18.0';
+const VERSION = 'beta 4.18.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -431,16 +431,47 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    chromatique paie, et il paie ×25. Donner un multiplicateur par couleur recréerait l'échelle
    de rareté des teintes qu'on vient de retirer, et ferait d'une couleur un chiffre à
    optimiser au lieu d'une identité à chasser. */
+/* SEIZE ET NON HUIT, ET C'EST L'HÉRÉDITÉ QUI L'EXIGE. Le modèle d'héritage pose cinq
+   positions sur l'axe qui relie deux parents — le mélange, deux intérieurs, deux extérieurs.
+   À huit couleurs, deux parents voisins sont à UN SEUL CRAN l'un de l'autre : le mélange, les
+   intérieurs et les parents tombent tous sur la même case, et quatre branches sur cinq ne
+   produisent rien de distinct. La distribution ne se dépliait que sur des parents éloignés.
+
+   À seize, l'écart moyen double et les cinq positions ont de quoi exister. C'est la seule
+   raison de doubler, et elle suffit.
+
+   CE QU'ELLE COÛTE, MESURÉ : par le calcul du collectionneur, il faut environ vingt-deux
+   chromatiques pour voir huit couleurs et CINQUANTE-QUATRE pour en voir seize. À une éclosion
+   sur 8 192, cela fait 443 000 éclosions au lieu de 178 000 — deux cent trente heures au
+   plafond absolu de la pension, contre quatre-vingt-treize.
+
+   LE RISQUE À SURVEILLER : 22,5° d'écart se voit moins que 45°, et les couleurs ne sont pas
+   peintes — c'est une rotation de teinte appliquée à un sprite dont la palette est déjà
+   étroite. Si vermillon et écarlate se confondent en vignette, nommer les deux promet une
+   collection qu'on ne peut pas trier. À vérifier sur la planche, et non de tête.
+
+   LE REGISTRE NE VARIE PAS : des matières, des pigments et des pierres. Jamais « bleu clair »
+   ni « rouge foncé » — un nom de couleur qui décrit sa position sur une échelle est un nom
+   qu'on oublie. Le grenat referme le cercle en ramenant vers l'écarlate. */
 const CHROMAS = [
   { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0 },
+  { key: 'vermillon', name: 'vermillon', fem: 'vermillon', hue:  22.5 },
   { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45 },
+  { key: 'safran',    name: 'safran',    fem: 'safran',    hue:  67.5 },
   { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90 },
+  { key: 'olivine',   name: 'olivine',   fem: 'olivine',   hue: 112.5 },
   { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135 },
+  { key: 'celadon',   name: 'céladon',   fem: 'céladon',   hue: 157.5 },
   { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180 },
+  { key: 'cobalt',    name: 'cobalt',    fem: 'cobalt',    hue: 202.5 },
   { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225 },
+  { key: 'violine',   name: 'violine',   fem: 'violine',   hue: 247.5 },
   { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270 },
+  { key: 'pourpre',   name: 'pourpre',   fem: 'pourpre',   hue: 292.5 },
   { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315 },
+  { key: 'grenat',    name: 'grenat',    fem: 'grenat',    hue: 337.5 },
 ];
+
 
 /* Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
    raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
@@ -2265,7 +2296,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 26;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 27;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2513,6 +2544,15 @@ function load() {
        hériter. C'est ce qui permet à deux bêtes grises de donner un chromatique coloré : sans
        couleur latente, l'hérédité n'aurait rien à transmettre tant qu'aucun parent n'est
        chromatique lui-même, et la chasse d'une couleur précise serait fermée. */
+    /* LA ROUE EST PASSÉE DE HUIT À SEIZE CRANS, donc l'indice 1 ne désigne plus la même
+       couleur : ambre était à 45°, il est maintenant en position 2. Sans ce doublement, toutes
+       les bêtes d'une sauvegarde changeraient de couleur en silence — ce qui, pour un trophée
+       qu'on collectionne, serait la pire chose à faire. On double l'indice, la teinte ne bouge
+       pas d'un degré. */
+    if ((s.v || 0) < 27) {
+      for (const x of (merged.pen || []).concat(merged.album || []))
+        if (x.chroma !== undefined) x.chroma *= 2;
+    }
     for (const c of merged.pen || []) {
       if (c.chroma === undefined) c.chroma = Math.floor(Math.random() * CHROMAS.length);
       delete c.tint;
