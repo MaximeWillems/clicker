@@ -63,7 +63,7 @@ The 5 stages, in order:
 
 --- une fois la planche enregistrée dans art/source-behemoth.png ---
 
-python tools/decouper.py art/source-behemoth.png behemoth ossement,saurien,behemoth,behemoth-ancien,behemoth-primordial
+python tools/decouper.py art/source-behemoth.png behemoth ossement,saurien,behemoth,behemoth-eternel,behemoth-primordial
 
 --- puis dans la table ART, en haut de game.js ---
 

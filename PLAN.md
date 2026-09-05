@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.17.0 · sauvegarde v25 · 14 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.17.1 · sauvegarde v25 · 12 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -144,40 +144,34 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
 affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**16 lignées sur 30 n'ont pas de dessin** — les neuf rares (loup, méduse, salamandre,
-serpent, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem, sphinx,
-cheval), les deux mythiques (chimère, ouroboros) et la tarasque.
+**18 lignées sur 30 n'ont pas de dessin** — les dix rares (loup, méduse, salamandre,
+serpent, araignée, cerf, ours, papillon, tortue, chat), les quatre épiques (kraken, golem,
+sphinx, cheval), les trois mythiques (chimère, béhémoth, ouroboros) et la tarasque.
 
-**LA `4.17.0` A OUVERT UNE SECONDE VOIE, et c'est peut-être la plus importante de la section.**
-Le Béhémoth et l'Arachné ne viennent pas d'une planche générée : ils sont DÉCRITS EN FORMES
-GÉOMÉTRIQUES — `tools/formes-behemoth.js`, `tools/formes-araignee.js` — puis rastérisés et
-contournés par la filière ordinaire. Le crapaud avait ouvert cette voie et personne ne l'avait
-reprise ; elle a trois propriétés que la planche générée n'a pas :
+**LA VOIE DES FORMES GÉOMÉTRIQUES A ÉTÉ ESSAYÉE ET REFUSÉE, en `4.17.0` puis retirée.** Le
+béhémoth et l'arachné ont été décrits en ellipses et polygones plutôt que générés, rastérisés
+par la filière ordinaire, et le résultat n'a pas passé le seul contrôle qui compte : le regard.
+Ils sont retirés du jeu, qui réaffiche ses emoji — c'est exactement la promesse de ce dossier,
+« tant qu'un dessin n'est pas là, rien ne casse ».
 
-- **elle est reproductible.** Corriger une patte est un nombre à changer, pas une image à
-  refaire, et `node tools/pixel.js formes <lignée>` rejoue tout ;
-- **elle ne dérive pas.** Le style ne bouge pas d'une séance à l'autre, puisqu'il n'y a pas de
-  séance : les mêmes formes rendent les mêmes pixels ;
-- **elle se vérifie.** `node tools/pixel.js verifier <lignée>` refuse les cellules isolées, et
-  il a refusé quatorze fois avant d'accepter ces dix sprites.
+**Ce que l'essai a montré, et il vaut d'être gardé** : six formes géométriques savent rendre
+une MASSE — un béhémoth est une montagne, une araignée un corps et huit pattes — et ne savent
+pas rendre un CONTOUR. Un cerf, un papillon, une chimère, un sphinx ont leur identité dans une
+silhouette que des ellipses n'atteignent pas. La voie n'est donc pas une alternative à la
+planche générée : c'est, au mieux, un outil de retouche une fois la grille importée.
 
-Les leçons payées sur ces deux lignées, qui valent pour les seize suivantes :
+**Les quatre leçons de pixel restent vraies, elles**, et elles vaudront pour les retouches :
 
-- **l'ordre est la moitié du dessin.** Les huit pattes de l'araignée tracées avant l'abdomen
-  disparaissent sous lui : il ne restait qu'une boule à visage. La règle était écrite en tête
-  des deux fichiers concernés, et l'avoir écrite n'a pas suffi à ne pas la refaire ;
+- **l'ordre est la moitié du dessin.** Huit pattes tracées avant l'abdomen disparaissent sous
+  lui. La règle était écrite en tête du fichier, et l'avoir écrite n'a pas suffi ;
 - **tout ce qui s'affine disparaît.** Une patte en triangle s'amincit jusqu'au sous-pixel, le
-  contour automatique remplit le bout, et il reste une poussière de points noirs. Une patte est
-  un quadrilatère à bout franc ;
-- **un œil a une largeur minimale.** Moins de deux cellules de blanc de chaque côté de la
-  pupille et le contrôle relève une cellule isolée — à raison : ce n'est pas un reflet, c'est
-  du bruit ;
-- **une silhouette coupée par le bord se lit comme un cadrage raté**, jamais comme une bête
-  qui déborde. C'est le seul défaut que la vignette de vingt-quatre pixels amplifie. Ce n'est
-pas une version, c'est une voie de fond qui avance entre les autres. Rien n'en dépend, tout en
-bénéficie.
+  contour remplit le bout, et il reste une poussière de points noirs ;
+- **un œil a une largeur minimale** : moins de deux cellules de blanc de chaque côté de la
+  pupille et c'est du bruit, pas un reflet ;
+- **une silhouette coupée par le bord** se lit comme un cadrage raté, jamais comme une bête
+  qui déborde.
 
-Les quatorze faites : les dix communes, le kitsune, le wukong, et depuis la `4.17.0` le béhémoth et l'arachné.
+Les douze faites : les dix communes, plus le kitsune et le wukong.
 
 C'est aussi **la seule partie du prototype qui ne sera pas jetée** : `game.js` partira à la
 poubelle au jalon 1, les PNG resteront tels quels dans le vrai jeu. Chaque heure passée là est
