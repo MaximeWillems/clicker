@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.20.0** | l’enclos redevient une place qu’on arbitre : une gardée compte, une confiée non, et une place de plus coûte enfin quelque chose |
+| **beta 4.21.0** | trente-six couleurs : quatre gris hors de la roue, et seize recettes pour ce que la roue ne sait pas mélanger |
+| beta 4.20.0 | l’enclos redevient une place qu’on arbitre : une gardée compte, une confiée non, et une place de plus coûte enfin quelque chose |
 | beta 4.19.1 | le nid dit ce qu’un couple transmet — sans ça l’hérédité était invisible et personne ne composait un couple exprès |
 | beta 4.19.0 | l’hérédité : un petit reçoit une distribution centrée sur le mélange de ses parents — couleur, caractère, motif, fond et statistiques |
 | beta 4.18.1 | seize couleurs au lieu de huit : l’hérédité a besoin de place entre deux parents |

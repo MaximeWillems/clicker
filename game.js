@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.20.0';
+const VERSION = 'beta 4.21.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -469,23 +469,91 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    ni « rouge foncé » — un nom de couleur qui décrit sa position sur une échelle est un nom
    qu'on oublie. Le grenat referme le cercle en ramenant vers l'écarlate. */
 const CHROMAS = [
-  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0 },
-  { key: 'vermillon', name: 'vermillon', fem: 'vermillon', hue:  22.5 },
-  { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45 },
-  { key: 'safran',    name: 'safran',    fem: 'safran',    hue:  67.5 },
-  { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90 },
-  { key: 'olivine',   name: 'olivine',   fem: 'olivine',   hue: 112.5 },
-  { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135 },
-  { key: 'celadon',   name: 'céladon',   fem: 'céladon',   hue: 157.5 },
-  { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180 },
-  { key: 'cobalt',    name: 'cobalt',    fem: 'cobalt',    hue: 202.5 },
-  { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225 },
-  { key: 'violine',   name: 'violine',   fem: 'violine',   hue: 247.5 },
-  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270 },
-  { key: 'pourpre',   name: 'pourpre',   fem: 'pourpre',   hue: 292.5 },
-  { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315 },
-  { key: 'grenat',    name: 'grenat',    fem: 'grenat',    hue: 337.5 },
+  // ── LA ROUE · seize teintes à 22,5°, et leurs indices ne bougent jamais ──
+  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0,   ton: 'vif' },
+  { key: 'vermillon', name: 'vermillon', fem: 'vermillon', hue:  22.5, ton: 'vif' },
+  { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45,   ton: 'vif' },
+  { key: 'safran',    name: 'safran',    fem: 'safran',    hue:  67.5, ton: 'vif' },
+  { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90,   ton: 'vif' },
+  { key: 'olivine',   name: 'olivine',   fem: 'olivine',   hue: 112.5, ton: 'vif' },
+  { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135,   ton: 'vif' },
+  { key: 'celadon',   name: 'céladon',   fem: 'céladon',   hue: 157.5, ton: 'vif' },
+  { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180,   ton: 'vif' },
+  { key: 'cobalt',    name: 'cobalt',    fem: 'cobalt',    hue: 202.5, ton: 'vif' },
+  { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225,   ton: 'vif' },
+  { key: 'violine',   name: 'violine',   fem: 'violine',   hue: 247.5, ton: 'vif' },
+  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270,   ton: 'vif' },
+  { key: 'pourpre',   name: 'pourpre',   fem: 'pourpre',   hue: 292.5, ton: 'vif' },
+  { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315,   ton: 'vif' },
+  { key: 'grenat',    name: 'grenat',    fem: 'grenat',    hue: 337.5, ton: 'vif' },
+
+  /* ── LES ACHROMATIQUES · hors de la roue, sur une droite à quatre crans ──
+     Elles n'ont pas de teinte, donc pas de place sur le cercle : « l'arc court entre
+     l'écarlate et le blanc » n'existe pas, et le calculer quand même ferait tomber leur
+     mélange sur du jade. Elles vivent sur une droite qui leur est propre.
+
+     ONYX PORTE LE RÔLE DU NOIR SANS ÊTRE NOIR, et c'est une contrainte du fond : la pièce
+     d'incubation est à #0E1310. Une bête vraiment noire y serait un trou cerclé d'un halo
+     doré — on verrait le contour et rien d'autre. Onyx est donc un gris très sombre, et son
+     nom l'assume : un onyx est noir sans être un vide. */
+  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, filtre: 'saturate(0) brightness(1.95)' },
+  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, filtre: 'saturate(.12) brightness(1.4)' },
+  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, filtre: 'saturate(.12) brightness(.82)' },
+  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, filtre: 'saturate(0) brightness(.5)' },
+
+  /* ── LES RECETTES · ce qu'une teinte donne croisée avec un blanc ou un onyx ──
+     ELLES NE PORTENT QUE SUR UN CRAN SUR DEUX DE LA ROUE, et c'est délibéré à deux titres.
+     Elles rendent les huit teintes CARDINALES désirables — seules elles donnent quelque chose
+     de neuf avec un achromatique. Et elles écartent les pastels de 45° au lieu de 22,5°, ce
+     qui est la seule protection contre le défaut que cette roue traîne depuis le début : deux
+     couleurs voisines qu'on ne distingue pas en vignette de vingt-quatre pixels.
+
+     ARGENT EST UNE EXCEPTION ASSUMÉE. Par la règle du ton, un doré éclairci donne un jaune
+     pâle et devrait s'appeler lin. Il s'appelle argent parce que l'or blanc EST de l'argent —
+     et c'est le FILTRE qui plie, pas le nom : il désature presque tout. Un nom qui décrit mal
+     le pixel est un nom qui ment ; on a donc changé le pixel. */
+  { key: 'rose',       name: 'rose',       fem: 'rose',       hue:   0, ton: 'clair' },
+  { key: 'bordeaux',   name: 'bordeaux',   fem: 'bordeaux',   hue:   0, ton: 'sombre' },
+  { key: 'beige',      name: 'beige',      fem: 'beige',      hue:  45, ton: 'clair' },
+  { key: 'sepia',      name: 'sépia',      fem: 'sépia',      hue:  45, ton: 'sombre' },
+  { key: 'argent',     name: 'argent',     fem: 'argent',     hue:  90, ton: 'clair',
+    filtre: 'hue-rotate(90deg) saturate(.22) brightness(1.62)' },
+  { key: 'bronze',     name: 'bronze',     fem: 'bronze',     hue:  90, ton: 'sombre' },
+  { key: 'menthe',     name: 'menthe',     fem: 'menthe',     hue: 135, ton: 'clair' },
+  { key: 'malachite',  name: 'malachite',  fem: 'malachite',  hue: 135, ton: 'sombre' },
+  { key: 'turquoise',  name: 'turquoise',  fem: 'turquoise',  hue: 180, ton: 'clair' },
+  { key: 'marine',     name: 'marine',     fem: 'marine',     hue: 180, ton: 'sombre' },
+  { key: 'lavande',    name: 'lavande',    fem: 'lavande',    hue: 225, ton: 'clair' },
+  { key: 'encre',      name: 'encre',      fem: 'encre',      hue: 225, ton: 'sombre' },
+  { key: 'lilas',      name: 'lilas',      fem: 'lilas',      hue: 270, ton: 'clair' },
+  { key: 'obsidienne', name: 'obsidienne', fem: 'obsidienne', hue: 270, ton: 'sombre' },
+  { key: 'quartz',     name: 'quartz',     fem: 'quartz',     hue: 315, ton: 'clair' },
+  { key: 'cassis',     name: 'cassis',     fem: 'cassis',     hue: 315, ton: 'sombre' },
 ];
+
+/* LES SEIZE PREMIERS INDICES SONT LA ROUE, ET ILS NE BOUGERONT PLUS. Une sauvegarde stocke un
+   INDICE : réordonner la table repeindrait toutes les bêtes du monde en silence. Les
+   achromatiques et les recettes s'ajoutent donc APRÈS, jamais au milieu — c'est la règle que
+   les motifs portent depuis l'album, et elle vaut ici pour la même raison. */
+const ROUE = CHROMAS.filter(c => c.ton === 'vif');
+const GRIS = CHROMAS.filter(c => c.hue === null);
+const estGris = i => CHROMAS[i] && CHROMAS[i].hue === null;
+
+// Le ton donne le filtre ; un `filtre` écrit à la main l'emporte, pour l'argent et les gris.
+const TON_FILTRE = {
+  vif:    'saturate(2.4) brightness(1.3)',
+  clair:  'saturate(1.05) brightness(1.72)',
+  sombre: 'saturate(1.9) brightness(.62)',
+};
+const filtreCouleur = k => k.filtre || 'hue-rotate(' + k.hue + 'deg) ' + TON_FILTRE[k.ton];
+
+/* CE QU'UNE TEINTE DONNE DANS UN TON, ou la teinte pure quand la recette n'existe pas. Les
+   huit crans intercalaires n'en ont aucune : un vermillon clair n'est pas une couleur du jeu,
+   et le croisement retombe donc sur le vermillon. */
+const recetteCouleur = (hue, ton) => {
+  const i = CHROMAS.findIndex(c => c.hue === hue && c.ton === ton);
+  return i >= 0 ? i : CHROMAS.findIndex(c => c.hue === hue && c.ton === 'vif');
+};
 
 
 /* Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
@@ -584,7 +652,7 @@ function milieuRoue(indices) {
   return ((Math.round(Math.atan2(y, x) / pas) % n) + n) % n;
 }
 const filtreDe   = c => !c || !c.prodige ? ''
-                      : 'hue-rotate(' + (chromaOf(c) || CHROMAS[0]).hue + 'deg) ' + PRODIGE_FILTER;
+                      : filtreCouleur(chromaOf(c) || CHROMAS[0]) + ' ' + PRODIGE_FILTER;
 
 // grow : divise la durée de croissance. fat : multiplie la vitesse d'engraissement.
 const TEMPERS = [
@@ -3184,15 +3252,39 @@ function heriteNombre(a, b, min, max, plancher) {
    plus souvent. Le recopier des deux côtés donnerait deux règles qui divergeraient — c'est la
    faute que la `4.13.2` a fermée sur les échelles de valeur, et elle avait vécu à quatre
    endroits avant qu'on la voie. */
-const ecartRoue  = (a, b) => ((b - a + CHROMAS.length * 1.5) % CHROMAS.length) - CHROMAS.length / 2;
+/* LA ROUE COMPTE SEIZE CRANS, PAS TRENTE-SIX. La table en porte trente-six depuis que les gris
+   et les recettes s'y sont ajoutés, mais les vingt derniers ne sont PAS sur le cercle : un gris
+   n'a pas de teinte, et une recette partage la sienne avec la teinte pure dont elle sort. Ces
+   fonctions travaillent donc en INDICES DE ROUE — zéro à quinze — et jamais en indices de
+   table. Confondre les deux ferait tourner l'arc court sur une roue deux fois trop grande. */
+const ecartRoue  = (a, b) => ((b - a + ROUE.length * 1.5) % ROUE.length) - ROUE.length / 2;
 const melangeRoue = (a, b) => {
-  const n = CHROMAS.length;
+  const n = ROUE.length;
   return ((Math.round(a + ecartRoue(a, b) / 2) % n) + n) % n;
 };
+
+// L'indice de roue d'une couleur : elle-même si elle est pure, sa teinte si c'est une recette.
+const roueDe = i => CHROMAS[i] && CHROMAS[i].hue !== null
+                  ? ROUE.findIndex(c => c.hue === CHROMAS[i].hue) : 0;
+const TONS = ['sombre', 'vif', 'clair'];
 
 /* LE MÉLANGE DE DEUX TEMPÉRAMENTS est le point du plan (croissance, engraissement) le plus
    proche du milieu des deux. Nerveux × placide donne DOCILE, et ce n'est pas un choix : c'est
    le centre exact de la table. */
+/* CE QUE DEUX COULEURS DONNENT LE PLUS SOUVENT, sans hasard : le nid l'affiche, l'hérédité le
+   prend pour centre. Une porte, deux lecteurs — la règle de la `4.13.2`. */
+const melangeCouleur = (a, b) => {
+  const ga = CHROMAS[a].hue === null, gb = CHROMAS[b].hue === null;
+  if (ga && gb) return CHROMAS.indexOf(GRIS[Math.round((CHROMAS[a].gris + CHROMAS[b].gris) / 2)]);
+  if (ga || gb) {
+    const teint = ga ? b : a, gris = ga ? a : b;
+    return recetteCouleur(CHROMAS[teint].hue, CHROMAS[gris].gris <= 1 ? 'clair' : 'sombre');
+  }
+  const h = melangeRoue(roueDe(a), roueDe(b));
+  const t = Math.round((TONS.indexOf(CHROMAS[a].ton) + TONS.indexOf(CHROMAS[b].ton)) / 2);
+  return recetteCouleur(ROUE[h].hue, TONS[t]);
+};
+
 const melangeTemper = (a, b) => {
   const cx = (TEMPERS[a].grow + TEMPERS[b].grow) / 2;
   const cy = (TEMPERS[a].fat + TEMPERS[b].fat) / 2;
@@ -3205,7 +3297,7 @@ const melangeTemper = (a, b) => {
 };
 
 function heriteRoue(a, b) {
-  const n = CHROMAS.length;
+  const n = ROUE.length;
   const pos = brancheHeritee();
   if (pos === null) return Math.floor(Math.random() * n);
   const d = ecartRoue(a, b);                    // l'écart signé le plus court
@@ -3217,6 +3309,46 @@ function heriteRoue(a, b) {
   const etale = Math.max(0.5, Math.abs(d) / 2) * (d < 0 ? -1 : d > 0 ? 1
                                                  : Math.random() < 0.5 ? -1 : 1);
   return ((Math.round(milieu + pos * etale) % n) + n) % n;
+}
+
+/* ── TROIS CAS, PARCE QUE TROIS GÉOMÉTRIES ────────────────────────────────────
+   La roue ne sait relier que des teintes. Les achromatiques n'en ont pas, et « l'arc court
+   entre l'écarlate et le blanc » n'existe pas — le calculer quand même ferait tomber leur
+   mélange sur du jade, ce qui n'a aucun sens pour l'œil. Chaque couple a donc sa géométrie :
+
+     teinte × teinte          la ROUE pour la teinte, une droite pour le ton
+     teinte × achromatique    la RECETTE — c'est elle qui définit ce que la roue ignore
+     gris × gris              une DROITE à quatre crans, blanc à onyx
+
+   LA RECETTE EST LE PLUS PROBABLE, PAS LE CERTAIN. Écarlate × blanc donne rose six fois sur
+   dix ; le reste du temps l'un des deux parents ressort, ou l'on sort du segment — le rose
+   devient un écarlate vif d'un côté, un perle de l'autre. Une recette qui tomberait à tous les
+   coups ferait de ce couple le seul déterminé du jeu, et l'élevage y perdrait sa tension. */
+function heriteGris(a, b) {
+  const g = heriteNombre(CHROMAS[a].gris, CHROMAS[b].gris, 0, GRIS.length - 1, 1);
+  return CHROMAS.indexOf(GRIS[g]);
+}
+
+function heriteCouleur(a, b) {
+  const ga = CHROMAS[a].hue === null, gb = CHROMAS[b].hue === null;
+  if (ga && gb) return heriteGris(a, b);
+
+  if (ga || gb) {
+    const teint = ga ? b : a, gris = ga ? a : b;
+    const clair = CHROMAS[gris].gris <= 1;
+    const pos = brancheHeritee();
+    if (pos === null) return Math.floor(Math.random() * CHROMAS.length);
+    // au centre du segment : la recette. Aux bouts : les parents. Au-delà : on en sort.
+    if (Math.abs(pos) <= 0.5) return recetteCouleur(CHROMAS[teint].hue, clair ? 'clair' : 'sombre');
+    const versGris = (pos < 0) === (gris === a);
+    if (Math.abs(pos) === 1) return versGris ? gris : teint;
+    return versGris ? heriteGris(gris, gris)
+                    : recetteCouleur(CHROMAS[teint].hue, clair ? 'sombre' : 'clair');
+  }
+
+  const h = heriteRoue(roueDe(a), roueDe(b));
+  const t = heriteNombre(TONS.indexOf(CHROMAS[a].ton), TONS.indexOf(CHROMAS[b].ton), 0, 2, 1);
+  return recetteCouleur(ROUE[h].hue, TONS[t]);
 }
 
 /* SANS AXE — le motif et le fond. Rien ne relie « tigré » à « nacré » : pas de mélange, pas
@@ -3265,7 +3397,7 @@ function ditDeLHeritage(a, b) {
   const bouts = [accord(TEMPERS[melangeTemper(a.temper || 0, b.temper || 0)], a)];
   const ma = MOTIFS[a.motif || 0], mb = MOTIFS[b.motif || 0];
   bouts.push(ma === mb ? ma + (fem ? 'e' : '') : ma + ' ou ' + mb);
-  bouts.push(CHROMAS[melangeRoue(a.chroma || 0, b.chroma || 0)].name + ' au premier chromatique');
+  bouts.push(CHROMAS[melangeCouleur(a.chroma || 0, b.chroma || 0)].name + ' au premier chromatique');
   const fond = a.fond || b.fond;
   if (fond) bouts.push('fond ' + FOND_BY_KEY[fond].nom);
   return 'Le plus souvent : ' + bouts.join(' · ');
@@ -3273,7 +3405,7 @@ function ditDeLHeritage(a, b) {
 
 function heritageDe(a, b) {
   return {
-    chroma: heriteRoue(a.chroma || 0, b.chroma || 0),
+    chroma: heriteCouleur(a.chroma || 0, b.chroma || 0),
     temper: heriteTemper(a.temper || 0, b.temper || 0),
     motif: heriteNominal(a.motif || 0, b.motif || 0,
                          () => Math.floor(Math.random() * MOTIFS.length)),
