@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.18.1';
+const VERSION = 'beta 4.19.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2296,7 +2296,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 27;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 28;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2477,8 +2477,11 @@ function tireLigne(kind) {
   /* ELLE DIT AUSSI D'OÙ VIENT L'ŒUF. Un œuf de pension et un œuf acheté sont indiscernables
      une fois dans la réserve — c'était voulu, tout le reste du jeu n'a pas à les distinguer.
      Les fonds, si : eux ne se tirent que sur ce qui vient de la boutique. */
-  return file.length ? { line: file.shift(), pension: true }
-                     : { line: rollLine(kind), pension: false };
+  if (!file.length) return { line: rollLine(kind), pension: false };
+  const du = file.shift();
+  // une chaîne : une promesse d'avant l'hérédité, qui n'emportait que la lignée
+  return typeof du === 'string' ? { line: du, pension: true }
+                                : { line: du.ligne, pension: true, herite: du.herite };
 }
 
 function rollLine(kindKey) {
@@ -3097,6 +3100,145 @@ const rollIV = () => IV_NOMS.map(() => Math.floor(Math.random() * (IV_MAX + 1)))
    avait hier. On ne déprécie pas en silence ce qui est déjà dans un album. */
 const ivPart = k => !k.iv || !k.iv.length ? 0.5
                   : k.iv.reduce((n, v) => n + v, 0) / (IV_NOMS.length * IV_MAX);
+
+/* ── L'HÉRÉDITÉ ────────────────────────────────────────────────────────────────
+   CE N'EST PAS UNE LISTE DE CAS, C'EST UNE DISTRIBUTION posée sur l'axe qui relie les deux
+   parents. Le mélange est au milieu et c'est le résultat le plus probable ; on s'en éloigne
+   par crans, de moins en moins souvent.
+
+       extérieur  parent  intérieur  MÉLANGE  intérieur  parent  extérieur
+     ←————|——————————|—————————|—————————|—————————|—————————|——————————|————→
+        −2         −1       −0,5        0       +0,5      +1         +2
+       2,5 %      10 %      16 %      26 %      16 %      10 %      2,5 %
+                    └─ 6 % ─┘                    └─ 6 % ─┘
+
+   INTÉRIEUR ET EXTÉRIEUR NE SONT PAS LE MÊME « PROCHE », et c'est la distinction qui fait
+   tout le modèle. Sur deux parents écarlate et azur : l'intérieur est le magenta — proche
+   d'un parent EN ALLANT VERS l'autre ; l'extérieur est l'ambre — proche du même parent en
+   s'en ÉLOIGNANT. Le premier reste entre les deux, le second sort du segment.
+
+   L'EXTÉRIEUR EST LE MOTEUR DE LA SÉLECTION. C'est la seule branche qui peut dépasser les
+   deux parents : sans elle, une lignée converge vers la moyenne de ce qu'on lui donne et ne
+   s'améliore jamais. Elle remplace le « soixante pour cent de chances de faire mieux » que le
+   plan proposait — la largeur de la queue règle la vitesse de la montée, et il n'y a plus de
+   pourcentage arbitraire à justifier.
+
+   RIEN N'EST INTERDIT : cinq pour cent des tirages ignorent les parents et repartent du
+   hasard, AUX POIDS D'ORIGINE. Hériter ne regarde pas la rareté, tirer au hasard la regarde —
+   sans quoi la pension deviendrait la façon normale d'obtenir ce qui est rare à l'éclosion.
+
+   DEUX PARENTS IDENTIQUES ONT UN AXE DE LONGUEUR NULLE, et sans garde-fou ils ne donneraient
+   que des clones : « l'hérédité n'invente rien » deviendrait « l'hérédité ne fait rien ». Le
+   demi-écart a donc un PLANCHER, si bien que deux écarlates donnent de l'écarlate très
+   souvent et un voisin parfois. */
+const HERITAGE = [[0, 26], [-0.5, 16], [0.5, 16], [-1, 10], [1, 10],
+                  [-1.5, 6], [1.5, 6], [-2, 2.5], [2, 2.5]];
+const HERITAGE_LIBRE = 5;
+const HERITAGE_TOTAL = HERITAGE.reduce((n, b) => n + b[1], 0) + HERITAGE_LIBRE;
+
+// La position tirée sur l'axe, ou null quand le hasard reprend la main.
+function brancheHeritee() {
+  let r = Math.random() * HERITAGE_TOTAL;
+  for (const [pos, poids] of HERITAGE) { r -= poids; if (r < 0) return pos; }
+  return null;
+}
+
+/* SUR UNE DROITE — les quatre statistiques. `plancher` est le demi-écart minimal : c'est lui
+   qui permet à deux parents identiques de produire mieux qu'eux, donc à une population
+   uniforme de démarrer sa montée. */
+function heriteNombre(a, b, min, max, plancher) {
+  const pos = brancheHeritee();
+  if (pos === null) return min + Math.floor(Math.random() * (max - min + 1));
+  let demi = (b - a) / 2;
+  if (Math.abs(demi) < plancher) demi = plancher * (Math.random() < 0.5 ? -1 : 1);
+  return Math.max(min, Math.min(max, Math.round((a + b) / 2 + pos * demi)));
+}
+
+/* SUR UNE ROUE — la couleur. On déroule d'abord le second parent sur l'ARC COURT, sinon
+   l'écarlate (0) et le grenat (15), qui sont voisins, se verraient attribuer un mélange à
+   l'exact opposé de tous les deux. */
+function heriteRoue(a, b) {
+  const n = CHROMAS.length;
+  const pos = brancheHeritee();
+  if (pos === null) return Math.floor(Math.random() * n);
+  const d = ((b - a + n * 1.5) % n) - n / 2;    // l'écart signé le plus court
+  /* LE MILIEU ET L'ÉTALEMENT SONT DEUX CHOSES, et les confondre déplace le centre. Le
+     plancher n'existe que pour donner une LARGEUR à deux parents identiques ; l'appliquer au
+     milieu faisait tomber le mélange de deux écarlates à mi-chemin de leur voisin, si bien
+     que l'écarlate ne ressortait que d'une fois sur deux au lieu des deux tiers attendus. */
+  const milieu = a + d / 2;
+  const etale = Math.max(0.5, Math.abs(d) / 2) * (d < 0 ? -1 : d > 0 ? 1
+                                                 : Math.random() < 0.5 ? -1 : 1);
+  return ((Math.round(milieu + pos * etale) % n) + n) % n;
+}
+
+/* SANS AXE — le motif et le fond. Rien ne relie « tigré » à « nacré » : pas de mélange, pas
+   d'intérieur, pas d'extérieur. Les soixante pour cent des branches géométriques reviennent
+   aux deux parents, et le reste au hasard. Inventer un voisinage pour ces deux-là donnerait
+   une règle que personne ne pourrait deviner en jouant. */
+function heriteNominal(a, b, tirage) {
+  const r = Math.random() * HERITAGE_TOTAL;
+  if (r < HERITAGE_LIBRE) return tirage();
+  return Math.random() < 0.5 ? a : b;
+}
+
+/* LE TEMPÉRAMENT VIT DANS UN PLAN — chacun porte un couple (croissance, engraissement), et
+   nerveux × placide donne DOCILE, le milieu exact, calculé et non décrété. Mais six points
+   épars dans un plan n'ont pas d'« intérieur » ni d'« extérieur » : il n'y a rien entre le
+   mélange et un parent. On garde donc le mélange, les parents, et le hasard. */
+function heriteTemper(a, b) {
+  const r = Math.random() * HERITAGE_TOTAL;
+  if (r < HERITAGE_LIBRE) return Math.floor(Math.random() * TEMPERS.length);
+  if (r < HERITAGE_LIBRE + 26) {
+    const cx = (TEMPERS[a].grow + TEMPERS[b].grow) / 2;
+    const cy = (TEMPERS[a].fat + TEMPERS[b].fat) / 2;
+    let best = 0, d0 = Infinity;
+    TEMPERS.forEach((t, i) => {
+      const d = (t.grow - cx) ** 2 + (t.fat - cy) ** 2;
+      if (d < d0) { d0 = d; best = i; }
+    });
+    return best;
+  }
+  return Math.random() < 0.5 ? a : b;
+}
+
+/* CE QU'UN ŒUF DE PENSION EMPORTE DE SES PARENTS. Calculé À LA PONTE et non à l'éclosion :
+   les parents sont sûrs d'être là au moment où l'œuf tombe, ils peuvent avoir été vendus
+   quand il éclôt. C'est aussi ce qui est juste — une bête vendue après la ponte a quand même
+   transmis ce qu'elle portait. */
+function heritageDe(a, b) {
+  return {
+    chroma: heriteRoue(a.chroma || 0, b.chroma || 0),
+    temper: heriteTemper(a.temper || 0, b.temper || 0),
+    motif: heriteNominal(a.motif || 0, b.motif || 0,
+                         () => Math.floor(Math.random() * MOTIFS.length)),
+    /* LE FOND ENTRE À LA PENSION PAR DEUX VOIES QUI SE CUMULENT, et c'est ce qui débloque un
+       chantier en attente depuis la `1.13.0`. Si aucun parent n'en porte, l'œuf tire quand
+       même au taux de la boutique : sans ça, la pension d'un joueur qui n'a aucun fond n'en
+       produirait jamais, et la voie serait fermée à celui qui en a le plus besoin. */
+    fond: a.fond || b.fond
+        ? heriteNominal(a.fond || b.fond, b.fond || a.fond, () => null)
+        : null,
+    iv: IV_NOMS.map((n, i) => heriteNombre((a.iv || [])[i] || 0, (b.iv || [])[i] || 0,
+                                           0, IV_MAX, 1)),
+  };
+}
+
+/* CE QU'UNE BÊTE REÇOIT EN NAISSANT : ce que ses parents lui ont laissé, ou le hasard.
+
+   LE CHROMATISME NE S'HÉRITE PAS, SA COULEUR SI. C'est la règle qui garde le trophée : le
+   tirage à une sur huit mille décide SI la bête est chromatique, les parents décident
+   LAQUELLE. Deux chromatiques ne font donc pas des chromatiques — ils font des bêtes qui,
+   le jour où le tirage tombe, porteront leur couleur plutôt qu'une autre. */
+function variantsDe(slot) {
+  const h = slot && slot.herite;
+  const v = rollVariants(!slot.pension);
+  if (!h) return v;
+  return Object.assign(v, {
+    chroma: h.chroma, temper: h.temper, motif: h.motif, iv: h.iv,
+    fond: h.fond || v.fond,
+  });
+}
 
 function rollVariants(achete) {
   return {
@@ -4237,7 +4379,7 @@ function hatchAll() {
     // qu'il est en train de vendre à perte
     const c = Object.assign({ id: nextId++, line: slot.line, age: 1, p: 0, over: 0,
                               cost: prixOeuf(EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun) },
-                           rollVariants(!slot.pension));
+                           variantsDe(slot));
     // un prodige est protégé d'office : on ne perd pas une bête sur huit mille
     // parce que le marchand l'a vendue avant qu'on l'ait vue
     if (c.prodige) { c.keep = true; state.stats.prodiges++; }
@@ -7544,13 +7686,16 @@ const sorteDe = ligne => {
 /* Un œuf dans la réserve, avec sa lignée promise. Rend false si le plafond est atteint —
    c'est le seul frein de la pension, et il tient parce que la réserve se vide toute seule
    dans les incubateurs libres. */
-function pondre(ligne) {
+function pondre(ligne, herite) {
   const sorte = sorteDe(ligne);
   if (eggStock(sorte) >= PLAFOND_OEUFS) return false;
   poserFile(sorte);
   state.eggs[sorte] = eggStock(sorte) + 1;
   state.pension.dus = state.pension.dus || {};
-  (state.pension.dus[sorte] = state.pension.dus[sorte] || []).push(ligne);
+  /* LA FILE PORTAIT UNE CHAÎNE, ELLE PORTE MAINTENANT UN OBJET. Une sauvegarde d'avant en a
+     encore de l'ancienne forme : `tireLigne` accepte les deux, et une chaîne veut dire « une
+     lignée promise, sans héritage » — ce qui est exactement ce que la pension faisait. */
+  (state.pension.dus[sorte] = state.pension.dus[sorte] || []).push({ ligne, herite });
   state.pension.nes = (state.pension.nes || 0) + 1;
   state.stats.pension = (state.stats.pension || 0) + 1;
   return true;
@@ -7617,7 +7762,7 @@ function avancePension(dt) {
       for (let i = 0; i < portee; i++) {
         // la merveille occupe UNE place de la nichée, les autres se tirent normalement
         const ligne = i === 0 && rare ? rare : ligneeDe(a, b);
-        if (!pondre(ligne)) continue;
+        if (!pondre(ligne, heritageDe(a, b))) continue;
         nes++;
         // le carnet n'apprend que ce qui est VRAIMENT sorti, jamais ce qui aurait pu sortir
         noterPonte(a, b, ligne);

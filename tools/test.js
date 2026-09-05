@@ -1545,7 +1545,10 @@ scenario('pension — un couple pond la lignée promise, et pas une autre', () =
 
   /* LA LIGNÉE PROMISE EST TENUE. C'est tout ce que la pension a d'unique sans les
      merveilleuses : deux loups rendent un loup, pas « un œuf commun ». */
-  eq('la lignée attend en réserve', (s.pension.dus.rare || []).join(), 'loup,loup');
+  /* LA PROMESSE PORTE UN OBJET DEPUIS L'HÉRÉDITÉ : la lignée, et ce que les parents ont
+     transmis. On lit donc `.ligne` là où on lisait la chaîne elle-même. */
+  eq('la lignée attend en réserve',
+     (s.pension.dus.rare || []).map(d => d.ligne).join(), 'loup,loup');
   s.incub[0] = null;
   jeu.placeEgg(0, 'rare');
   eq('et c’est elle qui part en couveuse', s.incub[0].line, 'loup');
@@ -2263,7 +2266,7 @@ scenario('pension — la portée multiplie les œufs, jamais les merveilles', ()
   } finally { Math.random = vrai; }
   const dus = [].concat(...Object.values(s.pension.dus));
   eq('la nichée fait toujours cinq', dus.length, 5);
-  eq('et elle ne contient qu’une merveille', dus.filter(l => l === 'wukong').length, 1);
+  eq('et elle ne contient qu’une merveille', dus.filter(d => d.ligne === 'wukong').length, 1);
 });
 
 scenario('pension — un couple bloqué ne tire pas sa recette', () => {
@@ -2541,7 +2544,7 @@ scenario('merveilles — la recette impose sa durée et tire par-dessus la ponte
   } finally { Math.random = vrai; }
 
   eq('il est dans la réserve des merveilles', jeu.eggStock('merveille'), 1);
-  eq('et sa lignée est promise', (s.pension.dus.merveille || []).join(), 'wukong');
+  eq('et sa lignée est promise', (s.pension.dus.merveille || []).map(d => d.ligne).join(), 'wukong');
   s.incub[0] = null;
   jeu.placeEgg(0, 'merveille');
   eq('c’est bien lui qui couve', s.incub[0].line, 'wukong');
@@ -2569,7 +2572,7 @@ scenario('merveilles — sans la recette, le couple pond comme les autres', () =
 
   eq('mais aucune merveille', jeu.eggStock('merveille'), 0);
   eq('c’est un œuf épique', jeu.eggStock('epique'), 1);
-  eq('de golem', (s.pension.dus.epique || []).join(), 'golem');
+  eq('de golem', (s.pension.dus.epique || []).map(d => d.ligne).join(), 'golem');
 });
 
 scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la bête', () => {
@@ -2604,7 +2607,12 @@ scenario('merveilles — un cran de rareté, jamais un cran de puissance', () =>
      jeu.RARITY.merveilleuse.plafond, jeu.RARITY.mythique.plafond);
 
   const w = bete(jeu, 'wukong', 3, 20000), o = bete(jeu, 'ouroboros', 3, 20000);
-  w.chroma = o.chroma; w.niv = o.niv; w.over = o.over = 0; w.temper = o.temper; w.prodige = o.prodige = false;
+  /* ON ÉGALISE TOUT CE QUI ENTRE DANS LA VALEUR, LE FOND COMPRIS. Il manquait, et le scénario
+     échouait une fois sur quelques centaines : un fond tiré au hasard vaut ×1,10 à ×1,20, si
+     bien que la merveille et la mythique se comparaient sur un décor et non sur leur rang. Un
+     test qui échoue sans qu'aucun code soit fautif apprend à ignorer les échecs. */
+  w.chroma = o.chroma; w.niv = o.niv; w.over = o.over = 0; w.temper = o.temper;
+  w.prodige = o.prodige = false; w.fond = o.fond = null;
   eq('donc elle se vend au même prix', jeu.sellValue(w), jeu.sellValue(o));
 
   // et les trois consignes du marchand ont bien leur clef, sinon elles seraient muettes
@@ -5000,6 +5008,115 @@ function equiper(jeu, motif, n) {
   for (let i = 1; i <= n; i++) { jeu.state.album.push(parfaite(jeu, motif, i)); jeu.state.slots.push(i); }
   jeu.oublierAlbum();
 }
+
+scenario('hérédité — la distribution est centrée sur le mélange', () => {
+  const jeu = neuf();
+  const n = jeu.CHROMAS.length, N = 60000;
+  const part = (a, b, cible) => {
+    let k = 0;
+    for (let i = 0; i < N; i++) if (jeu.heriteRoue(a, b) === cible) k++;
+    return k / N * 100;
+  };
+
+  /* DEUX PARENTS ÉCARLATE (0) ET DORÉ (4). L'axe fait quatre crans, le mélange est l'ambre. */
+  ok('le mélange est le résultat le plus probable', Math.abs(part(0, 4, 2) - 26) < 2, part(0, 4, 2));
+  ok('les intérieurs suivent', Math.abs(part(0, 4, 1) - 16) < 2, part(0, 4, 1));
+  ok('puis les parents eux-mêmes', Math.abs(part(0, 4, 0) - 10) < 2, part(0, 4, 0));
+  ok('puis les extérieurs', Math.abs(part(0, 4, 5) - 6) < 2, part(0, 4, 5));
+
+  /* INTÉRIEUR ET EXTÉRIEUR NE SONT PAS LE MÊME « PROCHE », et c'est là que le modèle se joue :
+     le vermillon (1) est proche de l'écarlate EN ALLANT VERS le doré, le grenat (15) en s'en
+     éloignant. Le premier est deux fois et demie plus probable que le second. */
+  ok('un voisin vers l’autre parent bat un voisin qui s’en éloigne',
+     part(0, 4, 1) > part(0, 4, 15) * 2, part(0, 4, 1) + ' vs ' + part(0, 4, 15));
+
+  /* DEUX PARENTS IDENTIQUES : l'axe est un point, et seul le plancher lui donne une largeur.
+     Sans ce plancher ils ne feraient que des clones ; avec, ils transmettent très souvent et
+     donnent un voisin parfois. C'est aussi ce qui permet à une population uniforme de
+     démarrer sa montée. */
+  ok('deux parents identiques transmettent très souvent',
+     part(0, 0, 0) > 60 && part(0, 0, 0) < 80, part(0, 0, 0));
+  ok('mais pas toujours', part(0, 0, 1) > 10, part(0, 0, 1));
+
+  /* LA ROUE EST UN CERCLE : l'écarlate (0) et le grenat (15) sont VOISINS, et leur mélange
+     est l'un des deux — jamais le point diamétralement opposé qu'une moyenne d'indices
+     donnerait. */
+  ok('le cercle se referme', part(15, 0, 8) < 1, part(15, 0, 8));
+
+  // et cinq pour cent des tirages ignorent les parents
+  ok('le hasard garde sa part', part(0, 0, 8) > 0.1 && part(0, 0, 8) < 1, part(0, 0, 8));
+
+  /* SUR UNE DROITE — les statistiques. Deux parents au sommet donnent des petits au sommet la
+     plupart du temps, et le reste vient de la branche libre. C'est la mesure qui porte la
+     phrase « l'héritage vient des parents », là où un tirage unique ne prouverait rien. */
+  let hauts = 0, somme = 0;
+  for (let i = 0; i < 20000; i++) {
+    const v = jeu.heriteNombre(jeu.IV_MAX, jeu.IV_MAX, 0, jeu.IV_MAX, 1);
+    somme += v;
+    if (v >= jeu.IV_MAX - 2) hauts++;
+  }
+  ok('deux parents au sommet donnent le sommet neuf fois sur dix',
+     hauts / 20000 > 0.9, (hauts / 20000 * 100).toFixed(1) + ' %');
+  ok('et la moyenne reste très haute', somme / 20000 > 23, (somme / 20000).toFixed(2));
+
+  /* L'EXTÉRIEUR EST LE MOTEUR DE LA SÉLECTION : c'est la seule branche qui dépasse les deux
+     parents. Sans elle, une lignée converge vers la moyenne de ce qu'on lui donne. */
+  let mieux = 0;
+  for (let i = 0; i < 20000; i++) if (jeu.heriteNombre(10, 10, 0, jeu.IV_MAX, 1) > 10) mieux++;
+  ok('un enfant peut dépasser deux parents identiques',
+     mieux / 20000 > 0.1, (mieux / 20000 * 100).toFixed(1) + ' %');
+});
+
+scenario('hérédité — un œuf de pension porte ses parents, un œuf acheté non', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15; s.pens = 40;
+  const [a, b] = couple(jeu, 'loup', 'loup');
+  a.chroma = 0; a.temper = 1; a.motif = 3; a.iv = [25, 25, 25, 25]; a.fond = 'braise';
+  b.chroma = 0; b.temper = 1; b.motif = 3; b.iv = [25, 25, 25, 25]; b.fond = 'braise';
+
+  jeu.accoupler(a, b);
+  jeu.avancePension(jeu.couples()[0].duree + 1);
+  const du = (s.pension.dus.rare || [])[0];
+  ok('la promesse porte la lignée', du && du.ligne === 'loup', du && du.ligne);
+  ok('et ce que les parents transmettent', !!(du && du.herite), du && du.herite);
+
+  /* CE QUI EST HÉRITÉ SE CALCULE À LA PONTE, pas à l'éclosion : les parents sont sûrs d'être
+     là quand l'œuf tombe, ils peuvent avoir été vendus quand il éclôt. Une bête vendue après
+     la ponte a quand même transmis ce qu'elle portait. */
+  jeu.retirerCouple && jeu.retirerCouple(0);
+  s.pen = [];
+  s.incub[0] = null;
+  jeu.placeEgg(0, 'rare');
+  const slot = s.incub[0];
+  ok('l’œuf posé emporte l’héritage', !!slot.herite, slot);
+
+  /* ON VÉRIFIE LE BRANCHEMENT, PAS LE HASARD. Comparer la bête éclose aux PARENTS ferait
+     échouer ce scénario une fois sur cinq : la branche « n'importe quoi » se déclenche à cinq
+     pour cent, et quatre statistiques la tirent quatre fois. Ce qui doit être exact ici, c'est
+     que l'éclosion recopie l'héritage sans le retirer — la distribution, elle, se mesure dans
+     le scénario d'à côté, sur soixante mille tirages. */
+  const h = Object.assign({}, slot.herite);
+  s.incub[0].p = 99999;
+  jeu.hatchAll();
+  const petit = s.pen[s.pen.length - 1];
+  eq('le motif de l’héritage passe tel quel', petit.motif, h.motif);
+  eq('le caractère aussi', petit.temper, h.temper);
+  eq('la couleur aussi', petit.chroma, h.chroma);
+  eq('les statistiques aussi', petit.iv.join(), h.iv.join());
+  eq('et le fond', petit.fond, h.fond);
+  /* CE SCÉNARIO NE DIT PLUS RIEN DE LA PROVENANCE, et c'est délibéré. « L'héritage vient des
+     parents » est une affirmation STATISTIQUE — la branche « n'importe quoi » se déclenche à
+     cinq pour cent, sur chacun des six traits — et une affirmation statistique vérifiée sur un
+     seul tirage est un test qui échoue une fois sur cinq sans qu'aucun code ne soit fautif.
+     Elle se mesure dans le scénario d'à côté, sur des dizaines de milliers de tirages. */
+
+  /* UN ŒUF ACHETÉ N'HÉRITE DE RIEN : il n'a pas de parents. C'est la frontière entre acheter
+     et élever, et c'est elle qui donne sa raison d'être à la pension. */
+  s.incub[0] = null;
+  s.eggs.rare = 1;
+  jeu.placeEgg(0, 'rare');
+  ok('rien à hériter sur un œuf de boutique', !s.incub[0].herite);
+});
 
 scenario('stats — quatre nombres tirés à l’éclosion, et la carte les porte', () => {
   const jeu = neuf(); const s = jeu.state;
