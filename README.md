@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.25.0** | trente-deux couleurs choisies à la main : les 22,5° n’étaient qu’un quadrillage, et un écarlate qui n’est pas rouge n’est pas un écarlate |
+| **beta 4.25.1** | la teinte tient sur toute la bête : le corps sortait bordeaux et le ventre kaki, parce que `sepia` écrêtait avant même la rotation |
+| beta 4.25.0 | trente-deux couleurs choisies à la main : les 22,5° n’étaient qu’un quadrillage, et un écarlate qui n’est pas rouge n’est pas un écarlate |
 | beta 4.24.1 | l’atelier redessine : un bloc retiré avait emporté la constante voisine, et la page ne posait plus une image. Un scénario exécute désormais le script de la page contre un DOM de fortune |
 | beta 4.24.0 | le nom décrit enfin le pixel : `hue-rotate` TOURNAIT la couleur du dessin au lieu de la remplacer, donc l’écarlate d’un crapaud était verte. On efface avant de peindre, et l’angle est résolu pour tomber sur la teinte annoncée |
 | beta 4.23.1 | les tons cessent de blanchir : le `clair` aplatissait 60 % d’un crapaud sur du blanc pur, et ses huit recettes rendaient huit fois la même bête |

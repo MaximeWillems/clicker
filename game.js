@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.25.0';
+const VERSION = 'beta 4.25.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -528,44 +528,56 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    LA SUITE EST CONNUE : peindre par ZONE rend les deux à la fois — la crinière prend la teinte
    exacte, le reste de la bête garde ses couleurs. C'est écrit au plan. */
 
+/* ON DESCEND AVANT DE TEINTER, ET C'EST CE QUI TIENT LA COULEUR SUR TOUTE LA BÊTE.
+   `sepia(1)` multiplie le rouge par 1,351 : au-dessus de 0,74 d'entrée il ÉCRÊTE, et un gris
+   clair sort déjà en (1, 1, 0,83) — du jaune — avant même la rotation. Le corps d'une bête
+   prenait donc sa couleur pendant que son ventre, plus clair, partait en kaki : c'est ce qui
+   rendait tous les tons sombres laids, le bordeaux le premier, avec 67° d'écart de teinte
+   entre ses zones claires et ses zones foncées.
+
+   0,7 EST SOUS LE SEUIL, ET C'EST TOUT CE QU'IL FAUT. Rien ne bute plus à l'étape du sépia ;
+   le niveau se rebâtit après. Comme `sepia` est une matrice, descendre puis remonter ne change
+   RIEN quand rien n'écrête — cette constante ne coûte donc aucune couleur, elle ne fait
+   qu'écarter le plafond. */
+const AVANT_TEINTE = 0.7;
 const peindre = (teinte, angle, force, serre, niveau) =>
-  'grayscale(1) sepia(' + teinte + ') hue-rotate(' + angle + 'deg) saturate(' + force + ') '
-  + 'contrast(' + serre + ') brightness(' + niveau + ')';
+  'grayscale(1) brightness(' + AVANT_TEINTE + ') sepia(' + teinte + ') hue-rotate(' + angle + 'deg) '
+  + 'saturate(' + force + ') contrast(' + serre + ') brightness(' + niveau + ')';
 
 const CHROMAS = [
   // ── LA ROUE · seize teintes à 22,5°, et leurs indices ne bougent jamais ──
   { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0,   ton: 'vif',
-    couleur: '#D92B2B', filtre: peindre(1, 311.1, 9.77, 1.05, 0.851) },
+    couleur: '#D92B2B', filtre: peindre(1, 311.1, 7.51, 1.05, 0.851) },
   { key: 'vermillon', name: 'vermillon', fem: 'vermillon', hue:  22.5, ton: 'vif',
-    couleur: '#E4571C', filtre: peindre(1, 323.4, 6.54, 1.05, 0.894) },
+    couleur: '#E4571C', filtre: peindre(1, 332.3, 4.70, 1.05, 1.049) },
   { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45,   ton: 'vif',
-    couleur: '#EF8F1B', filtre: peindre(1, 352.7, 3.72, 1.05, 0.992) },
+    couleur: '#EF8F1B', filtre: peindre(1, 352.8, 4.12, 0.95, 1.417) },
   { key: 'safran',    name: 'safran',    fem: 'safran',    hue:  67.5, ton: 'vif',
-    couleur: '#EFBB2A', filtre: peindre(1, 6.6, 3.10, 1.05, 1.200) },
+    couleur: '#EFBB2A', filtre: peindre(1, 6.6, 3.05, 1.05, 1.745) },
   { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90,   ton: 'vif',
-    couleur: '#DCC93A', filtre: peindre(1, 15.5, 2.69, 1.05, 1.246) },
+    couleur: '#DCC93A', filtre: peindre(1, 15.5, 2.98, 0.95, 1.780) },
   { key: 'olivine',   name: 'olivine',   fem: 'olivine',   hue: 112.5, ton: 'vif',
-    couleur: '#98B93B', filtre: peindre(1, 34.7, 2.48, 1.05, 1.080) },
+    couleur: '#98B93B', filtre: peindre(1, 28.3, 8.38, 0.66, 1.399) },
   { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135,   ton: 'vif',
-    couleur: '#3EB264', filtre: peindre(1, 86.9, 2.50, 1.05, 0.945) },
+    couleur: '#3EB264', filtre: peindre(1, 86.3, 2.46, 1.05, 1.369) },
   { key: 'celadon',   name: 'céladon',   fem: 'céladon',   hue: 157.5, ton: 'vif',
-    couleur: '#64C7A4', filtre: peindre(1, 107.4, 1.64, 1.05, 1.122) },
+    couleur: '#64C7A4', filtre: peindre(1, 107.4, 3.71, 0.50, 1.487) },
   { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180,   ton: 'vif',
-    couleur: '#33A6D6', filtre: peindre(1, 152.3, 3.03, 1.05, 0.927) },
+    couleur: '#32A6B8', filtre: peindre(1, 140.0, 2.64, 1.05, 1.326) },
   { key: 'cobalt',    name: 'cobalt',    fem: 'cobalt',    hue: 202.5, ton: 'vif',
-    couleur: '#2E6DCE', filtre: peindre(1, 194.3, 11.56, 1.05, 0.795) },
+    couleur: '#2E6DCE', filtre: peindre(1, 177.2, 4.24, 1.05, 0.955) },
   { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225,   ton: 'vif',
-    couleur: '#4442C0', filtre: peindre(1, 201.7, 21.21, 1.05, 0.753) },
+    couleur: '#4442C0', filtre: peindre(1, 202.0, 8.58, 1.05, 0.753) },
   { key: 'violine',   name: 'violine',   fem: 'violine',   hue: 247.5, ton: 'vif',
-    couleur: '#7B3EC7', filtre: peindre(1, 206.3, 18.17, 1.05, 0.780) },
+    couleur: '#6B2D75', filtre: peindre(1, 245.4, 4.05, 1.05, 0.589) },
   { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270,   ton: 'vif',
-    couleur: '#A754D4', filtre: peindre(1, 212.6, 9.71, 1.05, 0.825) },
+    couleur: '#9746A3', filtre: peindre(1, 245.6, 3.97, 0.95, 0.859) },
   { key: 'pourpre',   name: 'pourpre',   fem: 'pourpre',   hue: 292.5, ton: 'vif',
-    couleur: '#C441AE', filtre: peindre(1, 278.7, 6.04, 0.95, 0.788) },
+    couleur: '#BC44B4', filtre: peindre(1, 253.7, 4.27, 1.05, 0.944) },
   { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315,   ton: 'vif',
-    couleur: '#DE3A8A', filtre: peindre(1, 295.5, 7.25, 1.05, 0.871) },
+    couleur: '#D86FCA', filtre: peindre(1, 256.7, 2.61, 1.05, 1.301) },
   { key: 'grenat',    name: 'grenat',    fem: 'grenat',    hue: 337.5, ton: 'vif',
-    couleur: '#C02645', filtre: peindre(1, 305.7, 9.24, 1.05, 0.753) },
+    couleur: '#C12939', filtre: peindre(1, 306.3, 6.60, 1.05, 0.757) },
 
   /* ── LES ACHROMATIQUES · hors de la roue, sur une droite à quatre crans ──
      Elles n'ont pas de teinte, donc pas de place sur le cercle : « l'arc court entre
@@ -576,10 +588,10 @@ const CHROMAS = [
      d'incubation est à #0E1310. Une bête vraiment noire y serait un trou cerclé d'un halo
      doré — on verrait le contour et rien d'autre. Onyx est donc un gris très sombre, et son
      nom l'assume : un onyx est noir sans être un vide. */
-  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, filtre: peindre(.15, 175, 1.2, .62, 1.28) },
-  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, filtre: peindre(.15, 335, 2.6, .66, 1.02) },
-  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, filtre: peindre(.15, 175, 2.6, .76, .56) },
-  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, filtre: peindre(.15, 175, 1.2, .86, .28) },
+  { key: 'blanc',   name: 'blanc',   fem: 'blanche', hue: null, gris: 0, couleur: '#85878A', filtre: peindre(1, 175.9, 0.13, 0.85, 1.211) },
+  { key: 'perle',   name: 'perle',   fem: 'perle',   hue: null, gris: 1, couleur: '#706966', filtre: peindre(1, 333.1, 0.28, 0.95, 0.971) },
+  { key: 'ardoise', name: 'ardoise', fem: 'ardoise', hue: null, gris: 2, couleur: '#36393C', filtre: peindre(1, 169.6, 0.28, 1.05, 0.526) },
+  { key: 'onyx',    name: 'onyx',    fem: 'onyx',    hue: null, gris: 3, couleur: '#1B1B1C', filtre: peindre(1, 198.4, 0.12, 1.05, 0.252) },
 
   /* ── LES RECETTES · ce qu'une teinte donne croisée avec un blanc ou un onyx ──
      ELLES NE PORTENT QUE SUR UN CRAN SUR DEUX DE LA ROUE, et c'est délibéré à deux titres.
@@ -593,37 +605,37 @@ const CHROMAS = [
      et c'est le FILTRE qui plie, pas le nom : il désature presque tout. Un nom qui décrit mal
      le pixel est un nom qui ment ; on a donc changé le pixel. */
   { key: 'rose',       name: 'rose',       fem: 'rose',       hue:   0, ton: 'clair',
-    couleur: '#E59A9A', filtre: peindre(1, 311.1, 1.36, 1.05, 1.087) },
+    couleur: '#E59A9A', filtre: peindre(1, 310.3, 1.72, 0.85, 1.522) },
   { key: 'bordeaux',   name: 'bordeaux',   fem: 'bordeaux',   hue:   0, ton: 'sombre',
-    couleur: '#8E2733', filtre: peindre(1, 307.7, 7.68, 1.05, 0.557) },
+    couleur: '#8E2733', filtre: peindre(1, 305.1, 4.80, 1.05, 0.579) },
   { key: 'beige',      name: 'beige',      fem: 'beige',      hue:  45, ton: 'clair',
-    couleur: '#DCC79C', filtre: peindre(1, 362.1, 1.21, 0.75, 1.353) },
+    couleur: '#DCC79C', filtre: peindre(1, 12.8, 8.49, 0.26, 1.613) },
   { key: 'sepia',      name: 'sépia',      fem: 'sépia',      hue:  45, ton: 'sombre',
-    couleur: '#7D5828', filtre: peindre(1, 354.1, 2.52, 1.05, 0.591) },
+    couleur: '#7D5828', filtre: peindre(1, 354.1, 2.78, 0.95, 0.845) },
   { key: 'argent',     name: 'argent',     fem: 'argent',     hue:  90, ton: 'clair',
-    couleur: '#C6CBD0', filtre: peindre(1, 169.0, 0.33, 0.37, 1.470) },
+    couleur: '#C6CBD0', filtre: peindre(1, 169.6, 0.42, 0.37, 1.679) },
   { key: 'bronze',     name: 'bronze',     fem: 'bronze',     hue:  90, ton: 'sombre',
-    couleur: '#8C7529', filtre: peindre(1, 8.6, 2.56, 1.05, 0.745) },
+    couleur: '#8C7529', filtre: peindre(1, 8.6, 2.83, 0.95, 1.064) },
   { key: 'menthe',     name: 'menthe',     fem: 'menthe',     hue: 135, ton: 'clair',
-    couleur: '#96CFB2', filtre: peindre(1, 96.9, 1.17, 0.75, 1.302) },
+    couleur: '#96CFB2', filtre: peindre(1, 97.2, 1.26, 0.75, 1.703) },
   { key: 'malachite',  name: 'malachite',  fem: 'malachite',  hue: 135, ton: 'sombre',
-    couleur: '#26804F', filtre: peindre(1, 94.6, 2.59, 1.05, 0.674) },
+    couleur: '#26804F', filtre: peindre(1, 94.6, 3.75, 0.75, 0.930) },
   { key: 'turquoise',  name: 'turquoise',  fem: 'turquoise',  hue: 180, ton: 'clair',
-    couleur: '#93CBDA', filtre: peindre(1, 145.8, 1.51, 0.66, 1.320) },
+    couleur: '#93CBDA', filtre: peindre(1, 140.0, 1.43, 0.75, 1.702) },
   { key: 'marine',     name: 'marine',     fem: 'marine',     hue: 180, ton: 'sombre',
-    couleur: '#245C82', filtre: peindre(1, 161.2, 3.03, 1.05, 0.530) },
+    couleur: '#245C82', filtre: peindre(1, 157.7, 2.80, 1.05, 0.777) },
   { key: 'lavande',    name: 'lavande',    fem: 'lavande',    hue: 225, ton: 'clair',
-    couleur: '#ACAAD6', filtre: peindre(1, 203.7, 1.17, 0.75, 1.172) },
+    couleur: '#ACAAD6', filtre: peindre(1, 203.7, 1.69, 0.58, 1.491) },
   { key: 'encre',      name: 'encre',      fem: 'encre',      hue: 225, ton: 'sombre',
-    couleur: '#312F82', filtre: peindre(1, 201.8, 19.73, 1.05, 0.510) },
+    couleur: '#312F82', filtre: peindre(1, 202.5, 6.36, 1.05, 0.509) },
   { key: 'lilas',      name: 'lilas',      fem: 'lilas',      hue: 270, ton: 'clair',
-    couleur: '#C6A7D6', filtre: peindre(1, 235.6, 1.34, 0.66, 1.215) },
+    couleur: '#BE9CD0', filtre: peindre(1, 238.8, 1.45, 0.75, 1.462) },
   { key: 'obsidienne', name: 'obsidienne', fem: 'obsidienne', hue: 270, ton: 'sombre',
-    couleur: '#5A3378', filtre: peindre(1, 213.6, 7.49, 1.05, 0.460) },
+    couleur: '#4A2857', filtre: peindre(1, 245.4, 2.99, 1.05, 0.472) },
   { key: 'quartz',     name: 'quartz',     fem: 'quartz',     hue: 315, ton: 'clair',
-    couleur: '#E0A8C4', filtre: peindre(1, 277.5, 1.36, 0.66, 1.249) },
+    couleur: '#D89EB8', filtre: peindre(1, 283.0, 1.54, 0.66, 1.500) },
   { key: 'cassis',     name: 'cassis',     fem: 'cassis',     hue: 315, ton: 'sombre',
-    couleur: '#802A62', filtre: peindre(1, 286.4, 5.65, 1.05, 0.502) },
+    couleur: '#822976', filtre: peindre(1, 256.8, 4.71, 1.05, 0.609) },
 ];
 
 /* LES SEIZE PREMIERS INDICES SONT LA ROUE, ET ILS NE BOUGERONT PLUS. Une sauvegarde stocke un

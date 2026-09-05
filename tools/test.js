@@ -5428,12 +5428,12 @@ scenario('couleurs — chacune rend l’hexadécimal qu’elle annonce', () => {
     ok(c.name + ' efface la teinte du dessin avant de peindre', /^grayscale\(1\)/.test(f), f);
     const p = passe(f, [0.5, 0.5, 0.5]);
     rendues.push({ nom: c.name, p });
-    if (!c.couleur) continue;                 // les quatre gris se règlent à la main
+    // les trente-six passent par la même porte depuis la 4.25.1, gris compris
     comptees++;
     const e = distanceRGB(p, hexVers(c.couleur));
     if (e > pireEcart) { pireEcart = e; pire = c.name + ' vise ' + c.couleur + ' et rend ' + enHex(p); }
   }
-  eq('trente-deux couleurs portent leur hexadécimal', comptees, 32);
+  eq('les trente-six portent leur hexadécimal', comptees, 36);
   ok('chacune rend la couleur qu’elle annonce', pireEcart <= 0.04,
      'pire : ' + pire + ' (' + pireEcart.toFixed(3) + ')');
 
@@ -5451,7 +5451,7 @@ scenario('couleurs — chacune rend l’hexadécimal qu’elle annonce', () => {
      paire + ' à ' + plusProches.toFixed(3));
 });
 
-scenario('couleur — le ton se dit une seule fois dans le filtre', () => {
+scenario('couleur — la chaîne a une forme, et le halo n’est que le halo', () => {
   /* LA FAUTE DE LA 4.22.0, ET POURQUOI ELLE SE GARDE ICI. `PRODIGE_FILTER` commençait par
      `saturate(2.4) brightness(1.3)` — le `TON_FILTRE.vif` de la table, au mot près — et
      `filtreDe` colle les deux bouts. Chaque teinte vive partait donc au carré : saturate 5,76
@@ -5462,23 +5462,34 @@ scenario('couleur — le ton se dit une seule fois dans le filtre', () => {
      fonction soit énoncée deux fois dans une seule chaîne — parce que ça, ce n'est jamais
      voulu, quel que soit le réglage. */
   const jeu = neuf();
-  const fautes = [];
-  for (let i = 0; i < jeu.CHROMAS.length; i++) {
-    const chaine = jeu.filtreDe({ prodige: true, chroma: i });
-    const vues = new Map();
-    for (const m of chaine.matchAll(/([a-z-]+)\(/g)) vues.set(m[1], (vues.get(m[1]) || 0) + 1);
-    for (const [nom, n] of vues) if (n > 1) fautes.push(jeu.CHROMAS[i].name + ' : ' + nom + ' ×' + n);
-  }
-  ok('aucune primitive n’est répétée dans les trente-six chaînes', fautes.length === 0,
-     fautes.join('  |  '));
+  /* LA CHAÎNE A UNE FORME, ET ELLE NE VARIE PAS. Ce scénario comptait les primitives et
+     refusait qu'une même fonction paraisse deux fois — bonne règle pour la faute qu'il gardait
+     (le ton énoncé deux fois, une fois dans la table et une fois dans le halo), mauvaise depuis
+     que `peindre` porte DEUX `brightness` voulus : un avant le sépia pour l'empêcher d'écrêter,
+     un après pour poser le niveau.
+
+     ON VÉRIFIE DONC LA FORME PLUTÔT QUE LE COMPTE. Sept primitives, dans cet ordre, et rien
+     d'autre : un bout recollé par erreur ne passe pas, un ordre inversé non plus — or l'ordre
+     est tout, puisque descendre APRÈS avoir teinté ne rattrape aucun écrêtage. */
+  const FORME = /^grayscale\(1\) brightness\([\d.]+\) sepia\([\d.]+\) hue-rotate\(-?[\d.]+deg\) saturate\([\d.]+\) contrast\([\d.]+\) brightness\([\d.]+\)$/;
+  const informes = jeu.CHROMAS.filter(c => !FORME.test(jeu.filtreCouleur(c)))
+                              .map(c => c.name + ' : ' + jeu.filtreCouleur(c));
+  ok('les trente-six chaînes ont la même forme, dans le même ordre',
+     informes.length === 0, informes.join('  |  '));
 
   // et le halo, lui, ne porte plus que le halo
   eq('le halo ne porte que le halo', jeu.PRODIGE_FILTER, 'drop-shadow(0 0 14px #E4A63E)');
 
+  /* LE FILTRE D'UNE BÊTE EST LA COULEUR PLUS LE HALO, sans un mot de plus. C'est ce recollage
+     qui avait produit le doublon de la `4.22.0` : les deux bouts portaient chacun le ton. */
+  const recolle = jeu.CHROMAS.every((c, i) =>
+    jeu.filtreDe({ prodige: true, chroma: i }) === jeu.filtreCouleur(c) + ' ' + jeu.PRODIGE_FILTER);
+  ok('un chromatique porte sa couleur et son halo, rien d’autre', recolle);
+
   /* LE HALO RESTE EN DERNIER. `drop-shadow` prend l'alpha de ce qui le précède : placé avant
      la rotation, il serait teinté par elle et cesserait d'être le même halo pour les
      trente-six couleurs — or c'est justement son invariance qui dit « chromatique » de loin. */
-  const dernier = fautes.length === 0 && jeu.CHROMAS.every((c, i) =>
+  const dernier = jeu.CHROMAS.every((c, i) =>
     /drop-shadow\([^)]*\)$/.test(jeu.filtreDe({ prodige: true, chroma: i })));
   ok('et il ferme la chaîne, pour n’être teinté par rien', dernier);
 
