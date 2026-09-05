@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.19.1';
+const VERSION = 'beta 4.20.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -100,7 +100,22 @@ const NIV_MIN_MULT = 0.15;
 
 const INCUB_BASE = 150;
 const PEN_BASE   = 400;
-const SLOT_MULT  = 1.6;
+/* ── CE QUE COÛTE UNE PLACE DE PLUS ────────────────────────────────────────────
+   1,6 RENDAIT LES PLACES GRATUITES, ET C'ÉTAIT MESURABLE : un enclos se remboursait en une
+   FRACTION DE SECONDE à tous les paliers. Le vingt-quatrième coûtait 19,8 millions quand une
+   rare légende en rapporte douze milliards l'heure — trois secondes de rente. Une ressource
+   qu'on rachète plus vite qu'on ne clique n'est pas une ressource, c'est une formalité.
+
+   À 2,1, le premier enclos ne bouge pas d'une pièce, le cinquième coûte trois fois plus, et le
+   vingt-quatrième cinq cents fois plus. C'est la forme que demande le défaut : ce n'est pas le
+   début qui était trop bon marché, c'est la suite qui ne montait pas.
+
+   CE QUE ÇA NE RÈGLE PAS, et il faut l'écrire ici pour ne pas y revenir en croyant à un
+   oubli : la rente suit la RARETÉ, qui multiplie par 450 000 de la commune à l'épique, quand
+   le prix d'une place suit une géométrique de 2,1. Aucun multiplicateur ne rattrape ça — au
+   mieux on rend la place chère DANS UNE ÈRE. Le vrai correctif serait de borner la rente, et
+   il a été refusé au plan le 5 septembre 2026, en connaissance de cause. */
+const SLOT_MULT  = 2.1;
 
 /* Deux axes indépendants, à ne pas confondre :
    l'ÂGE est la progression d'une bête au fil de sa vie (têtard → crapaud → …),
@@ -1151,8 +1166,6 @@ const PRIMES = [
      LE PRIX ensuite : gardé à 80 000, le négoce rare apparaîtrait le jour où l'on a de quoi
      acheter un œuf à 300 000, c'est-à-dire comme un cadeau et non comme une décision. Chacun
      vaut donc DEUX ŒUFS de sa rareté — on en a un, on en veut d'autres. */
-  { cle: 'etable',    prix: 150000,    glyphe: '⭐', nom: 'Étable',
-    dit: 'Les bêtes que tu gardes ☆ ne comptent plus dans la limite d’enclos. Une ménagerie cesse de coûter du débit.' },
   { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
     dit: 'Chaque évolution coûte un quart de moins. Passé l’ère commune, ce n’est plus la vitesse qui freine mais la mise de fonds.' },
   { cle: 'pension',   prix: 400000,    glyphe: '🛖', glyphe: '🛖', nom: 'La pension',
@@ -2296,7 +2309,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 28;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 29;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2536,6 +2549,15 @@ function load() {
     merged.eggs = typeof merged.eggs === 'number'
       ? Object.assign({}, vide, { commun: merged.eggs })
       : Object.assign({}, vide, merged.eggs || {});
+    /* L'ÉTABLE A ÉTÉ RETIRÉE, ET CE QU'ELLE A COÛTÉ EST RENDU. Une prime achetée qui cesse
+       d'exister est une dépense confisquée : cent cinquante mille pièces, dérisoires au moment
+       où on les récupère, mais le principe ne l'est pas. On ne reprend pas ce qu'un joueur a
+       payé parce qu'on a changé d'avis sur la règle. */
+    if (merged.primes && merged.primes.etable) {
+      merged.coins = (merged.coins || 0) + 150000;
+      delete merged.primes.etable;
+    }
+
     /* LES BÊTES D'AVANT N'AVAIENT PAS DE STATS. On leur en tire, pour que la ferme soit
        homogène : sans ça, une bête d'hier ferait toujours une carte moyenne et une bête de
        demain une carte qui varie, sans que rien ne l'explique. Les CARTES déjà dans l'album,
@@ -3606,9 +3628,23 @@ const form      = (lineKey, age) => LINE_BY_KEY[lineKey].forms[age - 1];
    martelé. Trois sources pour un même axe, c'était deux de trop. */
 const pensTotal = () => state.pens
                       + (prime('paille') ? 2 : 0) + (prime('paturage') ? 3 : 0);
-/* L'étable sort les bêtes gardées du compte. Garder coûtait un enclos, donc du débit : c'est
-   ce qui rendait toute collection payante. Après elle, une ménagerie ne ralentit plus rien. */
-const penUsed   = () => prime('etable') ? state.pen.filter(c => !c.keep).length : state.pen.length;
+/* ── CE QUI OCCUPE UN ENCLOS, ET CE QUI N'EN OCCUPE PAS ────────────────────────
+   UNE BÊTE GARDÉE COMPTE, ET LA PRIME QUI L'EN DISPENSAIT A ÉTÉ RETIRÉE. L'Étable sortait les
+   bêtes ☆ du compte, et c'était une porte de sortie qui vidait la seule contrainte de la
+   ferme : garder ne coûtait plus rien, donc on gardait tout, donc l'enclos cessait d'être une
+   place à arbitrer. Une collection DOIT coûter — c'est ce qui fait qu'on choisit ce qu'on
+   collectionne.
+
+   UNE BÊTE CONFIÉE À LA PENSION N'EN OCCUPE PLUS. Elle en occupait un, et le plan appelait ça
+   « tout le prix de la pension ». Ce prix reste, il change seulement de nature : une bête
+   confiée ne rente plus, ne grandit plus, ne s'engraisse plus et ne se vend pas. Ce qu'on paie
+   n'est plus une PLACE, c'est un DÉBIT — et c'est plus juste, parce qu'une place se rachète
+   pour quelques pièces alors qu'une rente perdue se compte en heures.
+
+   `enPension` est déclarée plus bas, avec la pension : cette fonction n'est appelée qu'en
+   cours de partie, jamais au chargement du fichier. C'est le même arrangement que `sellValue`
+   avec `nivMult`, et il est noté là-bas. */
+const penUsed   = () => state.pen.filter(c => !enPension(c)).length;
 const penFull   = () => penUsed() >= pensTotal();
 const incubTotal = () => state.incubators + (prime('nichoir') ? 2 : 0) + (prime('couvoir') ? 3 : 0);
 /* Le tableau des incubateurs EST le stockage : il doit suivre le compte, sinon une prime

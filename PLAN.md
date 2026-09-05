@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.19.1 · sauvegarde v28 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.20.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -93,6 +93,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
 | **Les stats de créature** | beta 4.16.0 | deux bêtes menées au même bout font-elles la même carte ? | non — quatre stats tirées à l'éclosion, de 0 à 25, gardées à vie. Elles sont le cinquième axe de la qualité d'une carte et prennent leur poids aux quatre autres : la moyenne ne bouge pas d'un centième, seule la variance est neuve. Invisibles pour l'instant, et ce sont celles que la tour de combat demandera |
+| **L'enclos, une place qu'on arbitre** | beta 4.20.0 | garder une bête doit-il coûter quelque chose ? | oui. L'Étable sortait les gardées du compte : garder ne coûtait rien, donc on gardait tout, donc la place cessait d'être un arbitrage. Elle est retirée et remboursée. Une bête CONFIÉE, elle, libère son enclos — le prix de la pension passe d'une place à un débit. Et l'escalier des places monte de 1,6 à 2,1 : le 24e enclos se remboursait en trois secondes de rente |
 | **L'hérédité** | beta 4.19.0, 4.19.1 | est-ce qu'on a envie de sélectionner ? | oui — un petit reçoit une DISTRIBUTION centrée sur le mélange de ses parents, pas une loterie parmi leurs traits. Intérieur et extérieur sont deux « proches » différents, et l'extérieur est le moteur de la sélection : c'est la seule branche qui dépasse les deux parents. Le nid annonce ce qu'un couple transmet, sans quoi rien de tout ça ne serait visible. Les fonds entrent à la pension du même coup, chantier en attente depuis la `1.13.0` |
 | **Une seule couleur par bête** | beta 4.18.0, 4.18.1 | la couleur est-elle un ornement ou un trophée ? | un trophée. Il y avait DEUX systèmes de couleur qui ne se parlaient pas — les teintes sur 47 % des bêtes, le prodige sur une sur huit mille — et une ligne de rendu tranchait déjà en silence. Les teintes disparaissent ; le chromatisme devient une couleur sur une ROUE, ce que l'hérédité exigeait. Prix assumé : les premières heures n'ont plus une bête colorée |
 | **La pension monte dans la constellation** | beta 4.15.0 | la fin de partie peut-elle parler d'autre chose que de la pension ? | oui — ses douze primes occupaient les dix dernières marches de l'escalier ; l'axe la porte maintenant en quatre crans, chacun levant les quatre cadrans d'un coup. Le bâtiment reste une prime, donc elle s'ouvre toujours au premier cycle. **Renverse la `4.5.0`**, qui refusait qu'un pan de jeu quitte le cycle |

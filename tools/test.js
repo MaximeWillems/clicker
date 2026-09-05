@@ -1764,8 +1764,14 @@ scenario('pension — une bête confiée quitte la bande, sans quitter son enclo
   eq('et un seul sujet', vivantes(), 1);
   ok('la confiée n’est plus sélectionnable', !jeu.subjects().some(x => x.key === 'c:' + a.id));
 
-  /* MAIS ELLE N'A PAS QUITTÉ SON ENCLOS — c'est tout le prix de la pension. */
-  eq('l’enclos reste occupé', jeu.penUsed(), enclos);
+  /* ET ELLE LIBÈRE SON ENCLOS. Elle l'occupait, et le plan appelait ça « tout le prix de la
+     pension » ; ce prix change de nature sans disparaître. Ce qu'on paie n'est plus une PLACE
+     — une place se rachète pour quelques pièces — mais un DÉBIT : une bête confiée ne rente
+     plus, ne grandit plus, ne s'engraisse plus et ne se vend pas. Une rente perdue se compte
+     en heures, une place en secondes. */
+  eq('l’enclos se libère', jeu.penUsed(), enclos - 2);
+  ok('mais elle est toujours là', s.pen.some(c => c.id === a.id));
+  eq('et elle ne rapporte plus rien', jeu.renteOf(a), 0);
   ok('elle est toujours dans state.pen', s.pen.some(c => c.id === a.id));
   eq('et elle ne rapporte rien', jeu.renteOf(a), 0);
   ok('le compteur d’enclos le dit', /2 en pension/.test(noeuds.get('compte-pen').textContent),
@@ -4954,18 +4960,68 @@ scenario('primes — chacune fait ce qu’elle dit, et une seule fois', () => {
   eq('repayer une prime déjà prise ne coûte rien', s.coins, poche);
 });
 
-scenario('primes — l’étable sort les bêtes gardées du compte', () => {
+scenario('enclos — une place de plus coûte enfin quelque chose', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 2;
+
+  /* 1,6 RENDAIT LES PLACES GRATUITES, ET C'ÉTAIT MESURABLE : le vingt-quatrième enclos coûtait
+     19,8 millions quand une rare légende en rapporte douze milliards l'heure — trois secondes
+     de rente. À 2,1, le premier ne bouge pas, le cinquième coûte trois fois plus, et le
+     vingt-quatrième cinq cents fois plus. Ce n'est pas le début qui était trop bon marché,
+     c'est la suite qui ne montait pas. */
+  eq('le premier enclos ne bouge pas', (s.pens = 1, jeu.penCost()), jeu.PEN_BASE);
+  eq('ni le premier incubateur', (s.incubators = 1, jeu.incubCost()), jeu.INCUB_BASE);
+
+  const avant = m => Math.round(jeu.PEN_BASE * Math.pow(1.6, m - 1));
+  /* 2,97 et non 3,00 au cinquième : le rapport entre deux géométriques ne tombe pas rond, et
+     arrondir le seuil à trois ferait échouer un scénario pour un centième. On mesure ce qui
+     est vrai, pas ce qui est joli. */
+  for (const [n, fois] of [[5, 2.9], [12, 19], [20, 100]]) {
+    s.pens = n;
+    const r = jeu.penCost() / avant(n);
+    ok('le ' + n + 'e enclos coûte au moins ' + fois + ' fois plus qu’avant',
+       r >= fois, r.toFixed(1) + ' fois');
+  }
+
+  /* LES DEUX ESCALIERS PARTAGENT LE MÊME MULTIPLICATEUR : une place est une place, qu'elle
+     tienne une bête ou un œuf. Deux courbes différentes demanderaient d'expliquer pourquoi. */
+  s.pens = 10; s.incubators = 10;
+  eq('les incubateurs suivent la même pente',
+     Math.round(jeu.penCost() / jeu.PEN_BASE * 1000),
+     Math.round(jeu.incubCost() / jeu.INCUB_BASE * 1000));
+});
+
+scenario('enclos — l’Étable retirée est remboursée, pas confisquée', () => {
+  /* Une prime achetée qui cesse d'exister est une dépense confisquée. Cent cinquante mille
+     pièces sont dérisoires au moment où on les récupère ; le principe ne l'est pas. */
+  const v = neuf({ coins: 1000, primes: { etable: true, marchand: true } });
+  eq('le prix est rendu', v.state.coins, 1000 + 150000);
+  ok('et la prime a disparu', !v.state.primes.etable);
+  ok('les autres restent', v.state.primes.marchand);
+  ok('elle n’est plus dans la table', !v.PRIME_BY_CLE.etable);
+});
+
+scenario('enclos — une bête gardée compte, une bête confiée non', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 2; s.primes.pension = true; jeu.oublierPrimes();
   const a = bete(jeu, 'crapaud', 1, 5);
   const b = bete(jeu, 'crabe', 1, 5);
   eq('deux bêtes dans deux enclos', jeu.penUsed(), 2);
   ok('l’enclos est plein', jeu.penFull());
+
+  /* GARDER NE LIBÈRE RIEN, et la prime qui le faisait a été retirée. L'Étable était une porte
+     de sortie qui vidait la seule contrainte de la ferme : garder ne coûtait plus rien, donc
+     on gardait tout, donc l'enclos cessait d'être une place à arbitrer. */
   a.keep = true;
-  ok('garder ne suffit pas sans l’étable', jeu.penFull());
-  jeu.buyPrime(jeu.PRIME_BY_CLE.etable);
-  eq('avec l’étable, la gardée ne compte plus', jeu.penUsed(), 1);
-  ok('et la place se rouvre', !jeu.penFull());
+  ok('garder n’ouvre aucune place', jeu.penFull());
+  ok('et plus aucune prime ne le permet',
+     !jeu.PRIMES.some(p => /gardes? ☆|étable/i.test(p.dit + p.nom)),
+     jeu.PRIMES.map(p => p.cle).join(' '));
+
+  /* CONFIER, SI. Le prix de la pension n'est plus une place mais un débit. */
+  a.age = 4; a.p = jeu.bandTo(a); b.age = 4; b.p = jeu.bandTo(b);
+  jeu.accoupler(a, b);
+  eq('les deux confiées libèrent leurs enclos', jeu.penUsed(), 0);
+  ok('la place se rouvre', !jeu.penFull());
 });
 
 scenario('primes — elles ne traversent pas l’ascension, la migration ne perd rien', () => {
