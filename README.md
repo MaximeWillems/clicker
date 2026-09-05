@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.22.0** | l’atelier : une lignée dans toutes ses variantes, pour juger à l’œil ce qu’aucun scénario ne peut poser |
+| **beta 4.22.1** | la couleur des chromatiques n’est plus appliquée deux fois : le ton se dit dans la table, le halo dans le halo |
+| beta 4.22.0 | l’atelier : une lignée dans toutes ses variantes, pour juger à l’œil ce qu’aucun scénario ne peut poser |
 | beta 4.21.0 | trente-six couleurs : quatre gris hors de la roue, et seize recettes pour ce que la roue ne sait pas mélanger |
 | beta 4.20.0 | l’enclos redevient une place qu’on arbitre : une gardée compte, une confiée non, et une place de plus coûte enfin quelque chose |
 | beta 4.19.1 | le nid dit ce qu’un couple transmet — sans ça l’hérédité était invisible et personne ne composait un couple exprès |
@@ -272,7 +273,16 @@ Contrairement à la planche, elle est **générée** — et c'est le bon sens in
 montre du balisage, qu'il faut pouvoir comparer à ce que le jeu produit ; l'atelier montre des
 données, et les recopier à la main serait garantir qu'elles dérivent au premier ajout. Elle
 passe par le banc, donc les tables lues sont les vraies, jusqu'au filtre CSS de chaque
-couleur.
+couleur — qu'elle demande à `filtreDe`, la porte du jeu, plutôt que de recoller le ton et le
+halo elle-même.
+
+Elle a payé tout de suite. En `4.22.1`, un Sun Wukong pourpre rendait à l'écran une silhouette
+fluo sans modelé : `PRODIGE_FILTER` commençait par le `TON_FILTRE.vif` de la table, au mot
+près, et `filtreDe` collait les deux bouts — chaque teinte vive partait donc au carré, en
+`saturate(5,76)`. Sur ce dessin, 76 % des pixels butaient contre du blanc ou du magenta purs,
+et sa robe rouge, son brun sombre et son brun clair tombaient tous les trois sur le même
+`#ff00ff`. La case **« le doublon de la 4.22.0 »** remet cette chaîne pour qu'on bascule d'un
+rendu à l'autre : c'est la seule façon de juger un correctif de couleur.
 
 **C'est la seule chose qui dise si le jeu marche encore.** Le projet n'ouvre jamais de
 navigateur : `tools/banc.js` fait tourner `game.js` sous Node avec un DOM minimal et les

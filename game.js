@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.22.0';
+const VERSION = 'beta 4.22.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -632,8 +632,18 @@ const fondDe = c => (c && c.fond && FOND_BY_KEY[c.fond]) || null;
 const PRODIGE_MULT  = 25;
 /* LE HALO DIT « CHROMATIQUE », LA ROTATION DIT LAQUELLE. Le halo ne bouge pas d'une couleur à
    l'autre : c'est lui qu'on reconnaît de loin dans une bande de quarante vignettes, et le
-   faire varier rendrait le rang lui-même illisible. */
-const PRODIGE_FILTER = 'saturate(2.4) brightness(1.3) drop-shadow(0 0 14px #E4A63E)';
+   faire varier rendrait le rang lui-même illisible.
+
+   IL NE PORTE QUE LE HALO, ET C'EST TOUT LE CORRECTIF DE LA 4.22.1. Il a longtemps commencé
+   par `saturate(2.4) brightness(1.3)` — mot pour mot le `TON_FILTRE.vif` de la table juste
+   au-dessus. Comme `filtreDe` colle les deux bouts, toute teinte vive partait en saturate
+   5,76 et brightness 1,69 : sur le Sun Wukong, 76 % des pixels butaient contre le blanc ou le
+   magenta purs, et sa robe rouge, son brun sombre et son brun clair tombaient tous les trois
+   sur le même #ff00ff. La bête n'avait plus de modelé, juste une silhouette fluo.
+
+   C'ÉTAIT DEUX ENDROITS POUR UNE MÊME VÉRITÉ, la faute que ce dépôt poursuit partout ailleurs.
+   Le ton se dit dans la table, une fois ; le halo se dit ici, une fois. */
+const PRODIGE_FILTER = 'drop-shadow(0 0 14px #E4A63E)';
 const chromaOf   = c => CHROMAS[c && c.chroma] || null;
 
 /* LE MILIEU DE DEUX COULEURS EST UN PROBLÈME DE CERCLE, PAS DE MOYENNE. Entre l'écarlate (0)

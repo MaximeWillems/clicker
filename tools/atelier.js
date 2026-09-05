@@ -33,17 +33,27 @@ const lignees = LINES.map(l => ({
   })),
 }));
 
-const couleurs = CHROMAS.map(c => ({
+/* ON DEMANDE LE FILTRE À `filtreDe`, LA PORTE DU JEU, plutôt que de recoller le ton et le halo
+   nous-mêmes. C'est ce recollage-là qui a produit le doublon de la 4.22.0 : une page d'atelier
+   qui refait le même geste dans son coin ne montrerait pas le bogue, elle l'imiterait. */
+const couleurs = CHROMAS.map((c, i) => ({
   nom: c.name,
   famille: c.hue === null ? 'gris' : c.ton === 'vif' ? 'roue' : 'recette',
-  filtre: jeu.filtreCouleur(c) + ' ' + jeu.PRODIGE_FILTER,
+  filtre: jeu.filtreDe({ prodige: true, chroma: i }),
 }));
 
 const fonds = FONDS.map(f => ({ key: f.key, nom: f.nom, sens: f.sens, n: f.n }));
 const tailles = RANKS.map((r, i) => ({ nom: r.name || 'ordinaire', at: r.at, i }));
 const ages = AGES.map(a => a.nom);
 
-const donnees = JSON.stringify({ lignees, couleurs, fonds, tailles, ages }, null, 0);
+/* CE QUE LA 4.22.0 COLLAIT EN TROP — et on le LIT au lieu de le retaper. `PRODIGE_FILTER`
+   commençait par le `TON_FILTRE.vif` de la table, mot pour mot, et `filtreDe` collait les deux
+   bouts : toute teinte vive partait au carré. La case « le doublon » remet cette chaîne pour
+   qu'on puisse basculer d'un rendu à l'autre — c'est la seule façon de juger un correctif de
+   couleur, et c'est justement ce qu'aucun scénario ne sait faire. */
+const doublon = jeu.TON_FILTRE.vif;
+
+const donnees = JSON.stringify({ lignees, couleurs, fonds, tailles, ages, doublon }, null, 0);
 
 const page = `<!DOCTYPE html>
 <html lang="fr">
@@ -99,6 +109,7 @@ const page = `<!DOCTYPE html>
     <select id="at-lignee"></select>
     <select id="at-age"></select>
     <label><input type="checkbox" id="at-halo" checked> le halo du chromatique</label>
+    <label><input type="checkbox" id="at-avant"> le doublon de la 4.22.0</label>
   </div>
 </header>
 
@@ -107,6 +118,10 @@ const page = `<!DOCTYPE html>
   <p>Un chromatique sur huit mille, et sa couleur vient de ses parents. <b>La question à
      trancher est en bas de chaque case :</b> deux voisines se distinguent-elles à 24 px ?
      Si non, la table est trop dense.</p>
+  <p><b>Coche « le doublon » pour voir la 4.22.0.</b> Le ton y était appliqué deux fois — les
+     teintes vives partaient en <code>saturate(5,76)</code>, et 76 % des pixels d'une bête
+     butaient contre du blanc ou du magenta purs. Trois bruns différents ressortaient à
+     l'identique : c'est ce qui rendait le Sun Wukong pourpre tout plat.</p>
   <div id="at-couleurs"></div>
 </section>
 
@@ -174,6 +189,16 @@ function halo(filtre) {
   return filtre.replace(/ ?drop-shadow\\([^)]*\\)/, '');
 }
 
+/* LE DOUBLON SE REMET DEVANT LE HALO, là où il était. Recollé après le drop-shadow il
+   teinterait l'ombre elle-même, et la comparaison ne dirait plus rien de ce qu'on répare. */
+function rendu(filtre) {
+  const f = halo(filtre);
+  if (!$('at-avant').checked) return f;
+  const i = f.indexOf('drop-shadow');
+  return i < 0 ? f + ' ' + D.doublon
+               : f.slice(0, i) + D.doublon + ' ' + f.slice(i);
+}
+
 function peindre() {
   const f = forme();
 
@@ -187,7 +212,7 @@ function peindre() {
     h.style.margin = '.9rem 0 .4rem';
     c.appendChild(h);
     const g = el('div', 'at-grille');
-    for (const k of D.couleurs) if (k.famille === fam) g.appendChild(cas(f, halo(k.filtre), k.nom));
+    for (const k of D.couleurs) if (k.famille === fam) g.appendChild(cas(f, rendu(k.filtre), k.nom));
     c.appendChild(g);
   }
 
@@ -231,7 +256,7 @@ D.lignees.forEach((l, i) => {
 });
 D.ages.forEach((a, i) => { const o = el('option', null, a); o.value = i; $('at-age').appendChild(o); });
 $('at-age').value = 2;
-for (const id of ['at-lignee', 'at-age', 'at-halo']) $(id).addEventListener('change', peindre);
+for (const id of ['at-lignee', 'at-age', 'at-halo', 'at-avant']) $(id).addEventListener('change', peindre);
 peindre();
 </script>
 </body>

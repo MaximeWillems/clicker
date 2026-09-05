@@ -5177,6 +5177,40 @@ scenario('hérédité — le nid dit ce que le couple transmet', () => {
      jeu.ditDeLHeritage(a, c));
 });
 
+scenario('couleur — le ton se dit une seule fois dans le filtre', () => {
+  /* LA FAUTE DE LA 4.22.0, ET POURQUOI ELLE SE GARDE ICI. `PRODIGE_FILTER` commençait par
+     `saturate(2.4) brightness(1.3)` — le `TON_FILTRE.vif` de la table, au mot près — et
+     `filtreDe` colle les deux bouts. Chaque teinte vive partait donc au carré : saturate 5,76
+     au lieu de 2,4, et les trois bruns du Sun Wukong tombaient sur le même magenta pur.
+
+     ON COMPTE LES PRIMITIVES, PAS LES PIXELS. Un test qui regarderait la couleur de sortie
+     figerait un réglage qu'on a le droit de tourner ; ce qu'on interdit, c'est qu'une même
+     fonction soit énoncée deux fois dans une seule chaîne — parce que ça, ce n'est jamais
+     voulu, quel que soit le réglage. */
+  const jeu = neuf();
+  const fautes = [];
+  for (let i = 0; i < jeu.CHROMAS.length; i++) {
+    const chaine = jeu.filtreDe({ prodige: true, chroma: i });
+    const vues = new Map();
+    for (const m of chaine.matchAll(/([a-z-]+)\(/g)) vues.set(m[1], (vues.get(m[1]) || 0) + 1);
+    for (const [nom, n] of vues) if (n > 1) fautes.push(jeu.CHROMAS[i].name + ' : ' + nom + ' ×' + n);
+  }
+  ok('aucune primitive n’est répétée dans les trente-six chaînes', fautes.length === 0,
+     fautes.join('  |  '));
+
+  // et le halo, lui, ne porte plus que le halo
+  eq('le halo ne porte que le halo', jeu.PRODIGE_FILTER, 'drop-shadow(0 0 14px #E4A63E)');
+
+  /* LE HALO RESTE EN DERNIER. `drop-shadow` prend l'alpha de ce qui le précède : placé avant
+     la rotation, il serait teinté par elle et cesserait d'être le même halo pour les
+     trente-six couleurs — or c'est justement son invariance qui dit « chromatique » de loin. */
+  const dernier = fautes.length === 0 && jeu.CHROMAS.every((c, i) =>
+    /drop-shadow\([^)]*\)$/.test(jeu.filtreDe({ prodige: true, chroma: i })));
+  ok('et il ferme la chaîne, pour n’être teinté par rien', dernier);
+
+  eq('une bête ordinaire n’a aucun filtre', jeu.filtreDe({ prodige: false, chroma: 3 }), '');
+});
+
 scenario('hérédité — un œuf de pension porte ses parents, un œuf acheté non', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e15; s.pens = 40;
