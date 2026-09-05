@@ -272,6 +272,33 @@ scenario('illustrations — chaque fichier cité par ART existe', () => {
   }
 });
 
+scenario('pages d’outil — celle qui cite style.css reprend son défilement', () => {
+  /* LA FAUTE DE LA PLANCHE ET DE L’ATELIER, DEUX FOIS DE SUITE. `style.css` pose une mise en
+     page « application » sur le `body` — `height: 100vh`, `overflow: hidden`, une grille à
+     deux colonnes — pour que le jeu ne défile pas sous la barre espace. Une page d’outil qui
+     cite cette feuille hérite du cadre : tout ce qui suit le premier écran devient
+     inatteignable, et les sections se rangent en silence dans la colonne de 21 rem.
+
+     ET ÇA NE SE VOIT QU’AU-DESSUS DE 62 REM DE LARGE, parce qu’en dessous `style.css` rend
+     lui-même le défilement pour son affichage étroit. Une page coupée sur grand écran et
+     correcte sur petit : personne ne va chercher ça dans une feuille qu’il ne fait que lier.
+     D’où ce scénario plutôt qu’un troisième oubli. */
+  const pages = fs.readdirSync(path.join(RACINE, 'tools')).filter(f => f.endsWith('.html'));
+  ok('il y a des pages d’outil à vérifier', pages.length > 0, pages.join(', '));
+  for (const f of pages) {
+    const h = lire('tools/' + f);
+    if (!/href="\.\.\/style\.css"/.test(h)) continue;   // une page qui ne cite rien n’hérite de rien
+    ok(f + ' lie le filet', /href="outil\.css"/.test(h));
+    ok(f + ' porte la classe outil sur son body', /<body class="[^"]*\boutil\b/.test(h));
+  }
+
+  /* ET LE FILET DIT BIEN LES TROIS CHOSES QU’IL DOIT DIRE. Le lier sans qu’il rende le
+     défilement ne servirait à rien, et c’est le genre de fichier qu’on vide en le rangeant. */
+  const filet = lire('tools/outil.css');
+  for (const regle of ['display: block', 'height: auto', 'overflow: visible'])
+    ok('outil.css rend « ' + regle + ' »', filet.includes(regle));
+});
+
 /* ────────────────────────── la ferme et ses automates ────────────────────────── */
 
 scenario('réserve d’œufs — elle se vide toute seule, et gratuitement', () => {

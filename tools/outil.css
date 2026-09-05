@@ -1,0 +1,54 @@
+/* ── LE FILET DES PAGES D'OUTIL ────────────────────────────────────────────────
+   À lier APRÈS `style.css`, par la planche comme par l'atelier.
+
+   `style.css` pose une mise en page « application » sur le `body` : `height: 100vh`,
+   `overflow: hidden` et une grille à deux colonnes, pour que le document ne défile pas et que
+   la barre espace serve à cliquer plutôt qu'à faire défiler la page. C'est juste dans le jeu,
+   et faux partout ailleurs — une page d'outil est un long document qu'on parcourt.
+
+   SANS CE FILET, TOUT CE QUI DÉPASSE LE PREMIER ÉCRAN EST INATTEIGNABLE. Pire : la grille à
+   deux colonnes range les sections en silence dans la colonne de droite de 21 rem, sans que
+   rien ne signale que la page a été remise en page par une feuille qu'elle ne fait que citer.
+
+   ET IL NE SE VOYAIT QU'AU-DESSUS DE 62 REM DE LARGE : en dessous, `style.css` rend lui-même
+   le défilement au body pour son propre affichage étroit. D'où une page qui « marche » sur une
+   fenêtre réduite et se coupe sur un grand écran, ce qui est la pire forme d'un défaut de mise
+   en page — celle où l'on doute de ce qu'on voit.
+
+   IL EST ICI ET NULLE PART AILLEURS. Recopié dans chaque page d'outil, il serait oublié à la
+   troisième ; il l'avait déjà été à la deuxième. */
+
+body.outil {
+  display: block;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+  margin: 0;
+  padding: 0 0 4rem;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-ui);
+
+  /* `style.css` interdit la sélection sur tout le document, pour qu'un martèlement au clavier
+     ne surligne pas la moitié de l'écran. Sur une page d'outil on veut au contraire pouvoir
+     copier un nom de couleur ou une chaîne de filtre. */
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Le bandeau de commandes, commun aux deux pages : il colle en haut, mais il ne prend jamais
+   plus de la moitié de l'écran — sinon il mange précisément ce qu'on est venu regarder. */
+.outil-tete {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--sunken);
+  border-bottom: 1px solid var(--rule);
+  padding: .9rem 1.2rem;
+  max-height: 50vh; overflow: auto;
+}
+.outil-tete h1 { margin: 0 0 .25rem; font-family: var(--f-name); font-size: 1.15rem; font-weight: 400; }
+.outil-tete p  { margin: 0; color: var(--soft); font-size: .78rem; line-height: 1.6; max-width: 78ch; }
+.outil-tete code, .outil-sec code { font-family: var(--f-num); color: var(--accent); font-size: .95em; }
+
+.outil-sec { padding: 1.8rem 1.2rem 0; }
+.outil-sec > h2 { font-family: var(--f-name); font-weight: 400; font-size: 1rem; margin: 0 0 .25rem; }
+.outil-sec > p  { margin: 0 0 1rem; color: var(--soft); font-size: .78rem; max-width: 72ch; line-height: 1.6; }

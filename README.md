@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.22.1** | la couleur des chromatiques n’est plus appliquée deux fois : le ton se dit dans la table, le halo dans le halo |
+| **beta 4.22.2** | les pages d’outil reprennent leur défilement — elles héritaient du cadre « application » de `style.css` et se coupaient au premier écran ; l’atelier gagne la bande des trente-six, une taille réglable et un fond au choix |
+| beta 4.22.1 | la couleur des chromatiques n’est plus appliquée deux fois : le ton se dit dans la table, le halo dans le halo |
 | beta 4.22.0 | l’atelier : une lignée dans toutes ses variantes, pour juger à l’œil ce qu’aucun scénario ne peut poser |
 | beta 4.21.0 | trente-six couleurs : quatre gris hors de la roue, et seize recettes pour ce que la roue ne sait pas mélanger |
 | beta 4.20.0 | l’enclos redevient une place qu’on arbitre : une gardée compte, une confiée non, et une place de plus coûte enfin quelque chose |
@@ -254,7 +255,22 @@ responsive sans redimensionner quoi que ce soit.
 
 Son défaut est connu : elle **dérive**, puisqu'elle recopie un balisage à la main.
 `node tools/planche.js` relève les classes que le jeu pose réellement et dit lesquelles la
-planche ne montre jamais. Ce n'est pas un test — une classe absente n'est pas une faute,
+planche ne montre jamais.
+
+```
+tools/outil.css
+```
+
+Le filet des pages d'outil, lié **après** `style.css` par la planche comme par l'atelier.
+`style.css` pose une mise en page « application » sur le `body` — `height: 100vh`,
+`overflow: hidden`, une grille à deux colonnes — pour que la barre espace serve à cliquer et
+non à faire défiler. Une page d'outil qui cite cette feuille hérite du cadre : **tout ce qui
+suit le premier écran devient inatteignable**, et les sections se rangent en silence dans la
+colonne de 21 rem. Le défaut ne se voyait qu'au-dessus de 62 rem de large, parce qu'en dessous
+`style.css` rend lui-même le défilement — une page correcte sur petite fenêtre et coupée sur
+grand écran, ce qui est la pire forme d'un défaut de mise en page. Il a été fait deux fois de
+suite ; un scénario vérifie maintenant que toute page de `tools/` citant `style.css` lie le
+filet et porte la classe `outil`. Ce n'est pas un test — une classe absente n'est pas une faute,
 c'est un trou.
 
 Et pour regarder les BÊTES plutôt que les composants :

@@ -11,20 +11,9 @@
      corrigerait un composant ferait mentir la planche, et une planche qui ment est pire que
      pas de planche : on croit avoir vérifié. -->
 <link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="outil.css">
 
 <style>
-  body.pl { margin: 0; padding: 0 0 4rem; background: var(--ground); color: var(--ink);
-            font-family: var(--f-ui); }
-  .pl-tete { position: sticky; top: 0; z-index: 50; background: var(--sunken);
-             border-bottom: 1px solid var(--rule); padding: .9rem 1.2rem; }
-  .pl-tete h1 { margin: 0 0 .25rem; font-family: var(--f-name); font-size: 1.15rem; font-weight: 400; }
-  .pl-tete p  { margin: 0; color: var(--soft); font-size: .78rem; line-height: 1.6; max-width: 78ch; }
-  .pl-tete code, .pl-sec code { font-family: var(--f-num); color: var(--accent); font-size: .95em; }
-  .pl-sec { padding: 1.8rem 1.2rem 0; }
-  .pl-sec > h2 { font-family: var(--f-name); font-weight: 400; font-size: 1rem;
-                 margin: 0 0 .25rem; }
-  .pl-sec > p { margin: 0 0 1rem; color: var(--soft); font-size: .78rem; max-width: 72ch;
-                line-height: 1.6; }
   .pl-grille { display: flex; flex-wrap: wrap; gap: .9rem; align-items: flex-start; }
   .pl-cas { border: 1px dashed var(--rule); border-radius: 6px; padding: .55rem;
             background: var(--sunken); margin: 0; min-width: 0; }
@@ -42,9 +31,9 @@
 </style>
 </head>
 
-<body class="pl">
+<body class="outil pl">
 
-<header class="pl-tete">
+<header class="outil-tete">
   <h1>La planche — Éclosion</h1>
   <p>
     Chaque composant, dans chaque état qu'on peut poser à la main, contre le <b>vrai</b>
@@ -56,7 +45,7 @@
   </p>
 </header>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>1 · Les boutons</h2>
   <p>Tout ce qui se clique. La marche 2 pose la règle : « un <code>:hover</code> sans
      <code>:active</code> est un bug ». Chaque cas est ici au repos ; l'appui se juge sur le
@@ -125,7 +114,7 @@
   </div>
 </section>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>2 · Les vignettes</h2>
   <p>La bande de l'enclos et celle de la couvaison. <code>done</code> marque ce qui est prêt,
      <code>finie</code> une bête menée au bout, <code>aria-current</code> la sélection.
@@ -166,7 +155,7 @@
   </div>
 </section>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>3 · La scène</h2>
   <p>Le plus grand objet de la page, au téléphone comme sur écran large — c'est la troisième
      règle du chantier. La classe de rareté teinte le halo et la jauge ; <code>ready</code> dit
@@ -241,7 +230,7 @@
   </div>
 </section>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>4 · Les cartes de l’album</h2>
   <p>Une carte par rareté, plus le trou du plan de travail. Les étoiles vont de une à trois.</p>
 
@@ -284,7 +273,7 @@
   </div>
 </section>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>5 · Les listes qui se choisissent</h2>
   <p>Routes de carrefour, nœuds de la constellation, trophées, fiches de l'encyclopédie.
      Toutes portent un glyphe, un nom, un prix ou une phrase — et toutes se cliquent.</p>
@@ -337,7 +326,7 @@
   </div>
 </section>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>6 · La pension</h2>
   <p>Le nid où l'on dépose deux parents, et la ligne d'un couple au travail.</p>
 
@@ -360,7 +349,7 @@
   </div>
 </section>
 
-<section class="pl-sec">
+<section class="outil-sec">
   <h2>7 · Ce qui parle au joueur</h2>
   <p>Bandeaux, dialogue et textes qui montent. La marche 3 pose la règle : si l'information
      disparaît quand on retire la souris, elle n'est pas affichée.</p>
@@ -386,7 +375,7 @@
   </div>
 </section>
 
-<footer class="pl-sec pl-pied">
+<footer class="outil-sec pl-pied">
   <h2>8 · Les trois largeurs</h2>
   <p>La même planche à 375 px (le pouce), 768 px (la tablette) et 1400 px (l'écran large), pour
      que le responsive se juge sans redimensionner quoi que ce soit. Les ruptures sont celles
@@ -408,7 +397,7 @@
   if (location.search.indexOf('nu') >= 0) {
     var pied = document.querySelector('.pl-pied');
     if (pied) pied.remove();
-    document.querySelector('.pl-tete').style.position = 'static';
+    document.querySelector('.outil-tete').style.position = 'static';
   }
 </script>
 </body>
