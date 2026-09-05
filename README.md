@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.24.1** | l’atelier redessine : un bloc retiré avait emporté la constante voisine, et la page ne posait plus une image. Un scénario exécute désormais le script de la page contre un DOM de fortune |
+| **beta 4.25.0** | trente-deux couleurs choisies à la main : les 22,5° n’étaient qu’un quadrillage, et un écarlate qui n’est pas rouge n’est pas un écarlate |
+| beta 4.24.1 | l’atelier redessine : un bloc retiré avait emporté la constante voisine, et la page ne posait plus une image. Un scénario exécute désormais le script de la page contre un DOM de fortune |
 | beta 4.24.0 | le nom décrit enfin le pixel : `hue-rotate` TOURNAIT la couleur du dessin au lieu de la remplacer, donc l’écarlate d’un crapaud était verte. On efface avant de peindre, et l’angle est résolu pour tomber sur la teinte annoncée |
 | beta 4.23.1 | les tons cessent de blanchir : le `clair` aplatissait 60 % d’un crapaud sur du blanc pur, et ses huit recettes rendaient huit fois la même bête |
 | beta 4.23.0 | les quatre achromatiques cessent d’être de l’exposition : le blanc ne brûle plus la moitié du dessin, et blanc, perle, ardoise et onyx portent chacun sa teinte, la même sur toute lignée |
@@ -260,6 +261,21 @@ responsive sans redimensionner quoi que ce soit.
 Son défaut est connu : elle **dérive**, puisqu'elle recopie un balisage à la main.
 `node tools/planche.js` relève les classes que le jeu pose réellement et dit lesquelles la
 planche ne montre jamais.
+
+```
+node tools/couleurs.js            dit ce que rend chaque couleur
+node tools/couleurs.js --ecrire   réécrit les filtres de game.js
+```
+
+Chaque teinte de `CHROMAS` porte un `couleur:` en hexadécimal — **la couleur qu'un gris moyen
+doit devenir**. Cet outil trouve les quatre leviers de `peindre()` qui y arrivent et les écrit
+dans la table. Il vit dehors parce que la résolution coûte quelques centaines de milliers
+d'évaluations de filtre : cent millisecondes au démarrage pour un résultat qui ne change jamais
+entre deux parties. Un scénario vérifie que les nombres écrits rendent bien la couleur annoncée,
+sans quoi ce seraient quatre nombres magiques et l'hexadécimal d'à côté un commentaire qui ment.
+
+Il refait ses matrices plutôt que de les prendre au jeu : **un juge qui emprunte sa règle à
+l'accusé ne juge rien.**
 
 ```
 tools/outil.css

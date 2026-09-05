@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.24.1';
+const VERSION = 'beta 4.25.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -528,104 +528,44 @@ const RENTE_PRODIGE = 2;      // un chromatique double la sienne
    LA SUITE EST CONNUE : peindre par ZONE rend les deux à la fois — la crinière prend la teinte
    exacte, le reste de la bête garde ses couleurs. C'est écrit au plan. */
 
-const _cl  = v => v < 0 ? 0 : v > 1 ? 1 : v;
-const _mul = (m, p) => [m[0]*p[0] + m[1]*p[1] + m[2]*p[2],
-                        m[3]*p[0] + m[4]*p[1] + m[5]*p[2],
-                        m[6]*p[0] + m[7]*p[1] + m[8]*p[2]].map(_cl);
-const _sat = s => [.213+.787*s, .715-.715*s, .072-.072*s,
-                   .213-.213*s, .715+.285*s, .072-.072*s,
-                   .213-.213*s, .715-.715*s, .072+.928*s];
-const _SEPIA = [.393, .769, .189, .349, .686, .168, .272, .534, .131];
-const _rot = a => { const c = Math.cos(a * Math.PI / 180), s = Math.sin(a * Math.PI / 180);
-  return [.213+c*.787-s*.213, .715-c*.715-s*.715, .072-c*.072+s*.928,
-          .213-c*.213+s*.143, .715+c*.285+s*.140, .072-c*.072-s*.283,
-          .213-c*.213-s*.787, .715-c*.715+s*.715, .072+c*.928+s*.072]; };
-
-/* LA TEINTE QUE LE NAVIGATEUR AFFICHERA, prédite ici plutôt que devinée. On fait passer un gris
-   moyen dans la chaîne exacte — clamp compris, car c'est lui qui déforme — et on lit la teinte
-   du résultat. Sans cette prédiction, l'angle ne serait qu'un nombre magique de plus. */
-function _teintePeinte(angle, t) {
-  let p = _mul(_SEPIA, [.5, .5, .5]);
-  p = _mul(_rot(angle), p);
-  p = _mul(_sat(t.force), p);
-  p = p.map(x => _cl((x - .5) * t.serre + .5));
-  p = p.map(x => _cl(x * t.niveau));
-  const haut = Math.max(p[0], p[1], p[2]), bas = Math.min(p[0], p[1], p[2]);
-  if (haut - bas < 1e-9) return 0;
-  const d = haut - bas;
-  const h = p[0] === haut ? (p[1] - p[2]) / d
-          : p[1] === haut ? 2 + (p[2] - p[0]) / d
-          :                 4 + (p[0] - p[1]) / d;
-  return ((h * 60) % 360 + 360) % 360;
-}
-
-const _dist = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
-
-/* L'ANGLE QUI AMÈNE LA TEINTE SUR SA CIBLE. Balayage au demi-degré puis affinage : le clamp
-   pose des paliers sur la courbe, donc une bissection seule s'y perdrait. */
-function _angleVers(cible, t) {
-  let best = 0, ecart = 1e9;
-  for (let a = 0; a < 360; a += 0.5) {
-    const d = _dist(_teintePeinte(a, t), cible);
-    if (d < ecart) { ecart = d; best = a; }
-  }
-  for (let pas = 0.25; pas > 0.004; pas /= 2) {
-    for (const a of [best - pas, best + pas]) {
-      const d = _dist(_teintePeinte(a, t), cible);
-      if (d < ecart) { ecart = d; best = (a + 360) % 360; }
-    }
-  }
-  return Math.round(best * 10) / 10;
-}
-
-/* LES QUATRE LEVIERS, LES MÊMES POUR LES TRENTE-SIX COULEURS :
-     teinte   la dose de sépia — la matière de la couleur avant qu'on la tourne
-     force    combien on la voit
-     serre    le resserrement de la plage — c'est lui qui empêche de blanchir
-     niveau   où la couleur se pose entre le clair et le sombre */
 const peindre = (teinte, angle, force, serre, niveau) =>
   'grayscale(1) sepia(' + teinte + ') hue-rotate(' + angle + 'deg) saturate(' + force + ') '
   + 'contrast(' + serre + ') brightness(' + niveau + ')';
 
-/* LE SOMBRE NE SERRE PAS SOUS 1 : il descend, donc il ne peut pas blanchir. Le clair serre
-   beaucoup, parce que c'est lui qui montait le plus haut et brûlait le plus.
-   L'ARGENT EST UNE QUATRIÈME ENTRÉE, et non un quatrième ton : il n'a pas sa place dans
-   l'échelle sombre → vif → clair dont l'hérédité se sert, mais il lui faut ses propres
-   leviers — l'or blanc EST de l'argent, donc on lui retire presque toute la force. */
-const TON_PEINT = {
-  vif:    { teinte: 1, force: 4.5,  serre: .95, niveau: 1.00 },
-  clair:  { teinte: 1, force: 2.40, serre: .60, niveau: 1.24 },
-  sombre: { teinte: 1, force: 5.0,  serre: 1.0, niveau: .60 },
-  argent: { teinte: 1, force: 0.55, serre: .60, niveau: 1.28 },
-};
-
-// On résout une fois par couple teinte-ton, pas une fois par bête : trente-six chaînes en tout.
-const _peintes = {};
-function peindreTeinte(hue, ton) {
-  const cle = hue + ':' + ton;
-  if (_peintes[cle]) return _peintes[cle];
-  const t = TON_PEINT[ton];
-  return (_peintes[cle] = peindre(t.teinte, _angleVers(hue, t), t.force, t.serre, t.niveau));
-}
-
 const CHROMAS = [
   // ── LA ROUE · seize teintes à 22,5°, et leurs indices ne bougent jamais ──
-  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0,   ton: 'vif' },
-  { key: 'vermillon', name: 'vermillon', fem: 'vermillon', hue:  22.5, ton: 'vif' },
-  { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45,   ton: 'vif' },
-  { key: 'safran',    name: 'safran',    fem: 'safran',    hue:  67.5, ton: 'vif' },
-  { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90,   ton: 'vif' },
-  { key: 'olivine',   name: 'olivine',   fem: 'olivine',   hue: 112.5, ton: 'vif' },
-  { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135,   ton: 'vif' },
-  { key: 'celadon',   name: 'céladon',   fem: 'céladon',   hue: 157.5, ton: 'vif' },
-  { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180,   ton: 'vif' },
-  { key: 'cobalt',    name: 'cobalt',    fem: 'cobalt',    hue: 202.5, ton: 'vif' },
-  { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225,   ton: 'vif' },
-  { key: 'violine',   name: 'violine',   fem: 'violine',   hue: 247.5, ton: 'vif' },
-  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270,   ton: 'vif' },
-  { key: 'pourpre',   name: 'pourpre',   fem: 'pourpre',   hue: 292.5, ton: 'vif' },
-  { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315,   ton: 'vif' },
-  { key: 'grenat',    name: 'grenat',    fem: 'grenat',    hue: 337.5, ton: 'vif' },
+  { key: 'ecarlate',  name: 'écarlate',  fem: 'écarlate',  hue:   0,   ton: 'vif',
+    couleur: '#D92B2B', filtre: peindre(1, 311.1, 9.77, 1.05, 0.851) },
+  { key: 'vermillon', name: 'vermillon', fem: 'vermillon', hue:  22.5, ton: 'vif',
+    couleur: '#E4571C', filtre: peindre(1, 323.4, 6.54, 1.05, 0.894) },
+  { key: 'ambre',     name: 'ambre',     fem: 'ambre',     hue:  45,   ton: 'vif',
+    couleur: '#EF8F1B', filtre: peindre(1, 352.7, 3.72, 1.05, 0.992) },
+  { key: 'safran',    name: 'safran',    fem: 'safran',    hue:  67.5, ton: 'vif',
+    couleur: '#EFBB2A', filtre: peindre(1, 6.6, 3.10, 1.05, 1.200) },
+  { key: 'dore',      name: 'doré',      fem: 'dorée',     hue:  90,   ton: 'vif',
+    couleur: '#DCC93A', filtre: peindre(1, 15.5, 2.69, 1.05, 1.246) },
+  { key: 'olivine',   name: 'olivine',   fem: 'olivine',   hue: 112.5, ton: 'vif',
+    couleur: '#98B93B', filtre: peindre(1, 34.7, 2.48, 1.05, 1.080) },
+  { key: 'jade',      name: 'jade',      fem: 'jade',      hue: 135,   ton: 'vif',
+    couleur: '#3EB264', filtre: peindre(1, 86.9, 2.50, 1.05, 0.945) },
+  { key: 'celadon',   name: 'céladon',   fem: 'céladon',   hue: 157.5, ton: 'vif',
+    couleur: '#64C7A4', filtre: peindre(1, 107.4, 1.64, 1.05, 1.122) },
+  { key: 'azur',      name: 'azur',      fem: 'azur',      hue: 180,   ton: 'vif',
+    couleur: '#33A6D6', filtre: peindre(1, 152.3, 3.03, 1.05, 0.927) },
+  { key: 'cobalt',    name: 'cobalt',    fem: 'cobalt',    hue: 202.5, ton: 'vif',
+    couleur: '#2E6DCE', filtre: peindre(1, 194.3, 11.56, 1.05, 0.795) },
+  { key: 'indigo',    name: 'indigo',    fem: 'indigo',    hue: 225,   ton: 'vif',
+    couleur: '#4442C0', filtre: peindre(1, 201.7, 21.21, 1.05, 0.753) },
+  { key: 'violine',   name: 'violine',   fem: 'violine',   hue: 247.5, ton: 'vif',
+    couleur: '#7B3EC7', filtre: peindre(1, 206.3, 18.17, 1.05, 0.780) },
+  { key: 'amethyste', name: 'améthyste', fem: 'améthyste', hue: 270,   ton: 'vif',
+    couleur: '#A754D4', filtre: peindre(1, 212.6, 9.71, 1.05, 0.825) },
+  { key: 'pourpre',   name: 'pourpre',   fem: 'pourpre',   hue: 292.5, ton: 'vif',
+    couleur: '#C441AE', filtre: peindre(1, 278.7, 6.04, 0.95, 0.788) },
+  { key: 'magenta',   name: 'magenta',   fem: 'magenta',   hue: 315,   ton: 'vif',
+    couleur: '#DE3A8A', filtre: peindre(1, 295.5, 7.25, 1.05, 0.871) },
+  { key: 'grenat',    name: 'grenat',    fem: 'grenat',    hue: 337.5, ton: 'vif',
+    couleur: '#C02645', filtre: peindre(1, 305.7, 9.24, 1.05, 0.753) },
 
   /* ── LES ACHROMATIQUES · hors de la roue, sur une droite à quatre crans ──
      Elles n'ont pas de teinte, donc pas de place sur le cercle : « l'arc court entre
@@ -652,23 +592,38 @@ const CHROMAS = [
      pâle et devrait s'appeler lin. Il s'appelle argent parce que l'or blanc EST de l'argent —
      et c'est le FILTRE qui plie, pas le nom : il désature presque tout. Un nom qui décrit mal
      le pixel est un nom qui ment ; on a donc changé le pixel. */
-  { key: 'rose',       name: 'rose',       fem: 'rose',       hue:   0, ton: 'clair' },
-  { key: 'bordeaux',   name: 'bordeaux',   fem: 'bordeaux',   hue:   0, ton: 'sombre' },
-  { key: 'beige',      name: 'beige',      fem: 'beige',      hue:  45, ton: 'clair' },
-  { key: 'sepia',      name: 'sépia',      fem: 'sépia',      hue:  45, ton: 'sombre' },
+  { key: 'rose',       name: 'rose',       fem: 'rose',       hue:   0, ton: 'clair',
+    couleur: '#E59A9A', filtre: peindre(1, 311.1, 1.36, 1.05, 1.087) },
+  { key: 'bordeaux',   name: 'bordeaux',   fem: 'bordeaux',   hue:   0, ton: 'sombre',
+    couleur: '#8E2733', filtre: peindre(1, 307.7, 7.68, 1.05, 0.557) },
+  { key: 'beige',      name: 'beige',      fem: 'beige',      hue:  45, ton: 'clair',
+    couleur: '#DCC79C', filtre: peindre(1, 362.1, 1.21, 0.75, 1.353) },
+  { key: 'sepia',      name: 'sépia',      fem: 'sépia',      hue:  45, ton: 'sombre',
+    couleur: '#7D5828', filtre: peindre(1, 354.1, 2.52, 1.05, 0.591) },
   { key: 'argent',     name: 'argent',     fem: 'argent',     hue:  90, ton: 'clair',
-    peint: 'argent' },
-  { key: 'bronze',     name: 'bronze',     fem: 'bronze',     hue:  90, ton: 'sombre' },
-  { key: 'menthe',     name: 'menthe',     fem: 'menthe',     hue: 135, ton: 'clair' },
-  { key: 'malachite',  name: 'malachite',  fem: 'malachite',  hue: 135, ton: 'sombre' },
-  { key: 'turquoise',  name: 'turquoise',  fem: 'turquoise',  hue: 180, ton: 'clair' },
-  { key: 'marine',     name: 'marine',     fem: 'marine',     hue: 180, ton: 'sombre' },
-  { key: 'lavande',    name: 'lavande',    fem: 'lavande',    hue: 225, ton: 'clair' },
-  { key: 'encre',      name: 'encre',      fem: 'encre',      hue: 225, ton: 'sombre' },
-  { key: 'lilas',      name: 'lilas',      fem: 'lilas',      hue: 270, ton: 'clair' },
-  { key: 'obsidienne', name: 'obsidienne', fem: 'obsidienne', hue: 270, ton: 'sombre' },
-  { key: 'quartz',     name: 'quartz',     fem: 'quartz',     hue: 315, ton: 'clair' },
-  { key: 'cassis',     name: 'cassis',     fem: 'cassis',     hue: 315, ton: 'sombre' },
+    couleur: '#C6CBD0', filtre: peindre(1, 169.0, 0.33, 0.37, 1.470) },
+  { key: 'bronze',     name: 'bronze',     fem: 'bronze',     hue:  90, ton: 'sombre',
+    couleur: '#8C7529', filtre: peindre(1, 8.6, 2.56, 1.05, 0.745) },
+  { key: 'menthe',     name: 'menthe',     fem: 'menthe',     hue: 135, ton: 'clair',
+    couleur: '#96CFB2', filtre: peindre(1, 96.9, 1.17, 0.75, 1.302) },
+  { key: 'malachite',  name: 'malachite',  fem: 'malachite',  hue: 135, ton: 'sombre',
+    couleur: '#26804F', filtre: peindre(1, 94.6, 2.59, 1.05, 0.674) },
+  { key: 'turquoise',  name: 'turquoise',  fem: 'turquoise',  hue: 180, ton: 'clair',
+    couleur: '#93CBDA', filtre: peindre(1, 145.8, 1.51, 0.66, 1.320) },
+  { key: 'marine',     name: 'marine',     fem: 'marine',     hue: 180, ton: 'sombre',
+    couleur: '#245C82', filtre: peindre(1, 161.2, 3.03, 1.05, 0.530) },
+  { key: 'lavande',    name: 'lavande',    fem: 'lavande',    hue: 225, ton: 'clair',
+    couleur: '#ACAAD6', filtre: peindre(1, 203.7, 1.17, 0.75, 1.172) },
+  { key: 'encre',      name: 'encre',      fem: 'encre',      hue: 225, ton: 'sombre',
+    couleur: '#312F82', filtre: peindre(1, 201.8, 19.73, 1.05, 0.510) },
+  { key: 'lilas',      name: 'lilas',      fem: 'lilas',      hue: 270, ton: 'clair',
+    couleur: '#C6A7D6', filtre: peindre(1, 235.6, 1.34, 0.66, 1.215) },
+  { key: 'obsidienne', name: 'obsidienne', fem: 'obsidienne', hue: 270, ton: 'sombre',
+    couleur: '#5A3378', filtre: peindre(1, 213.6, 7.49, 1.05, 0.460) },
+  { key: 'quartz',     name: 'quartz',     fem: 'quartz',     hue: 315, ton: 'clair',
+    couleur: '#E0A8C4', filtre: peindre(1, 277.5, 1.36, 0.66, 1.249) },
+  { key: 'cassis',     name: 'cassis',     fem: 'cassis',     hue: 315, ton: 'sombre',
+    couleur: '#802A62', filtre: peindre(1, 286.4, 5.65, 1.05, 0.502) },
 ];
 
 /* LES SEIZE PREMIERS INDICES SONT LA ROUE, ET ILS NE BOUGERONT PLUS. Une sauvegarde stocke un
@@ -699,10 +654,10 @@ const estGris = i => CHROMAS[i] && CHROMAS[i].hue === null;
    `hue-rotate`, qui déplace CHAQUE couleur de la bête : c'est lui qui fait que seize teintes
    restent seize teintes distinctes. Le prix est connu et non payé ici — le nom ne dit pas la
    couleur obtenue, puisqu'on tourne la teinte du dessin au lieu de la remplacer. */
-/* UNE COULEUR SE DEMANDE ICI, ET NULLE PART AILLEURS. Un `filtre` écrit à la main l'emporte —
-   c'est le cas des quatre gris, qui ne sont sur aucune roue. Un `peint` désigne des leviers
-   particuliers, pour l'argent. Tout le reste passe par le ton. */
-const filtreCouleur = k => k.filtre || peindreTeinte(k.hue, k.peint || k.ton);
+/* UNE COULEUR SE DEMANDE ICI, ET NULLE PART AILLEURS. Les trente-six portent leur filtre
+   écrit dans la table, à côté de l'hexadécimal qu'il doit rendre — `node tools/couleurs.js`
+   résout l'un depuis l'autre, et un scénario vérifie qu'ils ne se sont pas éloignés. */
+const filtreCouleur = k => k.filtre;
 
 /* CE QU'UNE TEINTE DONNE DANS UN TON, ou la teinte pure quand la recette n'existe pas. Les
    huit crans intercalaires n'en ont aucune : un vermillon clair n'est pas une couleur du jeu,

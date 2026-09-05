@@ -5285,7 +5285,7 @@ scenario('hérédité — le nid dit ce que le couple transmet', () => {
      jeu.ditDeLHeritage(a, c));
 });
 
-scenario('couleurs — le nom décrit le pixel, et rien ne blanchit', () => {
+scenario('couleurs — chacune rend l’hexadécimal qu’elle annonce', () => {
   /* ON SIMULE LE NAVIGATEUR, parce que la faute était invisible autrement. `brightness(1.95)`
      envoyait à un blanc PUR tout ce qui dépassait 0,51 : sur le wukong, 43 % du dessin — le
      nuage entier et les mèches claires — sortaient à `#ffffff`, une seule valeur pour cinq
@@ -5406,53 +5406,49 @@ scenario('couleurs — le nom décrit le pixel, et rien ne blanchit', () => {
        'blanc pur dès ' + (blanchit === null ? '—' : blanchit.toFixed(2)));
   }
 
-  /* ── ET LE NOM DÉCRIT LE PIXEL ────────────────────────────────────────────────
-     LA FAUTE QUI A TENU LE PLUS LONGTEMPS. `hue-rotate(0deg)` ne veut pas dire « rouge », il
-     veut dire « ne tourne rien » : l'écarlate ne peignait pas la bête en rouge, elle lui
-     rendait sa propre couleur. Sur un crapaud vert, l'écarlate était verte. Mesuré sur l'aplat
-     le plus large de chaque lignée : 65° d'écart moyen entre le nom et la teinte obtenue, 108°
-     au pire, quand un cran de la roue en vaut 22,5.
+  /* LA TABLE ANNONCE UNE COULEUR, ON VÉRIFIE QU'ELLE LA REND. Les seize teintes de la roue
+     étaient posées mécaniquement tous les 22,5°, ce qui donnait des couleurs timides et un
+     écarlate qui n'était pas rouge : une couleur n'est pas qu'un angle, c'est aussi une clarté
+     et une vivacité — l'or est clair, le grenat est sombre. Chacune porte donc son
+     hexadécimal, et `node tools/couleurs.js` résout les quatre leviers qui y arrivent.
 
-     ON VÉRIFIE LA TEINTE, PAS LA CHAÎNE. Le réglage a le droit de bouger — la force, le
-     serrement, le niveau. Ce qui n'a pas le droit de bouger, c'est que « jade » sorte à 135°.
-     Et on le vérifie sur un GRIS MOYEN : puisque toute chaîne commence par `grayscale(1)`, ce
-     gris est le point de départ commun à toutes les bêtes, donc la teinte obtenue ne dépend
-     d'aucun dessin. C'est exactement la propriété qui manquait. */
-  const teinteDe = p => {
-    const haut = Math.max(p[0], p[1], p[2]), bas = Math.min(p[0], p[1], p[2]);
-    if (haut - bas < 1e-9) return null;
-    const d = haut - bas;
-    const h = p[0] === haut ? (p[1] - p[2]) / d
-            : p[1] === haut ? 2 + (p[2] - p[0]) / d
-            :                 4 + (p[0] - p[1]) / d;
-    return ((h * 60) % 360 + 360) % 360;
-  };
-  const distance = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+     C'EST CE SCÉNARIO QUI EMPÊCHE L'HEXADÉCIMAL DE DEVENIR UN COMMENTAIRE QUI MENT. Sans lui,
+     les quatre nombres de `peindre()` seraient magiques et pourraient dériver de la couleur
+     écrite à côté sans que rien ne le dise. Le champ `hue`, lui, ne décrit plus une couleur :
+     il n'est que l'identité du cran, dont l'hérédité et les recettes se servent. */
+  const hexVers = h => [parseInt(h.slice(1,3),16)/255, parseInt(h.slice(3,5),16)/255,
+                        parseInt(h.slice(5,7),16)/255];
+  const enHex = p => '#' + p.map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('').toUpperCase();
+  const distanceRGB = (a, b) => Math.sqrt(2*(a[0]-b[0])**2 + 4*(a[1]-b[1])**2 + (a[2]-b[2])**2);
 
-  let pireEcart = 0, pire = '';
+  let pireEcart = 0, pire = '', comptees = 0;
+  const rendues = [];
   for (const c of jeu.CHROMAS) {
-    if (c.hue === null) continue;                 // les gris ne sont sur aucune roue
     const f = jeu.filtreCouleur(c);
     ok(c.name + ' efface la teinte du dessin avant de peindre', /^grayscale\(1\)/.test(f), f);
-    const h = teinteDe(passe(f, [0.5, 0.5, 0.5]));
-    const e = h === null ? 180 : distance(h, c.hue);
-    if (e > pireEcart) { pireEcart = e; pire = c.name + ' vise ' + c.hue + '° et rend ' +
-                                              (h === null ? 'du gris' : h.toFixed(0) + '°'); }
+    const p = passe(f, [0.5, 0.5, 0.5]);
+    rendues.push({ nom: c.name, p });
+    if (!c.couleur) continue;                 // les quatre gris se règlent à la main
+    comptees++;
+    const e = distanceRGB(p, hexVers(c.couleur));
+    if (e > pireEcart) { pireEcart = e; pire = c.name + ' vise ' + c.couleur + ' et rend ' + enHex(p); }
   }
-  ok('les trente-deux teintes sortent à la teinte qu’elles annoncent',
-     pireEcart <= 4, 'pire : ' + pire + ' (' + pireEcart.toFixed(1) + '°)');
+  eq('trente-deux couleurs portent leur hexadécimal', comptees, 32);
+  ok('chacune rend la couleur qu’elle annonce', pireEcart <= 0.04,
+     'pire : ' + pire + ' (' + pireEcart.toFixed(3) + ')');
 
-  /* DEUX CRANS VOISINS DOIVENT RESTER DEUX CRANS. Résoudre l'angle par lignée — l'autre
-     rattrapage possible — tassait la roue : sur le crapaud, cinq crans tombaient dans dix-huit
-     degrés. Ici les angles sont résolus une fois pour toutes sur un gris, donc l'écart tient. */
-  const vifs = jeu.CHROMAS.filter(c => c.ton === 'vif')
-                          .map(c => +(/hue-rotate\(([-\d.]+)/.exec(jeu.filtreCouleur(c))[1]));
-  let serre = 360;
-  for (let i = 0; i < vifs.length; i++) {
-    const g = (vifs[(i + 1) % vifs.length] - vifs[i] + 360) % 360;
-    if (g < serre) serre = g;
-  }
-  ok('deux teintes voisines gardent leur écart', serre >= 10, 'le plus serré : ' + serre.toFixed(1) + '°');
+  /* ET DEUX COULEURS DE LA TABLE NE SONT PAS LA MÊME COULEUR. C'est ce que l'écart régulier de
+     22,5° garantissait sans le vouloir ; en choisissant les teintes à la main, on perd cette
+     garantie mécanique et il faut la redemander. On compare le gris moyen peint, donc sans
+     dépendre d'aucun dessin. */
+  let plusProches = 99, paire = '';
+  for (let i = 0; i < rendues.length; i++)
+    for (let j = i + 1; j < rendues.length; j++) {
+      const d = distanceRGB(rendues[i].p, rendues[j].p);
+      if (d < plusProches) { plusProches = d; paire = rendues[i].nom + ' et ' + rendues[j].nom; }
+    }
+  ok('deux couleurs de la table ne se confondent pas', plusProches >= 0.10,
+     paire + ' à ' + plusProches.toFixed(3));
 });
 
 scenario('couleur — le ton se dit une seule fois dans le filtre', () => {
