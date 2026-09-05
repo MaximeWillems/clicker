@@ -1749,6 +1749,13 @@ body.glisse .nid-case.vide { border-color: var(--jade-dim); background: var(--ra
 .pension-dit.refus { color: var(--faint); }
 /* une recette ne se nomme pas, mais elle se voit : c'est le seul indice avant l'éclosion */
 .pension-dit.recette { color: var(--coin); }
+/* CE QUE LE COUPLE TRANSMET SE LIT APRÈS CE QU'IL COÛTE, donc plus bas et plus discret. Les
+   deux lignes au même ton se seraient concurrencées : la première décide si l'on confie, la
+   seconde ce qu'on espère. Un liseré les sépare sans ajouter un titre. */
+.pension-dit.pension-herite {
+  color: var(--faint); border-left: 2px solid var(--rule);
+  padding-left: 0.5rem; margin: 0.35rem 0 0.4rem;
+}
 #pension-go { width: 100%; }
 
 /* LA BANDE DEVIENT UNE RÉSERVE DE POIGNÉES dès qu'on tire une bête. */

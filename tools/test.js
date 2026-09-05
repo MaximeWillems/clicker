@@ -4819,6 +4819,14 @@ scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () =>
     j.hatchAll();
     const c = st.pen[st.pen.length - 1];
     c.age = age; c.p = p;
+    /* ON ÉGALISE LES STATISTIQUES, et il a fallu une trentaine de passes pour voir pourquoi :
+       depuis la `4.16.0` elles pèsent un quart de la qualité d'une carte, donc de la poussière
+       qu'elle laisse. Une bête bien née rendait deux poussières au lieu d'une, et le total de
+       huit devenait neuf une fois sur trente. Un test qui échoue sans qu'aucun code ne soit
+       fautif apprend à ignorer les échecs — c'est la troisième fois de la session, et toujours
+       pour la même raison : on assertait sur du hasard. */
+    c.iv = j.IV_NOMS.map(() => j.IV_MAX / 2);
+    c.prodige = false; c.fond = null; c.rank = 0;
     return c;
   };
   const jeu = neuf(); const s = jeu.state;
@@ -5065,6 +5073,52 @@ scenario('hérédité — la distribution est centrée sur le mélange', () => {
   for (let i = 0; i < 20000; i++) if (jeu.heriteNombre(10, 10, 0, jeu.IV_MAX, 1) > 10) mieux++;
   ok('un enfant peut dépasser deux parents identiques',
      mieux / 20000 > 0.1, (mieux / 20000 * 100).toFixed(1) + ' %');
+});
+
+scenario('hérédité — le nid dit ce que le couple transmet', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true; jeu.oublierPrimes();
+  const bete2 = (l, ch, tp, mo, fo) => {
+    s.incub[0] = { line: l, p: 9999, kind: 'commun' }; jeu.hatchAll();
+    const c = s.pen[s.pen.length - 1];
+    c.age = 4; c.p = jeu.bandTo(c);
+    c.chroma = ch; c.temper = tp; c.motif = mo; c.fond = fo || null; c.prodige = false;
+    return c;
+  };
+  const a = bete2('loup', 0, 1, 6, null);        // écarlate, nerveux, zébré
+  const b = bete2('ours', 4, 2, 7, 'braise');    // doré, placide, nacré, un fond
+
+  const dit = jeu.ditDeLHeritage(a, b);
+
+  /* NERVEUX × PLACIDE DONNE DOCILE, et ce n'est pas un choix : c'est le centre exact du plan
+     (croissance, engraissement) où vivent les six tempéraments. */
+  ok('le caractère annoncé est le milieu du plan', /docile/.test(dit), dit);
+
+  /* ÉCARLATE (0) × DORÉ (4) DONNE AMBRE (2) — le milieu de l'arc court, la même porte que
+     l'hérédité emploie comme centre de sa distribution. */
+  ok('la couleur annoncée est le mélange', /ambre/.test(dit), dit);
+  eq('et c’est bien la porte partagée', jeu.melangeRoue(0, 4), 2);
+  eq('comme pour le tempérament', jeu.melangeTemper(1, 2), 0);
+
+  /* LE MOTIF N'A PAS D'AXE : on annonce les deux, pas un mélange qui n'existe pas. */
+  ok('les deux motifs sont nommés', /zébré ou nacré/.test(dit), dit);
+  ok('et le fond d’un seul parent suffit', /braise/.test(dit), dit);
+
+  /* LA PHRASE DIT LE PLUS PROBABLE, JAMAIS LE CERTAIN : le mélange ne sort qu'une fois sur
+     quatre, et promettre « ambre » ferait de chaque écart un bug. */
+  ok('elle annonce une tendance, pas une promesse', /Le plus souvent/.test(dit), dit);
+  /* ET LA COULEUR PORTE SA CONDITION : une bête est grise à moins d'être chromatique. */
+  ok('la couleur dit à quelle condition', /au premier chromatique/.test(dit), dit);
+
+  /* LES STATISTIQUES N'Y SONT PAS : elles agissent et ne se montrent nulle part, et les
+     afficher ici seulement apprendrait un chiffre qu'on ne peut comparer à rien. */
+  ok('rien des statistiques', !/force|vivacité|souffle|instinct/.test(dit), dit);
+
+  // deux parents identiques annoncent leur propre trait, pas un voisin
+  const c = bete2('loup', 0, 1, 6, null);
+  ok('deux parents identiques annoncent ce qu’ils portent',
+     /nerveux/.test(jeu.ditDeLHeritage(a, c)) && /zébré/.test(jeu.ditDeLHeritage(a, c)),
+     jeu.ditDeLHeritage(a, c));
 });
 
 scenario('hérédité — un œuf de pension porte ses parents, un œuf acheté non', () => {

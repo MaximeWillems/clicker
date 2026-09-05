@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.19.0';
+const VERSION = 'beta 4.19.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3157,11 +3157,36 @@ function heriteNombre(a, b, min, max, plancher) {
 /* SUR UNE ROUE — la couleur. On déroule d'abord le second parent sur l'ARC COURT, sinon
    l'écarlate (0) et le grenat (15), qui sont voisins, se verraient attribuer un mélange à
    l'exact opposé de tous les deux. */
+/* LE MÉLANGE DE DEUX COULEURS, SANS HASARD. Une porte, deux lecteurs : l'hérédité l'emploie
+   comme centre de sa distribution, et le nid l'affiche pour dire ce qu'un couple donnera le
+   plus souvent. Le recopier des deux côtés donnerait deux règles qui divergeraient — c'est la
+   faute que la `4.13.2` a fermée sur les échelles de valeur, et elle avait vécu à quatre
+   endroits avant qu'on la voie. */
+const ecartRoue  = (a, b) => ((b - a + CHROMAS.length * 1.5) % CHROMAS.length) - CHROMAS.length / 2;
+const melangeRoue = (a, b) => {
+  const n = CHROMAS.length;
+  return ((Math.round(a + ecartRoue(a, b) / 2) % n) + n) % n;
+};
+
+/* LE MÉLANGE DE DEUX TEMPÉRAMENTS est le point du plan (croissance, engraissement) le plus
+   proche du milieu des deux. Nerveux × placide donne DOCILE, et ce n'est pas un choix : c'est
+   le centre exact de la table. */
+const melangeTemper = (a, b) => {
+  const cx = (TEMPERS[a].grow + TEMPERS[b].grow) / 2;
+  const cy = (TEMPERS[a].fat + TEMPERS[b].fat) / 2;
+  let best = 0, d0 = Infinity;
+  TEMPERS.forEach((t, i) => {
+    const d = (t.grow - cx) ** 2 + (t.fat - cy) ** 2;
+    if (d < d0) { d0 = d; best = i; }
+  });
+  return best;
+};
+
 function heriteRoue(a, b) {
   const n = CHROMAS.length;
   const pos = brancheHeritee();
   if (pos === null) return Math.floor(Math.random() * n);
-  const d = ((b - a + n * 1.5) % n) - n / 2;    // l'écart signé le plus court
+  const d = ecartRoue(a, b);                    // l'écart signé le plus court
   /* LE MILIEU ET L'ÉTALEMENT SONT DEUX CHOSES, et les confondre déplace le centre. Le
      plancher n'existe que pour donner une LARGEUR à deux parents identiques ; l'appliquer au
      milieu faisait tomber le mélange de deux écarlates à mi-chemin de leur voisin, si bien
@@ -3189,16 +3214,7 @@ function heriteNominal(a, b, tirage) {
 function heriteTemper(a, b) {
   const r = Math.random() * HERITAGE_TOTAL;
   if (r < HERITAGE_LIBRE) return Math.floor(Math.random() * TEMPERS.length);
-  if (r < HERITAGE_LIBRE + 26) {
-    const cx = (TEMPERS[a].grow + TEMPERS[b].grow) / 2;
-    const cy = (TEMPERS[a].fat + TEMPERS[b].fat) / 2;
-    let best = 0, d0 = Infinity;
-    TEMPERS.forEach((t, i) => {
-      const d = (t.grow - cx) ** 2 + (t.fat - cy) ** 2;
-      if (d < d0) { d0 = d; best = i; }
-    });
-    return best;
-  }
+  if (r < HERITAGE_LIBRE + 26) return melangeTemper(a, b);
   return Math.random() < 0.5 ? a : b;
 }
 
@@ -3206,6 +3222,33 @@ function heriteTemper(a, b) {
    les parents sont sûrs d'être là au moment où l'œuf tombe, ils peuvent avoir été vendus
    quand il éclôt. C'est aussi ce qui est juste — une bête vendue après la ponte a quand même
    transmis ce qu'elle portait. */
+/* CE QUE LE NID ANNONCE D'UN COUPLE. L'hérédité était invisible : on composait deux parents
+   sans rien savoir de ce qui en sortirait, donc on ne les composait pas EXPRÈS — et une
+   mécanique qu'on ne peut pas viser n'est pas une mécanique, c'est une décoration.
+
+   ELLE DIT LE PLUS PROBABLE, JAMAIS LE CERTAIN, et la nuance tient dans deux mots. Le mélange
+   n'est que le sommet d'une distribution : à vingt-six pour cent il sort plus souvent que tout
+   le reste, mais trois pontes sur quatre donnent autre chose. Annoncer « ambre » sans réserve
+   ferait de chaque écart un bug ; « le plus souvent » dit exactement ce qui se passe.
+
+   LES STATISTIQUES N'Y SONT PAS. Elles agissent depuis la `4.16.0` et ne se montrent nulle
+   part : les afficher ici et pas ailleurs apprendrait un chiffre qu'on ne peut comparer à rien.
+   Elles entreront quand elles auront une lecture, et par la même porte que le reste.
+
+   LA COULEUR PORTE SA CONDITION. Une bête est grise à moins d'être chromatique — une sur huit
+   mille — donc annoncer une couleur sans le dire promettrait un petit ambre à chaque ponte.
+   La phrase dit « au premier chromatique », qui est la vérité exacte. */
+function ditDeLHeritage(a, b) {
+  const fem = form(a.line, a.age)[2] === 'f';
+  const bouts = [accord(TEMPERS[melangeTemper(a.temper || 0, b.temper || 0)], a)];
+  const ma = MOTIFS[a.motif || 0], mb = MOTIFS[b.motif || 0];
+  bouts.push(ma === mb ? ma + (fem ? 'e' : '') : ma + ' ou ' + mb);
+  bouts.push(CHROMAS[melangeRoue(a.chroma || 0, b.chroma || 0)].name + ' au premier chromatique');
+  const fond = a.fond || b.fond;
+  if (fond) bouts.push('fond ' + FOND_BY_KEY[fond].nom);
+  return 'Le plus souvent : ' + bouts.join(' · ');
+}
+
 function heritageDe(a, b) {
   return {
     chroma: heriteRoue(a.chroma || 0, b.chroma || 0),
@@ -8207,6 +8250,15 @@ function batirPension(a, b, ouvert, portee) {
   hote.appendChild(dit);
   refsPension.dit = dit;
 
+  /* UNE SECONDE LIGNE, ET NON UNE LIGNE PLUS LONGUE. La première dit ce que le couple COÛTE
+     et ce qu'il DONNE comme lignée — distance, durée, pourcentages, recette. La seconde dit
+     ce qu'il TRANSMET. Ce sont deux questions différentes, et les fondre en une phrase de
+     quinze mots ferait qu'on ne lirait plus ni l'une ni l'autre. */
+  const her = document.createElement('p');
+  her.className = 'pension-dit pension-herite';
+  hote.appendChild(her);
+  refsPension.herite = her;
+
   const go = document.createElement('button');
   go.type = 'button';
   go.className = 'asc-go';
@@ -8291,6 +8343,11 @@ function renderPension() {
       (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name
                       : ' · et peut-être autre chose'));
     if (rec) dit.classList.add('recette');
+  }
+  if (refsPension.herite) {
+    const montre = a && b && !refus;
+    refsPension.herite.hidden = !montre;
+    if (montre) setText(refsPension.herite, ditDeLHeritage(a, b));
   }
   refsPension.go.disabled = !!refus || !a || !b;
 

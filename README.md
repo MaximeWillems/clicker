@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.19.0** | l’hérédité : un petit reçoit une distribution centrée sur le mélange de ses parents — couleur, caractère, motif, fond et statistiques |
+| **beta 4.19.1** | le nid dit ce qu’un couple transmet — sans ça l’hérédité était invisible et personne ne composait un couple exprès |
+| beta 4.19.0 | l’hérédité : un petit reçoit une distribution centrée sur le mélange de ses parents — couleur, caractère, motif, fond et statistiques |
 | beta 4.18.1 | seize couleurs au lieu de huit : l’hérédité a besoin de place entre deux parents |
 | beta 4.18.0 | une bête est grise ou chromatique : les teintes disparaissent, la couleur devient un événement et se place sur une roue |
 | beta 4.17.2 | l’Araignée entre en jeu, cinq stades dessinés — la treizième lignée illustrée |
