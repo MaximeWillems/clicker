@@ -250,6 +250,11 @@ function halo(filtre) {
 
 const rendu = filtre => halo(filtre);
 
+/* La bande se juge à la taille du jeu, pas à celle du curseur : 24 px dans la liste, 16 px
+   dans les endroits serrés. Deux rangées, donc, et non un réglage — c'est un constat qu'on
+   veut, pas une molette. */
+const TAILLES_BANDE = [24, 16];
+
 function peindreBande() {
   const f = forme();
   const b = $('at-bande');

@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.24.0';
+const VERSION = 'beta 4.24.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.

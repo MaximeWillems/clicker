@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.24.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.24.1 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 

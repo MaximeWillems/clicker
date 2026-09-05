@@ -272,6 +272,87 @@ scenario('illustrations — chaque fichier cité par ART existe', () => {
   }
 });
 
+scenario('atelier — la page générée s’exécute, et elle pose de vraies images', () => {
+  /* LA PAGE N’ÉTAIT VÉRIFIÉE PAR RIEN, et ça s’est vu : en retirant un bloc devenu inutile,
+     la constante voisine est partie avec, et la page ne dessinait plus une seule bête —
+     `TAILLES_BANDE is not defined`, à la première ligne de la première boucle. Le générateur
+     tournait sans broncher : il écrit du texte, il ne le fait pas tourner.
+
+     ON EXÉCUTE DONC LE SCRIPT DE LA PAGE, contre un DOM de fortune. Ce n’est pas un
+     navigateur — rien ici ne dit si c’est joli — mais ça dit si ça MARCHE, et c’était le
+     seul mode de panne qu’aucun scénario ne pouvait voir. */
+  const page = lire('tools/atelier.html');
+  const code = (page.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
+  ok('la page porte bien un script', !!code && code.length > 500, code ? code.length : 0);
+
+  /* Le DOM de fortune. Il ne fait que ce que la page demande, et pas une ligne de plus : un
+     faux DOM complet serait un deuxième navigateur à maintenir. */
+  const noeuds = new Map();
+  const neufNoeud = () => {
+    const n = {
+      enfants: [], className: '', textContent: '', title: '', alt: '', src: null,
+      value: undefined, checked: false, attributs: {},
+      style: new Proxy({ setProperty(k, v) { this[k] = v; } }, {}),
+      appendChild(e) { this.enfants.push(e); if (this.value === undefined && e.value !== undefined) this.value = e.value; return e; },
+      append(...e) { e.forEach(x => this.appendChild(x)); },
+      addEventListener() {},
+      setAttribute(k, v) { this.attributs[k] = v; if (k === 'src') this.src = v; },
+      querySelector() { return null; },
+    };
+    return n;
+  };
+
+  /* Les valeurs de départ viennent du BALISAGE, pas d’une supposition : un curseur dont la
+     valeur initiale change dans le HTML doit casser ici si le script ne suit pas. */
+  const depart = id => {
+    const balise = new RegExp('<[^>]*id="' + id + '"[^>]*>').exec(page);
+    if (!balise) return {};
+    const v = /value="([^"]*)"/.exec(balise[0]);
+    const coche = /\bchecked\b/.test(balise[0]);
+    if (v) return { value: v[1], checked: coche };
+    // un select prend la valeur de sa première option
+    if (!/^<select/.test(balise[0])) return { checked: coche };
+    /* Cherchée DANS ce select, et non n’importe où ensuite : sans la borne, la liste des
+       lignées héritait de l’option du menu des fonds, et la page entière partait sur un
+       indice qui n’existe pas. */
+    const debut = page.indexOf(balise[0]) + balise[0].length;
+    const suite = page.slice(debut, page.indexOf('</select>', debut));
+    const opt = /<option value="([^"]*)"/.exec(suite);
+    return opt ? { value: opt[1], checked: coche } : { checked: coche };
+  };
+
+  const document = {
+    getElementById(id) {
+      if (!noeuds.has(id)) { const n = neufNoeud(); Object.assign(n, depart(id)); noeuds.set(id, n); }
+      return noeuds.get(id);
+    },
+    createElement() { return neufNoeud(); },
+    body: neufNoeud(),
+  };
+
+  let boum = null;
+  try { new Function('document', code)(document); } catch (e) { boum = e.message; }
+  ok('le script tourne sans exploser', boum === null, boum);
+
+  // ── et il a réellement produit quelque chose ────────────────────────────────
+  const toutes = [];
+  (function descendre(n) { for (const e of n.enfants) { toutes.push(e); descendre(e); } })(document.body);
+  for (const id of ['at-couleurs', 'at-bande', 'at-ages', 'at-fonds', 'at-tailles'])
+    (function descendre(n) { for (const e of n.enfants) { toutes.push(e); descendre(e); } })(document.getElementById(id));
+
+  const images = toutes.filter(n => n.src);
+  ok('la page pose des images', images.length >= 36, images.length + ' images');
+
+  const filtrees = images.filter(n => n.style.filter);
+  ok('les couleurs sont bien appliquées', filtrees.length >= 36, filtrees.length + ' images filtrées');
+
+  /* CHAQUE SOURCE DOIT EXISTER SUR LE DISQUE. La page cite les dessins en chemin relatif depuis
+     `tools/` ; une lignée renommée casserait la page en silence. */
+  const manquants = [...new Set(images.map(n => n.src))]
+    .filter(src => !fs.existsSync(path.join(RACINE, 'tools', src)));
+  ok('aucun dessin cité n’est absent', manquants.length === 0, manquants.join(', '));
+});
+
 scenario('pages d’outil — celle qui cite style.css reprend son défilement', () => {
   /* LA FAUTE DE LA PLANCHE ET DE L’ATELIER, DEUX FOIS DE SUITE. `style.css` pose une mise en
      page « application » sur le `body` — `height: 100vh`, `overflow: hidden`, une grille à
