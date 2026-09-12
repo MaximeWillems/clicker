@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.28.4';
+const VERSION = 'beta 4.29.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -278,11 +278,21 @@ const parRarete = v => Object.fromEntries(Object.keys(RARITY).map(k => [k, v]));
    ancien, jamais avant. */
 const EGG_KINDS = [
   /* Dix-huit et non douze : c'est l'autre moitié du resserrement de l'ouverture. Une commune
-     mûre en rend trente, donc un cycle laisse douze pièces au lieu de vingt-huit. La couvaison
-     passe à quarante-cinq secondes pour la même raison — quarante-cinq clics avant de voir
-     ce qui sort, au lieu de trente. */
+     mûre en rend trente, donc un cycle laisse douze pièces au lieu de vingt-huit.
+
+     ── LA COUVAISON EST ÉCRITE EN SECONDES MAIS SE VIT EN CLICS, et les deux avaient divergé.
+     Elle disait quarante-cinq, et la ligne d'à côté disait pourquoi : « quarante-cinq clics
+     avant de voir ce qui sort ». Sauf qu'un clic ne vaut pas une seconde — le combo le pousse
+     de ×1 à ×3 au fil de la série, et l'œuf tombait en VINGT-SEPT clics. L'intention était
+     dans le fichier, en toutes lettres, et elle n'était pas tenue : le compteur mentait dans
+     le même sens, donc rien ne le disait.
+
+     QUATRE-VINGT-SEIZE SECONDES, C'EST CINQUANTE CLICS — la somme de la série, combo compris,
+     depuis une main qui n'a encore rien. C'est le seul œuf du jeu dont le prix se paie à la
+     main : le rare couve trois minutes et le mythique quarante-cinq, personne ne les clique.
+     Le nombre est donc gardé par un scénario qui joue l'œuf et compte, pas par cette ligne. */
   { key: 'commun', name: 'Œuf commun', price: 18, glyph: '🥚', rarity: 'commune',
-    hatch: 45, odds: { commune: 0.999, rare: 0.001 },
+    hatch: 96, odds: { commune: 0.999, rare: 0.001 },
     dit: 'C’est par là que tout le monde commence.' },
   /* ── L'ESCALIER DES ŒUFS A ÉTÉ REMONTÉ D'UN CRAN ──
      L'œuf rare valait 300 000, soit SIX MINUTES d'une ferme commune mûre — mesuré. À ce
@@ -358,10 +368,10 @@ const EN_VENTE = Object.fromEntries(OEUFS_VENDUS.map(e => [e.key, e]));
 const OEUFS_HAUT_EN_BAS = EGG_KINDS.slice()
   .sort((a, b) => RARITY[b.rarity].rank - RARITY[a.rarity].rank);
 
-/* Plus l'œuf est rare, plus il couve longtemps : 30 s pour un commun, 45 minutes pour un
+/* Plus l'œuf est rare, plus il couve longtemps : 96 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
 
-   Sur une bête commune la couvaison ne pèse rien : 30 s de coquille contre sept heures de
+   Sur une bête commune la couvaison ne pèse rien : 96 s de coquille contre sept heures de
    croissance jusqu'à l'âge légende, soit un millième du cycle. C'est ce qui avait fait
    plafonner la couveuse à 5 — au-delà, on achetait des niveaux pour ne jamais les voir.
 

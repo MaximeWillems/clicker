@@ -538,7 +538,11 @@ scenario('écran — un compteur de clics annonce le nombre de clics qu’il fau
   let donnes = 0;
   while (jeu.current() && jeu.current().kind === 'egg' && donnes < 200) { jeu.tapStage(); donnes++; }
   eq('l’œuf demande exactement ce qui était annoncé', donnes, promis);
-  ok('et c’est bien une vingtaine de clics, pas quarante-cinq', promis > 20 && promis < 35, promis);
+  /* CINQUANTE, ET LE NOMBRE EST ICI PARCE QU'IL N'EST NULLE PART AILLEURS. La table des œufs
+     écrit une couvaison en SECONDES ; ce qu'on veut tenir est un nombre de CLICS, et le combo
+     sépare les deux. Quarante-cinq secondes voulaient dire quarante-cinq clics et en coûtaient
+     vingt-sept — l'intention était écrite dans le fichier et rien ne la vérifiait. */
+  eq('et un œuf commun se paie cinquante clics de la main', promis, 50);
 
   /* UN DE MOINS PAR CLIC, EXACTEMENT — ni zéro, ni deux. Sur un second œuf, combo déjà chaud :
      le compteur doit partir de là où la main en est, pas de zéro. */
