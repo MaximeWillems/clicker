@@ -1126,6 +1126,113 @@ corvée au lieu de la supprimer.
 **Le verrou reste, mais il ne sert qu'à fondre.** Un cran sur une carte pour dire « celle-là,
 jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui montre tout.
 
+#### Le prix d'une évolution — plan de prix
+
+**Une seule évolution sur quatre est un mur.** Le péage, rapporté à ce que vaut la bête à l'âge
+qu'elle quitte :
+
+| évolution | aujourd'hui |
+|---|---|
+| enfant → adolescent | **×625** |
+| adolescent → adulte | ×4 |
+| adulte → ancien | ×3 |
+| ancien → légende | ×3 |
+
+La première porte est une muraille ; les trois autres se paient en vendant deux ou trois bêtes du
+même âge. Une fois le premier péage franchi, le reste suit tout seul — et c'est exactement ce
+qu'on ne veut pas d'une mythique tombée à la loterie.
+
+**Et la forme est la même à toutes les raretés**, parce que c'est UNE table multipliée par `mult` :
+`VALEURS_RANG` et `PEAGES_RANG`. La merveilleuse partageant le `mult` de la mythique, elle
+partage aussi ses péages — elle ne coûte pas un sou de plus à mener au bout.
+
+##### La contrainte qui a figé ce réglage
+
+La règle vivante veut qu'une bête achetée n'ait PAS remboursé son œuf à l'âge adulte et l'ait
+remboursé à l'âge ancien. Écrite en clair :
+
+> `v(adulte) − (p1 + p2) ≤ prix de l'œuf`, donc **`p2 ≥ v(adulte) − p1 − œuf`**
+
+Avec `v(adulte) = 3 000 000`, `p1 = 50 000` et un œuf à `2 200 000`, il vient **`p2 ≥ 750 000`** —
+exactement la valeur d'aujourd'hui. **Le deuxième mur ne peut pas grandir sans que la valeur de
+l'adulte grandisse.** Les deux sont liés, et c'est pour ça que cette table n'a jamais bougé : on
+ne peut pas la toucher par un bout.
+
+##### Les prix proposés
+
+```
+VALEURS_RANG   [80, 200 000, 10 000 000,  220 000 000, 7 000 000 000]
+PEAGES_RANG    [50 000,  8 000 000, 200 000 000, 4 400 000 000]
+```
+
+| évolution | aujourd'hui | proposé |
+|---|---|---|
+| enfant → adolescent | ×625 | ×625 |
+| adolescent → adulte | ×4 | **×40** |
+| adulte → ancien | ×3 | **×20** |
+| ancien → légende | ×3 | **×20** |
+
+Les quatre deviennent des murs. Le remboursement tombe toujours à l'âge ancien — la règle tient.
+Et la marge au bout passe de 3 % à 52 % : mener une bête à la légende cesse d'être une formalité
+pour devenir un investissement qui rapporte vraiment.
+
+Ce que ça coûte de mener une bête au bout, en pièces :
+
+| rareté | aujourd'hui | proposé |
+|---|---|---|
+| rare | 9,2·10⁸ | 1,15·10¹¹ |
+| épique | 1,67·10¹³ | 2,09·10¹⁵ |
+| mythique | 3,01·10¹⁷ | 3,77·10¹⁹ |
+
+##### CE QUI NE PEUT PLUS SE RÉGLER À PART : la rente
+
+**Une légende gardée rembourse son propre œuf en dix-sept secondes**, à toutes les raretés —
+mesuré, et c'est vrai aujourd'hui, avant tout changement. C'est là qu'est la somme *broken*, et
+elle ne vient pas des péages : la rente lit la VALEUR de la bête, pas ce qu'elle a coûté.
+
+Or la table proposée multiplie la valeur d'une légende par **175**. Une légende gardée
+rapporterait donc 175 fois plus. Pour qu'une garde se rembourse dans le même temps
+qu'aujourd'hui, `RENTE_H` devrait passer de **300 s à 14,6 h** — ce qui contredit frontalement la
+décision du 5 septembre, juste au-dessus : *une décision de garde doit se payer dans la séance.*
+
+**Monter les murs sans toucher à la rente rend donc la garde 175 fois plus forte.** Les deux
+réglages étaient séparables tant que les valeurs ne bougeaient pas ; ils ne le sont plus. Il faut
+choisir l'une des trois sorties déjà listées — **plafonner, tarir ou facturer** — et ce plan de
+prix ne tient que si l'une des trois est faite dans la même version.
+
+##### Les merveilles, et le mur qu'on ne voit qu'en calculant
+
+Leur donner leurs propres péages est simple : une table à part, `PEAGES_MERVEILLE`. Mais il y a
+un seuil qu'il faut connaître avant de choisir le facteur.
+
+Avec les prix proposés, mener une mythique au bout coûte 3,77·10¹⁹ et elle vaut 5,73·10¹⁹.
+**Au-delà de ×1,52 sur les péages, mener une merveille au bout devient une PERTE en pièces.** À
+×25 — « très éloignées », comme demandé — elle coûterait 9,4·10²⁰ pour valoir 5,7·10¹⁹ : seize
+fois plus cher que ce qu'elle rapporte.
+
+Ce n'est pas forcément une objection. C'est même cohérent avec ce que la table dit déjà d'elle :
+*« elle est un cran de RARETÉ, pas un cran de PUISSANCE »*. À ×25, la merveille devient un
+**trophée qu'on paie** — le sommet du jeu, et une chose qu'on ne fait pas pour l'argent.
+
+Mais alors il faut trancher, parce que les deux lectures s'excluent :
+
+- **La merveille reste un trophée.** Ses péages montent, sa valeur ne bouge pas. La doctrine tient
+  et se renforce ; la pension ne redevient pas une stratégie d'argent. Prix à payer : personne ne
+  mène une merveille au bout pour gagner des pièces, il faut donc qu'elle rapporte AUTRE CHOSE —
+  une carte, une entrée d'encyclopédie, un trophée.
+- **La merveille devient une puissance.** Ses péages ET sa valeur montent. Elle redevient
+  rentable — et la pension redevient la meilleure façon de faire de l'argent, ce que la table
+  interdit explicitement et pour une raison écrite.
+
+##### Ce qu'il reste à trancher
+
+1. **Les murs à ×625 / ×40 / ×20 / ×20** — ou plus doux ? Le premier reste une muraille ; les
+   trois autres passent de « deux bêtes à vendre » à « vingt ».
+2. **Quelle sortie pour la rente** — plafonner, tarir ou facturer ? Sans l'une des trois, ce plan
+   de prix rend la garde 175 fois plus forte au lieu de la corriger.
+3. **La merveille, trophée ou puissance ?** Le facteur ×25 ne peut pas être « rentable ». Le seuil
+   est à ×1,52, et il ne se voit qu'en calculant.
+
 #### La garde illimitée est trop forte — ET ON LA GARDE AINSI, décidé le 5 septembre 2026
 
 Le constat vient du jeu : une bête gardée rapporte **sa propre valeur de vente toutes les
