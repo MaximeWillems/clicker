@@ -2753,25 +2753,47 @@ scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la b�
   ok('une fois rencontrée, la phrase la nomme', /1 % Kitsune/.test(dit()), dit());
 });
 
-scenario('merveilles — un cran de rareté, jamais un cran de puissance', () => {
+scenario('merveilles — un cran de puissance, mais jamais un raccourci', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true;
 
-  /* SI UNE MERVEILLE VALAIT PLUS QU'UNE MYTHIQUE, la pension redeviendrait une stratégie
-     d'argent et tout le travail de la 3.0.0 tomberait sur la première éclose. */
-  eq('même multiplicateur qu’une mythique',
-     jeu.RARITY.merveilleuse.mult, jeu.RARITY.mythique.mult);
-  eq('et même plafond de carte',
+  /* LA RÈGLE A CHANGÉ, ET IL FAUT DIRE LAQUELLE ÉTAIT LÀ AVANT. La merveilleuse partageait le
+     multiplicateur de la mythique : elle était « un cran de RARETÉ, pas un cran de PUISSANCE ».
+     La raison tenait debout — si une merveille valait plus, la pension redeviendrait la
+     meilleure façon de faire de l'argent, et tout le travail de la 3.0.0 tomberait sur la
+     première éclose.
+
+     ELLE EST MAINTENANT UN CRAN DE PUISSANCE, et la raison d'avant est désarmée autrement :
+     ses PÉAGES montent du même cran que sa valeur. Elle coûte dix-huit mille fois plus à mener
+     au bout, et elle vaut dix-huit mille fois plus — donc sa MARGE est exactement celle d'une
+     mythique. La pension n'est pas un raccourci vers l'argent : c'est la seule porte vers un
+     barreau de plus, et il faut déjà une fortune de ce barreau-là pour l'emprunter.
+
+     C'EST CETTE ÉGALITÉ DE MARGE QUE LE SCÉNARIO GARDE. Le multiplicateur a le droit de
+     bouger ; ce qui n'a pas le droit de bouger, c'est qu'un rang rapporte plus PAR PIÈCE
+     INVESTIE qu'un autre — ça, ce serait un raccourci. */
+  const m = jeu.RARITY.merveilleuse.mult, y = jeu.RARITY.mythique.mult;
+  ok('la merveilleuse vaut plus qu’une mythique', m > y, m + ' contre ' + y);
+  ok('et d’un cran comparable à celui d’avant', m / y > 1000 && m / y < 100000,
+     '×' + Math.round(m / y));
+  eq('mais sa carte ne plafonne pas plus haut',
      jeu.RARITY.merveilleuse.plafond, jeu.RARITY.mythique.plafond);
 
-  const w = bete(jeu, 'wukong', 3, 20000), o = bete(jeu, 'ouroboros', 3, 20000);
-  /* ON ÉGALISE TOUT CE QUI ENTRE DANS LA VALEUR, LE FOND COMPRIS. Il manquait, et le scénario
-     échouait une fois sur quelques centaines : un fond tiré au hasard vaut ×1,10 à ×1,20, si
-     bien que la merveille et la mythique se comparaient sur un décor et non sur leur rang. Un
-     test qui échoue sans qu'aucun code soit fautif apprend à ignorer les échecs. */
-  w.chroma = o.chroma; w.niv = o.niv; w.over = o.over = 0; w.temper = o.temper;
-  w.prodige = o.prodige = false; w.fond = o.fond = null;
-  eq('donc elle se vend au même prix', jeu.sellValue(w), jeu.sellValue(o));
+  /* LA MARGE : ce qui reste quand on a mené la bête au bout et payé tous ses péages, rapporté
+     à ce qu'on y a mis. Elle se calcule sur les tables, donc sans dépendre d'aucune bête. */
+  const marge = cle => {
+    const v = jeu.valeurMure(cle, 5), p = jeu.peagesJusque(cle, 5);
+    return (v - p) / p;
+  };
+  const ecart = Math.abs(marge('merveilleuse') - marge('mythique'));
+  ok('elle rapporte autant par pièce investie qu’une mythique', ecart < 0.001,
+     'merveille ' + marge('merveilleuse').toFixed(4) + ' contre mythique ' + marge('mythique').toFixed(4));
+
+  /* ET LA MÊME CHOSE À TOUS LES RANGS PAYANTS : une seule table de péages et une seule table de
+     valeurs, donc une seule pente. Un rang qui s'en écarterait serait un raccourci ou un piège. */
+  const marges = ['rare', 'epique', 'mythique', 'merveilleuse'].map(marge);
+  ok('tous les rangs ont la même pente',
+     Math.max.apply(null, marges) - Math.min.apply(null, marges) < 0.001, marges.join(' · '));
 
   // et les trois consignes du marchand ont bien leur clef, sinon elles seraient muettes
   for (const cle of Object.keys(jeu.RARITY)) {

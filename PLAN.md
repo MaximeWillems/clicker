@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.26.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.27.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -1224,14 +1224,60 @@ Mais alors il faut trancher, parce que les deux lectures s'excluent :
   rentable — et la pension redevient la meilleure façon de faire de l'argent, ce que la table
   interdit explicitement et pour une raison écrite.
 
-##### Ce qu'il reste à trancher
+##### Ce qui a été tranché — livré en `beta 4.27.0`
 
-1. **Les murs à ×625 / ×40 / ×20 / ×20** — ou plus doux ? Le premier reste une muraille ; les
-   trois autres passent de « deux bêtes à vendre » à « vingt ».
-2. **Quelle sortie pour la rente** — plafonner, tarir ou facturer ? Sans l'une des trois, ce plan
-   de prix rend la garde 175 fois plus forte au lieu de la corriger.
-3. **La merveille, trophée ou puissance ?** Le facteur ×25 ne peut pas être « rentable ». Le seuil
-   est à ×1,52, et il ne se voit qu'en calculant.
+**1. Les murs.** Retenus tels quels : ×625 / ×40 / ×20 / ×20. Le deuxième péage vaut 7 750 000 et
+non 8 000 000, et ce n'est pas un arrondi : la contrainte `v(adulte) − p1 − p2 = prix de l'œuf`
+le fixe à l'unité près. Il n'est pas choisi, il est déduit.
+
+**2. La rente : aucune des trois sorties.** Les mots étaient du jargon, et la mesure les a rendus
+inutiles. Le vrai rapport n'est pas le délai de remboursement d'une garde, c'est **garder contre
+vendre**, par case d'enclos et par seconde :
+
+| | garder vaut |
+|---|---|
+| avant | **×740** vendre |
+| avec les nouveaux péages, rente inchangée | ×54 |
+| avec `RENTE_H = 7200` | **×2,3** |
+
+**Les péages ont fait les trois quarts du travail à eux seuls.** Ce n'était pas la rente qui était
+trop forte, c'était la vente qui ne rapportait rien — 3 % de marge. À 52 %, élever pour vendre
+redevient un métier, et il ne restait qu'un nombre à tourner.
+
+`RENTE_H` passe donc de 300 s à 7 200 s. Une garde se rembourse en deux heures, une nuit de huit
+heures rend quatre fois la valeur de la bête gardée. **L'absence reste nettement le meilleur
+emploi d'une case** — c'était la demande — mais vendre cesse d'être une perte de temps.
+
+*Ce que ça révise :* la `4.11.5` posait qu'une garde doit se payer DANS LA SÉANCE. Deux heures ne
+le garantissent plus au même sens. En échange, la décision existe : à 740 contre 1, il n'y avait
+pas de décision, il y avait une évidence.
+
+*Ce que ça ne règle toujours pas :* la rente reste perpétuelle et gratuite. On a réglé le DÉBIT,
+pas la NATURE — mais le chantier change de taille, il ne s'agit plus de sauver le jeu d'un
+optimum unique.
+
+**3. La merveille : les deux.** Elle prend un cran de puissance au-dessus de la mythique —
+multiplicateur 147 000 000 000 000, soit ×18 000, le même cran qui sépare l'épique de la mythique.
+Ses péages montent du même cran, puisqu'ils sortent des mêmes tables.
+
+**Sa marge est donc exactement celle d'une mythique, et d'une rare.** C'est ce qui désarme
+l'objection qui avait figé la règle d'avant : la pension ne devient pas un raccourci vers
+l'argent, elle est la seule PORTE vers un barreau de plus — et il faut déjà une fortune de ce
+barreau-là pour l'emprunter. Un scénario garde l'égalité de pente sur les quatre rangs payants :
+le multiplicateur a le droit de bouger, la pente n'a pas le droit de changer.
+
+##### Une décision écrite que ce chantier renverse
+
+La doctrine disait : *« la merveilleuse est un cran de RARETÉ, pas un cran de PUISSANCE »*, et
+elle donnait sa raison. Elle est réécrite dans `game.js`, raison comprise, parce qu'un
+commentaire qui garde l'ancienne règle à côté de la nouvelle table est exactement ce qui a caché
+pendant plusieurs versions un escalier des œufs qui n'en était pas un.
+
+Et la répartition du péage repasse à 95 % sur la dernière marche — ce que la version d'avant
+avait corrigé. **C'est assumé, et c'est arithmétique :** la valeur d'une bête est multipliée par
+trente entre deux âges, donc ×20 à la fin pèse plus que ×40 au début. Les deux unités — part du
+total, et nombre de bêtes à vendre — ne peuvent pas être satisfaites ensemble. On a choisi celle
+qui décrit ce que le joueur vit.
 
 #### La garde illimitée est trop forte — ET ON LA GARDE AINSI, décidé le 5 septembre 2026
 

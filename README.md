@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.26.0** | l’œuf mythique demandait dix-sept légendes épiques quand l’œuf épique en demandait douze mille cinq cents : l’ère la plus rare s’ouvrait avant la première ascension |
+| **beta 4.27.0** | chaque évolution devient un mur, la merveille prend un cran de puissance au-dessus de la mythique, et garder ne vaut plus 740 fois vendre mais 2,3 |
+| beta 4.26.0 | l’œuf mythique demandait dix-sept légendes épiques quand l’œuf épique en demandait douze mille cinq cents : l’ère la plus rare s’ouvrait avant la première ascension |
 | beta 4.25.1 | la teinte tient sur toute la bête : le corps sortait bordeaux et le ventre kaki, parce que `sepia` écrêtait avant même la rotation |
 | beta 4.25.0 | trente-deux couleurs choisies à la main : les 22,5° n’étaient qu’un quadrillage, et un écarlate qui n’est pas rouge n’est pas un écarlate |
 | beta 4.24.1 | l’atelier redessine : un bloc retiré avait emporté la constante voisine, et la page ne posait plus une image. Un scénario exécute désormais le script de la page contre un DOM de fortune |

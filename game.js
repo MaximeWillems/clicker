@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.26.0';
+const VERSION = 'beta 4.27.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -165,16 +165,29 @@ const RARITY = {
   rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1, plafond: 1.6 },
   epique:   { name: 'épique',   plur: 'épiques',   mult: 454545,   rank: 2, plafond: 2.5 },
   mythique: { name: 'mythique', plur: 'mythiques', mult: 8181818181, rank: 3, plafond: 4 },
-  /* LA MERVEILLEUSE VAUT EXACTEMENT CE QUE VAUT UNE MYTHIQUE, et c'est la décision la plus
-     importante du rang. Elle est un cran de RARETÉ, pas un cran de PUISSANCE : elle ne rapporte
-     pas plus, ne se vend pas plus cher, et sa carte ne plafonne pas plus haut.
+  /* LA MERVEILLEUSE EST UN CRAN DE PUISSANCE AU-DESSUS DE LA MYTHIQUE, et c'est l'inverse de
+     ce qui était écrit ici. La règle d'avant disait « un cran de RARETÉ, pas un cran de
+     PUISSANCE » : elle partageait le multiplicateur de la mythique, ne rapportait pas plus et
+     ne se vendait pas plus cher. La raison tenait debout — si une merveille valait plus, la
+     pension redeviendrait la meilleure façon de faire de l'argent, et tout le travail de la
+     3.0.0 tomberait sur la première éclose.
 
-     Sans cette règle, la pension redeviendrait une stratégie d'argent — tout le travail de la
-     3.0.0 pour qu'elle n'en soit pas une tomberait sur la première merveille éclose. Et le rang
-     le plus haut du jeu se mettrait à peser sur l'équilibrage de tout le reste.
+     CETTE RAISON EST DÉSARMÉE AUTREMENT : ses péages montent du même cran que sa valeur.
+     Une merveille coûte dix-huit mille fois plus à mener au bout, et elle vaut dix-huit mille
+     fois plus. Sa MARGE — ce qui reste par pièce investie — est exactement celle d'une
+     mythique, et celle d'une rare. La pension ne devient donc pas un raccourci vers l'argent :
+     elle est la seule PORTE vers un barreau de plus, et il faut déjà une fortune de ce
+     barreau-là pour l'emprunter.
 
-     Ce qu'elle a que les autres n'ont pas tient en une phrase : AUCUN ŒUF NE LA DONNE. */
-  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 8181818181, rank: 4, plafond: 4,
+     C'EST L'ÉGALITÉ DE MARGE QUI TIENT LE SYSTÈME, et non l'égalité de valeur. Un scénario la
+     garde pour les quatre rangs payants : le multiplicateur a le droit de bouger, la pente
+     n'a pas le droit de changer. Un rang qui rapporterait plus par pièce investie serait un
+     raccourci ; un rang qui rapporterait moins serait un piège.
+
+     ELLE NE S'ACHÈTE TOUJOURS PAS, et c'est ce qui la distingue : aucun œuf ne la donne, donc
+     la règle `mult = prix de l'œuf / 2 200 000` ne la contraint pas. Son multiplicateur est
+     posé à la main, d'un cran comparable à celui qui sépare l'épique de la mythique. */
+  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 147000000000000, rank: 4, plafond: 4,
                   secret: true },
 };
 
@@ -424,25 +437,37 @@ const AGE_SCALE  = [1, 1.06, 1.12, 1.18, 1.25];   // le bond visible à chaque �
    le seul à recevoir un bonus par-dessus : c'est LA bête qu'un joueur garde. */
 const AGE_RENTE     = 3;      // âge minimal : adulte. En deçà, rien du tout.
 const NIV_RENTE     = AGES[AGE_RENTE - 2].niv + 1;   // le niveau 36, qu'on annonce d'avance
-/* UNE BÊTE RAPPORTE SA PROPRE VALEUR EN CINQ MINUTES. C'était une heure, puis vingt minutes.
+/* UNE BÊTE RAPPORTE SA PROPRE VALEUR EN DEUX HEURES. C'était une heure, puis vingt minutes,
+   puis cinq — et cinq était devenu intenable, non pas à cause du chiffre mais à cause de ce
+   qu'il y avait en face.
 
-   Le défaut se voyait au sommet : une commune légende vaut 1,5 million, on manie des millions
-   pour l'élever — six cent mille de péages rien que pour sa dernière évolution — et elle
-   rendait QUATRE CENT SEIZE PIÈCES PAR SECONDE. Huit d'entre elles, une ferme entière menée
-   au bout, faisaient trois mille pièces la seconde. L'échelle de ce qu'on manipule et celle
-   de ce qu'on gagne n'étaient pas la même, et c'est ce décalage qui se sent, pas le nombre.
+   LE RAPPORT QUI COMMANDE N'EST PAS LE DÉLAI, C'EST « GARDER CONTRE VENDRE ». Une case
+   d'enclos ne fait qu'une chose à la fois : porter une bête gardée, qui rend sa valeur
+   indéfiniment, ou servir à élever puis vendre, encore et encore. Mesuré par case et par
+   seconde, garder valait SEPT CENT QUARANTE FOIS vendre. La fin de partie n'avait donc qu'une
+   forme : remplir les enclos, ne plus jamais rien vendre, et regarder.
 
-   CINQ MINUTES, PARCE QU'UNE DÉCISION DE GARDE DOIT SE PAYER DANS LA SÉANCE. Vingt minutes,
-   c'est plus long que ce qu'on passe devant l'écran entre deux gestes : on gardait une bête
-   sans jamais voir le moment où le pari devient gagnant, et un pari dont on ne voit pas le
-   terme ne se prend pas — il se subit. Cinq minutes, on le voit.
+   LES PÉAGES ONT FAIT LES TROIS QUARTS DU TRAVAIL. En rendant chaque évolution coûteuse, ils
+   ont rendu la vente rentable : la marge au bout passe de 3 % à 52 %, et le rapport tombe de
+   740 à 54 sans qu'on ait touché à la rente. Ce n'était pas la rente qui était trop forte,
+   c'était la vente qui ne rapportait rien.
 
-   CE QUE ÇA NE RÈGLE PAS, et il faut l'écrire ici parce que le plan dit l'inverse : la rente
-   reste PERPÉTUELLE ET GRATUITE, donc garder bat toujours vendre à l'infini, et ce chiffre-ci
-   rend l'écart quatre fois plus grand. Le chantier de la rente porte sur sa NATURE — coût
-   d'entretien, tarissement ou plafond — et il reste entier. On règle ici le débit, pas la
-   règle. Voir PLAN.md, « La garde illimitée est trop forte ». */
-const RENTE_H       = 300;
+   DEUX HEURES RAMÈNE LE RAPPORT À 2,3, et c'est le réglage voulu : garder reste le meilleur
+   emploi d'une case — l'absence doit payer, c'est une demande explicite — mais vendre cesse
+   d'être une perte de temps. Une nuit de huit heures rend quatre fois la valeur d'une bête
+   gardée, ce qui est un vrai revenu d'absence et non un doublement du jeu.
+
+   LE CHOIX DE LA `4.11.5` EST DONC RÉVISÉ, et il faut dire pourquoi. Il posait qu'une décision
+   de garde doit se payer DANS LA SÉANCE, et cinq minutes le garantissaient. Deux heures ne le
+   garantissent plus au même sens ; en échange, la décision existe vraiment — à 740 contre 1,
+   il n'y avait pas de décision, il y avait une évidence. Un pari qu'on ne peut pas perdre
+   n'est pas un pari.
+
+   CE QUE ÇA NE RÈGLE TOUJOURS PAS : la rente reste PERPÉTUELLE ET GRATUITE. On règle ici le
+   DÉBIT, pas la NATURE. Mais le chantier change de taille : il ne s'agit plus de sauver le
+   jeu d'un optimum unique, seulement de décider si l'on veut, un jour, que garder coûte
+   quelque chose. Voir PLAN.md, « La garde illimitée est trop forte ». */
+const RENTE_H       = 7200;
 const RENTE_PRODIGE = 2;      // un chromatique double la sienne
 
 /* ── Variantes ────────────────────────────────────────────────────────────────
@@ -3809,72 +3834,67 @@ const bestStocked = () => {
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
 const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2') ? 0.75 : 1);
 
-/* ── OÙ SE TIENT LE MUR ────────────────────────────────────────────────────────
-   Le péage d'une bête se répartissait sur ses quatre évolutions comme ceci :
+/* ── OÙ SE TIENT LE MUR, ET DANS QUELLE UNITÉ ON LE MESURE ────────────────────
+   CE COMMENTAIRE A DÉJÀ CHANGÉ D'AVIS UNE FOIS, et il faut garder les deux raisonnements
+   parce que le second ne s'entend qu'avec le premier.
 
-       1→2  0,0 %     2→3  0,5 %     3→4  6,2 %     4→5  93,3 %
+   LA PREMIÈRE VERSION MESURAIT EN PART DU PÉAGE TOTAL. Le péage se répartissait
+   0 / 0,5 / 6 / 93 % : quatre-vingt-treize pour cent sur la DERNIÈRE marche. L'argument était
+   qu'on investit, qu'on monte trois âges sans rien décider, et qu'on découvre le mur à
+   l'arrivée — une dépense qu'on ne peut plus refuser n'est pas une décision, c'est une
+   facture. Le poids a donc été déplacé vers l'entrée : 40 / 5 / 20 / 35.
 
-   Quatre-vingt-treize pour cent sur la DERNIÈRE marche, rien sur la première. C'est le pire
-   endroit possible : on investit, on monte trois âges sans rien décider, et on découvre le
-   mur à l'arrivée — quand on a déjà tout payé et qu'on ne peut plus reculer. Une dépense
-   qu'on ne peut plus refuser n'est pas une décision, c'est une facture.
+   CETTE UNITÉ ÉTAIT LA MAUVAISE, et on ne le voit qu'en changeant de question. « Quelle part
+   du total ? » ne dit pas si une marche est franchissable. La bonne question est : CE PÉAGE,
+   COMBIEN DE BÊTES DE CET ÂGE FAUT-IL VENDRE POUR LE PAYER ? Posée ainsi, la répartition
+   40 / 5 / 20 / 35 donnait :
 
-   LE MUR SE MET DONC À LA PREMIÈRE ÉVOLUTION, où il pose la seule question qui compte :
-   « celle-là, je m'y engage ou je la revends ? » Et il répond du même coup à la rare tombée
-   par chance — elle se vend pour un joli petit gain, ou elle se garde pour un prix qu'on n'a
-   pas encore.
+       1→2  ×625      un mur
+       2→3  ×4        deux bêtes à vendre
+       3→4  ×3        deux bêtes
+       4→5  ×3        deux bêtes
 
-   LE TOTAL NE BOUGE PAS D'UNE PIÈCE, et c'est ce qui rend la redistribution sûre : le rapport
-   entre ce que coûtent les péages et ce que la bête vaut à l'âge 5 vaut ×1,90 à toutes les
-   raretés, et c'est LUI qui tient la règle « faire grandir perd toujours à la vente, seule la
-   rente rembourse ». On déplace le poids, on n'en ajoute ni n'en retire.
+   Trois marches sur quatre ne décidaient rien. Le « on monte trois âges sans rien décider »
+   que la première version croyait corriger était toujours là — simplement déplacé.
 
-   MAIS LA COURBE NE DOIT PAS DÉCROÎTRE POUR AUTANT, et la première version le faisait :
-   60 / 15 / 15 / 10. Le passage à l'âge 5 — celui qui fait passer une rare de 2 M à 8,45 M,
-   le plus gros saut de valeur de toute sa vie — y coûtait MOINS que le passage précédent.
-   Indéfendable : ce qu'une marche coûte doit suivre ce qu'elle ouvre.
+   LA FORME RETENUE FAIT DE CHAQUE ÉVOLUTION UN MUR : ×625, ×40, ×20, ×20. Les quatre posent
+   la même question, et elle est la seule qui compte — celle-là, je m'y engage, ou je la
+   revends ?
 
-   La forme retenue tient les deux : un mur d'engagement à l'entrée, un palier presque gratuit
-   juste derrière pour atteindre vite l'âge où la rente commence, puis une remontée qui suit
-   la valeur.
+   OUI, LE PÉAGE SE RETROUVE À 95 % SUR LA DERNIÈRE MARCHE, et c'est assumé. Ce n'est pas un
+   retour en arrière : c'est arithmétique. La valeur d'une bête est multipliée par trente entre
+   deux âges, donc ×20 à la fin pèse mécaniquement plus que ×40 au début. Les deux unités ne
+   peuvent pas être satisfaites ensemble — front-charger la PART tout en gardant des murs
+   demanderait un premier péage de vingt-trois millions de fois la valeur d'un enfant, ce que
+   personne ne paie jamais. On choisit l'unité qui décrit ce que le joueur vit.
 
-       1→2  40 %   le mur — je m'engage, ou je la revends
-       2→3   5 %   le souffle — on atteint vite l'âge qui rapporte
-       3→4  20 %   la valeur monte, le péage suit
-       4→5  35 %   le plus gros saut de valeur, le second plus gros péage
+   LA CONTRAINTE QUI TIENT TOUT, et elle est à l'unité près : une bête achetée ne doit PAS
+   avoir remboursé son œuf à l'âge adulte, et DOIT l'avoir remboursé à l'âge ancien. Donc
+   `v(adulte) − p1 − p2 = prix de l'œuf`, exactement. Avec `v(adulte) = 10 000 000` et
+   `p1 = 50 000`, il vient `p2 = 7 750 000` et rien d'autre. C'est pour ça que le deuxième
+   péage n'est pas un chiffre rond : il n'est pas choisi, il est déduit.
 
-   LES COMMUNES GARDENT LEUR COURBE. Elles vont bien, c'est mesuré, et l'ouverture du jeu est
-   le dernier endroit où l'on veut poser un mur. */
-/* ── CE QU'UNE BÊTE VAUT, AU-DESSUS DE LA COMMUNE ──────────────────────────────
-   UN ŒUF NE DOIT PAS COÛTER PLUS QUE LA BÊTE NE VAUDRA JAMAIS, et c'était le cas : l'œuf rare
-   valait 50 M pour une bête qui plafonnait à 43,1 M. Achetée, élevée jusqu'au bout, vendue,
-   elle laissait 23 millions de perte — à TOUS les âges, sans exception.
+   LA MARGE AU BOUT PASSE DE 3 % À 52 %, et c'est le vrai effet de ce réglage. Mener une bête
+   à la légende rapportait trois pour cent de ce qu'on y avait mis — autant dire rien, et c'est
+   ce qui rendait la rente sept cent quarante fois meilleure que la vente. Élever pour vendre
+   redevient un métier.
 
-   Les communes, elles, sont bénéficiaires à CHAQUE âge, œuf compris : +12 dès l'enfant,
-   +856 782 à la légende. C'est le modèle, et les raretés ne le suivaient pas.
+   LE TABLEAU D'UNE RARE, en pièces, œuf à 55 M compris :
 
-   LA COURBE EST DONC REFAITE POUR TOUT CE QUI EST AU-DESSUS DE LA COMMUNE, et elle se lit
-   d'une seule façon : chaque évolution coûte plusieurs fois ce que la bête vaut à l'instant
-   où on la paie, et la vente qui suit dépasse le cumul. Pour une rare, œuf à 50 M :
+       âge          se vend      évolution      cumul péages     solde
+       enfant        2,00 k        1,25 M          —            −55,0 M
+       adolescent    5,00 M      194,0 M          1,25 M        −51,3 M
+       adulte      250,0 M         5,00 Md      195,0 M          0     ← elle a remboursé
+       ancien        5,50 Md     110,0 Md         5,20 Md      +250,0 M
+       légende     175,0 Md         —           115,0 Md       +59,8 Md
 
-       fin d'âge      vente        évolution       cumul       solde
-       enfant     15   2,00 M        1,25 M       51,3 M     −49,3 M
-       adolescent 35   5,00 M       18,75 M       70,0 M     −65,0 M
-       adulte     65  75,0 M       200,0 M       70,0 M      +5,0 M   ← elle devient rentable
-       ancien     85 280,0 M       700,0 M      270,0 M     +10,0 M
-       légende   100   1,00 Md         —         970,0 M     +30,0 M
-
-   ELLE DEVIENT RENTABLE À L'ÂGE ADULTE, et pas avant : les deux premiers âges sont un
-   investissement, ce qui donne son sens au mur. Le reste de sa vie est du bénéfice.
-
-   LES CHIFFRES SONT PAR UNITÉ DE `mult`, donc l'échelle se propage seule : l'œuf épique vaut
-   600 unités comme la lignée épique, le mythique 15 000. Le rapport œuf/valeur est le même à
-   tous les rangs, et l'escalier ne peut plus se retourner.
+   LES CHIFFRES DES TABLES SONT PAR UNITÉ DE `mult`, donc l'échelle se propage seule et le
+   rapport œuf/valeur est le même à tous les rangs. L'escalier ne peut pas se retourner.
 
    LES COMMUNES GARDENT TOUT — valeurs ET péages. Elles vont bien, c'est mesuré, et l'ouverture
-   du jeu ne se touche pas. */
-const VALEURS_RANG = [80, 200000, 3000000, 11200000, 40000000];
-const PEAGES_RANG  = [50000, 750000, 8000000, 28000000];
+   du jeu est le dernier endroit où l'on veut poser un mur. */
+const VALEURS_RANG = [80, 200000, 10000000, 220000000, 7000000000];
+const PEAGES_RANG  = [50000, 7750000, 200000000, 4400000000];
 const echelleHaute = c => rarityOf(c).rank > 0;
 
 /* CES DEUX-LÀ PRENNENT UNE CLÉ DE RARETÉ, ET NON UNE BÊTE, parce que les menus du marchand
