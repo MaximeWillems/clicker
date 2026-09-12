@@ -1203,7 +1203,7 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 
 /* LES NŒUDS. Quatre états qui se distinguent sans les lire : PRISE est pleine et colorée,
    OUVERTE est cerclée vif, CHÈRE est en pointillé — la porte est là, il manque des jetons —
-   et CLOSE s'efface. */
+   et DEVINÉE n’est plus qu’un point. */
 .etoile { cursor: pointer; }
 .etoile-rond { fill: var(--ground); stroke: var(--rule); stroke-width: 2.5; }
 .etoile-icone { font-size: 20px; }
@@ -1231,8 +1231,13 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .etoile.album.prise .etoile-rond      { fill: #24224A; stroke: #9A96D8; }
 
 .etoile.chere .etoile-rond { stroke-dasharray: 4 5; opacity: 0.75; }
-.etoile.close { opacity: 0.3; cursor: not-allowed; }
-.etoile:not(.close):hover .etoile-rond { stroke-width: 4; }
+/* LA DEVINÉE : un point pâle, sans glyphe ni nom. On voit qu’il y a quelque chose, pas
+   ce que c’est — et le lien qui y mène dit par où passer. */
+.etoile.devinee .etoile-rond { fill: var(--rule); stroke: none; opacity: 0.45; }
+.etoile.devinee:hover .etoile-rond { opacity: 0.8; }
+/* L’ÉTOILE LUE se cercle d’accent : la carte de côté parle d’ELLE, il faut la retrouver. */
+.etoile.visee .etoile-rond { stroke: var(--accent); stroke-width: 4; opacity: 1; }
+.etoile:not(.devinee):hover .etoile-rond { stroke-width: 4; }
 .etoile:focus-visible { outline: none; }
 .etoile:focus-visible .etoile-rond { stroke: var(--accent); stroke-width: 4; }
 
@@ -1917,4 +1922,55 @@ body.en-pause .subject { cursor: default; }
 .asc-go:disabled {
   background: none; color: var(--faint);
   border-color: var(--rule); cursor: not-allowed;
+}
+
+/* ── LA CARTE DE DÉTAIL ────────────────────────────────────────────────────────────────
+   À côté du ciel, jamais par-dessus : on doit pouvoir lire une étoile en continuant à voir
+   d'où elle part. Sur un écran étroit elle passe dessous, pour la même raison. */
+.ciel-plan { flex: 1; display: flex; gap: 0.8rem; min-height: 0; }
+.ciel-plan > .ciel-arbre { flex: 1; min-width: 0; }
+.ciel-carte {
+  position: relative; flex: none; width: 19rem; overflow-y: auto;
+  border: 1px solid var(--rule); border-radius: 6px; background: var(--sunken);
+  padding: 0.9rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.55rem;
+}
+.ciel-carte-x {
+  position: absolute; top: 0.4rem; right: 0.5rem;
+  font: inherit; font-size: 0.85rem; line-height: 1; color: var(--soft);
+  background: none; border: none; cursor: pointer; padding: 2px 4px;
+}
+.ciel-carte-x:hover { color: var(--ink); }
+.ciel-carte-tete { display: grid; grid-template-columns: auto 1fr; gap: 0 0.6rem; align-items: center; }
+.ciel-carte-glyphe { grid-row: 1 / span 2; font-size: 1.7rem; line-height: 1; }
+.ciel-carte-nom { margin: 0; font-family: var(--f-name); font-weight: 400; font-size: 1.05rem; color: var(--ink); }
+.ciel-carte-axe { margin: 0; font-size: 0.72rem; color: var(--soft); }
+.ciel-carte-dit { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--ink); }
+.ciel-carte-effet {
+  margin: 0; font-family: var(--f-num); font-size: 0.8rem; color: var(--accent);
+  border-left: 2px solid var(--rule); padding-left: 0.6rem;
+}
+/* UNE DEVINÉE SE LIT COMME UNE OMBRE : la carte s'éteint avec elle, sinon le panneau aurait
+   l'air de contenir un secret alors qu'il dit tout ce qu'il sait. */
+.ciel-carte.devinee .ciel-carte-nom,
+.ciel-carte.devinee .ciel-carte-glyphe { color: var(--soft); opacity: 0.75; }
+.ciel-carte-pied {
+  margin-top: auto; padding-top: 0.5rem; border-top: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+}
+.ciel-carte-prix {
+  font-family: var(--f-num); font-size: 0.95rem; color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.ciel-carte-prendre {
+  font: inherit; font-size: 0.8rem; color: var(--ground); background: var(--accent);
+  border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.ciel-carte-prendre:hover:not(:disabled) { filter: brightness(1.12); }
+.ciel-carte-prendre:disabled {
+  background: none; color: var(--soft); border: 1px solid var(--rule); cursor: default;
+}
+@media (max-width: 62rem) {
+  .ciel-plan { flex-direction: column; }
+  .ciel-carte { width: auto; max-height: 45%; }
 }

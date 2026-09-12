@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.30.0';
+const VERSION = 'beta 4.31.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2129,6 +2129,46 @@ const etoilePrise = cle => {
    compter ; « demande la pension » se voit sur le trait qui les relie. */
 const etoileOuverte = n => !n.parent || etoilePrise(n.parent);
 
+/* ── LES TROIS ÉTATS D'UNE ÉTOILE ─────────────────────────────────────────────
+   ACQUISE, OUVERTE, DEVINÉE — et `chère` n'est qu'une nuance d'ouverte : la porte est là, il
+   manque des jetons. Une étoile DEVINÉE ne montre que sa place et son lien. Pas de nom, pas de
+   glyphe, pas de prix : on voit qu'il y a quelque chose, pas ce que c'est.
+
+   POURQUOI CACHER CE QU'ON POURRAIT LIRE. Un arbre entièrement déplié se lit une fois, se
+   planifie en trois minutes, et ne se regarde plus jamais. Le même, découvert cran par cran,
+   donne une raison de revenir : le nœud qu'on vient de prendre en éclaire un autre. C'est la
+   seule récompense que la constellation puisse donner sans rien coûter.
+
+   ET CE N'EST PAS UNE ÉNIGME : le lien montre d'où ça vient, la couleur montre quel axe, et la
+   carte de détail dit quelle étoile prendre d'abord. On ignore le contenu, jamais le chemin.
+
+   UNE SEULE PORTE, et toute la vue passe par elle — le SVG pour la classe, la carte pour ce
+   qu'elle a le droit de dire. Deux façons de décider qu'un nœud est caché finiraient par
+   diverger, et la fuite serait invisible : elle ne se verrait que dans ce qui est révélé. */
+const etatEtoile = n => etoilePrise(n.cle) ? 'prise'
+                      : !etoileOuverte(n) ? 'devinee'
+                      : jetonsEnMain() < n.prix ? 'chere' : 'ouverte';
+const etoileDevinee = n => etatEtoile(n) === 'devinee';
+
+/* CE QU'UNE ÉTOILE FAIT, EN CHIFFRES, quand elle le fait par la table des bonus. Les nœuds qui
+   portent une RÈGLE plutôt qu'un bonus — la pension, la série du combo — n'ont rien à mettre
+   ici : leurs nombres sont dans leur phrase, et les recopier serait poser une deuxième source
+   qui se tairait le jour où la règle bougerait. */
+const DIT_BONUS = {
+  valeur:   p => '+' + Math.round(p * 100) + ' % sur ce que valent tes bêtes, vente comme rente',
+  rente:    p => '+' + Math.round(p * 100) + ' % de rente',
+  vitesse:  p => '+' + Math.round(p * 100) + ' % de vitesse sur tout ce qui pousse',
+  oeuf:     p => '−' + Math.round(p * 100) + ' % sur le prix des œufs',
+  peage:    p => '−' + Math.round(p * 100) + ' % sur le péage d’évolution',
+  clic:     p => '+' + p + ' à la force de ta main (elle part de 1)',
+  clicAuto: p => dec(p, 1) + ' clic par seconde, sans que tu touches à rien',
+  couvee:   p => '+' + Math.round(p * 100) + ' % de vitesse de couvaison',
+  pousse:   p => '+' + Math.round(p * 100) + ' % de vitesse de croissance',
+  prodige:  p => '+' + Math.round(p * 100) + ' % de chances de prodige',
+};
+const effetEtoile = n => !n.bonus ? ''
+  : Object.keys(n.bonus).map(k => (DIT_BONUS[k] || (p => k + ' ' + p))(n.bonus[k])).join(' · ');
+
 function acheterEtoile(cle) {
   const n = ETOILE_BY_KEY[cle];
   if (!n || etoilePrise(cle) || !etoileOuverte(n)) return false;
@@ -3244,6 +3284,7 @@ function load() {
 function effacerLaPartie() {
   state = freshState();
   combo = 0; dernierClic = 0; veilleDepuis = 0; rattrapage = false;
+  etoileVue = null;
   primesPrises = false; ocelleReste = 0; enPause = false;
   oublierPrimes();
   stopSaving = true;
@@ -6512,8 +6553,14 @@ const cieuxXY = n => {
   if (!n.axe) return { x: CIEL_VUE.l / 2, y: CIEL_VUE.h / 2 };
   const axe = AXES.find(a => a.cle === n.axe);
   const d = profondeurEtoile(n);
-  // un léger balancement sur le tronc : trois nœuds parfaitement alignés font une règle
-  const sway = ecartDe(n) ? 0 : (d % 2 ? 5 : -5);
+  /* UN LÉGER BALANCEMENT SUR LE TRONC : trois nœuds parfaitement alignés font une règle, pas
+     une branche. Mais SEULEMENT SUR UN AXE SANS FOURCHE — sur un axe qui en a une, le
+     balancement travaillait CONTRE l'écart de branche : le tronc penchait de 5° vers la branche
+     et ramenait la fourche de 16° à 11°, soit 61 px au deuxième anneau pour des ronds de 22 de
+     rayon. Le décor mangeait la règle. Un axe en fourche n'a de toute façon plus l'air d'une
+     règle : c'est la fourche elle-même qui le dit. */
+  const droit = (VOIES_PAR_AXE[n.axe] || ['']).length < 2;
+  const sway = droit ? (d % 2 ? 5 : -5) : 0;
   const ang = (axe.angle + ecartDe(n) + sway) * Math.PI / 180;
   const r = CIEL_VUE.rayon[Math.min(Math.max(0, d - 1), CIEL_VUE.rayon.length - 1)];
   return { x: CIEL_VUE.l / 2 + Math.cos(ang) * r, y: CIEL_VUE.h / 2 + Math.sin(ang) * r };
@@ -6527,6 +6574,70 @@ const svgEl = (tag, attrs) => {
 };
 
 let cielSig = '';
+
+/* ── LA CARTE DE DÉTAIL ───────────────────────────────────────────────────────
+   UN CLIC SUR UNE ÉTOILE NE L'ACHÈTE PLUS, IL L'OUVRE. Acheter d'un clic sur un canevas qu'on
+   fait glisser du même doigt était une faute qui attendait : le garde anti-glissement existait
+   déjà, et il ne protégeait que du geste le plus franc. Surtout, une dépense définitive se
+   prenait sans rien lire — le nom et le prix tenaient sous le rond, la phrase était dans une
+   infobulle de survol, et au doigt il n'y a pas de survol.
+
+   LA CARTE DIT TOUT CE QUE L'ÉTOILE A LE DROIT DE DIRE, et rien de plus : une devinée n'y
+   montre que le chemin pour l'atteindre. C'est `etatEtoile` qui tranche, la même porte que le
+   dessin — sinon la carte finirait par révéler ce que le ciel cache. */
+let etoileVue = null;
+
+function voirEtoile(cle) {
+  etoileVue = ETOILE_BY_KEY[cle] ? cle : null;
+  cielSig = '';
+  renderCiel();          // qui finit par la carte : une seule descente, un seul rendu
+}
+function fermerCarteCiel() { voirEtoile(null); }
+
+/* Le parent ne se nomme que s'il est lui-même révélé : nommer le parent d'une devinée dont le
+   parent est devinée aussi ferait fuir, de proche en proche, tout l'arbre qu'on cache. */
+const nomParent = n => {
+  const p = ETOILE_BY_KEY[n.parent];
+  return p && !etoileDevinee(p) ? '« ' + p.nom + ' »' : 'l’étoile qui la précède';
+};
+
+function renderCarteCiel() {
+  const carte = $('ciel-carte');
+  const n = etoileVue && ETOILE_BY_KEY[etoileVue];
+  carte.hidden = !n;
+  if (!n) return;
+
+  const etat = etatEtoile(n);
+  const cache = etat === 'devinee';
+  carte.classList.toggle('devinee', cache);
+  setText($('ciel-carte-glyphe'), cache ? '·' : (n.glyphe || '✦'));
+  setText($('ciel-carte-nom'), cache ? 'Encore dans l’ombre' : n.nom);
+  setText($('ciel-carte-axe'), n.axe ? NOM_BRANCHE[n.axe] : 'Le moyeu');
+  setText($('ciel-carte-dit'), cache
+    ? 'Tu vois sa place et son lien, pas ce qu’elle donne. Prends d’abord ' + nomParent(n) + '.'
+    : (n.dit || 'Le centre de la roue. Tout part d’ici.'));
+  const effet = cache ? '' : effetEtoile(n);
+  $('ciel-carte-effet').hidden = !effet;
+  setText($('ciel-carte-effet'), effet);
+
+  setText($('ciel-carte-prix'), etat === 'prise' ? 'acquis' : cache ? '✦ ?' : '✦ ' + n.prix);
+  const bout = $('ciel-carte-prendre');
+  bout.hidden = etat === 'prise' || !n.prix;
+  bout.disabled = etat !== 'ouverte';
+  setText(bout, etat === 'ouverte' ? 'Prendre · ✦ ' + n.prix
+              : etat === 'chere' ? 'Il te manque ✦ ' + fmt(n.prix - jetonsEnMain())
+              : 'Pas encore ouverte');
+}
+
+/* Le bouton de la carte est le SEUL chemin d'achat depuis cet écran. `acheterEtoile` garde ses
+   trois refus — déjà prise, pas ouverte, pas les jetons — et reste la porte unique de la règle. */
+function prendreEtoileVue() {
+  if (!etoileVue) return false;
+  const ok = acheterEtoile(etoileVue);
+  if (!ok) { blip(300, 0.05, 'sine', 0.03); return false; }
+  renderCarteCiel();
+  return true;
+}
 function renderCiel() {
   const jetons = jetonsEnMain();
   const sig = Object.keys(state.ciel || {}).sort().join(',') + '|' + jetons;
@@ -6574,52 +6685,62 @@ function renderCiel() {
     }));
   }
 
-  const etat = n => etoilePrise(n.cle) ? 'prise'
-               : !etoileOuverte(n) ? 'close'
-               : jetons < n.prix ? 'chere' : 'ouverte';
-
   for (const n of CIEL) {
     const p = xy[n.cle];
-    const cl = 'etoile ' + (n.axe || 'centre') + ' ' + etat(n);
+    const etat = etatEtoile(n);
+    const cache = etat === 'devinee';
+    const cl = 'etoile ' + (n.axe || 'centre') + ' ' + etat +
+               (n.cle === etoileVue ? ' visee' : '');
     const g2 = svgEl('g', { class: cl, 'data-etoile': n.cle, tabindex: '0', role: 'button' });
     g2.dataset.etoile = n.cle;
-    g2.appendChild(svgEl('circle', { class: 'etoile-rond', cx: p.x, cy: p.y, r: CIEL_VUE.r }));
-    const ic = svgEl('text', { class: 'etoile-icone', x: p.x, y: p.y + 7, 'text-anchor': 'middle' });
-    ic.textContent = n.glyphe || '';
-    g2.appendChild(ic);
-    /* LE NOM SE LIT SANS SURVOL : un arbre dont il faut survoler chaque nœud pour savoir ce
-       qu'il fait n'est pas une carte qu'on lit, c'est une devinette. */
-    const nom = svgEl('text', { class: 'etoile-nom', x: p.x, y: p.y + CIEL_VUE.r + 20, 'text-anchor': 'middle' });
-    nom.textContent = n.nom;
-    const prix = svgEl('text', { class: 'etoile-prix', x: p.x, y: p.y + CIEL_VUE.r + 36, 'text-anchor': 'middle' });
-    prix.textContent = etoilePrise(n.cle) ? 'acquis' : '✦ ' + n.prix;
+    /* LA DEVINÉE EST UN POINT, pas un rond vide : plus petite, sans glyphe, sans nom, sans
+       prix. Ce qui reste — sa place et son lien — est exactement ce qu'on a le droit de voir. */
+    g2.appendChild(svgEl('circle', { class: 'etoile-rond', cx: p.x, cy: p.y,
+      r: cache ? Math.round(CIEL_VUE.r * 0.55) : CIEL_VUE.r }));
+    if (!cache) {
+      const ic = svgEl('text', { class: 'etoile-icone', x: p.x, y: p.y + 7, 'text-anchor': 'middle' });
+      ic.textContent = n.glyphe || '';
+      g2.appendChild(ic);
+      /* LE NOM SE LIT SANS SURVOL : un arbre dont il faut survoler chaque nœud pour savoir ce
+         qu'il fait n'est pas une carte qu'on lit, c'est une devinette. */
+      const nom = svgEl('text', { class: 'etoile-nom', x: p.x, y: p.y + CIEL_VUE.r + 20, 'text-anchor': 'middle' });
+      nom.textContent = n.nom;
+      const prix = svgEl('text', { class: 'etoile-prix', x: p.x, y: p.y + CIEL_VUE.r + 36, 'text-anchor': 'middle' });
+      prix.textContent = etat === 'prise' ? 'acquis' : '✦ ' + n.prix;
+      svg.appendChild(nom);
+      svg.appendChild(prix);
+    }
     const t = svgEl('title');
-    t.textContent = etoilePrise(n.cle) ? n.nom + ' — acquis pour toujours.'
-      : !etoileOuverte(n) ? n.nom + ' — demande « ' + (ETOILE_BY_KEY[n.parent] || {}).nom + ' ».'
-      : n.nom + ' — ✦ ' + n.prix + '. ' + (n.dit || '');
+    t.textContent = cache ? 'Encore dans l’ombre — clique pour savoir ce qu’elle demande.'
+      : etat === 'prise' ? n.nom + ' — acquis pour toujours.'
+      : n.nom + ' — ✦ ' + n.prix + '. Clique pour la lire.';
     g2.appendChild(t);
-    svg.appendChild(nom);
-    svg.appendChild(prix);
     svg.appendChild(g2);
   }
 
-  // le nom d'un axe et son compte, au bout de sa direction
+  /* Le nom d'un axe et son compte, au bout de sa direction. LE RAYON SE PREND SUR LA PLUS
+     PROFONDE DE SES ÉTOILES, pas sur le NOMBRE d'étoiles de l'axe : depuis que les axes
+     s'ouvrent en fourche, les deux ne sont plus le même nombre, et la table des rayons n'en a
+     que cinq. La pension en comptait neuf depuis la `4.28.0`, la main sept depuis la `4.30.0` —
+     `rayon[8]` ne vaut rien, et les deux libellés se dessinaient à une coordonnée NaN, donc
+     nulle part. Un scénario vérifie maintenant qu'aucune coordonnée du ciel n'est vide. */
   for (const a of AXES) {
     const liste = PAR_AXE[a.cle];
     if (!liste.length) continue;
-    const p = xy[liste[liste.length - 1].cle];
+    const fond = liste.reduce((m, n) => Math.max(m, profondeurEtoile(n)), 1);
+    const r = CIEL_VUE.rayon[Math.min(fond - 1, CIEL_VUE.rayon.length - 1)] + 105;
     const ang = a.angle * Math.PI / 180;
     const t = svgEl('text', {
       class: 'branche-nom ' + a.cle, 'text-anchor': 'middle',
-      x: CIEL_VUE.l / 2 + Math.cos(ang) * (CIEL_VUE.rayon[liste.length - 1] + 105),
-      y: CIEL_VUE.h / 2 + Math.sin(ang) * (CIEL_VUE.rayon[liste.length - 1] + 105),
+      x: CIEL_VUE.l / 2 + Math.cos(ang) * r,
+      y: CIEL_VUE.h / 2 + Math.sin(ang) * r,
     });
     t.textContent = a.nom.split(' · ')[0].toUpperCase() + '  ' +
                     liste.filter(n => etoilePrise(n.cle)).length + ' / ' + liste.length;
     svg.appendChild(t);
   }
-
   hote.appendChild(svg);
+  renderCarteCiel();
   cielCadrer();
 }
 
@@ -9306,7 +9427,7 @@ function ouvrirFaveurs() {
 function cielClic(e) {
   const b = e.target.closest && e.target.closest('.etoile');
   if (!b) return;
-  if (!acheterEtoile(b.dataset.etoile)) blip(300, 0.05, 'sine', 0.03);
+  voirEtoile(b.dataset.etoile);
 }
 
 function bindTools() {
@@ -9754,6 +9875,9 @@ function bindTools() {
     if (cielGlisse) { cielGlisse = false; return; }
     cielClic(e);
   });
+
+  $('ciel-carte-x').addEventListener('click', fermerCarteCiel);
+  $('ciel-carte-prendre').addEventListener('click', prendreEtoileVue);
 
   $('ciel-reprendre').addEventListener('click', () => {
     const rendu = prixDuCiel();

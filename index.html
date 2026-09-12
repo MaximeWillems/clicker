@@ -334,10 +334,28 @@
          ses jetons à l'unité près et tous les nœuds redeviennent à prendre. -->
     <button type="button" class="ciel-reprendre" id="ciel-reprendre" hidden></button>
   </div>
-  <!-- L'ARBRE. Chaque nœud de branche s'accroche au tronc EXACTEMENT au rang qu'il exige :
-       la géométrie porte la règle, et « La pension demande le rang 8 » se voit avant de se
-       lire. -->
-  <div class="ciel-arbre" id="ciel-arbre"></div>
+  <!-- L'ARBRE ET SA CARTE. Chaque nœud de branche s'accroche au tronc EXACTEMENT au rang qu'il
+       exige : la géométrie porte la règle, et « La pension demande le rang 8 » se voit avant de
+       se lire. Un clic sur une étoile ne l'achète pas — il ouvre la carte, à côté, qui dit ce
+       qu'elle fait et propose de la prendre. Une dépense définitive ne se prend pas d'un doigt
+       qui glissait. -->
+  <div class="ciel-plan">
+    <div class="ciel-arbre" id="ciel-arbre"></div>
+    <aside class="ciel-carte" id="ciel-carte" hidden aria-label="Détail de l’étoile">
+      <button type="button" class="ciel-carte-x" id="ciel-carte-x" title="Fermer">✕</button>
+      <div class="ciel-carte-tete">
+        <span class="ciel-carte-glyphe" id="ciel-carte-glyphe"></span>
+        <h3 class="ciel-carte-nom" id="ciel-carte-nom"></h3>
+        <p class="ciel-carte-axe" id="ciel-carte-axe"></p>
+      </div>
+      <p class="ciel-carte-dit" id="ciel-carte-dit"></p>
+      <p class="ciel-carte-effet" id="ciel-carte-effet" hidden></p>
+      <div class="ciel-carte-pied">
+        <span class="ciel-carte-prix" id="ciel-carte-prix"></span>
+        <button type="button" class="ciel-carte-prendre" id="ciel-carte-prendre"></button>
+      </div>
+    </aside>
+  </div>
 </section>
 
 <!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.30.0 · sauvegarde v31 · sauvegarde v30 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.31.0 · sauvegarde v31 · sauvegarde v30 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -471,11 +471,11 @@ l'ascension suit ou non.
 
 ### La constellation remaniée — **la mécanique est livrée en `beta 4.28.0`**
 
-> Livré : le moyeu gratuit, la prime de pension retirée, l’axe de la pension ouvert en fourche,
-> le compteur de branche qui rend un cran gratuit à écrire, la DISPOSITION en arbre (`beta 4.30.0`
-> — le rayon se lit sur la chaîne des parents, l’angle sur la branche, donc une voie de plus
-> s’ouvre toute seule), et le combo devenu branche de la main. Restent les trois états, la carte
-> de détail au clic, et les quatre autres axes.
+> **Livré en entier.** Le moyeu gratuit, la prime de pension retirée, l’axe de la pension
+> ouvert en fourche et le compteur de branche (`beta 4.28.0`) ; la disposition en arbre et le
+> combo devenu branche de la main (`beta 4.30.0`) ; les trois états et la carte de détail
+> (`beta 4.31.0`). Restent les quatre axes encore en ligne droite — du sang, du négoce, de la
+> couvée et de l’album — qui ne sont plus que de la table à écrire.
 
 La devise : **plus pour moins.** Plus de nœuds, moins chers, et plus clairs. **Aucune branche
 n'est exclusive** — on peut tout prendre, un jour. Ce qui rationne, c'est le jeton, donc le

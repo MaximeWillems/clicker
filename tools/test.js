@@ -727,6 +727,143 @@ scenario('combo — il ne se donne plus, il s’achète, et il monte en racine',
   ok('il ne vit pas dans l’état sauvegardé', !('combo' in s), Object.keys(s).join(' '));
 });
 
+scenario('ciel — trois états : acquise, ouverte, devinée', () => {
+  /* « ON DÉCOUVRE LES CONSTELLATIONS PETIT À PETIT. » Une étoile dont le parent n'est pas pris
+     ne montre que sa place et son lien : pas de nom, pas de glyphe, pas de prix. `chère` n'est
+     qu'une nuance d'ouverte — la porte est là, il manque des jetons.
+
+     UNE SEULE PORTE DÉCIDE, et c'est ce que ce scénario garde vraiment : le dessin et la carte
+     de détail passent tous deux par `etatEtoile`. Deux façons de décider qu'un nœud est caché
+     finiraient par diverger, et la fuite serait invisible — elle ne se verrait que dans ce qui
+     est révélé, jamais dans ce qui est tu. */
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const par = Object.fromEntries(jeu.CIEL.map(n => [n.cle, n]));
+  const etat = cle => jeu.etatEtoile(par[cle]);
+
+  eq('le moyeu est acquis par nature', etat('etincelle'), 'prise');
+  eq('les six premiers s’ouvrent sur lui', etat('poing'), 'chere');
+  eq('et tout le reste se devine', etat('doigts'), 'devinee');
+  eq('même loin sur la branche', etat('serie-3'), 'devinee');
+
+  poserJetons(jeu, 500);
+  eq('avec des jetons, le premier devient ouvert', etat('poing'), 'ouverte');
+  eq('mais le suivant se devine toujours', etat('doigts'), 'devinee');
+
+  /* LE CRAN SUIVANT S'ÉCLAIRE EN PRENANT CELUI D'AVANT, et lui seul : la découverte avance
+     d'un pas, jamais de deux. */
+  jeu.acheterEtoile('poing');
+  eq('le poing est acquis', etat('poing'), 'prise');
+  eq('les doigts s’ouvrent', etat('doigts'), 'ouverte');
+  eq('la série aussi, c’est une fourche', etat('serie-1'), 'ouverte');
+  eq('mais la ferveur attend encore', etat('ferveur'), 'devinee');
+  eq('et le second cran de la série aussi', etat('serie-2'), 'devinee');
+
+  /* CE QUI SE DESSINE SUIT CE QUE L'ÉTAT DIT. Une devinée n'écrit ni nom ni prix dans le SVG :
+     c'est là que la fuite se produirait, et nulle part ailleurs. */
+  jeu.cielSig = ''; jeu.refresh();
+  const tous = cls => {
+    const t = [];
+    const m = x => { if (x.classList && x.classList.contains(cls)) t.push(x); x.children.forEach(m); };
+    noeuds.get('ciel-arbre').children.forEach(m);
+    return t;
+  };
+  const devinees = jeu.CIEL.filter(n => jeu.etatEtoile(n) === 'devinee');
+  eq('autant de points que d’étoiles devinées', tous('devinee').length, devinees.length);
+  eq('et le SVG n’écrit que les noms qu’il a le droit d’écrire',
+     tous('etoile-nom').length, jeu.CIEL.length - devinees.length);
+  const ecrits = tous('etoile-nom').map(t => t.textContent);
+  ok('aucun nom d’étoile devinée n’a fui',
+     !devinees.some(n => ecrits.includes(n.nom)),
+     devinees.filter(n => ecrits.includes(n.nom)).map(n => n.cle).join(' '));
+
+  /* LE LIEN, LUI, RESTE : on ignore le contenu, jamais le chemin. Sans cela ce ne serait plus
+     une découverte mais une énigme, et l'arbre cesserait d'être une carte. */
+  eq('tous les liens sont tracés', tous('lien').length, jeu.CIEL.length - 1);
+
+  /* ET AUCUNE COORDONNÉE N'EST VIDE. Le libellé d'un axe prenait son rayon sur le NOMBRE de
+     ses étoiles au lieu de sa profondeur : la pension en comptait neuf depuis la `4.28.0`, la
+     main sept depuis la `4.30.0`, la table des rayons n'en a que cinq — et les deux libellés
+     se dessinaient à `NaN`, donc nulle part. Rien ne le disait. */
+  const vides = [];
+  const fouiller = x => {
+    for (const k of ['x', 'y', 'cx', 'cy', 'r', 'd']) {
+      const v = x.getAttribute && x.getAttribute(k);
+      if (v !== null && v !== undefined && /NaN|undefined/.test(String(v))) vides.push(k + '=' + v);
+    }
+    x.children.forEach(fouiller);
+  };
+  noeuds.get('ciel-arbre').children.forEach(fouiller);
+  eq('aucune coordonnée du ciel n’est vide', vides.join(' '), '');
+});
+
+scenario('ciel — la carte de détail dit ce qu’une étoile fait, et c’est elle qui l’achète', () => {
+  /* « QUAND ON CLIQUE DESSUS ÇA OUVRE UNE CARTE SUR LE CÔTÉ. » Un clic sur une étoile ne
+     l'achète plus. Acheter d'un clic sur un canevas qu'on fait glisser du même doigt était une
+     faute qui attendait — et surtout, une dépense définitive se prenait sans rien lire : le nom
+     et le prix tenaient sous le rond, la phrase était dans une infobulle de survol, et au doigt
+     il n'y a pas de survol. */
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  poserJetons(jeu, 500);
+  const lu = id => noeuds.get('ciel-carte-' + id).textContent;
+
+  ok('la carte est fermée tant qu’on n’a rien regardé', noeuds.get('ciel-carte').hidden);
+
+  jeu.voirEtoile('poing');
+  ok('elle s’ouvre sur l’étoile lue', !noeuds.get('ciel-carte').hidden);
+  eq('elle la nomme', lu('nom'), 'Le poing');
+  eq('elle dit de quel axe elle vient', lu('axe'), jeu.NOM_BRANCHE.main);
+  ok('elle porte la phrase', lu('dit').indexOf('deux fois plus loin') >= 0, lu('dit'));
+  ok('et l’effet chiffré quand il se déduit de la table',
+     lu('effet').indexOf('force de ta main') >= 0, lu('effet'));
+  eq('le prix est annoncé', lu('prix'), '✦ 4');
+  eq('et le bouton propose de la prendre', lu('prendre'), 'Prendre · ✦ 4');
+
+  /* LE BOUTON EST LE SEUL CHEMIN D'ACHAT, et il passe par `acheterEtoile`, qui garde ses trois
+     refus. La carte n'a pas sa propre règle : elle a un bouton. */
+  const avant = jeu.jetonsEnMain();
+  ok('il achète', jeu.prendreEtoileVue());
+  ok('le poing est pris', jeu.etoilePrise('poing'));
+  eq('et les jetons sont partis', jeu.jetonsEnMain(), avant - 4);
+  eq('la carte le dit', lu('prix'), 'acquis');
+  ok('et n’a plus rien à vendre', noeuds.get('ciel-carte-prendre').hidden);
+
+  /* UNE DEVINÉE NE DIT RIEN D'ELLE-MÊME — mais elle dit par où passer. On ignore le contenu,
+     jamais le chemin. */
+  jeu.voirEtoile('serie-3');
+  eq('elle ne se nomme pas', lu('nom'), 'Encore dans l’ombre');
+  ok('son effet se tait', noeuds.get('ciel-carte-effet').hidden);
+  eq('son prix aussi', lu('prix'), '✦ ?');
+  ok('elle montre le chemin', lu('dit').indexOf('Prends d’abord') >= 0, lu('dit'));
+  ok('on ne peut pas la prendre', noeuds.get('ciel-carte-prendre').disabled);
+  ok('et la tenter ne fait rien', !jeu.prendreEtoileVue());
+  ok('elle n’est toujours pas prise', !jeu.etoilePrise('serie-3'));
+
+  /* ELLE NE NOMME LE PARENT QUE S'IL EST LUI-MÊME RÉVÉLÉ : nommer le parent d'une devinée dont
+     le parent est devinée aussi ferait fuir, de proche en proche, tout l'arbre qu'on cache. */
+  ok('le parent caché ne se nomme pas', lu('dit').indexOf('La chauffe') < 0, lu('dit'));
+  jeu.acheterEtoile('serie-1');
+  jeu.voirEtoile('serie-3');
+  ok('une fois son parent révélé, il se nomme', lu('dit').indexOf('La chauffe') >= 0, lu('dit'));
+
+  /* CE QU'ON NE PEUT PAS ENCORE PAYER LE DIT EN CHIFFRES, plutôt que de rester muet. */
+  jeu.state.asc.depense = (jeu.state.asc.depense || 0) + jeu.jetonsEnMain();
+  jeu.cielSig = ''; jeu.voirEtoile('serie-2');
+  ok('sans jetons le bouton dit ce qui manque', lu('prendre').indexOf('Il te manque') >= 0, lu('prendre'));
+  ok('et il est éteint', noeuds.get('ciel-carte-prendre').disabled);
+
+  jeu.fermerCarteCiel();
+  ok('la carte se ferme', noeuds.get('ciel-carte').hidden);
+
+  /* LE CLIC NE DOIT PLUS PASSER PAR L'ACHAT. Le banc ne simule pas d'événement, donc c'est la
+     source qui répond : `cielClic` ouvre, il n'achète pas. */
+  const src = lire('game.js');
+  const bloc = src.slice(src.indexOf('function cielClic('), src.indexOf('function bindTools('));
+  ok('un clic sur une étoile l’ouvre', bloc.indexOf('voirEtoile(') >= 0, bloc);
+  ok('et n’achète rien', bloc.indexOf('acheterEtoile') < 0, bloc);
+});
+
 scenario('ciel — la série est une branche, et une branche se voit', () => {
   /* LE COMBO EST DEVENU UNE VOIE QU'ON CHOISIT. Trois crans accrochés au poing, qui portent le
      plafond de 1 à 1,5, 2,2 puis 3 — le dernier rendant exactement ce qui était donné à tous. */
@@ -756,11 +893,11 @@ scenario('ciel — la série est une branche, et une branche se voit', () => {
     return Math.hypot(p.x - q.x, p.y - q.y);
   };
   ok('les deux premiers crans de la pension ne se superposent plus',
-     loin('place-1', 'hate-1') > 2 * jeu.CIEL_VUE.r, Math.round(loin('place-1', 'hate-1')));
+     loin('place-1', 'hate-1') > 3 * jeu.CIEL_VUE.r, Math.round(loin('place-1', 'hate-1')));
   ok('et le tronc ne passe pas dessus non plus',
-     loin('place-1', 'sang-epais') > 2 * jeu.CIEL_VUE.r, Math.round(loin('place-1', 'sang-epais')));
+     loin('place-1', 'sang-epais') > 3 * jeu.CIEL_VUE.r, Math.round(loin('place-1', 'sang-epais')));
   ok('la série s’écarte du tronc de la main',
-     loin('serie-1', 'doigts') > 2 * jeu.CIEL_VUE.r, Math.round(loin('serie-1', 'doigts')));
+     loin('serie-1', 'doigts') > 3 * jeu.CIEL_VUE.r, Math.round(loin('serie-1', 'doigts')));
 
   /* AUCUNE ÉTOILE N'EN RECOUVRE UNE AUTRE, nulle part dans le ciel. C'est la seule garde qui
      tienne : une paire vérifiée à la main laisse passer la suivante. */
@@ -771,8 +908,8 @@ scenario('ciel — la série est une branche, et une branche se voit', () => {
       if (d < pire) { pire = d; coupable = jeu.CIEL[i].cle + ' / ' + jeu.CIEL[k].cle; }
     }
   }
-  ok('la paire la plus serrée du ciel garde deux rayons d’écart',
-     pire > 2 * jeu.CIEL_VUE.r, coupable + ' à ' + Math.round(pire) + ' px');
+  ok('la paire la plus serrée du ciel garde trois rayons d’écart',
+     pire > 3 * jeu.CIEL_VUE.r, coupable + ' à ' + Math.round(pire) + ' px');
 
   /* ET LE RANG SE LIT SUR LES PARENTS, PAS SUR LA LISTE : un nœud ajouté au milieu de la table
      ne doit déplacer personne. */
@@ -4583,12 +4720,24 @@ scenario('constellation — le ciel se dessine, et il est plus grand que l’éc
   jeu.refresh();
   eq('le ciel ne scintille pas sans raison', semis(), a);
 
-  /* UN NŒUD FERMÉ SE MONTRE, il ne se cache pas : on montre une carte qu'on lit pour décider
-     où aller, pas une file d'attente. */
-  const fermes = tous('etoile').filter(x => x.classList.contains('close'));
+  /* ── UN NŒUD NON OUVERT SE DEVINE, IL NE SE LIT PLUS — ET C'EST UN RENVERSEMENT ──
+     Ce scénario tenait l'inverse : « un nœud fermé se montre, il ne se cache pas : on montre
+     une carte qu'on lit pour décider où aller ». La demande est venue en sens contraire — « on
+     découvre les constellations petit à petit » — et elle a raison contre la ligne d'avant :
+     un arbre entièrement déplié se lit une fois, se planifie en trois minutes, et ne se regarde
+     plus jamais. Découvert cran par cran, il donne une raison de revenir.
+
+     LE CHEMIN RESTE VISIBLE, ET C'EST CE QUI SÉPARE LA DÉCOUVERTE DE L'ÉNIGME : la place, le
+     lien et la couleur de l'axe sont là ; seuls le nom, le glyphe et le prix se taisent. */
+  const devinees = tous('etoile').filter(x => x.classList.contains('devinee'));
   /* LE MOYEU ET LES SIX PREMIERS SONT OUVERTS D'EMBLÉE : le moyeu est acquis par nature,
      et les six axes partent de lui. Tout le reste attend son parent. */
-  eq('le moyeu et les six premiers sont ouverts', fermes.length, jeu.CIEL.length - 7);
+  eq('le moyeu et les six premiers se lisent', devinees.length, jeu.CIEL.length - 7);
+  ok('et une devinée ne dit ni son nom ni son prix',
+     !tous('etoile-nom').some(t => t.textContent === 'Le fracas'),
+     tous('etoile-nom').length + ' noms pour ' + jeu.CIEL.length + ' étoiles');
+  eq('il n’y a qu’un nom et un prix par étoile lisible',
+     tous('etoile-nom').length, jeu.CIEL.length - devinees.length);
 
   jeu.acheterEtoile('etincelle');
   jeu.refresh();
@@ -6091,6 +6240,7 @@ scenario('sauvegarde — effacer la partie efface aussi ce qui n’est pas dedan
      du reproche. */
   eq('le combo est retombé', jeu.comboMult(), 1);
   ok('et la ferme n’est pas au calme', !jeu.enIdle());
+  eq('et aucune étoile ne reste ouverte sur le côté', jeu.etoileVue, null);
 });
 
 scenario('sauvegarde — une copie se relit, et dit ce qu’elle contient', () => {
