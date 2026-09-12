@@ -243,6 +243,50 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
   eq('une mythique aussi', seuil('ouroboros', 'mythique'), 4);
 });
 
+scenario('œufs — aucun barreau de l’escalier n’est bien plus court que l’autre', () => {
+  /* LE DERNIER BARREAU ÉTAIT SEPT CENTS FOIS PLUS COURT QUE LE PRÉCÉDENT, et rien ne le disait.
+     Les prix se lisaient les uns sous les autres — 18, 55 M, mille milliards, vingt-cinq mille
+     milliards — et l'escalier avait l'air d'un escalier. Il ne l'était pas : ×3 055 556, puis
+     ×18 182, puis ×25.
+
+     ON MESURE EN LÉGENDES, PAS EN PIÈCES. Le prix seul ne dit rien : ce qui décide de la durée
+     d'une ère, c'est combien de bêtes menées au bout il faut vendre pour s'offrir l'œuf de la
+     suivante. Dit ainsi, l'œuf épique demandait DOUZE MILLE CINQ CENTS légendes rares et l'œuf
+     mythique DIX-SEPT légendes épiques — l'ère mythique s'ouvrait le lendemain de l'ère épique,
+     et elle s'atteignait avant la première ascension.
+
+     L'ÈRE COMMUNE EST HORS DU COMPTE, et c'est écrit sous `EGG_KINDS` : elle ne joue pas sur la
+     même échelle, elle est le moteur des dix premières minutes. On compare donc les barreaux
+     PAYANTS entre eux. */
+  const jeu = neuf();
+  const payants = jeu.EGG_KINDS.filter(e => e.price);
+  const barreaux = [];
+  for (let i = 1; i < payants.length; i++) {
+    const avant = payants[i - 1].rarity;
+    const net = jeu.valeurMure(avant, 5) - jeu.peagesJusque(avant, 5);
+    ok('une légende ' + avant + ' rapporte quelque chose', net > 0, net);
+    barreaux.push({ vers: payants[i].rarity, avant, legendes: payants[i].price / net });
+  }
+  eq('trois barreaux payants', barreaux.length, 3);
+
+  // le premier barreau est celui de l'ère commune : il a le droit d'être court
+  const hauts = barreaux.slice(1);
+  const court = Math.min.apply(null, hauts.map(b => b.legendes));
+  const long  = Math.max.apply(null, hauts.map(b => b.legendes));
+  ok('les barreaux du haut se valent à trois fois près', long / court <= 3,
+     hauts.map(b => b.vers + ' : ' + Math.round(b.legendes).toLocaleString('fr') +
+                    ' légendes ' + b.avant).join('  |  ') +
+     '  →  rapport ' + (long / court).toFixed(1));
+
+  /* ET AUCUN ŒUF NE S'ATTEINT DANS UN PREMIER CYCLE. Les paliers de jeton disent ce qu'une
+     partie franchit : le premier saut s'ouvre au million, et un cycle mené loin atteint mille
+     milliards. Un œuf mythique doit demander plus que ça, sinon l'ère la plus rare du jeu se
+     joue avant d'avoir ascensionné une seule fois. */
+  const mythique = jeu.EGG_BY_KEY.mythique;
+  ok('l’œuf mythique demande plus qu’un premier cycle',
+     mythique.price > 1e13, mythique.price.toExponential(2) + ' contre 10^13');
+});
+
 scenario('noms — aucun ne reprend un mot d’âge ni de taille', () => {
   const jeu = neuf();
   const mots = new Set();
@@ -5018,10 +5062,22 @@ scenario('primes — la table tient debout et s’allume par paliers', () => {
     ok('les prix montent (' + p.cle + ' à ' + p.prix + ')', p.prix > dernier);
     dernier = p.prix;
   }
-  // une prime n'est prête que si on peut la payer, jamais avant
+  /* Une prime n'est prête que si on peut la payer, jamais avant.
+
+     « UN SOU DE MOINS » N'EXISTE PLUS TOUT EN HAUT DE LA TABLE. Au-delà de 2⁵³ — neuf
+     millions de milliards — les entiers de JavaScript ne se suivent plus de un en un : à
+     trois cent soixante millions de milliards, deux nombres voisins sont écartés de huit, et
+     `prix − 1` vaut exactement `prix`. Le test affirmait donc une chose que la machine ne
+     peut plus tenir, et il l'a signalé dès que le négoce mythique est monté là-haut.
+
+     On retire donc un CHEVEU RELATIF plutôt qu'un sou : un millionième de millionième du
+     prix, ce qui reste un écart réel à toutes les échelles. La propriété vérifiée est la
+     même — il manque quelque chose, la prime reste éteinte — et elle a le mérite d'être
+     vraie. Le jeu, lui, ne s'en aperçoit jamais : un sou d'imprécision sur trois cent
+     soixante millions de milliards ne se voit pas, et rien ne peut passer sous zéro. */
   for (const p of [jeu.PRIMES[0], jeu.PRIMES[5], jeu.PRIMES[jeu.PRIMES.length - 1]]) {
-    s.coins = p.prix - 1; jeu.refresh();
-    ok('« ' + p.cle +' » reste éteinte à un sou près',
+    s.coins = p.prix - Math.max(1, p.prix * 1e-12); jeu.refresh();
+    ok('« ' + p.cle +' » reste éteinte à un cheveu près',
        !noeuds.get('primes').children.find(b => b.title.startsWith(p.nom + ' ')).classList.contains('prete'));
     s.coins = p.prix; jeu.refresh();
     ok('et s’allume au prix juste',

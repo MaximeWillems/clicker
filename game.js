@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.25.1';
+const VERSION = 'beta 4.26.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -164,7 +164,7 @@ const RARITY = {
   commune:  { name: 'commune',  plur: 'communes',  mult: 1,     rank: 0, plafond: 1 },
   rare:     { name: 'rare',     plur: 'rares',     mult: 25,    rank: 1, plafond: 1.6 },
   epique:   { name: 'épique',   plur: 'épiques',   mult: 454545,   rank: 2, plafond: 2.5 },
-  mythique: { name: 'mythique', plur: 'mythiques', mult: 11363636, rank: 3, plafond: 4 },
+  mythique: { name: 'mythique', plur: 'mythiques', mult: 8181818181, rank: 3, plafond: 4 },
   /* LA MERVEILLEUSE VAUT EXACTEMENT CE QUE VAUT UNE MYTHIQUE, et c'est la décision la plus
      importante du rang. Elle est un cran de RARETÉ, pas un cran de PUISSANCE : elle ne rapporte
      pas plus, ne se vend pas plus cher, et sa carte ne plafonne pas plus haut.
@@ -174,7 +174,7 @@ const RARITY = {
      le plus haut du jeu se mettrait à peser sur l'équilibrage de tout le reste.
 
      Ce qu'elle a que les autres n'ont pas tient en une phrase : AUCUN ŒUF NE LA DONNE. */
-  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 11363636, rank: 4, plafond: 4,
+  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 8181818181, rank: 4, plafond: 4,
                   secret: true },
 };
 
@@ -233,10 +233,26 @@ const parRarete = v => Object.fromEntries(Object.keys(RARITY).map(k => [k, v]));
    redevient un cadeau. Le vrai chemin vers l'ère suivante est donc la BOURSE — on s'offre
    un œuf plus rare quand on peut se le payer — et non la loterie.
 
-   LE PRIX SUIT UNE RÈGLE, il n'est pas choisi : un œuf coûte une fraction du bénéfice net
-   d'une bête de l'ère précédente menée à la légende — sa valeur, moins tous ses péages. Le
-   coefficient était de 0,7 ; il est passé à 0,35, c'est-à-dire que chaque œuf payant a été
-   divisé par deux.
+   LE PRIX SUIT UNE RÈGLE, il n'est pas choisi — mais ce n'est plus celle qui était écrite ici.
+   Le texte annonçait « une fraction du bénéfice net d'une bête de l'ère précédente menée à la
+   légende, coefficient 0,35 ». La table ne le suit pas : les coefficients réels sont 64,
+   12 500 et 12 375. Un commentaire qui décrit une règle morte est pire qu'aucun commentaire,
+   parce qu'on le croit — et celui-ci a couvert pendant plusieurs versions un dernier barreau
+   sept cents fois plus court que le précédent.
+
+   LA RÈGLE VIVANTE EST CELLE DU MULTIPLICATEUR : `mult = prix de l'œuf / 2 200 000`, écrite
+   sous `RARITY`. Elle dit ce que l'œuf RAPPORTE — la bête achetée rembourse exactement son
+   prix le jour où elle est mûre à l'âge ancien, ni avant ni après.
+
+   CE QU'IL COÛTE SE LIT AUTREMENT, et c'est la mesure qui commande le rythme : combien de
+   légendes de l'ère précédente faut-il vendre pour s'en offrir un. Soixante-quatre légendes
+   communes pour un œuf rare, douze mille cinq cents légendes rares pour un œuf épique, douze
+   mille trois cent soixante-quinze légendes épiques pour un œuf mythique. Un scénario compare
+   ces trois nombres et refuse qu'ils s'éloignent : c'est la seule garde qui voie un escalier
+   cesser d'en être un, parce que les prix bruts, eux, ont toujours l'air de monter.
+
+   L'ÈRE COMMUNE EST L'EXCEPTION ASSUMÉE : elle ne joue pas sur la même échelle, elle est le
+   moteur des dix premières minutes, et son barreau est court exprès.
 
    La raison n'est pas dans l'ère elle-même mais dans l'ascension : une partie ne se joue
    plus une fois, elle se rejoue. L'ère commune tenait trois heures et demie — un tempo qui
@@ -281,8 +297,27 @@ const EGG_KINDS = [
   { key: 'epique', name: 'Œuf épique', price: 1000000000000, glyph: '🥚', rarity: 'epique',
     hatch: 720, odds: { epique: 0.999, mythique: 0.001 },
     dit: 'On n’en achète pas par distraction.' },
-  // vingt-cinq billions : le cran de ×25 de l'échelle, appliqué au prix comme au reste
-  { key: 'mythique', name: 'Œuf mythique', price: 25000000000000, glyph: '🥚', rarity: 'mythique',
+  /* ── LE DERNIER BARREAU ÉTAIT SEPT CENTS FOIS PLUS COURT QUE LE PRÉCÉDENT ──
+     L'escalier montait ×3 055 556, puis ×18 182, puis ×25. Dit dans l'unité qui compte — ce
+     qu'une ère doit produire pour s'offrir la suivante — l'œuf rare demandait SOIXANTE-QUATRE
+     légendes communes, l'œuf épique DOUZE MILLE CINQ CENTS légendes rares, et l'œuf mythique
+     DIX-SEPT légendes épiques. Dix-sept. L'ère mythique s'ouvrait le lendemain de l'ère
+     épique, et elle s'atteignait dans la première partie, avant la première ascension.
+
+     Il vaut maintenant le même tarif que l'épique : douze mille cinq cents légendes de l'ère
+     précédente. C'est un vrai passage, et il demande plus qu'un premier cycle.
+
+     LA RÈGLE DU MULTIPLICATEUR TIENT, et c'est elle qui rend le changement sûr :
+     `mult = prix de l'œuf / 2 200 000`, donc la bête achetée reste exactement à l'équilibre
+     le jour où elle est mûre à l'âge adulte. Monter le prix monte la bête avec lui ; ce qui
+     s'allonge, c'est le chemin pour y arriver, pas la rentabilité de l'arrivée.
+
+     CE QUE ÇA DÉPLACE, ET QU'IL FAUT SAVOIR : la loterie devient le chemin le moins cher en
+     PIÈCES. Un œuf épique donne une mythique une fois sur mille, soit 10^15 de pièces contre
+     1,8·10^16 en boutique — mais aussi mille couvaisons de douze minutes, deux cents heures
+     d'incubateur. Les deux chemins cessent d'être comparables en argent et deviennent un
+     choix entre la fortune et la patience, ce qui vaut mieux qu'un seul chemin. */
+  { key: 'mythique', name: 'Œuf mythique', price: 18000000000000000, glyph: '🥚', rarity: 'mythique',
     hatch: 2700, odds: { mythique: 1 },
     dit: 'Il en sort des dieux. Prends ton après-midi.' },
   /* CELUI-CI NE S'ACHÈTE PAS, et c'est toute la définition du rang. Il n'a pas de prix, donc il
@@ -1506,7 +1541,7 @@ const PRIMES = [
     dit: 'Les épiques se vendent un quart plus cher.',
     si: () => rareteVue('epique') },
 
-  { cle: 'negoce-mythique', prix: 50000000000000, glyphe: '👑', nom: 'Négoce mythique',
+  { cle: 'negoce-mythique', prix: 36000000000000000, glyphe: '👑', nom: 'Négoce mythique',
     dit: 'Les mythiques se vendent un quart plus cher.',
     si: () => rareteVue('mythique') },
 ];
