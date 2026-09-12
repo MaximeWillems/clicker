@@ -1333,7 +1333,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   .forge-boutons { margin-left: 0; width: 100%; }
   .forge-in .carte, .forge-out .carte { width: 5.5rem; }
 }
-}
 
 /* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────
    Un cadre en trois quarts, une zone d'illustration séparée du texte par une règle, et la
@@ -1925,13 +1924,27 @@ body.en-pause .subject { cursor: default; }
 }
 
 /* ── LA CARTE DE DÉTAIL ────────────────────────────────────────────────────────────────
-   À côté du ciel, jamais par-dessus : on doit pouvoir lire une étoile en continuant à voir
-   d'où elle part. Sur un écran étroit elle passe dessous, pour la même raison. */
-.ciel-plan { flex: 1; display: flex; gap: 0.8rem; min-height: 0; }
+   ELLE FLOTTE AU-DESSUS DU CIEL, ELLE NE POUSSE RIEN. Posée en colonne à côté de l'arbre,
+   elle prenait dix-neuf rems au canevas à chaque ouverture : la constellation se rétrécissait
+   sous l'œil au moment précis où on la lisait, et tout ce qu'on visait glissait de place.
+   Un panneau de lecture ne doit jamais déplacer ce qu'on lit.
+
+   ELLE EST DONC EN SURIMPRESSION, translucide et floutée : on voit le ciel à travers, donc on
+   n'oublie pas d'où elle parle. Le flou fait le travail que ferait une ombre portée sur un
+   fond clair — décoller le panneau de son fond — sans avoir à l'éclaircir.
+
+   ET ELLE NE MANGE PAS LE GLISSER : le canevas se tire par un `mousedown` sur l'arbre, et la
+   carte est sa SŒUR, pas sa fille. Rien de ce qu'on fait dessus ne descend dans le ciel. */
+.ciel-plan { flex: 1; position: relative; min-height: 0; display: flex; }
 .ciel-plan > .ciel-arbre { flex: 1; min-width: 0; }
 .ciel-carte {
-  position: relative; flex: none; width: 19rem; overflow-y: auto;
-  border: 1px solid var(--rule); border-radius: 6px; background: var(--sunken);
+  position: absolute; top: 0.75rem; right: 0.75rem; z-index: 3;
+  width: 19rem; max-height: calc(100% - 1.5rem); overflow-y: auto;
+  border: 1px solid var(--rule); border-radius: 8px;
+  background: color-mix(in srgb, var(--sunken) 86%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0.8rem 2rem -0.5rem rgba(0, 0, 0, 0.75);
   padding: 0.9rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.55rem;
 }
 .ciel-carte-x {
@@ -1970,7 +1983,12 @@ body.en-pause .subject { cursor: default; }
 .ciel-carte-prendre:disabled {
   background: none; color: var(--soft); border: 1px solid var(--rule); cursor: default;
 }
+/* SUR UN ÉCRAN ÉTROIT elle se pose EN BAS plutôt qu'à droite : de face, la moitié droite du
+   ciel est ce qu'on a sous le pouce, et un panneau qui s'ouvre pile là cache le nœud qu'on
+   vient de toucher. En bas, il reste au-dessus, et il flotte toujours. */
 @media (max-width: 62rem) {
-  .ciel-plan { flex-direction: column; }
-  .ciel-carte { width: auto; max-height: 45%; }
+  .ciel-carte {
+    top: auto; bottom: 0.75rem; left: 0.75rem; right: 0.75rem;
+    width: auto; max-height: 55%;
+  }
 }

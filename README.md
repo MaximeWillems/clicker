@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.31.0** | la constellation se découvre : une étoile dont le parent n’est pas pris ne montre que sa place et son lien. Et un clic ne l’achète plus — il ouvre une carte, à côté, qui dit ce qu’elle fait |
+| **beta 4.31.1** | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
+| beta 4.31.0 | la constellation se découvre : une étoile dont le parent n’est pas pris ne montre que sa place et son lien. Et un clic ne l’achète plus — il ouvre une carte, à côté, qui dit ce qu’elle fait |
 | beta 4.30.0 | le combo quitte le socle pour devenir une branche de la main : une première partie se joue à main nue, où une seconde de couvaison vaut un clic. Et la fourche se voit enfin dans le ciel |
 | beta 4.29.0 | l’œuf commun coûte enfin les cinquante clics qu’il annonce : sa couvaison était écrite en secondes, vécue en clics, et le combo mangeait la différence |
 | beta 4.28.4 | le compteur annonçait 45 clics pour un œuf qui en demandait 27, et baissait de deux par clic : il compte maintenant la série, terme à terme, et tombe d’exactement un par clic |

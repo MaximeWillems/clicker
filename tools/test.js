@@ -727,6 +727,58 @@ scenario('combo — il ne se donne plus, il s’achète, et il monte en racine',
   ok('il ne vit pas dans l’état sauvegardé', !('combo' in s), Object.keys(s).join(' '));
 });
 
+scenario('style — la feuille tient debout, et la carte flotte sans rien pousser', () => {
+  /* RIEN NE RELISAIT LE CSS. C'est le seul fichier du dépôt qu'aucun scénario n'ouvrait, et
+     une accolade fermante orpheline y dormait depuis la `beta 2.0.0` — une de trop, juste
+     après un bloc `@media`. Un navigateur la saute sans rien dire ; c'est exactement le genre
+     de faute qui ne se voit que le jour où elle emporte la règle suivante.
+
+     LA GARDE EST BÊTE ET C'EST SA FORCE : on compte les accolades hors commentaires, et le
+     compte ne doit jamais passer sous zéro en chemin — un solde final nul se laisserait berner
+     par une fermante de trop suivie d'une ouvrante de trop. */
+  const brut = lire('style.css');
+  const css = brut.replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '));
+  let n = 0, plancher = 0, ligne = 1, coupable = 0;
+  for (const c of css) {
+    if (c === '\n') ligne++;
+    else if (c === '{') n++;
+    else if (c === '}') { n--; if (n < plancher) { plancher = n; coupable = ligne; } }
+  }
+  eq('autant d’ouvrantes que de fermantes', n, 0);
+  eq('et jamais une fermante en avance', plancher, 0, coupable ? 'ligne ' + coupable : '');
+
+  /* LA CARTE DE DÉTAIL FLOTTE AU-DESSUS DU CIEL. Posée en colonne à côté de l'arbre, elle
+     prenait dix-neuf rems au canevas à chaque ouverture : la constellation se rétrécissait
+     sous l'œil au moment précis où on la lisait, et tout ce qu'on visait glissait de place.
+     Un panneau de lecture ne déplace pas ce qu'on lit. */
+  const bloc = cle => {
+    const i = css.indexOf(cle + ' {');
+    ok(cle + ' a une règle', i >= 0);
+    return i < 0 ? '' : css.slice(i, css.indexOf('}', i));
+  };
+  ok('la carte est en surimpression', /position:\s*absolute/.test(bloc('.ciel-carte')),
+     bloc('.ciel-carte'));
+  ok('le plan lui sert de repère', /position:\s*relative/.test(bloc('.ciel-plan')),
+     bloc('.ciel-plan'));
+  ok('et elle passe par-dessus le ciel', /z-index:\s*[1-9]/.test(bloc('.ciel-carte')));
+  /* SI ELLE REDEVENAIT UN ÉLÉMENT DE FLUX, le plan la remettrait en colonne : c'est cette
+     ligne-là qu'il ne faut pas laisser revenir. */
+  ok('le plan ne lui réserve aucune largeur',
+     !/\.ciel-plan\s*\{[^}]*grid-template-columns/.test(css));
+
+  /* L'ARBRE GARDE SON PROPRE `relative` : le canevas SVG se place dedans en absolu, et le lui
+     retirer ferait tomber tout le ciel dans le coin de la page. */
+  ok('l’arbre reste le repère de son canevas', /position:\s*relative/.test(bloc('.ciel-arbre')));
+
+  /* ET TOUT IDENTIFIANT POSÉ DANS LA PAGE EXISTE DANS LA FEUILLE, pour la carte au moins :
+     une classe écrite dans `index.html` et jamais stylée est une boîte blanche sur fond noir. */
+  const html = lire('index.html');
+  const classes = [...html.matchAll(/class="(ciel-carte[^"]*)"/g)].map(m => m[1].split(/\s+/)[0]);
+  for (const c of [...new Set(classes)]) {
+    ok('« ' + c + ' » est stylée', css.indexOf('.' + c) >= 0);
+  }
+});
+
 scenario('ciel — trois états : acquise, ouverte, devinée', () => {
   /* « ON DÉCOUVRE LES CONSTELLATIONS PETIT À PETIT. » Une étoile dont le parent n'est pas pris
      ne montre que sa place et son lien : pas de nom, pas de glyphe, pas de prix. `chère` n'est
