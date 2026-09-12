@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.27.0';
+const VERSION = 'beta 4.28.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1430,8 +1430,6 @@ const PRIMES = [
      vaut donc DEUX ŒUFS de sa rareté — on en a un, on en veut d'autres. */
   { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
     dit: 'Chaque évolution coûte un quart de moins. Passé l’ère commune, ce n’est plus la vitesse qui freine mais la mise de fonds.' },
-  { cle: 'pension',   prix: 400000,    glyphe: '🛖', glyphe: '🛖', nom: 'La pension',
-    dit: 'Un bâtiment où confier deux bêtes adultes. Elles gardent leur enclos, cessent de rapporter, et pondent un œuf dont tu connais déjà la lignée.' },
   { cle: 'oeil',      prix: 500000,    glyphe: '👁️', nom: 'Œil exercé',
     dit: 'Une chance sur deux de plus de voir naître un chromatique — de 1 sur 8 192 à 1 sur 5 461.' },
   { cle: 'valeur-1', prix: 600000, glyphe: '🗣️', nom: 'Bouche à oreille',
@@ -1952,8 +1950,12 @@ const NOM_BRANCHE = Object.fromEntries(AXES.map(a => [a.cle, a.nom]));
    les crans d'une carte. C'est LA NOUVELLE qui cède le nom, toujours : l'ancienne est lue par
    du code qui marche. */
 const CIEL = [
-  { cle: 'etincelle', axe: null, parent: null, prix: 1, glyphe: '✦', nom: 'L’étincelle',
-    dit: 'Le premier jeton dépensé. Il n’achète rien qu’un droit : celui de dépenser les suivants.' },
+  /* LE MOYEU NE S'ACHÈTE PAS. Il coûtait un jeton et portait une phrase — un péage à payer
+     avant de pouvoir choisir. Il est maintenant le centre de la roue : prix zéro, rien à lire,
+     rien à cliquer. Son seul rôle est d'être le parent des six premiers nœuds, ce qui ouvre
+     les six axes dès la première ascension : le premier jeton devient un choix de direction,
+     et non le droit d'en avoir un. */
+  { cle: 'etincelle', axe: null, parent: null, prix: 0, glyphe: '✦', nom: 'Le moyeu' },
 
   // ── LE SANG · l'ascension elle-même ──
   { cle: 'or-doux', axe: 'sang', parent: 'etincelle', prix: 8, glyphe: '🌀',
@@ -2034,23 +2036,39 @@ const CIEL = [
      acheter, et ses douze primes occupaient les dix dernières marches de l'escalier, si bien
      que la fin de partie n'avait plus qu'un seul sujet.
 
-     LE BÂTIMENT RESTE UNE PRIME, en pièces, et c'est ce qui empêche le renversement d'aller
-     trop loin : la pension s'ouvre toujours dans le premier cycle. Ce qui monte ici est son
-     ESCALADE, et chaque nœud la lève d'un cran entier — places, portée, vitesse et richesse
-     ensemble. On n'achète pas un nid, puis une couveuse, puis un régime : on agrandit la
-     pension. */
-  { cle: 'nid-plus', axe: 'pension', parent: 'etincelle', prix: 6, glyphe: '🪹',
-    nom: 'Le second nid',
-    dit: 'Deux couples à la fois, deux œufs par ponte, et les couvaisons moitié plus rapides.' },
-  { cle: 'ponte-plus', axe: 'pension', parent: 'nid-plus', prix: 12, glyphe: '🥚',
-    nom: 'La rangée de nids',
-    dit: 'Quatre couples, trois œufs par ponte, quatre fois plus vite — et la richesse d’un couple pèse quatre fois moins sur sa durée.' },
-  { cle: 'sang-epais', axe: 'pension', parent: 'ponte-plus', prix: 20, glyphe: '🩸',
+     LA PENSION N'EST PLUS UNE PRIME, ET C'EST LE PREMIER NŒUD QUI LA BÂTIT. Elle s'achetait
+     400 000 pièces dans l'escalier des primes, donc dans le premier cycle, et la constellation
+     ne faisait que l'agrandir. Un bâtiment qu'on ouvre en passant n'est pas une décision :
+     maintenant il coûte trois jetons, et trois jetons sont un cycle.
+
+     ET L'AXE SE SÉPARE EN TROIS CHEMINS, au lieu d'une échelle où chaque cran levait les
+     quatre cadrans ensemble. Le tronc donne trois choses DIFFÉRENTES — le bâtiment, la portée,
+     la richesse. Les deux branches donnent chacune un seul cadran, par crans : les places d'un
+     côté, la hâte de l'autre. On n'agrandit plus « la pension » en bloc, on choisit d'abord
+     beaucoup de couples lents, ou peu de couples rapides. */
+  { cle: 'nid', axe: 'pension', parent: 'etincelle', prix: 3, glyphe: '🛖',
+    nom: 'La pension',
+    dit: 'Le bâtiment. Deux bêtes adultes qu’on confie l’une à l’autre, et un œuf dont tu connais déjà la lignée.' },
+  { cle: 'sang-epais', axe: 'pension', parent: 'nid', prix: 6, glyphe: '🩸',
     nom: 'Le sang épais',
-    dit: 'Huit couples, cinq œufs par ponte, douze fois plus vite. La lignée du parent le plus rare sort deux fois plus souvent.' },
-  { cle: 'nid-vif', axe: 'pension', parent: 'sang-epais', prix: 30, glyphe: '🌡',
-    nom: 'Le bâtiment entier',
-    dit: 'Neuf couples, six œufs, dix-huit fois plus vite, et le sang ne pèse plus. Deux mythiques couvent en dix minutes.' },
+    dit: 'Trois œufs par ponte au lieu d’un, et la lignée du parent le plus rare sort deux fois plus souvent.' },
+  { cle: 'nid-riche', axe: 'pension', parent: 'sang-epais', prix: 10, glyphe: '🌡',
+    nom: 'Le sang ne pèse plus',
+    dit: 'La rareté d’un couple cesse d’allonger sa couvaison. Deux mythiques mettent le temps de deux communes.' },
+
+  { cle: 'place-1', axe: 'pension', parent: 'nid', branche: 'places', prix: 2, glyphe: '🪹',
+    nom: 'Le second nid', dit: 'Un couple de plus à la fois.' },
+  { cle: 'place-2', axe: 'pension', parent: 'place-1', branche: 'places', prix: 3, glyphe: '🪺',
+    nom: 'La rangée de nids', dit: 'Quatre couples à la fois.' },
+  { cle: 'place-3', axe: 'pension', parent: 'place-2', branche: 'places', prix: 5, glyphe: '🏘',
+    nom: 'Le bâtiment entier', dit: 'Huit couples à la fois. Il n’y a plus de mur qu’à l’enclos.' },
+
+  { cle: 'hate-1', axe: 'pension', parent: 'nid', branche: 'hate', prix: 2, glyphe: '🌬',
+    nom: 'Le premier souffle', dit: 'Les couvaisons de pension vont moitié plus vite.' },
+  { cle: 'hate-2', axe: 'pension', parent: 'hate-1', branche: 'hate', prix: 3, glyphe: '💨',
+    nom: 'Le second souffle', dit: 'Quatre fois plus vite qu’au départ.' },
+  { cle: 'hate-3', axe: 'pension', parent: 'hate-2', branche: 'hate', prix: 5, glyphe: '🌪',
+    nom: 'Le grand souffle', dit: 'Douze fois plus vite qu’au départ.' },
 
   // ── L'ALBUM · ce qui traverse ──
 /* L'ATELIER DE FORGE A ÉTÉ UN NŒUD PENDANT DEUX VERSIONS, et c'était la même faute : c'est
@@ -2073,7 +2091,14 @@ const ETOILE_BY_KEY = Object.fromEntries(CIEL.map(n => [n.cle, n]));
 const PAR_AXE = Object.fromEntries(AXES.map(a =>
   [a.cle, CIEL.filter(n => n.axe === a.cle)]));
 
-const etoilePrise = cle => !!(state.ciel && state.ciel[cle]);
+/* UN NŒUD GRATUIT EST ACQUIS PAR NATURE. Le moyeu ne coûte rien, donc il n'y a rien à acheter
+   et rien à attendre — sans cette ligne, les six axes resteraient fermés derrière un nœud que
+   personne ne peut prendre. La règle se lit sur le PRIX et non sur la clé : c'est ce qui la
+   rend vraie du jour où un second nœud gratuit paraîtra. */
+const etoilePrise = cle => {
+  const n = ETOILE_BY_KEY[cle];
+  return !!(n && !n.prix) || !!(state.ciel && state.ciel[cle]);
+};
 
 /* UN NŒUD S'OUVRE AVEC SON PARENT, et c'est tout. « Demande le rang 8 du tronc » demandait de
    compter ; « demande la pension » se voit sur le trait qui les relie. */
@@ -2571,7 +2596,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 29;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 30;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2859,6 +2884,7 @@ function load() {
        Le cran est le plus haut des quatre cadrans, pas leur somme : quelqu'un qui n'avait
        monté que la vitesse récupère la vitesse, et le reste avec. C'est ce que le nœud fait
        désormais, et on ne peut pas rendre un demi-nœud. */
+    // les clés de l'époque ; la migration v29 → v30 juste en dessous les reporte
     const CRANS_PENSION = ['nid-plus', 'ponte-plus', 'sang-epais', 'nid-vif'];
     const combien = prefixe => [1, 2, 3].filter(i => merged.primes[prefixe + i]).length;
     const rang = Math.min(4, Math.max(
@@ -3041,6 +3067,41 @@ function load() {
         if (merged.ciel[cle]) { rendu += rendus[cle]; delete merged.ciel[cle]; }
       }
       if (rendu && merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + rendu;
+    }
+
+    /* v29 → v30 : LA PENSION QUITTE LES PRIMES, ET L'AXE SE SÉPARE EN TROIS CHEMINS.
+       Le bâtiment s'achetait 400 000 pièces ; il est maintenant le premier nœud de son axe, à
+       trois jetons. Et les quatre nœuds qui levaient les quatre cadrans ensemble deviennent un
+       tronc et deux branches.
+
+       ON NE DÉPOSSÈDE PERSONNE, et c'est la même règle qu'à la `v27` : une partie qui a payé
+       le bâtiment le garde, gratuitement, sous sa forme de nœud. Sans cette ligne, elle
+       perdrait sa pension à la relecture et ses couples en cours deviendraient des bêtes
+       parquées derrière un panneau disparu.
+
+       LES QUATRE ANCIENS NŒUDS SE REPORTENT UN À UN. `nid-plus` et `ponte-plus` étaient les
+       deux premiers crans de places : ils le restent. `sang-epais` garde sa clé et son sens.
+       `nid-vif` était le dernier cran de tout : il devient la richesse, qui est ce qu'il
+       apportait de plus rare. Personne ne perd de cran, et quelques-uns en gagnent — un
+       ancien `nid-plus` ouvrait aussi la vitesse, qui est maintenant une branche à part et
+       qu'on rend donc en prime. */
+    if ((s.v || 0) < 30) {
+      merged.ciel = merged.ciel || {};
+      merged.primes = merged.primes || {};
+      if (merged.primes.pension) { merged.ciel.nid = true; delete merged.primes.pension; }
+      const report = { 'nid-plus': ['nid', 'place-1', 'hate-1'],
+                       'ponte-plus': ['place-2', 'hate-2'],
+                       'nid-vif': ['nid-riche', 'place-3', 'hate-3'] };
+      for (const vieux of Object.keys(report)) {
+        if (!merged.ciel[vieux]) continue;
+        for (const neuf of report[vieux]) merged.ciel[neuf] = true;
+        delete merged.ciel[vieux];
+      }
+      // le moyeu ne s'achète plus : ce qui avait été payé pour lui revient en bourse
+      if (merged.ciel.etincelle) {
+        delete merged.ciel.etincelle;
+        if (merged.asc) merged.asc.depense = Math.max(0, (merged.asc.depense || 0) - 1);
+      }
     }
 
     /* v20 → v21 : le jeton redevient une bourse, et une carte coûte le prix doré. Une partie
@@ -7869,49 +7930,38 @@ const echelle = (paliers, prefixe) => {
   for (let i = 1; i < paliers.length; i++) if (prime(prefixe + i)) v = paliers[i];
   return v;
 };
-/* ── LA PENSION MONTE D'UN CRAN ENTIER, ET ELLE MONTE DANS LA CONSTELLATION ────
-   Douze primes la réglaient — trois de places, trois de portée, trois de vitesse, deux de
-   richesse, une de sang — et elles occupaient les DIX DERNIÈRES MARCHES de l'escalier des
-   primes. Arrivé là, il n'y avait plus rien à acheter qui ne soit de la pension, et plus rien
-   à viser : une liste de cinquante et un achats qui se termine sur une monoculture.
+/* ── LE COMPTEUR D'UNE BRANCHE ────────────────────────────────────────────────
+   UNE BRANCHE N'EST PAS QUATRE NŒUDS QU'ON LIT UN PAR UN, c'est un CRAN. On compte combien de
+   ses nœuds sont pris, et ce nombre indexe une table de valeurs. Ajouter un cran devient donc
+   une entrée de plus dans un tableau — pas une ligne de code — et c'est toute la raison pour
+   laquelle la constellation peut porter cinquante nœuds au lieu de vingt-cinq.
 
-   Elles sont maintenant les quatre nœuds de l'axe pension, et chaque nœud lève LES QUATRE
-   CADRANS D'UN CRAN. C'est aussi ce que le bâtiment raconte mieux : on n'achète pas un nid,
-   puis une couveuse, puis un régime — on agrandit la pension.
+   Le motif existait déjà, mais pour un seul axe et sous un nom qui l'enfermait : `rangPension`
+   comptait les quatre nœuds de la pension, et chacun levait LES QUATRE CADRANS ensemble —
+   places, portée, vitesse et richesse d'un coup. On n'agrandissait pas la pension, on
+   l'achetait entière, cran par cran.
 
-       cran        places   portée   vitesse   richesse
-       aucun          1        1        ×1        ×1
-       1er nœud       2        2       ×1,5       ×1
-       2e             4        3        ×4        ×4
-       3e             8        5       ×12        ×8      (et le sang dominant)
-       4e             9        6       ×18       ×16
+   MAINTENANT CHAQUE BRANCHE PORTE SON CADRAN. Le tronc donne des choses différentes ; une
+   branche donne un seul nombre, par crans. `rangBranche('pension', 'places')` compte les nœuds
+   pris de cette branche-là, et rien d'autre.
 
-   Le plafond ne bouge pas d'un cran : c'est exactement ce que les douze primes et les quatre
-   nœuds donnaient ensemble. Ce qui change est la MONNAIE et la PERMANENCE.
+       branche          cran 0   cran 1   cran 2   cran 3
+       places              1        2        4        8
+       hâte               ×1      ×1,5      ×4      ×12
 
-   ── CE QUE ÇA RENVERSE, ET IL FAUT L'ÉCRIRE ──
-   La `4.5.0` avait posé l'inverse, et le commentaire de `CIEL` le disait ainsi : « une
-   constellation qui possède un pan de jeu — même seulement pour le rendre permanent — le
-   déplace hors de la partie où il appartient, et fait dépendre d'une ascension ce qui doit
-   soulager AVANT la première ». La règle valait pour l'automatisation, qui doit être là dès la
-   première boucle sinon l'heure d'ouverture se joue au poignet.
+   Le tronc, lui, se lit au nœud : la portée tient à `sang-epais`, la richesse à `nid-riche`.
+   Ce sont des choses, pas des crans, donc elles n'ont pas de table. */
+const rangBranche = (axe, branche) =>
+  CIEL.filter(n => n.axe === axe && n.branche === branche && etoilePrise(n.cle)).length;
 
-   ELLE NE VAUT PAS POUR LA PENSION, et c'est la décision du 5 septembre 2026 : la pension
-   n'est pas ce qui soulage la première heure, c'est ce qu'on fait QUAND on n'a plus rien à
-   acheter. Le bâtiment lui-même reste une prime en pièces — il s'ouvre donc dans le premier
-   cycle, comme avant. Ce qui monte, c'est son escalade.
+const cranDe = (axe, branche, paliers) =>
+  paliers[Math.min(rangBranche(axe, branche), paliers.length - 1)];
 
-   Le prix en jetons n'a pas bougé — 6, 12, 20, 30 — alors que chaque nœud porte trois fois
-   plus qu'avant. C'est un réglage à part, et un seul chiffre à tourner le jour où la mesure
-   dira que la pension s'ouvre trop vite. */
-const rangPension = () => ['nid-plus', 'ponte-plus', 'sang-epais', 'nid-vif']
-                          .filter(etoilePrise).length;
 
-const cranPension = paliers => paliers[Math.min(rangPension(), paliers.length - 1)];
-
-const placesPension  = () => cranPension([1, 2, 4, 8, 9]);
-const vitessePension = () => cranPension([1, 1.5, 4, 12, 18]);
-const porteePension  = () => cranPension([1, 2, 3, 5, 6]);
+const placesPension  = () => cranDe('pension', 'places', [1, 2, 4, 8]);
+const vitessePension = () => cranDe('pension', 'hate', [1, 1.5, 4, 12]);
+// la portée et la richesse tiennent à un nœud du TRONC : ce sont des choses, pas des crans
+const porteePension  = () => etoilePrise('sang-epais') ? 3 : 1;
 /* LA RICHESSE, ET POURQUOI ELLE SE DESSERRE SANS SE LEVER. Le multiplicateur de rareté — ×64
    pour deux mythiques — est ce qui empêche la pension d'être une imprimante à billets, et
    c'était mesuré avant de l'ouvrir. Mais c'est aussi ce qui la laissait à trente œufs
@@ -7921,7 +7971,7 @@ const porteePension  = () => cranPension([1, 2, 3, 5, 6]);
    pension rend alors 240 œufs mythiques l'heure, contre 480 pour un acheteur de douze
    incubateurs. Elle devient un vrai choix. Le compte reste perdant — 43 Md/h de valeur
    produite contre 396 Md/h de rente abandonnée par seize enclos — et c'est ce qui tient. */
-const richessePension = () => cranPension([1, 1, 4, 8, 16]);
+const richessePension = () => etoilePrise('nid-riche') ? 8 : 1;
 
 /* CE QUE LES PRIMES CHANGENT À LA PENSION.
 
@@ -7942,7 +7992,7 @@ const richessePension = () => cranPension([1, 1, 4, 8, 16]);
    chance de toutes les merveilles d'un coup. */
 const chancePension = ecart =>
   Math.min(0.5, PENSION_CHANCE[Math.min(ecart, PENSION_CHANCE.length - 1)] *
-                (rangPension() >= 3 ? 2 : 1));
+                (etoilePrise('sang-epais') ? 2 : 1));
 
 // Une bête parquée : elle est dans un couple, donc dans la pension.
 const enPension  = c => couples().some(k => k.a === c.id || k.b === c.id);
@@ -7980,7 +8030,7 @@ function dureePension(a, b) {
    RAISON et non un booléen : un bouton grisé sans explication est la première chose qu'un
    joueur ne comprend pas, et cette fonction est ce que l'écran affichera. */
 function refusPension(a, b) {
-  if (!prime('pension')) return 'La pension n’est pas encore construite.';
+  if (!etoilePrise('nid')) return 'La pension n’est pas encore construite.';
   if (!a || !b || a.id === b.id) return 'Il faut deux bêtes différentes.';
   if (couples().length >= placesPension()) return 'Toutes les places sont prises.';
   if (enPension(a) || enPension(b)) return 'Une de ces deux bêtes est déjà en pension.';
@@ -8138,7 +8188,7 @@ const reservePleine = (a, b) => sortesDe(a, b).some(s => eggStock(s) >= PLAFOND_
 
    Appelée par `advance`, donc elle tourne aussi pendant une absence — d'où la boucle. */
 function avancePension(dt) {
-  if (!prime('pension')) return 0;
+  if (!etoilePrise('nid')) return 0;
   let nes = 0;
   const portee = porteePension();
   state.pension.couples = couples().filter(k => {
@@ -8412,7 +8462,7 @@ function retirerDuNid(cote) {
    et ne refusait qu'au bouton : on composait tranquillement un couple, on lisait « la place est
    prise », et il fallait ressortir les deux bêtes une par une. Un écran qui laisse faire un
    geste qu'il refusera ensuite ment deux fois — d'abord en acceptant, ensuite en refusant. */
-const nidOuvert = () => prime('pension') && couples().length < placesPension();
+const nidOuvert = () => etoilePrise('nid') && couples().length < placesPension();
 
 /* Poser une bête dans le nid.
 
@@ -8630,7 +8680,7 @@ function renderPension() {
   /* LE PANNEAU EST UN BÂTIMENT : il n'existe pas tant qu'on ne l'a pas acheté. Un couple en
      cours le garde à l'écran même après une ascension, le temps qu'il se vide — sans quoi deux
      bêtes resteraient parquées derrière un panneau disparu. */
-  p.hidden = !prime('pension') && !couples().length;
+  p.hidden = !etoilePrise('nid') && !couples().length;
   if (p.hidden) { pensionSig = ''; return; }
 
   const a = auNid(pensionA), b = auNid(pensionB);
@@ -8855,7 +8905,7 @@ function renderEncyclopedie() {
   if (!appris.length) {
     const v = document.createElement('p');
     v.className = 'ency-vide';
-    v.textContent = prime('pension')
+    v.textContent = etoilePrise('nid')
       ? 'Aucun couple ne t’a encore donné cette lignée. Confie-en deux pour voir.'
       : 'Tu n’as pas encore de pension.';
     hote.appendChild(v);

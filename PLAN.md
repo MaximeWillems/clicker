@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.27.0 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.28.0 · sauvegarde v30 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -469,7 +469,11 @@ davantage qu'aujourd'hui. Les faire commencer au millier rendrait chaque jeton v
 de retarder le tout premier ; il faudrait alors décider si le compteur d'ouverture de
 l'ascension suit ou non.
 
-### La constellation remaniée — plan
+### La constellation remaniée — **la mécanique est livrée en `beta 4.28.0`**
+
+> Livré : le moyeu gratuit, la prime de pension retirée, l’axe de la pension ouvert en fourche,
+> et le compteur de branche qui rend un cran gratuit à écrire. Restent la DISPOSITION en arbre
+> (`cieuxXY`), les trois états, la carte de détail au clic, et les cinq autres axes.
 
 La devise : **plus pour moins.** Plus de nœuds, moins chers, et plus clairs. **Aucune branche
 n'est exclusive** — on peut tout prendre, un jour. Ce qui rationne, c'est le jeton, donc le

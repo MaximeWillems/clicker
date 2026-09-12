@@ -1605,7 +1605,7 @@ scenario('trophées — ils ne donnent rien, et traversent l’ascension', () =>
    pension achetée, puisque c'est un bâtiment depuis la beta 1.0.0. */
 function couple(jeu, ligneA, ligneB) {
   jeu.state.pens = 8;
-  jeu.state.primes.pension = true;
+  jeu.state.ciel = Object.assign(jeu.state.ciel || {}, { nid: 1 });
   return [bete(jeu, ligneA, 4, 20000), bete(jeu, ligneB, 4, 20000)];
 }
 
@@ -1792,7 +1792,7 @@ scenario('pension — elle tourne pendant une absence, et l’écran suit', () =
   eq('l’œuf est bien en réserve', jeu.eggStock('commun') + jeu.eggStock('rare') >= 1, true);
 });
 
-scenario('pension — c’est un bâtiment : il faut l’acheter', () => {
+scenario('pension — c’est un nœud de constellation, plus une prime', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 8;
   const a = bete(jeu, 'loup', 4, 20000), b = bete(jeu, 'ours', 4, 20000);
@@ -1803,21 +1803,27 @@ scenario('pension — c’est un bâtiment : il faut l’acheter', () => {
   ok('accoupler est refusé', !jeu.accoupler(a, b));
   eq('la pension n’avance pas', jeu.avancePension(1e6), 0);
 
-  /* ELLE S'ACHÈTE COMME UNE PRIME, donc au prix de la table — pas d'un chemin à part. */
-  const p = jeu.PRIMES.find(x => x.cle === 'pension');
-  ok('elle est dans la table des primes', !!p);
-  s.coins = p.prix;
-  jeu.buyPrime(p);
-  ok('achetée', jeu.prime('pension'));
-  eq('et payée', s.coins, 0);
+  /* ELLE NE S'ACHÈTE PLUS EN PIÈCES. Elle valait 400 000 dans l'escalier des primes, donc elle
+     s'ouvrait au passage dans le premier cycle et la constellation ne faisait que l'agrandir.
+     Un bâtiment qu'on ouvre sans y penser n'est pas une décision : il coûte maintenant trois
+     jetons, et trois jetons sont un cycle. */
+  ok('elle a quitté la table des primes', !jeu.PRIMES.some(x => x.cle === 'pension'));
+  const n = jeu.ETOILE_BY_KEY.nid;
+  ok('et elle est le premier nœud de son axe', n && n.axe === 'pension' && n.parent === 'etincelle');
+  eq('à trois jetons', n.prix, 3);
+
+  s.asc.jetons = n.prix;
+  ok('le nœud s’achète', jeu.acheterEtoile('nid'));
+  eq('et il est payé', jeu.jetonsEnMain(), 0);
 
   jeu.refresh();
   eq('le panneau apparaît', noeuds.get('panel-pension').hidden, false);
   ok('et le couple se forme', jeu.accoupler(a, b));
 
-  /* UN COUPLE EN COURS GARDE LE PANNEAU À L'ÉCRAN même sans la prime : sinon deux bêtes
-     resteraient parquées derrière un panneau disparu après une ascension. */
-  s.primes = {};
+  /* UN COUPLE EN COURS GARDE LE PANNEAU À L'ÉCRAN même sans le nœud : sinon deux bêtes
+     resteraient parquées derrière un panneau disparu. Le cas ne peut plus venir d'une
+     ascension — la constellation la traverse — mais il vient d'une reprise. */
+  s.ciel = {};
   jeu.refresh();
   eq('le couple retient le panneau', noeuds.get('panel-pension').hidden, false);
 });
@@ -2188,8 +2194,8 @@ scenario('pension — un nid sans place ne se laisse pas remplir', () => {
   jeu.refresh();
   eq('les deux cases sont revenues', casesNid(jeu).length, 2);
 
-  // sans la prime non plus, le nid ne se remplit pas
-  s.primes = {};
+  // sans le nœud non plus, le nid ne se remplit pas
+  s.ciel = {};
   eq('pas de bâtiment, pas de nid', jeu.nidOuvert(), false);
 });
 
@@ -2255,138 +2261,78 @@ scenario('pension — une sauvegarde d’avant garde ce qu’elle avait payé', 
     coins: 1e9, primes: { pension: true, 'pension-place-1': true, 'pension-place-2': true,
                           'pension-vite-1': true, 'pension-sang': true },
   });
-  eq('le sang valait le troisième cran', vieille.rangPension(), 3);
-  eq('donc huit nids', vieille.placesPension(), 8);
+  /* LE REPORT SE FAIT EN DEUX TEMPS, et il faut le lire ainsi : la v27 a rendu trois crans
+     de l’ancienne échelle, la v30 les répartit sur les deux branches. Deux crans de places et
+     deux de hâte, plus le sang épais du tronc — personne ne perd rien, et la hâte est rendue
+     en prime puisqu’elle était comprise dans l’ancien cran. */
+  eq('deux crans de places', vieille.rangBranche('pension', 'places'), 2);
+  eq('et deux de hâte', vieille.rangBranche('pension', 'hate'), 2);
+  eq('donc quatre nids', vieille.placesPension(), 4);
   ok('et les primes mortes ont disparu de la sauvegarde',
      !Object.keys(vieille.state.primes).some(k => k.startsWith('pension-')),
      Object.keys(vieille.state.primes).join(' '));
-  ok('le bâtiment, lui, reste', vieille.state.primes.pension);
+  ok('le bâtiment, lui, reste — sous sa forme de nœud', vieille.etoilePrise('nid'));
 
   // qui n'avait rien n'obtient rien
   const nue = neuf({ coins: 1e9, primes: { pension: true } });
-  eq('aucun cran offert sans rien', nue.rangPension(), 0);
+  ok('et le bâtiment payé devient un nœud', nue.etoilePrise('nid'));
+  eq('aucun cran offert sans rien', nue.rangBranche('pension', 'places'), 0);
 });
 
-scenario('pension — les échelles du bâtiment, et ce qu’elles ne touchent pas', () => {
+scenario('pension — un tronc et deux branches, et chacune son cadran', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e12;
-  const [a, b] = couple(jeu, 'crapaud', 'ouroboros');
 
-  /* LES TROIS N'EXISTENT PAS SANS LE BÂTIMENT : trois cases qui parlent d'un panneau qu'on
-     n'a pas encore encombrent la grille pour rien. */
-  /* LES DOUZE PRIMES DE PENSION SONT MONTÉES DANS LA CONSTELLATION. Elles occupaient les dix
-     dernières marches de l'escalier des primes : arrivé là, il n'y avait plus rien à acheter
-     qui ne soit de la pension. Le BÂTIMENT, lui, reste une prime en pièces — il s'ouvre donc
-     toujours dans le premier cycle. */
-  ok('plus une seule prime de pension', !jeu.PRIMES.some(p => p.cle.startsWith('pension-')));
-  ok('le bâtiment reste une prime', !!jeu.PRIME_BY_CLE.pension);
+  /* L'AXE ÉTAIT UNE ÉCHELLE, IL DEVIENT UN ARBRE. Quatre nœuds levaient LES QUATRE CADRANS
+     ensemble — places, portée, vitesse et richesse d'un coup — si bien qu'on n'agrandissait
+     pas la pension, on l'achetait entière, cran par cran. Maintenant le tronc donne trois
+     choses DIFFÉRENTES et chaque branche donne un seul cadran, par crans. On choisit d'abord
+     beaucoup de couples lents, ou peu de couples rapides. */
+  ok('plus une seule prime de pension', !jeu.PRIMES.some(p => p.cle.startsWith('pension')));
+  ok('le bâtiment n’en est plus une non plus', !jeu.PRIME_BY_CLE.pension);
 
-  const crans = ['nid-plus', 'ponte-plus', 'sang-epais', 'nid-vif'];
-  const monter = n => { s.ciel = {}; for (let i = 0; i < n; i++) s.ciel[crans[i]] = true;
-                        jeu.oublierPrimes(); };
-  eq('quatre nœuds sur l’axe pension', jeu.PAR_AXE.pension.length, 4);
-  ok('et ils font une chaîne', jeu.PAR_AXE.pension.every((n, i) =>
-     i === 0 ? n.parent === 'etincelle' : n.parent === crans[i - 1]));
+  const axe = jeu.PAR_AXE.pension;
+  eq('neuf nœuds sur l’axe', axe.length, 9);
+  eq('trois au tronc', axe.filter(n => !n.branche).length, 3);
+  eq('trois sur la branche des places', axe.filter(n => n.branche === 'places').length, 3);
+  eq('trois sur celle de la hâte', axe.filter(n => n.branche === 'hate').length, 3);
 
-  /* UN NŒUD LÈVE LES QUATRE CADRANS D'UN CRAN. C'est ce que le bâtiment raconte : on
-     n'achète pas un nid, puis une couveuse, puis un régime — on agrandit la pension. */
-  const table = [[1, 1, 1, 1], [2, 2, 1.5, 1], [4, 3, 4, 4], [8, 5, 12, 8], [9, 6, 18, 16]];
-  for (let n = 0; n <= 4; n++) {
-    monter(n);
-    const [pl, po, vi, ri] = table[n];
-    eq('cran ' + n + ' · places', jeu.placesPension(), pl);
-    eq('cran ' + n + ' · portée', jeu.porteePension(), po);
-    eq('cran ' + n + ' · vitesse', jeu.vitessePension(), vi);
-    eq('cran ' + n + ' · richesse', jeu.richessePension(), ri);
-  }
-  monter(0);
+  /* LES DEUX BRANCHES PARTENT DU MÊME NŒUD DE TRONC, et c'est ce qui en fait une fourche :
+     prendre l'une n'attend pas l'autre. */
+  eq('la fourche est au bâtiment', jeu.ETOILE_BY_KEY['place-1'].parent, 'nid');
+  eq('pour les deux branches', jeu.ETOILE_BY_KEY['hate-1'].parent, 'nid');
 
-  /* LE NID RACCOURCIT LA COUVAISON, RECETTES COMPRISES — c'est la seule chose du jeu qui rende
-     une merveille plus rapide, et elle le fait sans jamais la nommer. L'échelle se lit comme
-     un palier qui REMPLACE le précédent : « quatre fois plus vite » veut dire quatre fois plus
-     vite qu'à l'origine, jamais quatre fois plus vite que le cran d'avant. */
-  const avant = jeu.dureePension(a, b);
-  for (const [n, x] of [[1, 1.5], [2, 4], [3, 12], [4, 18]]) {
-    monter(n);
-    eq('cran ' + n + ' : ×' + x, jeu.dureePension(a, b), Math.round(avant / x));
-  }
-  eq('l’échelle plafonne à dix-huit', jeu.vitessePension(), 18);
+  const prendre = (...cles) => { s.ciel = {}; for (const c of cles) s.ciel[c] = true; };
 
-  const g1 = bete(jeu, 'golem', 4, 20000), g2 = bete(jeu, 'golem', 4, 20000);
-  eq('la recette raccourcit aussi', jeu.dureePension(g1, g2),
-     Math.round(jeu.recetteDe(g1, g2).duree / 18));
+  /* CHAQUE BRANCHE NE BOUGE QUE SON CADRAN. C'est toute la différence avec l'échelle : monter
+     les places ne donne plus la vitesse au passage. */
+  prendre('nid');
+  eq('le bâtiment seul : une place', jeu.placesPension(), 1);
+  eq('et pas de hâte', jeu.vitessePension(), 1);
 
-  /* MAIS PAS UN COUPLE DÉJÀ PARTI : sinon le nœud devient un bouton « finis ma couvaison ». */
-  monter(0);
-  jeu.accoupler(a, b);
-  const fige = jeu.couples()[0].duree;
-  monter(1);
-  eq('la durée du couple en cours ne bouge pas', jeu.couples()[0].duree, fige);
-  monter(0);
-  s.pension.couples = [];
+  prendre('nid', 'place-1', 'place-2', 'place-3');
+  eq('trois crans de places : huit couples', jeu.placesPension(), 8);
+  eq('et toujours pas de hâte', jeu.vitessePension(), 1);
 
-  /* LE SANG DOMINANT arrive au troisième cran : il double la chance du parent le plus rare,
-     sans jamais passer une fois sur deux. */
-  eq('sans lui', jeu.chancePension(1), 0.2);
-  monter(2);
-  eq('deux crans ne suffisent pas', jeu.chancePension(1), 0.2);
-  monter(3);
-  eq('avec lui', jeu.chancePension(1), 0.4);
-  eq('et le plus petit écart reste à pile ou face', jeu.chancePension(0), 0.5);
-  ok('il se voit dans la lignée tirée', (() => {
-    let hauts = 0;
-    for (let i = 0; i < 4000; i++) if (jeu.ligneeDe(a, b) === 'ouroboros') hauts++;
-    return hauts / 4000 > 0.01;               // 2 % attendu, 1 % sans le nœud
-  })());
+  prendre('nid', 'hate-1', 'hate-2', 'hate-3');
+  eq('trois crans de hâte : douze fois plus vite', jeu.vitessePension(), 12);
+  eq('et toujours une seule place', jeu.placesPension(), 1);
 
-  /* LES PLACES OUVRENT LE NID D'AUTANT. */
-  monter(1);
-  eq('deux places au premier cran', jeu.placesPension(), 2);
-  jeu.accoupler(a, b);
-  ok('le nid reste ouvert après le premier couple', jeu.nidOuvert());
-  const c = bete(jeu, 'cerf', 4, 20000), d = bete(jeu, 'chat', 4, 20000);
-  ok('et un second couple se forme', jeu.accoupler(c, d));
-  ok('le troisième, non', !jeu.nidOuvert());
+  /* LE TRONC, LUI, SE LIT AU NŒUD. La portée et la richesse sont des CHOSES, pas des crans :
+     elles n'ont pas de table, elles tiennent à un nœud précis. */
+  prendre('nid');
+  eq('sans le sang épais, une portée de un', jeu.porteePension(), 1);
+  eq('et la richesse pèse de tout son poids', jeu.richessePension(), 1);
+  prendre('nid', 'sang-epais');
+  eq('le sang épais porte à trois', jeu.porteePension(), 3);
+  prendre('nid', 'nid-riche');
+  eq('et le sang léger desserre la richesse', jeu.richessePension(), 8);
 
-  /* AUCUNE NE TOUCHE AUX RECETTES : une prime qui ferait tomber les merveilles plus souvent
-     devrait le dire pour se vendre, et dirait donc qu'elles existent. */
-  for (const n of jeu.PAR_AXE.pension)
-    ok(n.nom + ' ne parle pas des merveilles', !/erveille/.test(n.dit));
-  monter(3);
-  eq('et la chance d’une recette ne bouge pas', jeu.recetteDe(g1, g2).chance, 0.001);
-
-  /* LA RICHESSE SE DESSERRE MAIS NE SE LÈVE PAS. Le multiplicateur de rareté est ce qui
-     empêche la pension d'être une imprimante à billets ; on le divise, on ne le supprime pas.
-     Elle ne bouge qu'au DEUXIÈME cran : le premier ouvre déjà les places, la portée et la
-     vitesse, et desserrer la richesse en plus ferait du premier nœud le seul qui compte. */
-  monter(0);
-  const myth1 = bete(jeu, 'ouroboros', 4, 20000), myth2 = bete(jeu, 'behemoth', 4, 20000);
-  const plein = jeu.dureePension(myth1, myth2);
-  eq('la richesse vaut un au départ', jeu.richessePension(), 1);
-  monter(1);
-  eq('le premier cran n’y touche pas', jeu.richessePension(), 1);
-  monter(2);
-  eq('quatre fois moins au deuxième', jeu.dureePension(myth1, myth2),
-     Math.round(plein / (4 * 4)));
-  monter(4);
-  eq('seize fois moins au bout', jeu.dureePension(myth1, myth2),
-     Math.round(plein / (16 * 18)));
-  /* Elle ne descend jamais sous un : sinon une commune irait plus vite que la boucle de jeu,
-     et le plafond de réserve serait le seul reste du système. */
-  s.pens = 40;
-  const com1 = bete(jeu, 'crapaud', 4, 20000), com2 = bete(jeu, 'crapaud', 4, 20000);
-  monter(0);
-  const nue = jeu.dureePension(com1, com2);
-  monter(4);
-  eq('deux communes ne gagnent rien à desserrer la richesse',
-     jeu.dureePension(com1, com2), Math.round(nue / 18));
-
-  /* ET LE RANG PÈSE ENCORE AU DERNIER CRAN, c'est ce qui tient tout le système : deux
-     mythiques restent quatre fois plus lentes que deux communes, seize au lieu de soixante-
-     quatre. On desserre, on ne lève pas. */
-  ok('deux mythiques restent plus lentes que deux communes',
-     jeu.dureePension(myth1, myth2) > jeu.dureePension(com1, com2),
-     jeu.dureePension(myth1, myth2) + ' vs ' + jeu.dureePension(com1, com2));
+  /* CE QUE L'AXE NE TOUCHE PAS : l'enclos. Une bête confiée garde sa case, et le nombre de
+     cases ne se joue pas ici. */
+  const avant = jeu.state.pens;
+  prendre('nid', 'place-1', 'place-2', 'place-3', 'hate-1', 'hate-2', 'hate-3', 'sang-epais', 'nid-riche');
+  eq('l’enclos ne bouge pas d’une case', jeu.state.pens, avant);
 });
 
 scenario('pension — la portée multiplie les œufs, jamais les merveilles', () => {
@@ -2394,25 +2340,25 @@ scenario('pension — la portée multiplie les œufs, jamais les merveilles', ()
   s.tuto = false; s.coins = 1e15;
   const [g1, g2] = couple(jeu, 'golem', 'golem');
 
-  const crans = ['nid-plus', 'ponte-plus', 'sang-epais', 'nid-vif'];
-  const monter = n => { s.ciel = {}; for (let i = 0; i < n; i++) s.ciel[crans[i]] = true;
+  /* LA PORTÉE N'EST PLUS UN CRAN, C'EST UNE CHOSE. Elle montait avec l'échelle — deux, trois,
+     cinq, six œufs — quand chaque nœud levait les quatre cadrans ensemble. Elle tient
+     maintenant à un seul nœud du tronc, le sang épais, et elle vaut un ou trois. */
+  const monter = n => { s.ciel = n ? { nid: 1, 'sang-epais': 1 } : { nid: 1 };
                         jeu.oublierPrimes(); };
 
-  eq('une portée d’un au départ', jeu.porteePension(), 1);
-  for (const [n, x] of [[1, 2], [2, 3], [3, 5], [4, 6]]) {
-    monter(n);
-    eq('cran ' + n + ' : ' + x + ' œufs', jeu.porteePension(), x);
-  }
-  monter(3);   // cinq œufs : le compte que la suite du scénario vérifie
+  monter(0);
+  eq('une portée d’un sans le sang épais', jeu.porteePension(), 1);
+  monter(1);
+  eq('et de trois avec', jeu.porteePension(), 3);
 
   jeu.accoupler(g1, g2);
   const vrai = Math.random;
   try {
     Math.random = () => 0.99;                    // la recette ne tombe pas
-    eq('cinq œufs d’un coup', jeu.avancePension(jeu.dureePension(g1, g2) + 1), 5);
+    eq('trois œufs d’un coup', jeu.avancePension(jeu.dureePension(g1, g2) + 1), 3);
   } finally { Math.random = vrai; }
-  eq('cinq dans la réserve', jeu.eggStock('epique'), 5);
-  eq('et cinq lignées promises', (s.pension.dus.epique || []).length, 5);
+  eq('trois dans la réserve', jeu.eggStock('epique'), 3);
+  eq('et trois lignées promises', (s.pension.dus.epique || []).length, 3);
 
   /* LA RECETTE SE TIRE UNE FOIS PAR PONTE, ET NON PAR ŒUF. Une nichée est un événement, pas
      cinq — sans cette règle la dernière prime du jeu multiplierait par cinq la chance de
@@ -2423,7 +2369,7 @@ scenario('pension — la portée multiplie les œufs, jamais les merveilles', ()
     jeu.avancePension(jeu.dureePension(g1, g2) + 1);
   } finally { Math.random = vrai; }
   const dus = [].concat(...Object.values(s.pension.dus));
-  eq('la nichée fait toujours cinq', dus.length, 5);
+  eq('la nichée fait toujours trois', dus.length, 3);
   eq('et elle ne contient qu’une merveille', dus.filter(d => d.ligne === 'wukong').length, 1);
 });
 
@@ -2620,7 +2566,7 @@ scenario('recettes — un mythique par famille, et la chimère n’en est pas un
 
 scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true;
+  s.tuto = false; s.coins = 1e12; s.pens = 8; s.ciel = Object.assign(s.ciel || {}, { nid: 1 });
   s.primes.marchand = true; s.primes.evolution = true; s.up.mangeoire = 6;
   jeu.refresh();
 
@@ -2755,7 +2701,7 @@ scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la b�
 
 scenario('merveilles — un cran de puissance, mais jamais un raccourci', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true;
+  s.tuto = false; s.coins = 1e12; s.pens = 8; s.ciel = Object.assign(s.ciel || {}, { nid: 1 });
 
   /* LA RÈGLE A CHANGÉ, ET IL FAUT DIRE LAQUELLE ÉTAIT LÀ AVANT. La merveilleuse partageait le
      multiplicateur de la mythique : elle était « un cran de RARETÉ, pas un cran de PUISSANCE ».
@@ -3200,9 +3146,11 @@ scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
   jeu.dexDe('crapaud').couples['crapaud×ouroboros'] = 1;
   ok('sans le sang, la commune sort presque toujours',
      /99 %/.test(fiche(jeu, 'crapaud').tout), fiche(jeu, 'crapaud').tout);
-  s.ciel = { 'nid-plus': true, 'ponte-plus': true, 'sang-epais': true };
+  /* LE SANG DOMINANT TIENT À UN NŒUD DU TRONC, et non plus au troisième cran d'une
+     échelle : c'est une chose, pas un degré. */
+  s.ciel = { nid: true, 'sang-epais': true };
   jeu.oublierPrimes();
-  eq('les trois crans comptent', jeu.rangPension(), 3);
+  ok('le sang épais est pris', jeu.etoilePrise('sang-epais'));
   eq('et le sang double la chance', jeu.chancePension(3), 0.02);
   ok('avec, le chiffre a bougé tout seul',
      /98 %/.test(fiche(jeu, 'crapaud').tout), fiche(jeu, 'crapaud').tout);
@@ -3210,7 +3158,7 @@ scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
 
 scenario('encyclopédie — la chance annoncée est celle du tirage', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e15; s.pens = 40; s.primes.pension = true;
+  s.tuto = false; s.coins = 1e15; s.pens = 40; s.ciel = Object.assign(s.ciel || {}, { nid: 1 });
 
   /* `chanceDe` DOUBLE la logique du tirage, et deux copies peuvent diverger en silence.
      On tire donc pour de vrai et on compare, sur les trois formes de couple : ordinaire,
@@ -3950,27 +3898,42 @@ scenario('constellation — un nœud s’ouvre avec son parent, jamais avant', (
   s.tuto = false;
   poserJetons(jeu, 500);
 
-  /* LE PARENT REMPLACE LE RANG. « Demande le rang 8 du tronc » demandait de compter ;
-     « demande le nid de plus » se voit sur le trait qui les relie. */
-  ok('l’étincelle est ouverte d’emblée', jeu.etoileOuverte(jeu.ETOILE_BY_KEY.etincelle));
-  ok('rien d’autre ne l’est', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY['nid-plus']));
-  ok('donc rien d’autre ne s’achète', !jeu.acheterEtoile('nid-plus'));
+  /* LE MOYEU NE S'ACHÈTE PAS, et c'est ce qui ouvre les six axes d'emblée. Il coûtait un
+     jeton : le premier jeton d'une partie servait donc à obtenir le DROIT de choisir, et non
+     à choisir. Maintenant il est acquis par nature — prix zéro — et le premier jeton est une
+     direction. */
+  const moyeu = jeu.ETOILE_BY_KEY.etincelle;
+  eq('le moyeu ne coûte rien', moyeu.prix, 0);
+  ok('il n’a rien à dire non plus', !moyeu.dit);
+  ok('il est acquis sans rien faire', jeu.etoilePrise('etincelle'));
+  ok('et ne s’achète donc pas', !jeu.acheterEtoile('etincelle'));
 
-  ok('l’étincelle s’achète', jeu.acheterEtoile('etincelle'));
-  ok('et ouvre les six premiers', jeu.etoileOuverte(jeu.ETOILE_BY_KEY['nid-plus']));
-  ok('on ne la rachète pas', !jeu.acheterEtoile('etincelle'));
+  ok('les six premiers sont ouverts d’emblée', jeu.etoileOuverte(jeu.ETOILE_BY_KEY.nid));
+  ok('mais pas le second de l’axe', !jeu.etoileOuverte(jeu.ETOILE_BY_KEY['place-1']));
+  ok('donc il ne s’achète pas', !jeu.acheterEtoile('place-1'));
 
   // la chaîne se remonte un maillon à la fois
-  ok('la ponte attend le nid', !jeu.acheterEtoile('ponte-plus'));
-  jeu.acheterEtoile('nid-plus');
-  ok('puis elle s’ouvre', jeu.acheterEtoile('ponte-plus'));
+  jeu.acheterEtoile('nid');
+  ok('puis la branche s’ouvre', jeu.acheterEtoile('place-1'));
 
-  /* SIX DIRECTIONS DEPUIS LE CENTRE, et chacune part de l'étincelle. */
+  /* SIX DIRECTIONS DEPUIS LE CENTRE, et chacune part du moyeu. */
   eq('six axes', jeu.AXES.length, 6);
   for (const a of jeu.AXES) {
     ok(a.cle + ' part du centre', jeu.PAR_AXE[a.cle][0].parent === 'etincelle');
-    eq(a.cle + ' porte quatre nœuds', jeu.PAR_AXE[a.cle].length, 4);
+    ok(a.cle + ' porte au moins quatre nœuds', jeu.PAR_AXE[a.cle].length >= 4);
   }
+
+  /* UNE BRANCHE EST UNE SUITE DE FRÈRES QUI SE SUIVENT, pas un éventail : chaque nœud d'une
+     branche a pour parent le précédent de la MÊME branche, sauf le premier qui s'accroche au
+     tronc. Sans cette règle, deux nœuds d'une branche s'ouvriraient ensemble et le cran ne
+     voudrait plus rien dire. */
+  const fautes = [];
+  for (const n of jeu.CIEL) {
+    if (!n.branche) continue;
+    const p = jeu.ETOILE_BY_KEY[n.parent];
+    if (p && p.branche && p.branche !== n.branche) fautes.push(n.cle + ' ← ' + p.cle);
+  }
+  ok('aucune branche n’en croise une autre', fautes.length === 0, fautes.join(', '));
 });
 
 scenario('constellation — elle ne possède rien du jeu de base', () => {
@@ -3996,9 +3959,9 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 8;
   poserJetons(jeu, 500);
-  jeu.acheterEtoile('etincelle');
 
-  eq('l’étincelle a coûté un jeton', jeu.jetonsEnMain(), 499);
+
+  eq('le moyeu n’a rien coûté', jeu.jetonsEnMain(), 500);
 
   /* CHAQUE NŒUD FAIT QUELQUE CHOSE : c'est la règle qui a supprimé le tronc de vingt rangs de
      « +2 % », un chemin fait de marches vides. Douze nœuds portent un nombre, douze changent
@@ -4018,32 +3981,30 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
   jeu.acheterEtoile('poing');
   ok('le poing double le clic', jeu.clickPower() > cp, cp + ' → ' + jeu.clickPower());
 
-  /* LA PENSION EST TOUT ENTIÈRE ICI DEPUIS LA `4.15.0`. Elle se réglait en douze primes qui
-     occupaient les dix dernières marches de l'escalier ; l'axe la porte maintenant en quatre
-     crans, et chaque cran lève LES QUATRE CADRANS à la fois. Aucune prime ne la touche plus —
-     seul le bâtiment, qui reste en pièces et s'ouvre donc dans le premier cycle. */
+  /* LA PENSION EST TOUT ENTIÈRE ICI, ET SON AXE S'EST OUVERT EN FOURCHE. Elle se réglait en
+     douze primes, puis en quatre crans qui levaient LES QUATRE CADRANS ensemble. Le tronc
+     donne maintenant trois choses différentes, et chaque branche un seul cadran. */
   eq('sans un nœud, la pension est au plus bas', jeu.placesPension(), 1);
-  ok('et aucune prime ne peut la lever',
-     !jeu.PRIMES.some(p => p.cle.startsWith('pension-')));
+  ok('et plus aucune prime ne la touche',
+     !jeu.PRIMES.some(p => p.cle.startsWith('pension')));
 
-  jeu.acheterEtoile('nid-plus');
-  eq('un cran : deux nids', jeu.placesPension(), 2);
-  eq('deux œufs', jeu.porteePension(), 2);
-  eq('et moitié plus vite', jeu.vitessePension(), 1.5);
+  jeu.acheterEtoile('nid');
+  eq('le bâtiment seul : une place', jeu.placesPension(), 1);
 
-  jeu.acheterEtoile('ponte-plus');
-  eq('deux crans : quatre nids', jeu.placesPension(), 4);
-  eq('et la richesse se desserre', jeu.richessePension(), 4);
+  jeu.acheterEtoile('place-1');
+  eq('un cran de places : deux nids', jeu.placesPension(), 2);
+  eq('et la hâte n’a pas bougé', jeu.vitessePension(), 1);
+
+  jeu.acheterEtoile('hate-1');
+  eq('un cran de hâte : moitié plus vite', jeu.vitessePension(), 1.5);
+  eq('et les places n’ont pas bougé', jeu.placesPension(), 2);
 
   jeu.acheterEtoile('sang-epais');
-  eq('trois crans : huit nids', jeu.placesPension(), 8);
+  eq('le sang épais porte à trois œufs', jeu.porteePension(), 3);
   eq('et le sang dominant arrive', jeu.chancePension(1), 0.4);
 
-  jeu.acheterEtoile('nid-vif');
-  eq('quatre crans : le neuvième nid', jeu.placesPension(), 9);
-  eq('six œufs par ponte', jeu.porteePension(), 6);
-  eq('dix-huit fois plus vite', jeu.vitessePension(), 18);
-  eq('et le sang ne pèse plus', jeu.richessePension(), 16);
+  jeu.acheterEtoile('nid-riche');
+  eq('et le sang ne pèse plus', jeu.richessePension(), 8);
 
   // l'album : la poussière double, puis la forge coûte moitié moins
   const d0 = jeu.poussiereDe(pave(jeu, 1));
@@ -4079,18 +4040,19 @@ scenario('constellation — acheter coûte, et la boucle ne rend rien', () => {
   const avant = jeu.jetonsEnMain();
   eq('un milliard crédite quatre jetons', avant, 4);
 
-  ok('l’étincelle s’achète', jeu.acheterEtoile('etincelle'));
-  eq('elle coûte un jeton', jeu.jetonsEnMain(), avant - 1);
+  /* LE MOYEU NE S'ACHÈTE PLUS : le nid, à trois jetons, sert d’étalon. */
+  ok('le nid s’achète', jeu.acheterEtoile('nid'));
+  eq('il coûte trois jetons', jeu.jetonsEnMain(), avant - 3);
 
   jeu.crediterJetons();
-  eq('et un tour de boucle ne rend rien', jeu.jetonsEnMain(), avant - 1);
+  eq('et un tour de boucle ne rend rien', jeu.jetonsEnMain(), avant - 3);
   for (let i = 0; i < 100; i++) jeu.crediterJetons();
-  eq('cent tours non plus', jeu.jetonsEnMain(), avant - 1);
+  eq('cent tours non plus', jeu.jetonsEnMain(), avant - 3);
 
   /* CE QU'ON N'A PLUS EN MAIN NE S'ACHÈTE PLUS : sans ça, la bourse se vide dans le rouge et
-     l'arbre se prend en entier. */
-  eq('il reste trois jetons', jeu.jetonsEnMain(), 3);
+  eq('il reste un jeton', jeu.jetonsEnMain(), 1);
   ok('un nœud à quatre est hors de portée', !jeu.acheterEtoile('poing'));
+  ok('un nœud à deux ne passe pas non plus', !jeu.acheterEtoile('place-1'));
   ok('un nœud à trois passe encore', jeu.acheterEtoile('nid-plus') || jeu.jetonsEnMain() === 3);
 
   /* LE SOMMET RESTE LA MESURE QU'IL EST : franchir un palier de plus crédite toujours. */
@@ -4109,7 +4071,7 @@ scenario('sauvegarde — les bourses gonflées par le bug dégonflent', () => {
     ciel: { etincelle: true, poing: true },
   });
   const parCycle = gonflee.JETON_PALIERS.length + 2;
-  eq('la bourse tombe au plafond', gonflee.state.asc.jetons, 3 * parCycle - 1 - 4);
+  eq('la bourse tombe au plafond', gonflee.state.asc.jetons, 3 * parCycle - 4);
   eq('et le compteur de dépense repart de zéro', gonflee.state.asc.depense, 0);
 
   /* LE PLAFOND EST LARGE EXPRÈS : personne ne perd un jeton gagné. */
@@ -4300,8 +4262,8 @@ scenario('constellation — on peut tout reprendre, et le compte est exact', () 
   ok('et le bouton ne fait rien', !jeu.reprendreCiel());
 
   const avant = jeu.jetonsEnMain();
-  jeu.acheterEtoile('etincelle');
-  jeu.acheterEtoile('poing');
+  jeu.acheterEtoile('nid');
+  jeu.acheterEtoile('place-1');
   eq('deux nœuds valent cinq jetons', jeu.prixDuCiel(), 5);
   eq('et la bourse a fondu d’autant', jeu.jetonsEnMain(), avant - 5);
 
@@ -4310,22 +4272,22 @@ scenario('constellation — on peut tout reprendre, et le compte est exact', () 
   eq('et le ciel est vide', Object.keys(s.ciel).length, 0);
 
   /* LE PIÈGE, ET C'EST LE MÊME QU'EN 4.6.1 : la dépense du cycle N'EST PAS remise à zéro. Elle
-     enregistre ce qui a été payé, ce qui reste vrai ; le remboursement s'ajoute par-dessus. La
-     remettre à zéro en plus rembourserait deux fois — et la boucle le montrerait aussitôt. */
+     enregistre ce qui a été payé, ce qui reste vrai ; le remboursement s'ajoute par-dessus. */
   for (let i = 0; i < 50; i++) jeu.crediterJetons();
   eq('et la boucle ne rend rien de plus', jeu.jetonsEnMain(), avant);
 
   /* CE QUI A ÉTÉ PRIS AU CYCLE PRÉCÉDENT SE REPREND AUSSI : la constellation traverse
-     l'ascension, donc son remboursement doit la traverser également. */
-  jeu.acheterEtoile('etincelle');
+     l'ascension, donc son remboursement doit la traverser également. Le moyeu ne peut plus
+     servir d'exemple — il est gratuit — on prend donc un nœud de tronc. */
+  jeu.acheterEtoile('nid');
   s.pens = 20;
   s.pen = [bete(jeu, 'crapaud', 3, 3000)];
   jeu.ascChoix = [-s.pen[0].id];
   jeu.ascensionner();
-  ok('l’étincelle a franchi le saut', jeu.etoilePrise('etincelle'));
+  ok('le nid a franchi le saut', jeu.etoilePrise('nid'));
   const apres = jeu.jetonsEnMain();
-  eq('elle se reprend quand même', jeu.reprendreCiel(), 1);
-  eq('et le jeton revient', jeu.jetonsEnMain(), apres + 1);
+  eq('il se reprend quand même', jeu.reprendreCiel(), 3);
+  eq('et les trois jetons reviennent', jeu.jetonsEnMain(), apres + 3);
 });
 
 scenario('constellation — le bouton de reprise dit ce qu’il rend', () => {
@@ -4339,8 +4301,8 @@ scenario('constellation — le bouton de reprise dit ce qu’il rend', () => {
   /* UN « TOUT REPRENDRE » SUR UN CIEL VIDE EST UN BOUTON QUI MENT SUR CE QU'IL FAIT. */
   eq('rien à reprendre, rien à montrer', bout.hidden, true);
 
-  jeu.acheterEtoile('etincelle');
-  jeu.acheterEtoile('poing');
+  jeu.acheterEtoile('nid');
+  jeu.acheterEtoile('place-1');
   jeu.refresh();
   eq('le bouton paraît', bout.hidden, false);
   ok('et il annonce la somme', bout.textContent.indexOf('5') >= 0, bout.textContent);
@@ -4386,7 +4348,9 @@ scenario('constellation — le ciel se dessine, et il est plus grand que l’éc
   /* UN NŒUD FERMÉ SE MONTRE, il ne se cache pas : on montre une carte qu'on lit pour décider
      où aller, pas une file d'attente. */
   const fermes = tous('etoile').filter(x => x.classList.contains('close'));
-  eq('tout est fermé sauf le centre', fermes.length, jeu.CIEL.length - 1);
+  /* LE MOYEU ET LES SIX PREMIERS SONT OUVERTS D'EMBLÉE : le moyeu est acquis par nature,
+     et les six axes partent de lui. Tout le reste attend son parent. */
+  eq('le moyeu et les six premiers sont ouverts', fermes.length, jeu.CIEL.length - 7);
 
   jeu.acheterEtoile('etincelle');
   jeu.refresh();
@@ -5188,9 +5152,9 @@ scenario('enclos — l’Étable retirée est remboursée, pas confisquée', () 
 
 scenario('enclos — une bête gardée compte, une bête confiée non', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 2; s.primes.pension = true; jeu.oublierPrimes();
-  const a = bete(jeu, 'crapaud', 1, 5);
-  const b = bete(jeu, 'crabe', 1, 5);
+  s.tuto = false; s.coins = 1e12; s.pens = 2; s.ciel = Object.assign(s.ciel || {}, { nid: 1 }); jeu.oublierPrimes();
+  const a = bete(jeu, 'crapaud', 1, 3);
+  const b = bete(jeu, 'crabe', 1, 3);
   eq('deux bêtes dans deux enclos', jeu.penUsed(), 2);
   ok('l’enclos est plein', jeu.penFull());
 
@@ -5319,7 +5283,7 @@ scenario('hérédité — la distribution est centrée sur le mélange', () => {
 
 scenario('hérédité — le nid dit ce que le couple transmet', () => {
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 1e12; s.pens = 8; s.primes.pension = true; jeu.oublierPrimes();
+  s.tuto = false; s.coins = 1e12; s.pens = 8; s.ciel = Object.assign(s.ciel || {}, { nid: 1 }); jeu.oublierPrimes();
   const bete2 = (l, ch, tp, mo, fo) => {
     s.incub[0] = { line: l, p: 9999, kind: 'commun' }; jeu.hatchAll();
     const c = s.pen[s.pen.length - 1];
@@ -5810,7 +5774,7 @@ scenario('album — le martelé frappe plus fort, l’ocellé frappe plus souven
   eq('mais ne touche pas à la force du clic', force, nu);
 
   // et la plonge reste plate, quoi qu'on ait en album
-  equiper(jeu, iMartele, 5);
+  equiper(jeu, iMartele, 3);
   s.coins = 0; s.pen = []; s.incub = [null];
   s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
   jeu.refresh();
