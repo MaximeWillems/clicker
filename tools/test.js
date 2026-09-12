@@ -512,6 +512,51 @@ scenario('hors-ligne — la ferme avance, le tutoriel se tait', () => {
 
 /* ────────────────────────── le bonheur et la frénésie ────────────────────────── */
 
+scenario('écran — un compteur de clics baisse d’au moins un par clic', () => {
+  /* IL TOMBAIT DE QUARANTE-CINQ À TRENTE-SEPT AU PREMIER CLIC d'une partie neuve, et le calcul
+     était juste : le clic avait avancé l'œuf d'une seconde sur quarante-cinq, et il avait
+     AUSSI ouvert le combo, qui multiplie la force par 1,2 dès le premier coup. Quarante-quatre
+     divisé par 1,2 fait trente-sept.
+
+     LE COMPTEUR RÉPONDAIT DONC À UNE AUTRE QUESTION que celle qu'il pose : non pas « combien
+     de clics » mais « combien s'il te plaît continue exactement à ce rythme ». Un compteur qui
+     saute de huit quand on a fait une unité de travail est un compteur qu'on cesse de lire —
+     et le joueur l'a lu comme un reset qui n'avait pas tout remis à zéro.
+
+     LA RÈGLE TIENT EN UNE PHRASE : un compteur de clics compte des clics, donc un clic le fait
+     baisser d'au moins un. Jamais de huit, et jamais zéro. */
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const suj = jeu.current();
+  const dure = jeu.hatchTime(suj.slot);
+  const lire = () => parseInt(jeu.remaining(dure - suj.slot.p, 0, suj), 10);
+
+  const depart = lire();
+  eq('un œuf commun nu demande quarante-cinq clics', depart, 45);
+
+  let avant = depart;
+  for (let i = 0; i < 20; i++) {
+    jeu.tapStage();
+    const apres = lire();
+    ok('le clic ' + (i + 1) + ' fait baisser d’au moins un', apres <= avant - 1,
+       avant + ' → ' + apres);
+    ok('et jamais de plus de trois', apres >= avant - 3, avant + ' → ' + apres);
+    avant = apres;
+  }
+
+  /* ET LE COMBO SE VOIT EN AVANCE, PAS EN SAUT : après vingt clics il en reste moins que
+     vingt-cinq, parce que la série a porté plus loin que ce que le compteur promettait. */
+  ok('la série a pris de l’avance sur le compteur', avant < depart - 20,
+     'reste ' + avant + ' après 20 clics');
+
+  /* LE COMPTEUR ET LE CLIC PASSENT PAR LA MÊME LIGNE, au combo et à la frénésie près. Ils
+     divergeaient : le compteur divisait par la force de la main, le clic appliquait en plus la
+     vitesse de l'album et la part automatique. Sur un œuf nu les deux coïncidaient, ce qui est
+     la pire façon pour une faute de passer — elle attend la première carte de vitesse. */
+  eq('au repos, le clic vaut ce que le compteur annonce',
+     jeu.clicAuRepos(suj), jeu.clickGain(suj) / jeu.comboMult());
+});
+
 scenario('absence — bornée, et elle ne rend qu’un quart de ce qu’elle a duré', () => {
   const jeu = neuf();
   ok('le plafond tient en deux heures', jeu.OFFLINE_CAP === 2 * 3600, jeu.OFFLINE_CAP);

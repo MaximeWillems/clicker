@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.28.2';
+const VERSION = 'beta 4.28.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -4241,10 +4241,18 @@ function tickCombo() {
 /* Le doublement se pose ICI, à la source : clickGain en découle, et `remaining()` compte
    déjà en clics à partir de la même fonction — la frénésie annonce donc toute seule qu'il
    reste deux fois moins de clics à donner, sans une ligne de plus. */
-const clickPower  = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
-                          (prime('main') ? 2 : 1) * (enFrenesie() ? FRENESIE_X : 1) *
-                          comboMult() *
-                          (1 + bonusAlbum().clic + bonusPrimes().clic + bonusCiel().clic);
+/* ── CE QUE VAUT UNE MAIN, EN DEUX MORCEAUX ───────────────────────────────────
+   `clickPowerNu` est la force PERMANENTE : les améliorations, les primes, l'album, le ciel.
+   `clickPower` y ajoute les deux bonus qui vont et viennent — la frénésie et le combo.
+
+   LA COUPURE N'EST PAS COSMÉTIQUE : elle sépare ce qu'on peut ANNONCER de ce qu'on ne peut
+   que constater. Le compteur « il reste n clics » se calcule sur la part permanente, sinon il
+   saute dès qu'un bonus s'allume et cesse de compter des clics. Le clic lui-même, lui, prend
+   tout : c'est bien la main entière qui frappe. */
+const clickPowerNu = () => (1 + force('clic') + (prime('poigne') ? 3 : 0)) *
+                           (prime('main') ? 2 : 1) *
+                           (1 + bonusAlbum().clic + bonusPrimes().clic + bonusCiel().clic);
+const clickPower  = () => clickPowerNu() * (enFrenesie() ? FRENESIE_X : 1) * comboMult();
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
@@ -4294,6 +4302,10 @@ const autoReel = s => autoRate(s) * albumVitesse(s) * coefIdle();
 const CLIC_POUSSE = 1 / (3 * ELEVEUR_X);
 const partClic  = s => s.kind === 'creature' && !estMur(s.c) ? CLIC_POUSSE : 1;
 const clickGain = s => clickPower() * albumVitesse(s) * Math.max(1, autoRate(s) * partClic(s));
+/* LE MÊME CALCUL, LES DEUX BONUS PASSAGERS EN MOINS. C'est ce que le compteur annonce, et
+   il ne peut pas diverger du clic : les deux passent par la même ligne au même facteur
+   près. */
+const clicAuRepos = s => clickPowerNu() * albumVitesse(s) * Math.max(1, autoRate(s) * partClic(s));
 
 /* ── UNE BÊTE FINIE ────────────────────────────────────────────────────────────
    TROIS PLAFONDS À LA FOIS : l'âge légende, le niveau cent, et le dernier rang de taille.
@@ -4453,12 +4465,30 @@ function fmtTime(s) {
 
 /* Deux compteurs, jamais les deux à la fois. Tant que rien ne pousse tout seul, annoncer
    des secondes serait un mensonge : ce qui reste à faire se mesure en clics. Dès qu'un
-   automate tourne, c'est le temps qui compte — et lui seul. Afficher « ou n clics » à
-   côté donnait deux unités pour une même attente, et invitait à marteler une barre qui
-   avançait déjà. */
-function remaining(left, speed) {
+   automate tourne, c'est le temps qui compte — et lui seul.
+
+   ── UN COMPTEUR DE CLICS COMPTE DES CLICS, DONC UN CLIC LE FAIT BAISSER DE UN ──
+   Il tombait de QUARANTE-CINQ À TRENTE-SEPT au premier clic d'une partie neuve, et c'était
+   arithmétiquement juste : le clic avait avancé l'œuf d'une seconde sur quarante-cinq, et il
+   avait AUSSI ouvert le combo, qui multiplie la force par 1,2 dès le premier coup. Quarante-
+   quatre divisé par 1,2 fait trente-sept. Le compteur répondait donc à une autre question que
+   celle qu'il pose — « combien de clics s'il te plaît continue exactement à ce rythme » — et un
+   compteur qui saute de huit quand on a fait une unité de travail est un compteur qu'on cesse
+   de lire.
+
+   IL SE CALCULE MAINTENANT AU REPOS : la force permanente, sans les deux bonus qui vont et
+   viennent — le combo et la frénésie. Un clic le fait baisser d'exactement un, et les bonus se
+   voient là où ils doivent se voir : la barre finit AVANT que le compteur n'arrive à zéro.
+   Une bonne surprise plutôt qu'un nombre instable.
+
+   ET IL DEMANDE CE QU'UN CLIC RAPPORTE, PAS CE QUE LA MAIN VAUT. Il divisait par
+   `clickPower()` quand le clic, lui, applique `clickGain(s)` — lequel multiplie encore par la
+   vitesse de l'album et par la part automatique. Deux formules pour une même chose : elles
+   coïncidaient sur un œuf nu, et divergeaient dès la première carte de vitesse. C'est la faute
+   que ce dépôt poursuit partout ailleurs, et elle était ici depuis le début. */
+function remaining(left, speed, s) {
   if (speed > 0) return fmtTime(left / speed);
-  const n = Math.max(1, Math.ceil(left / clickPower()));
+  const n = Math.max(1, Math.ceil(left / clicAuRepos(s)));
   return n + (n > 1 ? ' clics' : ' clic');
 }
 
@@ -7288,7 +7318,7 @@ function renderOeuf(s) {
     setWidth($('stage-fill'), Math.min(100, (slot.p / hatchTime(slot)) * 100) + '%');
     setText($('stage-timer'), ready
       ? (penFull() ? 'enclos plein — vends ou achète un enclos' : 'ça sort !')
-      : remaining(hatchTime(slot) - slot.p, autoReel(s)));
+      : remaining(hatchTime(slot) - slot.p, autoReel(s), s));
     $('stage-timer').classList.toggle('done', ready);
     setText($('stage-hint'), state.up.couveuse
       ? '' : 'Clique sur l’œuf pour le faire éclore. Rien n’avance tout seul au début.');
@@ -7361,7 +7391,7 @@ function renderBete(s) {
     const pas = ageGrow(c) / nivDansAge(c.age);
     const dedans = (c.p - bandFrom(c)) - nivDansTranche(c) * pas;
     setWidth($('stage-fill'), Math.min(100, (dedans / pas) * 100).toFixed(1) + '%');
-    setText($('stage-timer'), remaining((pas - dedans) / growRate(c), autoReel(s)) +
+    setText($('stage-timer'), remaining((pas - dedans) / growRate(c), autoReel(s), s) +
       ' → niv. ' + (niv + 1) + (niv + 1 === dernier ? ' · mûre' : ''));
     $('stage-timer').classList.remove('done');
     setText($('stage-hint'), state.up.eleveur
@@ -7375,7 +7405,7 @@ function renderBete(s) {
       // si la mangeoire engraisse toute seule, en clics si c'est à toi de le faire.
       const cible = (Math.exp((rank.next.at - 1) / OVER_GAIN) - 1) * ageGrow(c);
       setText($('stage-timer'),
-        remaining(cible - (c.over || 0), autoReel(s)) + ' → ' + rank.next.fem +
+        remaining(cible - (c.over || 0), autoReel(s), s) + ' → ' + rank.next.fem +
         ' (' + fmt(baseValue(c) * rank.next.at) + ')');
     } else {
       setWidth($('stage-fill'), '100%');

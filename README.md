@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.28.2** | « effacer la partie » pose un état neuf AVANT d’effacer, et remet ce qui ne vit pas dans la sauvegarde — le geste devient une fonction, donc il se vérifie |
+| **beta 4.28.3** | le compteur « il reste n clics » tombait de 45 à 37 au premier clic : il comptait le combo que ce clic venait d’ouvrir |
+| beta 4.28.2 | « effacer la partie » pose un état neuf AVANT d’effacer, et remet ce qui ne vit pas dans la sauvegarde — le geste devient une fonction, donc il se vérifie |
 | beta 4.28.1 | un scénario compare l’état d’après-saut à une partie neuve, clé par clé : un champ oublié dans la recopie ressemble à du progrès |
 | beta 4.28.0 | la pension quitte les primes et entre dans la constellation, dont l’axe s’ouvre en fourche : un tronc et deux branches, chacune son cadran |
 | beta 4.27.0 | chaque évolution devient un mur, la merveille prend un cran de puissance au-dessus de la mythique, et garder ne vaut plus 740 fois vendre mais 2,3 |
