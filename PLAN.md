@@ -469,6 +469,147 @@ davantage qu'aujourd'hui. Les faire commencer au millier rendrait chaque jeton v
 de retarder le tout premier ; il faudrait alors décider si le compteur d'ouverture de
 l'ascension suit ou non.
 
+### La constellation remaniée — plan
+
+La devise : **plus pour moins.** Plus de nœuds, moins chers, et plus clairs. Quatre demandes,
+dont trois sont peu coûteuses et une qui touche au dessin.
+
+#### Ce qui est là aujourd'hui
+
+Vingt-cinq nœuds, **372 jetons** au total, six axes de quatre nœuds en ligne droite plus
+l'étincelle au centre. Un nœud porte `cle`, `axe`, `parent`, `prix`, `glyphe`, `nom`, `dit`.
+
+Deux choses sont déjà en place et ne demandent rien :
+
+- **`parent` décrit déjà un arbre.** Rien dans le modèle n'impose la ligne droite ; c'est le
+  DESSIN qui l'impose, et lui seul.
+- **`etoileOuverte(n)` = `!n.parent || etoilePrise(n.parent)`.** Le prérequis existe. Aujourd'hui
+  un nœud fermé est *visible et verrouillé* ; le cacher est un filtre au dessin, pas une règle
+  neuve.
+
+Et une chose sépare les nœuds en deux : **douze sur vingt-cinq portent un champ `bonus`**
+générique, que `bonusCiel()` additionne tout seul. Les treize autres sont câblés à la main, un
+`etoilePrise('…')` posé à l'endroit qui les consomme. C'est le levier de « plus pour moins » :
+ajouter un nœud à `bonus` ne coûte qu'une ligne de table, ajouter un nœud câblé coûte une
+modification dans le code du jeu.
+
+#### 1 · La prime de pension disparaît
+
+`{ cle: 'pension', prix: 400 000 }` sort de `PRIMES`. `prime('pension')` est lu à **cinq
+endroits** : le refus de couple, le compte de places, le nid ouvert, l'affichage du bâtiment et
+sa phrase. Tous liront la constellation à la place.
+
+Le premier nœud de l'axe *pension* devient donc **la construction du bâtiment**, et non plus son
+premier agrandissement. C'est un déplacement de sens autant que de code : la pension cesse d'être
+une prime qu'on achète au passage pour devenir une décision de cycle.
+
+**Migration obligatoire.** Une partie en cours a pu payer la prime ; elle doit recevoir le nœud,
+sinon elle perd sa pension et ses couples deviennent illisibles. Une partie qui ne l'avait pas
+doit se voir rembourser… rien, elle n'a rien payé. Le cas à ne pas manquer : une partie qui a la
+prime ET des couples en cours.
+
+*Trouvé en passant :* la prime pension déclare `glyphe: '🛖'` **deux fois** dans le même objet.
+Sans effet — la seconde écrase la première — mais c'est une clé en double, et elle part avec.
+
+#### 2 · La découverte progressive
+
+Demandé : un nœud est caché tant que le précédent n'est pas acheté.
+
+**Ça contredit une doctrine écrite**, et il faut le dire avant de choisir : *« un arbre qu'on voit
+entier d'un coup n'a pas de profondeur, et ce qu'on vise à trente jetons doit être loin »*. Tout
+cacher supprime l'horizon — on ne vise plus rien, on avance d'un pas à la fois sans savoir vers
+quoi.
+
+**La voie du milieu, et c'est celle que je recommande :** trois états au lieu de deux.
+
+| état | ce qu'on voit |
+|---|---|
+| **acquis** | tout, en pleine lumière |
+| **ouvert** — le parent est pris | tout : glyphe, nom, prix, et la carte au clic |
+| **deviné** — plus loin | la position et le trait qui l'y relie, un point sourd, sans nom ni prix |
+
+On garde la profondeur — on VOIT qu'il y a trois nœuds derrière, et qu'une branche bifurque — et
+on découvre CE QUE C'EST en arrivant dessus. Avec des bifurcations, ça compte double : la
+surprise n'est plus « il y a quelque chose », elle devient « lequel des deux ».
+
+#### 3 · Les bifurcations — la seule vraie difficulté
+
+**Le blocage est dans une seule fonction, et il est net.** `cieuxXY` place un nœud ainsi :
+
+```js
+const i = PAR_AXE[n.axe].indexOf(n);          // son rang dans la LISTE de l'axe
+const r = CIEL_VUE.rayon[Math.min(i, 4)];     // un rayon fixe par rang
+```
+
+La position vient de l'INDICE DANS LA LISTE, pas de la profondeur dans l'arbre. **Deux frères
+tomberaient exactement au même point.** C'est là, et nulle part ailleurs, que se joue la
+bifurcation.
+
+Le remède est une vraie disposition d'arbre, et elle tient en deux règles :
+
+- **le rayon vient de la profondeur** — le nombre de `parent` à remonter jusqu'à l'étincelle ;
+- **l'angle se partage entre frères** — chaque nœud reçoit un secteur angulaire, et le divise
+  entre ses enfants. Le balancement de ±6° qui sert aujourd'hui à ce que trois nœuds alignés
+  ne fassent pas une règle devient inutile : l'arbre s'écarte tout seul.
+
+Six axes sur 360° font 60° par axe. Un tronc de trois nœuds plus deux branches de trois tient
+dans ce secteur sans se croiser, à condition que le rayon croisse assez vite.
+
+**La forme proposée, par axe :**
+
+```
+   tronc  ──●────●────●          trois augments DIFFÉRENTES, de plus en plus chères
+              ├── ●──●──●        une branche : le MÊME effet, par crans
+              └── ●──●──●        l'autre branche : un autre effet, par crans
+```
+
+Sur l'axe de la couvée, pour reprendre ton exemple : le tronc donne trois choses distinctes, une
+branche monte la vitesse de couvaison cran par cran, l'autre ajoute des emplacements.
+
+**Neuf nœuds par axe × six axes + l'étincelle = 55 nœuds**, contre 25.
+
+#### 4 · La carte de détail
+
+Aujourd'hui le détail d'un nœud est un `<title>` SVG — une infobulle. C'est l'un des *« trente
+informations qui n'existent que dans une infobulle »* déjà comptées au chantier de l'écran : elle
+ne s'ouvre pas au doigt, elle ne se lit pas à la voix, et elle ne peut pas porter de bouton.
+
+Au clic, une **carte latérale** : le nom, le glyphe, la phrase, l'effet chiffré, le prix, et le
+bouton d'achat. Elle reste ouverte pendant qu'on regarde l'arbre, donc on peut comparer deux
+nœuds d'une branche avant de choisir — ce qui est exactement la décision qu'une bifurcation crée.
+
+C'est aussi ce qui rend l'achat sûr : aujourd'hui un clic sur une étoile l'achète. Avec des
+branches exclusives, un clic qui engage sans montrer est une faute qui coûte un cycle.
+
+#### « Plus pour moins » — la forme chiffrée
+
+| | aujourd'hui | proposé |
+|---|---|---|
+| nœuds | 25 | **55** |
+| coût total | 372 jetons | **≈ 235** |
+| prix moyen | 14,9 | **4,3** |
+| le nœud le plus cher | 30 | **10** |
+| cycles pour tout prendre, au débit actuel | 54 | **34** |
+| idem avec l'échelle de jetons ×10 | 31 | **20** |
+
+Le barème proposé, par axe : **tronc 3 / 6 / 10**, **branches 2 / 3 / 5** chacune. Soit 19 pour le
+tronc et 10 par branche, 39 par axe, 234 pour les six, plus l'étincelle.
+
+Rien ne dépasse dix jetons. Un nœud se paie donc en un cycle, parfois deux — et l'arbre entier
+reste un objet de plusieurs dizaines d'ascensions. C'est la cadence qui change, pas l'horizon.
+
+#### Ce qu'il reste à trancher
+
+1. **Les branches sont-elles exclusives ?** Le plan dit ailleurs : *« ce qu'on ne prend pas doit
+   être perdu pour ce cycle »*. Deux branches qu'on peut prendre toutes les deux ne sont qu'une
+   liste de courses plus longue — c'est la faute que l'arbre devait éviter. Deux branches dont
+   une seule s'ouvre font une vraie décision, mais le « Tout reprendre » existant devient
+   indispensable pour ne pas enfermer une partie sur un mauvais choix.
+2. **Trois états ou deux ?** Silhouette pour ce qui est loin, ou noir complet ?
+3. **Les treize nœuds câblés à la main** : les convertir en `bonus` génériques quand c'est
+   possible, ou accepter que les nouveaux nœuds soient surtout des crans d'effets déjà branchés ?
+   La seconde voie est beaucoup moins chère et suffit aux branches.
+
 ### Les faveurs, ou ce qu'on fait quand la liste se termine
 
 Les primes sont cinquante et une, et **les dix dernières sont presque toutes de pension** —
