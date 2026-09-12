@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.29.0** | l’œuf commun coûte enfin les cinquante clics qu’il annonce : sa couvaison était écrite en secondes, vécue en clics, et le combo mangeait la différence |
+| **beta 4.30.0** | le combo quitte le socle pour devenir une branche de la main : une première partie se joue à main nue, où une seconde de couvaison vaut un clic. Et la fourche se voit enfin dans le ciel |
+| beta 4.29.0 | l’œuf commun coûte enfin les cinquante clics qu’il annonce : sa couvaison était écrite en secondes, vécue en clics, et le combo mangeait la différence |
 | beta 4.28.4 | le compteur annonçait 45 clics pour un œuf qui en demandait 27, et baissait de deux par clic : il compte maintenant la série, terme à terme, et tombe d’exactement un par clic |
 | beta 4.28.3 | le compteur « il reste n clics » tombait de 45 à 37 au premier clic : il comptait le combo que ce clic venait d’ouvrir |
 | beta 4.28.2 | « effacer la partie » pose un état neuf AVANT d’effacer, et remet ce qui ne vit pas dans la sauvegarde — le geste devient une fonction, donc il se vérifie |

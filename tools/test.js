@@ -559,7 +559,7 @@ scenario('écran — un compteur de clics annonce le nombre de clics qu’il fau
     eq('le clic ' + (i + 1) + ' le fait baisser d’exactement un', apres, avant - 1);
     avant = apres;
   }
-  ok('le combo a bien chauffé pendant ce temps', jeu2.comboMult() > 1.5, jeu2.comboMult());
+  eq('et à main nue le combo n’y est pour rien', jeu2.comboMult(), 1);
 
   /* ET IL FINIT SUR « 1 clic », jamais sur deux : le dernier clic est annoncé comme le dernier. */
   while (jeu2.current() && jeu2.current().kind === 'egg' && lire2() > 1) jeu2.tapStage();
@@ -571,6 +571,28 @@ scenario('écran — un compteur de clics annonce le nombre de clics qu’il fau
      la pire façon pour une faute de passer — elle attend la première carte de vitesse. */
   eq('au repos, le clic vaut ce que le compteur annonce',
      jeu2.clicAuRepos(suj2), jeu2.clickGain(suj2) / jeu2.comboMult());
+
+  /* ── ET AVEC LA BRANCHE DE LA SÉRIE, LÀ OÙ LE COMPTE EST DIFFICILE ──
+     À main nue le compteur n'a rien à calculer : une seconde vaut un clic, et n'importe quelle
+     division juste tombe dessus. C'est une fois le combo acheté qu'il doit compter une somme
+     dont chaque terme est plus grand que le précédent — et c'est pour CE cas-là qu'il existe.
+     Le vérifier seulement à main nue reviendrait à ne pas le vérifier du tout. */
+  const jeu3 = neuf(); jeu3.state.tuto = false;
+  jeu3.state.ciel = { poing: true, 'serie-1': true, 'serie-2': true, 'serie-3': true };
+  const suj3 = jeu3.current();
+  const dure3 = jeu3.hatchTime(suj3.slot);
+  const lire3 = () => parseInt(jeu3.remaining(dure3 - suj3.slot.p, 0, suj3), 10);
+  const promis3 = lire3();
+  let av3 = promis3, donnes3 = 0;
+  while (jeu3.current() && jeu3.current().kind === 'egg' && donnes3 < 200) {
+    jeu3.tapStage(); donnes3++;
+    if (!jeu3.current() || jeu3.current().kind !== 'egg') break;
+    const ap = lire3();
+    eq('sous le combo aussi, un clic le fait baisser d’exactement un', ap, av3 - 1);
+    av3 = ap;
+  }
+  eq('et la promesse tient sous le combo', donnes3, promis3);
+  ok('le combo a bien raccourci l’ouvrage', promis3 < promis, promis3 + ' contre ' + promis);
 
   /* LA BOUCLE EST BORNÉE : un ouvrage démesuré ne doit pas faire tourner cent mille tours. */
   const t0 = Date.now();
@@ -624,17 +646,48 @@ scenario('absence — bornée, et elle ne rend qu’un quart de ce qu’elle a d
   ok('et elle rend quand même quelque chose', nuit > 0, nuit);
 });
 
-scenario('combo — il monte en racine, plafonne, et tombe à quinze secondes', () => {
+scenario('combo — il ne se donne plus, il s’achète, et il monte en racine', () => {
+  /* IL ÉTAIT LÀ DÈS LE PREMIER CLIC D'UNE PARTIE NEUVE, et il mangeait l'ouverture en silence.
+     Le fichier écrit ses cadences en CLICS — « quarante-cinq clics avant de voir ce qui sort »,
+     « dix clics par niveau » — et les range en SECONDES ; le combo coupait la différence.
+     L'œuf tombait en vingt-sept clics au lieu de cinquante, le niveau en trois au lieu de dix.
+     Deux intentions écrites en toutes lettres dans le fichier, aucune tenue, et rien pour le
+     dire : le compteur mentait dans le même sens.
+
+     IL EST MAINTENANT UNE BRANCHE DU CIEL. Une première partie se joue à main nue — une
+     seconde vaut un clic — et la deuxième run se sent dans la main, ce qui est exactement ce
+     qu'une ascension doit produire. */
   const jeu = neuf(); const s = jeu.state;
-  s.tuto = false;
+  s.tuto = false; s.ciel = s.ciel || {};
   const c = bete(jeu, 'crapaud', 1, 0);
   jeu.select('c:' + c.id);
-  eq('rien tant qu’on n’a pas cliqué', jeu.comboMult(), 1);
+
+  eq('à main nue le plafond vaut un', jeu.plafondCombo(), 1);
+  for (let i = 0; i < 200; i++) jeu.tapStage();
+  eq('et deux cents clics n’y changent rien', jeu.comboMult(), 1);
+  eq('la série est bien comptée pour autant', jeu.combo, jeu.COMBO_PLEIN);
+
+  /* LES TROIS CRANS, UN À UN. Le dernier rend ce que le combo valait quand il était donné :
+     la branche entière ne fait que ramener au point de départ d'avant, contre vingt-huit
+     jetons. C'est la mesure de ce qui était offert. */
+  const crans = [['serie-1', 1.5], ['serie-2', 2.2], ['serie-3', 3]];
+  for (const [cle, haut] of crans) {
+    s.ciel[cle] = true;
+    eq('« ' + cle + ' » porte le plafond à ' + haut, jeu.plafondCombo(), haut);
+  }
+  eq('et le dernier cran rend l’ancien plafond', jeu.plafondCombo(), 3);
 
   /* LA RACINE PLUTÔT QUE LA PENTE DROITE, ET C'EST UNE QUESTION DE LISIBILITÉ : en pente
      droite, neuf clics donnent ×1,18 sur un clic qui ne pèse déjà rien, et personne ne
      découvre que la mécanique existe. En racine ils donnent ×1,60. */
-  const mult = n => { for (let i = 0; i < n; i++) jeu.tapStage(); return jeu.comboMult(); };
+  const branche = () => {
+    const j = neuf(); j.state.tuto = false;
+    j.state.ciel = { 'serie-1': true, 'serie-2': true, 'serie-3': true };
+    const b = bete(j, 'crapaud', 1, 0); j.select('c:' + b.id);
+    return j;
+  };
+  const j2 = branche();
+  const mult = n => { for (let i = 0; i < n; i++) j2.tapStage(); return j2.comboMult(); };
   const a9 = mult(9);
   ok('neuf clics valent déjà 1,60', Math.abs(a9 - 1.6) < 0.01, a9);
   const a25 = mult(16);
@@ -644,8 +697,7 @@ scenario('combo — il monte en racine, plafonne, et tombe à quinze secondes', 
      et c'est voulu. Le combo ne dit pas « plus tu enchaînes, mieux c'est », il dit « atteins
      le plateau vite, puis tiens-le » — ce que la règle des quinze secondes décrit déjà. */
   const pente = n => {
-    const j = neuf(); j.state.tuto = false;
-    const b = bete(j, 'crapaud', 1, 0); j.select('c:' + b.id);
+    const j = branche();
     for (let i = 0; i < n - 1; i++) j.tapStage();
     const avant = j.comboMult(); j.tapStage();
     return j.comboMult() - avant;
@@ -654,25 +706,94 @@ scenario('combo — il monte en racine, plafonne, et tombe à quinze secondes', 
      Math.abs(pente(10) / pente(90) - 3.1) < 0.2, (pente(10) / pente(90)).toFixed(2));
 
   mult(200);
-  eq('il plafonne, et le compte avec lui', jeu.combo, jeu.COMBO_PLEIN);
-  eq('au plafond exact', jeu.comboMult(), jeu.COMBO_MAX);
+  eq('il plafonne, et le compte avec lui', j2.combo, j2.COMBO_PLEIN);
+  eq('au plafond exact', j2.comboMult(), 3);
 
   /* QUINZE SECONDES SANS CLIC ET TOUT TOMBE — pas une décroissance, une chute. On déplace
      l'horloge plutôt que d'attendre. */
   const vrai = Date.now;
   try {
-    Date.now = () => vrai() + (jeu.COMBO_FIN - 1) * 1000;
-    jeu.tickCombo();
-    eq('quatorze secondes ne suffisent pas', jeu.combo, jeu.COMBO_PLEIN);
-    Date.now = () => vrai() + (jeu.COMBO_FIN + 1) * 1000;
-    jeu.tickCombo();
-    eq('quinze secondes emportent tout', jeu.combo, 0);
-    eq('et le multiplicateur avec', jeu.comboMult(), 1);
+    Date.now = () => vrai() + (j2.COMBO_FIN - 1) * 1000;
+    j2.tickCombo();
+    eq('quatorze secondes ne suffisent pas', j2.combo, j2.COMBO_PLEIN);
+    Date.now = () => vrai() + (j2.COMBO_FIN + 1) * 1000;
+    j2.tickCombo();
+    eq('quinze secondes emportent tout', j2.combo, 0);
+    eq('et le multiplicateur avec', j2.comboMult(), 1);
   } finally { Date.now = vrai; }
 
   /* IL NE SE SAUVEGARDE PAS : un rechargement est une absence, et garder la série en ferait
      un raccourci. C'est une variable de module, pas un champ de `state`. */
   ok('il ne vit pas dans l’état sauvegardé', !('combo' in s), Object.keys(s).join(' '));
+});
+
+scenario('ciel — la série est une branche, et une branche se voit', () => {
+  /* LE COMBO EST DEVENU UNE VOIE QU'ON CHOISIT. Trois crans accrochés au poing, qui portent le
+     plafond de 1 à 1,5, 2,2 puis 3 — le dernier rendant exactement ce qui était donné à tous. */
+  const jeu = neuf();
+  const par = Object.fromEntries(jeu.CIEL.map(n => [n.cle, n]));
+  for (const cle of ['serie-1', 'serie-2', 'serie-3']) {
+    ok(cle + ' existe', !!par[cle]);
+    eq(cle + ' tient à la main', par[cle].axe, 'main');
+    eq(cle + ' est sur la branche de la série', par[cle].branche, 'serie');
+    ok(cle + ' dit ce qu’il fait', (par[cle].dit || '').length > 30);
+  }
+  eq('la série s’accroche au poing', par['serie-1'].parent, 'poing');
+  eq('puis s’enchaîne', par['serie-2'].parent, 'serie-1');
+  eq('jusqu’au bout', par['serie-3'].parent, 'serie-2');
+  eq('et la branche entière coûte vingt-huit jetons',
+     par['serie-1'].prix + par['serie-2'].prix + par['serie-3'].prix, 28);
+
+  /* ── UNE FOURCHE QUI NE SE VOIT PAS N'EST PAS UNE FOURCHE ──
+     Les étoiles tombaient par leur INDICE DANS LA LISTE de l'axe : deux nœuds de branches
+     différentes prenaient deux indices consécutifs et se dessinaient l'un derrière l'autre.
+     `place-1` et `hate-1` se superposaient depuis que la pension s'ouvre en fourche.
+
+     Le rayon se lit maintenant sur la chaîne des parents, l'angle sur la branche. Deux nœuds
+     du même rang tombent au même anneau, écartés de part et d'autre du tronc. */
+  const loin = (a, b) => {
+    const p = jeu.cieuxXY(par[a]), q = jeu.cieuxXY(par[b]);
+    return Math.hypot(p.x - q.x, p.y - q.y);
+  };
+  ok('les deux premiers crans de la pension ne se superposent plus',
+     loin('place-1', 'hate-1') > 2 * jeu.CIEL_VUE.r, Math.round(loin('place-1', 'hate-1')));
+  ok('et le tronc ne passe pas dessus non plus',
+     loin('place-1', 'sang-epais') > 2 * jeu.CIEL_VUE.r, Math.round(loin('place-1', 'sang-epais')));
+  ok('la série s’écarte du tronc de la main',
+     loin('serie-1', 'doigts') > 2 * jeu.CIEL_VUE.r, Math.round(loin('serie-1', 'doigts')));
+
+  /* AUCUNE ÉTOILE N'EN RECOUVRE UNE AUTRE, nulle part dans le ciel. C'est la seule garde qui
+     tienne : une paire vérifiée à la main laisse passer la suivante. */
+  let pire = Infinity, coupable = '';
+  for (let i = 0; i < jeu.CIEL.length; i++) {
+    for (let k = i + 1; k < jeu.CIEL.length; k++) {
+      const d = loin(jeu.CIEL[i].cle, jeu.CIEL[k].cle);
+      if (d < pire) { pire = d; coupable = jeu.CIEL[i].cle + ' / ' + jeu.CIEL[k].cle; }
+    }
+  }
+  ok('la paire la plus serrée du ciel garde deux rayons d’écart',
+     pire > 2 * jeu.CIEL_VUE.r, coupable + ' à ' + Math.round(pire) + ' px');
+
+  /* ET LE RANG SE LIT SUR LES PARENTS, PAS SUR LA LISTE : un nœud ajouté au milieu de la table
+     ne doit déplacer personne. */
+  eq('le poing est au premier anneau', jeu.profondeurEtoile(par.poing), 1);
+  eq('la série aussi est au deuxième', jeu.profondeurEtoile(par['serie-1']), 2);
+  eq('comme les doigts', jeu.profondeurEtoile(par.doigts), 2);
+});
+
+scenario('sauvegarde — qui avait pris le poing garde une série', () => {
+  /* Le combo était donné à tous. Personne ne l'avait payé, donc il n'y a rien à rembourser —
+     mais une partie qui a déjà acheté la main a choisi la présence, et lui couper net ce qui
+     la récompensait serait reprendre d'une main ce qu'on lui a vendu de l'autre. */
+  const avec = neuf({ v: 30, ciel: { poing: true, renom: true } });
+  ok('elle reçoit le premier cran', avec.state.ciel['serie-1'], JSON.stringify(avec.state.ciel));
+  eq('et son plafond n’est plus un', avec.plafondCombo(), 1.5);
+  ok('rien d’autre ne lui est donné', !avec.state.ciel['serie-2'] && !avec.state.ciel['serie-3']);
+
+  const sans = neuf({ v: 30, ciel: { renom: true } });
+  ok('une partie qui n’avait pas la main repart à main nue', !sans.state.ciel['serie-1'],
+     JSON.stringify(sans.state.ciel));
+  eq('son plafond vaut un', sans.plafondCombo(), 1);
 });
 
 scenario('combo et idle — la carte ocellée est neutre aux deux', () => {

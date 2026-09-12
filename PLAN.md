@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.29.0 · sauvegarde v30 · sauvegarde v29 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.30.0 · sauvegarde v31 · sauvegarde v30 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -397,7 +397,7 @@ partie, et trois fois, ça se vit comme « on n'en gagne qu'à l'ascension ».
 
 #### Ce qui est mesuré
 
-La constellation coûte **372 jetons** — vingt-cinq nœuds, de 1 à 30 pièces.
+La constellation coûtait **372 jetons** — vingt-cinq nœuds, de 1 à 30 pièces. *(Le remaniement l’a portée à 32 nœuds pour 370 jetons : la pension ouverte en fourche en `beta 4.28.0`, la série du combo en `beta 4.30.0`. Le tableau ci-dessous est celui d’avant, qui est la mesure dont part le raisonnement.)*
 
 | axe | nœuds | coût |
 |---|---|---|
@@ -472,8 +472,10 @@ l'ascension suit ou non.
 ### La constellation remaniée — **la mécanique est livrée en `beta 4.28.0`**
 
 > Livré : le moyeu gratuit, la prime de pension retirée, l’axe de la pension ouvert en fourche,
-> et le compteur de branche qui rend un cran gratuit à écrire. Restent la DISPOSITION en arbre
-> (`cieuxXY`), les trois états, la carte de détail au clic, et les cinq autres axes.
+> le compteur de branche qui rend un cran gratuit à écrire, la DISPOSITION en arbre (`beta 4.30.0`
+> — le rayon se lit sur la chaîne des parents, l’angle sur la branche, donc une voie de plus
+> s’ouvre toute seule), et le combo devenu branche de la main. Restent les trois états, la carte
+> de détail au clic, et les quatre autres axes.
 
 La devise : **plus pour moins.** Plus de nœuds, moins chers, et plus clairs. **Aucune branche
 n'est exclusive** — on peut tout prendre, un jour. Ce qui rationne, c'est le jeton, donc le

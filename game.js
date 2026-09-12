@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.29.0';
+const VERSION = 'beta 4.30.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -280,19 +280,21 @@ const EGG_KINDS = [
   /* Dix-huit et non douze : c'est l'autre moitié du resserrement de l'ouverture. Une commune
      mûre en rend trente, donc un cycle laisse douze pièces au lieu de vingt-huit.
 
-     ── LA COUVAISON EST ÉCRITE EN SECONDES MAIS SE VIT EN CLICS, et les deux avaient divergé.
-     Elle disait quarante-cinq, et la ligne d'à côté disait pourquoi : « quarante-cinq clics
-     avant de voir ce qui sort ». Sauf qu'un clic ne vaut pas une seconde — le combo le pousse
-     de ×1 à ×3 au fil de la série, et l'œuf tombait en VINGT-SEPT clics. L'intention était
-     dans le fichier, en toutes lettres, et elle n'était pas tenue : le compteur mentait dans
-     le même sens, donc rien ne le disait.
+     ── UNE SECONDE DE COUVAISON VAUT UN CLIC, ET C'EST REDEVENU VRAI. La table écrit des
+     SECONDES, la ligne d'à côté disait « quarante-cinq clics avant de voir ce qui sort », et
+     les deux avaient divergé : le combo, donné à tous dès le premier clic, poussait le clic de
+     ×1 à ×3 et l'œuf tombait en VINGT-SEPT. L'intention était dans le fichier, en toutes
+     lettres, et rien ne la tenait — le compteur mentait dans le même sens.
 
-     QUATRE-VINGT-SEIZE SECONDES, C'EST CINQUANTE CLICS — la somme de la série, combo compris,
-     depuis une main qui n'a encore rien. C'est le seul œuf du jeu dont le prix se paie à la
-     main : le rare couve trois minutes et le mythique quarante-cinq, personne ne les clique.
-     Le nombre est donc gardé par un scénario qui joue l'œuf et compte, pas par cette ligne. */
+     LE COMBO EST PARTI AU CIEL, sur la branche de la série. Une première partie se joue donc à
+     main nue, où un clic vaut exactement une seconde : cinquante ici, cinquante à la main.
+     Les crans de la série raccourciront l'ouvrage, et c'est ce qu'on achète.
+
+     C'EST LE SEUL ŒUF DU JEU DONT LE PRIX SE PAIE À LA MAIN : le rare couve trois minutes et
+     le mythique quarante-cinq, personne ne les clique. Le nombre est gardé par un scénario qui
+     joue l'œuf et compte, pas par cette ligne. */
   { key: 'commun', name: 'Œuf commun', price: 18, glyph: '🥚', rarity: 'commune',
-    hatch: 96, odds: { commune: 0.999, rare: 0.001 },
+    hatch: 50, odds: { commune: 0.999, rare: 0.001 },
     dit: 'C’est par là que tout le monde commence.' },
   /* ── L'ESCALIER DES ŒUFS A ÉTÉ REMONTÉ D'UN CRAN ──
      L'œuf rare valait 300 000, soit SIX MINUTES d'une ferme commune mûre — mesuré. À ce
@@ -368,10 +370,10 @@ const EN_VENTE = Object.fromEntries(OEUFS_VENDUS.map(e => [e.key, e]));
 const OEUFS_HAUT_EN_BAS = EGG_KINDS.slice()
   .sort((a, b) => RARITY[b.rarity].rank - RARITY[a.rarity].rank);
 
-/* Plus l'œuf est rare, plus il couve longtemps : 96 s pour un commun, 45 minutes pour un
+/* Plus l'œuf est rare, plus il couve longtemps : 50 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
 
-   Sur une bête commune la couvaison ne pèse rien : 96 s de coquille contre sept heures de
+   Sur une bête commune la couvaison ne pèse rien : 50 s de coquille contre sept heures de
    croissance jusqu'à l'âge légende, soit un millième du cycle. C'est ce qui avait fait
    plafonner la couveuse à 5 — au-delà, on achetait des niveaux pour ne jamais les voir.
 
@@ -1994,6 +1996,19 @@ const CIEL = [
     nom: 'Le fracas', dit: 'Tes clics portent deux fois plus loin encore. En fin de partie, une bête menée au bout paie au clic.',
     bonus: { clic: 2 } },
 
+
+  /* LA SÉRIE · la branche du combo. Elle était offerte à tous dès le premier clic ; elle est
+     maintenant ce qu'on va chercher. Trois crans, trois plafonds — et rien du tout tant que
+     le premier n'est pas pris, ce qui rend à l'ouverture les cadences qu'elle annonce. */
+  { cle: 'serie-1', axe: 'main', parent: 'poing', branche: 'serie', prix: 5, glyphe: '🔥',
+    nom: 'La série',
+    dit: 'Cliquer sans t’arrêter échauffe la main : jusqu’à une fois et demie plus fort après cent clics. Quinze secondes sans cliquer et tout retombe.' },
+  { cle: 'serie-2', axe: 'main', parent: 'serie-1', branche: 'serie', prix: 9, glyphe: '🌋',
+    nom: 'La chauffe',
+    dit: 'La même série monte jusqu’à deux fois deux. La main chauffe plus haut, pas plus vite.' },
+  { cle: 'serie-3', axe: 'main', parent: 'serie-2', branche: 'serie', prix: 14, glyphe: '☄️',
+    nom: 'L’embrasement',
+    dit: 'Jusqu’à trois fois plus fort au bout de cent clics — ce que le combo valait quand il était donné.' },
   // ── LE NÉGOCE · ce que valent tes bêtes ──
   { cle: 'renom', axe: 'negoce', parent: 'etincelle', prix: 4, glyphe: '🏷️',
     nom: 'Le renom', dit: 'Dix pour cent de valeur en plus sur tout ce que tu élèves — vente comme rente.',
@@ -2606,7 +2621,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 30;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 31;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -3077,6 +3092,20 @@ function load() {
         if (merged.ciel[cle]) { rendu += rendus[cle]; delete merged.ciel[cle]; }
       }
       if (rendu && merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + rendu;
+    }
+
+    /* v30 → v31 : le combo quitte le socle et devient une branche de la main. Il était donné
+       à tous dès le premier clic ; il se prend maintenant au ciel, en trois crans.
+
+       QUI AVAIT PRIS LE POING GARDE UNE SÉRIE. Personne n'avait PAYÉ le combo — il n'y a donc
+       rien à rembourser, et la règle du non-dépossèdement ne s'applique pas telle quelle. Mais
+       une partie qui a déjà choisi la main a choisi la présence, et lui couper net ce qui la
+       récompensait serait reprendre d'une main ce qu'on lui a vendu de l'autre. Elle reçoit le
+       premier cran, gratuitement. Les autres repartent à main nue — ce qui EST le changement,
+       et le premier œuf leur coûtera les cinquante clics qu'il annonce. */
+    if ((s.v || 0) < 31) {
+      merged.ciel = merged.ciel || {};
+      if (merged.ciel.poing) merged.ciel['serie-1'] = true;
     }
 
     /* v29 → v30 : LA PENSION QUITTE LES PRIMES, ET L'AXE SE SÉPARE EN TROIS CHEMINS.
@@ -4213,8 +4242,23 @@ const enFrenesie = () => (state.frenesie || 0) > 0;
    la mécanique une automatisation de plus. La doctrine existe déjà dans ce fichier, écrite
    pour la bête finie et pour la plonge : CE QUI RÉCOMPENSE LA PRÉSENCE NE S'AUTOMATISE PAS.
    Ses clics ne montent donc pas le combo, et ne cassent pas l'idle. */
-const COMBO_MAX    = 3;      // le plafond du multiplicateur
-const COMBO_PLEIN  = 100;    // les clics qui y mènent
+/* ── LE COMBO NE SE DONNE PLUS : IL S'ACHÈTE AU CIEL ──────────────────────────
+   Il était là dès le premier clic d'une partie neuve, et il MANGEAIT L'OUVERTURE EN SILENCE.
+   Le fichier écrivait ses cadences en clics — « quarante-cinq clics avant de voir ce qui
+   sort », « dix clics par niveau » — et les rangeait en secondes ; le combo, qui pousse le
+   clic de ×1 à ×3, coupait la différence. L'œuf tombait en vingt-sept clics, le niveau en
+   trois. Deux intentions écrites en toutes lettres, aucune tenue.
+
+   SANS ÉTOILE, UNE SECONDE VAUT UN CLIC, et c'est le socle sur lequel toute l'ouverture est
+   réglée : le plafond vaut 1, `multCombo` rend 1, et les nombres de la table des œufs et des
+   âges redeviennent exactement ce qu'ils annoncent. Une première partie se joue à main nue.
+
+   CE QU'ON GAGNE À LE DÉPLACER, c'est un levier là où il n'y en avait pas. Un bonus offert à
+   tous dès la première seconde ne récompense rien ; le même, acheté par une branche du ciel,
+   devient une direction qu'on choisit contre une autre — et la deuxième run se sent dans la
+   main, ce qui est précisément ce que l'ascension doit produire. */
+const COMBO_CRANS  = [1, 1.5, 2.2, 3];  // sans étoile, puis les trois crans de la branche
+const COMBO_PLEIN  = 100;    // les clics qui mènent au plafond, quel qu'il soit
 const COMBO_FIN    = 15;     // secondes sans clic avant de tout perdre
 const IDLE_SEUIL   = 60;     // secondes sans clic avant que la ferme se mette au calme
 const IDLE_X       = 1.5;    // ce que le calme vaut sur tout ce qui tourne
@@ -4225,7 +4269,8 @@ let combo = 0, dernierClic = 0;
    La règle se sépare du compteur qui la porte parce que le compteur de clics doit pouvoir
    demander « et au coup suivant ? » sans toucher à l'état du jeu. Une seule porte reste pour
    lire le combo courant : celle du dessous. */
-const multCombo = c => 1 + (COMBO_MAX - 1) * Math.sqrt(Math.min(1, c / COMBO_PLEIN));
+const plafondCombo = () => cranDe('main', 'serie', COMBO_CRANS);
+const multCombo = c => 1 + (plafondCombo() - 1) * Math.sqrt(Math.min(1, c / COMBO_PLEIN));
 const comboMult = () => multCombo(combo);
 
 /* LE CLIC QUI COMPTE EST CELUI DE LA MAIN, et il ne compte que sur un SUJET — une bête ou un
@@ -4505,7 +4550,7 @@ function clicsPour(left, s) {
   if (!(p > 0) || !(left > 0)) return 1;
   let n = 0, c = combo, reste = left;
   while (reste > 0 && c < COMBO_PLEIN) { reste -= p * multCombo(c); c++; n++; }
-  if (reste > 0) n += Math.ceil(reste / (p * COMBO_MAX));
+  if (reste > 0) n += Math.ceil(reste / (p * plafondCombo()));
   return Math.max(1, n);
 }
 
@@ -6438,15 +6483,42 @@ function carteEl(k, actes) {
    graine, pas de `Math.random`. Sinon elles sauteraient à chaque redessin, et un fond qui
    scintille sans raison est un fond qui fatigue. */
 const CIEL_VUE = { l: 1700, h: 1700, r: 22, rayon: [175, 320, 470, 630, 790] };
+/* ── OÙ TOMBE UNE ÉTOILE : LA PROFONDEUR DONNE LE RAYON, LA BRANCHE DONNE L'ANGLE ──
+   Elle tombait par son INDICE DANS LA LISTE de l'axe, ce qui marchait tant qu'un axe était une
+   file. Depuis que la pension s'ouvre en fourche, deux nœuds de branches différentes prennent
+   deux indices consécutifs et se dessinent l'un derrière l'autre : la fourche existait dans les
+   règles et pas dans le ciel. Une branche qu'on ne voit pas n'est pas une branche.
+
+   LE RAYON SE LIT SUR LA CHAÎNE DES PARENTS, donc deux nœuds au même rang de leur branche
+   tombent au même anneau, quel que soit leur rang de déclaration. L'ANGLE SE LIT SUR LA
+   BRANCHE : le tronc garde l'axe, et les branches s'en écartent d'un cran de part et d'autre.
+   Rien à déclarer — un `branche` de plus dans la table ouvre une voie de plus, toute seule. */
+const ECART_BRANCHE = 16;   // degrés entre le tronc et une branche
+const profondeurEtoile = n => {
+  let d = 0, x = n;
+  while (x && x.parent && d < CIEL.length) { d++; x = ETOILE_BY_KEY[x.parent]; }
+  return d;                 // le moyeu vaut 0, les nœuds accrochés à lui valent 1
+};
+const VOIES_PAR_AXE = Object.fromEntries(AXES.map(a => [a.cle,
+  [...new Set(CIEL.filter(n => n.axe === a.cle).map(n => n.branche || ''))]]));
+/* Le tronc d'abord (il est déclaré en premier), puis les branches en alternance de part et
+   d'autre : une voie à gauche, la suivante à droite, et ainsi de suite. */
+const ecartDe = n => {
+  const voies = VOIES_PAR_AXE[n.axe] || [''];
+  const k = Math.max(0, voies.indexOf(n.branche || ''));
+  return k === 0 ? 0 : (k % 2 ? -1 : 1) * Math.ceil(k / 2) * ECART_BRANCHE;
+};
 const cieuxXY = n => {
   if (!n.axe) return { x: CIEL_VUE.l / 2, y: CIEL_VUE.h / 2 };
   const axe = AXES.find(a => a.cle === n.axe);
-  const i = PAR_AXE[n.axe].indexOf(n);
-  // un léger balancement : trois nœuds parfaitement alignés font une règle, pas une branche
-  const ang = (axe.angle + (i % 2 ? 6 : -6)) * Math.PI / 180;
-  const r = CIEL_VUE.rayon[Math.min(i, CIEL_VUE.rayon.length - 1)];
+  const d = profondeurEtoile(n);
+  // un léger balancement sur le tronc : trois nœuds parfaitement alignés font une règle
+  const sway = ecartDe(n) ? 0 : (d % 2 ? 5 : -5);
+  const ang = (axe.angle + ecartDe(n) + sway) * Math.PI / 180;
+  const r = CIEL_VUE.rayon[Math.min(Math.max(0, d - 1), CIEL_VUE.rayon.length - 1)];
   return { x: CIEL_VUE.l / 2 + Math.cos(ang) * r, y: CIEL_VUE.h / 2 + Math.sin(ang) * r };
 };
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => {
   const n = document.createElementNS(SVG_NS, tag);
@@ -7576,7 +7648,7 @@ function ligneBoosts(sujet) {
      invisible n'existe pas : le joueur ne peut ni le viser, ni comprendre pourquoi sa ferme
      vient de changer de vitesse. Le compte des clics accompagne le combo — sans lui, on voit
      un nombre monter sans savoir ce qui le fait monter, ni ce qu'il reste avant le plafond. */
-  if (combo) bouts.push('combo ×' + dec(comboMult(), 2) +
+  if (combo && plafondCombo() > 1) bouts.push('combo ×' + dec(comboMult(), 2) +
                         ' (' + combo + (combo >= COMBO_PLEIN ? ', au max' : '/' + COMBO_PLEIN) + ')');
   if (enIdle()) bouts.push('calme ×' + dec(IDLE_X, 2) + ' — la ferme tourne mieux sans toi');
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
