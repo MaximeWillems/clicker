@@ -512,49 +512,67 @@ scenario('hors-ligne — la ferme avance, le tutoriel se tait', () => {
 
 /* ────────────────────────── le bonheur et la frénésie ────────────────────────── */
 
-scenario('écran — un compteur de clics baisse d’au moins un par clic', () => {
-  /* IL TOMBAIT DE QUARANTE-CINQ À TRENTE-SEPT AU PREMIER CLIC d'une partie neuve, et le calcul
-     était juste : le clic avait avancé l'œuf d'une seconde sur quarante-cinq, et il avait
-     AUSSI ouvert le combo, qui multiplie la force par 1,2 dès le premier coup. Quarante-quatre
-     divisé par 1,2 fait trente-sept.
+scenario('écran — un compteur de clics annonce le nombre de clics qu’il faudra', () => {
+  /* IL ANNONÇAIT QUARANTE-CINQ CLICS POUR UN ŒUF QUI EN DEMANDAIT VINGT-SEPT, et sur la fin il
+     baissait de deux par clic — « beaucoup de clics valent toujours 2 clics ». Il était déjà
+     tombé de quarante-cinq à trente-sept au premier coup, et la correction d'alors n'avait
+     soigné que le saut : le compteur divisait le travail restant par la force d'UN clic.
 
-     LE COMPTEUR RÉPONDAIT DONC À UNE AUTRE QUESTION que celle qu'il pose : non pas « combien
-     de clics » mais « combien s'il te plaît continue exactement à ce rythme ». Un compteur qui
-     saute de huit quand on a fait une unité de travail est un compteur qu'on cesse de lire —
-     et le joueur l'a lu comme un reset qui n'avait pas tout remis à zéro.
+     LA FAUTE ÉTAIT DANS L'IDÉE MÊME DE MULTIPLICATEUR. Les clics à venir n'ont pas tous la même
+     force : le combo monte à chaque coup, de ×1 à ×3. Diviser par la force d'aujourd'hui, c'est
+     compter une série qui n'aura pas lieu — qu'on prenne la force du moment (il saute) ou celle
+     du repos (il compte double).
 
-     LA RÈGLE TIENT EN UNE PHRASE : un compteur de clics compte des clics, donc un clic le fait
-     baisser d'au moins un. Jamais de huit, et jamais zéro. */
+     IL COMPTE MAINTENANT LA SÉRIE, terme à terme. Et le « un de moins par clic » n'est pas un
+     réglage heureux : le clic consomme exactement le premier terme de la somme qu'on vient de
+     calculer, et avance le combo d'un cran. Il reste la même somme, moins son premier terme. */
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   const suj = jeu.current();
   const dure = jeu.hatchTime(suj.slot);
   const lire = () => parseInt(jeu.remaining(dure - suj.slot.p, 0, suj), 10);
 
-  const depart = lire();
-  eq('un œuf commun nu demande quarante-cinq clics', depart, 45);
+  /* LA PROMESSE SE VÉRIFIE EN LA TENANT : on lit le nombre, on clique jusqu'à l'éclosion, on
+     compare. C'est la seule vérification qui compte, et aucune formule ne s'interpose. */
+  const promis = lire();
+  let donnes = 0;
+  while (jeu.current() && jeu.current().kind === 'egg' && donnes < 200) { jeu.tapStage(); donnes++; }
+  eq('l’œuf demande exactement ce qui était annoncé', donnes, promis);
+  ok('et c’est bien une vingtaine de clics, pas quarante-cinq', promis > 20 && promis < 35, promis);
 
-  let avant = depart;
-  for (let i = 0; i < 20; i++) {
-    jeu.tapStage();
-    const apres = lire();
-    ok('le clic ' + (i + 1) + ' fait baisser d’au moins un', apres <= avant - 1,
-       avant + ' → ' + apres);
-    ok('et jamais de plus de trois', apres >= avant - 3, avant + ' → ' + apres);
+  /* UN DE MOINS PAR CLIC, EXACTEMENT — ni zéro, ni deux. Sur un second œuf, combo déjà chaud :
+     le compteur doit partir de là où la main en est, pas de zéro. */
+  const jeu2 = neuf(); const s2 = jeu2.state;
+  s2.tuto = false;
+  const suj2 = jeu2.current();
+  const dure2 = jeu2.hatchTime(suj2.slot);
+  const lire2 = () => parseInt(jeu2.remaining(dure2 - suj2.slot.p, 0, suj2), 10);
+
+  let avant = lire2();
+  for (let i = 0; i < 15; i++) {
+    jeu2.tapStage();
+    const apres = lire2();
+    eq('le clic ' + (i + 1) + ' le fait baisser d’exactement un', apres, avant - 1);
     avant = apres;
   }
+  ok('le combo a bien chauffé pendant ce temps', jeu2.comboMult() > 1.5, jeu2.comboMult());
 
-  /* ET LE COMBO SE VOIT EN AVANCE, PAS EN SAUT : après vingt clics il en reste moins que
-     vingt-cinq, parce que la série a porté plus loin que ce que le compteur promettait. */
-  ok('la série a pris de l’avance sur le compteur', avant < depart - 20,
-     'reste ' + avant + ' après 20 clics');
+  /* ET IL FINIT SUR « 1 clic », jamais sur deux : le dernier clic est annoncé comme le dernier. */
+  while (jeu2.current() && jeu2.current().kind === 'egg' && lire2() > 1) jeu2.tapStage();
+  eq('le dernier coup s’annonce au singulier', jeu2.remaining(dure2 - suj2.slot.p, 0, suj2), '1 clic');
 
   /* LE COMPTEUR ET LE CLIC PASSENT PAR LA MÊME LIGNE, au combo et à la frénésie près. Ils
      divergeaient : le compteur divisait par la force de la main, le clic appliquait en plus la
      vitesse de l'album et la part automatique. Sur un œuf nu les deux coïncidaient, ce qui est
      la pire façon pour une faute de passer — elle attend la première carte de vitesse. */
   eq('au repos, le clic vaut ce que le compteur annonce',
-     jeu.clicAuRepos(suj), jeu.clickGain(suj) / jeu.comboMult());
+     jeu2.clicAuRepos(suj2), jeu2.clickGain(suj2) / jeu2.comboMult());
+
+  /* LA BOUCLE EST BORNÉE : un ouvrage démesuré ne doit pas faire tourner cent mille tours. */
+  const t0 = Date.now();
+  const enorme = jeu2.clicsPour(1e18, suj2);
+  ok('un ouvrage démesuré se compte quand même', enorme > 1e17, enorme);
+  ok('et il se compte tout de suite', Date.now() - t0 < 50, (Date.now() - t0) + ' ms');
 });
 
 scenario('absence — bornée, et elle ne rend qu’un quart de ce qu’elle a duré', () => {

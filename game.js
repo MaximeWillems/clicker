@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.28.3';
+const VERSION = 'beta 4.28.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -4211,7 +4211,12 @@ const IDLE_X       = 1.5;    // ce que le calme vaut sur tout ce qui tourne
 
 let combo = 0, dernierClic = 0;
 
-const comboMult = () => 1 + (COMBO_MAX - 1) * Math.sqrt(Math.min(1, combo / COMBO_PLEIN));
+/* LA FORCE D'UNE SÉRIE DONNÉE, et `comboMult` n'est plus que « celle de la série en cours ».
+   La règle se sépare du compteur qui la porte parce que le compteur de clics doit pouvoir
+   demander « et au coup suivant ? » sans toucher à l'état du jeu. Une seule porte reste pour
+   lire le combo courant : celle du dessous. */
+const multCombo = c => 1 + (COMBO_MAX - 1) * Math.sqrt(Math.min(1, c / COMBO_PLEIN));
+const comboMult = () => multCombo(combo);
 
 /* LE CLIC QUI COMPTE EST CELUI DE LA MAIN, et il ne compte que sur un SUJET — une bête ou un
    œuf. Acheter une amélioration, régler le marchand, ouvrir un panneau : rien de tout cela ne
@@ -4463,32 +4468,43 @@ function fmtTime(s) {
   return Math.floor(s / 3600) + ' h ' + String(Math.floor((s % 3600) / 60)).padStart(2, '0') + ' m';
 }
 
+/* ── COMBIEN DE CLICS, VRAIMENT : LA SÉRIE SE COMPTE ELLE-MÊME ────────────────
+   Un compteur de clics annonçait QUARANTE-CINQ CLICS pour un œuf qui en demandait VINGT-SEPT,
+   et sur la fin il baissait de deux par clic. La faute n'était plus dans le multiplicateur
+   employé — elle était dans l'idée même de multiplicateur : le compteur divisait le travail
+   restant par la force d'UN clic, alors que les clics à venir n'ont pas tous la même force.
+   Le combo monte à chaque coup. Diviser par la force d'aujourd'hui, c'est compter une série
+   qui n'aura pas lieu.
+
+   IL COMPTE DONC LA SÉRIE, terme à terme, en partant du combo où l'on est : le premier clic
+   vaudra ce qu'il vaudra, le deuxième un peu plus, et ainsi de suite. Le nombre rendu tombe
+   alors d'EXACTEMENT un à chaque clic, et ce n'est pas un réglage heureux mais une identité :
+   le clic consomme précisément le premier terme de la somme qui vient d'être calculée, et
+   avance le combo d'un cran — il reste donc la même somme, moins son premier terme.
+
+   LA BOUCLE EST BORNÉE PAR LE PALIER DU COMBO. Au-delà de cent clics la force ne monte plus,
+   donc les termes deviennent égaux et une division finit le travail. Cent tours au pire, quel
+   que soit l'ouvrage qui reste — un rang « démesuré » en demanderait des millions.
+
+   LA FRÉNÉSIE RESTE DEHORS, et c'est délibéré. Elle double le clic pendant quelques secondes ;
+   l'y mettre ferait REMONTER le compteur à l'instant où elle s'éteint, et un compteur qui
+   remonte est exactement le défaut qu'on soigne. Pendant ces secondes il baisse donc de deux
+   par clic — ce que le badge « ⚡ ×2 » annonce déjà, en toutes lettres. */
+function clicsPour(left, s) {
+  const p = clicAuRepos(s);
+  if (!(p > 0) || !(left > 0)) return 1;
+  let n = 0, c = combo, reste = left;
+  while (reste > 0 && c < COMBO_PLEIN) { reste -= p * multCombo(c); c++; n++; }
+  if (reste > 0) n += Math.ceil(reste / (p * COMBO_MAX));
+  return Math.max(1, n);
+}
+
 /* Deux compteurs, jamais les deux à la fois. Tant que rien ne pousse tout seul, annoncer
    des secondes serait un mensonge : ce qui reste à faire se mesure en clics. Dès qu'un
-   automate tourne, c'est le temps qui compte — et lui seul.
-
-   ── UN COMPTEUR DE CLICS COMPTE DES CLICS, DONC UN CLIC LE FAIT BAISSER DE UN ──
-   Il tombait de QUARANTE-CINQ À TRENTE-SEPT au premier clic d'une partie neuve, et c'était
-   arithmétiquement juste : le clic avait avancé l'œuf d'une seconde sur quarante-cinq, et il
-   avait AUSSI ouvert le combo, qui multiplie la force par 1,2 dès le premier coup. Quarante-
-   quatre divisé par 1,2 fait trente-sept. Le compteur répondait donc à une autre question que
-   celle qu'il pose — « combien de clics s'il te plaît continue exactement à ce rythme » — et un
-   compteur qui saute de huit quand on a fait une unité de travail est un compteur qu'on cesse
-   de lire.
-
-   IL SE CALCULE MAINTENANT AU REPOS : la force permanente, sans les deux bonus qui vont et
-   viennent — le combo et la frénésie. Un clic le fait baisser d'exactement un, et les bonus se
-   voient là où ils doivent se voir : la barre finit AVANT que le compteur n'arrive à zéro.
-   Une bonne surprise plutôt qu'un nombre instable.
-
-   ET IL DEMANDE CE QU'UN CLIC RAPPORTE, PAS CE QUE LA MAIN VAUT. Il divisait par
-   `clickPower()` quand le clic, lui, applique `clickGain(s)` — lequel multiplie encore par la
-   vitesse de l'album et par la part automatique. Deux formules pour une même chose : elles
-   coïncidaient sur un œuf nu, et divergeaient dès la première carte de vitesse. C'est la faute
-   que ce dépôt poursuit partout ailleurs, et elle était ici depuis le début. */
+   automate tourne, c'est le temps qui compte — et lui seul. */
 function remaining(left, speed, s) {
   if (speed > 0) return fmtTime(left / speed);
-  const n = Math.max(1, Math.ceil(left / clicAuRepos(s)));
+  const n = clicsPour(left, s);
   return n + (n > 1 ? ' clics' : ' clic');
 }
 
