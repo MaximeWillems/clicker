@@ -18,11 +18,7 @@
    du jeu directement, jamais en simulant un clic. */
 
 'use strict';
-const fs = require('fs');
-const path = require('path');
-
-const RACINE = path.resolve(__dirname, '..');
-const lire = f => fs.readFileSync(path.join(RACINE, f), 'utf8');
+const { RACINE, lire } = require('./depot.js');
 
 const html = lire('index.html');
 const IDS = new Set([...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]));

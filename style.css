@@ -1376,9 +1376,14 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
 .carte-bete { position: relative; font-size: 3rem; line-height: 1; }
 .carte-bete img { width: 1em; height: 1em; display: block; object-fit: contain; }
 
+/* ELLES ÉTAIENT DÉCLARÉES DEUX FOIS, à quatre cents lignes d'écart, et les deux règles
+   vivaient : celle-ci posait la place et l'ombre, l'autre écrasait la taille et l'interlettre
+   sans savoir qu'elle écrasait quoi que ce soit. Ce qui s'affichait n'était donc écrit nulle
+   part en entier — c'est la moitié de chaque bloc. Les voici réunies, aux valeurs qui
+   gagnaient : 0,7 rem et 0,1 em, qui venaient de la seconde. */
 .carte-etoiles {
   position: absolute; top: 4px; right: 6px;
-  font-style: normal; font-size: 0.72rem; letter-spacing: 0.05em;
+  font-style: normal; font-size: 0.7rem; letter-spacing: 0.1em;
   color: var(--coin); text-shadow: 0 0 4px var(--ground);
 }
 
@@ -1717,9 +1722,11 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   padding: 0.45rem 0.55rem; min-height: 3.2rem;
   font: inherit; cursor: pointer;
 }
+/* une case pleine est aussi une poignée : on la glisse sur l’autre pour échanger les parents */
 .nid-case.pleine {
   background: var(--raised); border-style: solid; border-color: var(--rule);
   border-left: 2px solid var(--rar, var(--rule-hi));
+  cursor: grab;
 }
 .nid-case:hover { border-color: var(--rule-hi); }
 .nid-case.pleine:hover { border-color: var(--red); }
@@ -1728,8 +1735,6 @@ body.glisse .nid-case.vide { border-color: var(--jade-dim); background: var(--ra
 /* une case fermée se voit fermée : elle ne réagit ni au survol ni au glisser */
 .nid-case.survol { border-color: var(--jade); background: var(--jade-dim); }
 
-/* une case pleine est une poignée : on la glisse sur l’autre pour échanger les deux parents */
-.nid-case.pleine { cursor: grab; }
 .nid-case.pleine.porte { opacity: 0.4; cursor: grabbing; }
 .nid-bete { font-size: 1.6rem; line-height: 1; flex: none; }
 .nid-bete img { width: 1em; height: 1em; display: block; object-fit: contain; }
@@ -1781,14 +1786,11 @@ body.en-pause .subject { cursor: default; }
   color: var(--jade); border-color: var(--jade); text-decoration: none;
 }
 
-/* ── LA CARTE : SES ÉTOILES ET SES DEUX GESTES ────────────────────────────────
+/* ── LA CARTE : SES DEUX GESTES ───────────────────────────────────────────────
    Les deux boutons portent leur PRIX sur eux — ce que la carte rend si on la fond, ce que
    l'étoile suivante coûte. Les cacher derrière un menu rendrait l'arbitrage invisible, et
-   c'est le seul arbitrage que l'album propose. */
-.carte-etoiles {
-  font-style: normal; font-size: 0.7rem; letter-spacing: 0.1em;
-  color: var(--coin);
-}
+   c'est le seul arbitrage que l'album propose. Les étoiles, elles, se règlent plus haut,
+   avec le reste de la carte. */
 .carte-actes {
   display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
   padding: 0 0.4rem 0.4rem;

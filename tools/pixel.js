@@ -22,14 +22,11 @@
    qu'on ouvre soi-même. */
 'use strict';
 const fs = require('fs'), path = require('path'), { spawnSync } = require('child_process');
+const { RACINE, art, rel } = require('./depot.js');
 const P = require('./pixels.js');
 const G = require('./grilles.js');
 const Q = require('./quantifier.js');
 const { STYLES } = require('./styles.js');
-
-const RACINE = G.RACINE;
-const art = f => path.join(RACINE, 'art', f);
-const rel = f => path.relative(RACINE, f).split(path.sep).join('/');
 
 // ── le bras d'image ───────────────────────────────────────────────────────
 /* Pillow fait le travail de pixels, Node celui de grille. On cherche l'interpréteur une

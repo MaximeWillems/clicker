@@ -3,7 +3,7 @@
    node tools/rendu.js --apercu       affiche les grilles en texte
    Le style par défaut est celui déclaré dans STYLE_ACTIF ci-dessous. */
 'use strict';
-const fs = require('fs');
+const { ecrire } = require('./depot.js');
 const P = require('./pixels.js');
 const { FORMES, ORDRE } = require('./formes-crapaud.js');
 const { STYLES } = require('./styles.js');
@@ -58,14 +58,14 @@ et sous quatre teintes.</p>`;
     });
     h += '</div></section>';
   }
-  fs.writeFileSync('tools/apercu-styles.html', h);
+  ecrire('tools/apercu-styles.html', h);
   console.log('planche écrite : tools/apercu-styles.html');
 } else {
   const cleStyle = process.argv.find(a => STYLES[a]) || STYLE_ACTIF;
   const style = STYLES[cleStyle];
   ORDRE.forEach(([cle, titre], i) => {
     const g = dessine(cle, style);
-    fs.writeFileSync(`art/crapaud-${i + 1}-${cle}.svg`, P.versSVG(g, style.palette));
+    ecrire(`art/crapaud-${i + 1}-${cle}.svg`, P.versSVG(g, style.palette));
     if (process.argv.includes('--apercu')) {
       console.log('\n── ' + titre + ' ' + '─'.repeat(20));
       console.log(P.apercu(g));

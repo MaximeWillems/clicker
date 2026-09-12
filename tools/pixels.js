@@ -7,7 +7,7 @@
    node tools/pixels.js --apercu affiche aussi l'aperçu texte de chaque sprite
 */
 'use strict';
-const fs = require('fs'), path = require('path');
+
 
 // ── rastérisation ─────────────────────────────────────────────────────────
 function grille(n) { return Array.from({ length: n }, () => Array(n).fill('.')); }

@@ -13,13 +13,10 @@
    stade 4 avait disparu au stade 5, par oubli et non par choix. La règle se casse, mais
    alors volontairement, et en l'écrivant dans la description du stade. */
 'use strict';
-const fs = require('fs');
+const { ecrire: poser } = require('./depot.js');
 
 // ── les noms viennent du jeu, jamais recopiés à la main ───────────────────
-const src = fs.readFileSync('game.js', 'utf8');
-const debut = src.indexOf('const LINES = [');
-const bloc = src.slice(debut, src.indexOf('\n];', debut) + 3);
-const LINES = eval('(' + bloc.replace('const LINES =', '').replace(/;\s*$/, '') + ')');
+const { LINES, suffixes: suffixesDe } = require('./lignees.js');
 
 /* ── Ce qui ne change jamais ───────────────────────────────────────────────
    La technique est commune aux deux chartes : c'est elle qui fait que 27 lignées dessinées à
@@ -432,9 +429,6 @@ flat dark shape — no rendered teeth, no tongue detail. The horror is the SHAPE
 distended jaw and a swelling body — never gore, and never at the cost of the 6 flat colors.`,
 };
 
-const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
 const cle = process.argv[2];
 /* REFAIRE UN SEUL STADE. Une planche de cinq coûte un jeton, et un climax raté n'en gâche
    qu'un cinquième : demander les cinq pour en corriger un ferait DÉRIVER les quatre autres,
@@ -450,19 +444,8 @@ const stadeSeul = (() => {
    prompt qu'on ne retrouve pas ne sert à rien. */
 function ecrire(ligne) {
   const stades = STADES[ligne.key];
-  /* Le suffixe de fichier vient du nom, mais l'arc de la révélation garde le MÊME nom aux cinq
-     âges : « Ouroboros » et « Ouroboros, la boucle du monde » donnaient deux fois `ouroboros`,
-     et la commande de découpe annonçait des noms en double. Quand le premier bout est déjà
-     pris, on descend sur l'épithète — ce qui suit la virgule est justement ce qui distingue. */
-  const vus = new Set();
-  const suffixes = ligne.forms.map(f => {
-    const bouts = f[0].split(',').map(x => x.trim());
-    let su = sansAccents(bouts[0]);
-    if (vus.has(su) && bouts[1]) su = sansAccents(bouts[1]);
-    while (vus.has(su)) su += '-bis';
-    vus.add(su);
-    return su;
-  });
+  // la règle des suffixes vit dans tools/lignees.js, avec celle des grilles
+  const suffixes = suffixesDe(ligne);
   /* Une mythique naît accomplie : elle ne suit pas la charte des bêtes qui grandissent.
      LA CLÉ EST « merveilleuse », PAS « merveilleux » — le test ne pouvait donc jamais être
      vrai pour le rang qui en avait le plus besoin, et les trois merveilles auraient reçu la
@@ -507,9 +490,8 @@ function ecrire(ligne) {
     l.push('  quatre autres. Recopier la ligne « palette: » du stade 1 sur le stade neuf avant');
     l.push('  de relancer « rendre » — sinon la lignée change de couleurs au dernier âge.');
     const texte0 = l.join('\n');
-    if (!fs.existsSync('prompts')) fs.mkdirSync('prompts');
     const chemin0 = 'prompts/' + ligne.key + '-' + stadeSeul + '.txt';
-    fs.writeFileSync(chemin0, texte0);
+    poser(chemin0, texte0);
     return { chemin: chemin0, texte: texte0 };
   }
   l.push('', 'The 5 stages, in order:');
@@ -523,14 +505,13 @@ function ecrire(ligne) {
   l.push('  },', '');
 
   const texte = l.join('\n');
-  if (!fs.existsSync('prompts')) fs.mkdirSync('prompts');
   const chemin = 'prompts/' + ligne.key + '.txt';
-  fs.writeFileSync(chemin, texte);
+  poser(chemin, texte);
   return { chemin, texte };
 }
 
 if (cle === '--tout') {
-  const faits = LINES.filter(l => STADES[l.key]).map(l => ecrire(l).chemin);
+  const faits = LINES().filter(l => STADES[l.key]).map(l => ecrire(l).chemin);
   console.log('\n' + faits.length + ' prompts écrits :\n');
   faits.forEach(c => console.log('  ' + c));
   console.log('');
@@ -539,7 +520,7 @@ if (cle === '--tout') {
 
 if (!cle || cle === '--liste') {
   console.log('\nLignées disponibles :\n');
-  for (const l of LINES) {
+  for (const l of LINES()) {
     const manque = STADES[l.key] ? '' : '   (pas encore décrite)';
     console.log('  ' + l.key.padEnd(12) + l.name.padEnd(16) + l.rarity + manque);
   }
@@ -547,7 +528,7 @@ if (!cle || cle === '--liste') {
   process.exit(0);
 }
 
-const ligne = LINES.find(l => l.key === cle);
+const ligne = LINES().find(l => l.key === cle);
 if (!ligne || !STADES[cle]) {
   console.error('Lignée « ' + cle + ' » inconnue. node tools/prompt.js --liste');
   process.exit(1);

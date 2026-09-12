@@ -19,12 +19,8 @@
    c'est aussi une clarté et une vivacité. L'or est clair, le grenat est sombre. */
 
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const { lire, ecrire: poser } = require('./depot.js');
 const { neuf } = require('./banc.js');
-
-const RACINE = path.join(__dirname, '..');
-const JEU = path.join(RACINE, 'game.js');
 
 /* ── LES MATRICES DU SPEC SVG, telles que le navigateur les applique ───────────
    On les redit ici plutôt que de les prendre au jeu : cet outil doit pouvoir dire que le jeu
@@ -142,7 +138,13 @@ function blanchitDes(a, s, c, b) {
    C'EST LA TROISIÈME CHOSE QU'UNE COULEUR DOIT TENIR, avec sa teinte et sa justesse, et les
    trois se paient l'une l'autre. Un seul coût les arbitre plutôt que trois passes qui se
    défont mutuellement. */
-const clarte = p => 0.213*p[0] + 0.715*p[1] + 0.072*p[2];
+/* ELLE NE S'APPELLE PLUS `clarte`, parce que `tools/quantifier.js` exporte une `clarte` qui
+   n'est PAS celle-ci : là-bas les coefficients sont ceux de la télévision — 0,299 · 0,587 ·
+   0,114 — et l'entrée va de 0 à 255. Ici ce sont ceux du sRGB moderne, et l'entrée va de 0
+   à 1, parce qu'on mesure la sortie d'une chaîne de filtres et non un pixel de dessin. Deux
+   fonctions du même nom qui rendent deux nombres différents sur la même couleur : le jour où
+   l'une des deux se met à voyager, c'est indétectable. */
+const luma709 = p => 0.213*p[0] + 0.715*p[1] + 0.072*p[2];
 
 function cout(T, a, s, c, b) {
   const ch = chaine(a.toFixed(1), s.toFixed(2), c, b.toFixed(3));
@@ -151,8 +153,8 @@ function cout(T, a, s, c, b) {
   const d = deriveVue(ch);
   const seuil = blanchitDes(a, s, c, b);
   const brule = seuil === null ? 0 : Math.max(0, 0.90 - seuil);
-  const vise = Math.min(0.95, 1.55 * clarte(milieu));
-  const plat = Math.max(0, vise - clarte(passe(ch, [0.884, 0.884, 0.884])));
+  const vise = Math.min(0.95, 1.55 * luma709(milieu));
+  const plat = Math.max(0, vise - luma709(passe(ch, [0.884, 0.884, 0.884])));
   return { e, d, seuil, plat,
            total: e + PEINE * Math.max(0, d - SEUIL) + 3 * brule + 0.9 * plat };
 }
@@ -210,7 +212,7 @@ if (!voulues.length) {
 }
 
 const ecrire = process.argv.includes('--ecrire');
-let src = fs.readFileSync(JEU, 'utf8');
+let src = lire('game.js');
 let pires = 0, pireD = 0, changes = 0;
 
 console.log('');
@@ -235,7 +237,7 @@ for (const c of voulues) {
 console.log('');
 console.log('  pire écart : ' + pires.toFixed(3) + '   ·   pire dérive : ' + Math.round(pireD) + '°');
 if (ecrire) {
-  fs.writeFileSync(JEU, src);
+  poser('game.js', src);
   console.log('  ' + changes + ' filtres réécrits dans game.js');
 }
 console.log('');

@@ -14,8 +14,7 @@
    CE QU'IL NE DIT PAS : rien sur le plaisir. Il mesure un débit, pas un rythme ressenti — un
    joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même courbe. */
 'use strict';
-const path = require('path');
-const { neuf } = require(path.join(__dirname, 'banc.js'));
+const { neuf } = require('./banc.js');
 
 const CPS = 4;                 // clics par seconde
 const PAS = 0.25;              // un clic par pas

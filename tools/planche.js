@@ -16,10 +16,7 @@
    problème, et ce n'est pas celui de la planche. */
 
 'use strict';
-const fs = require('fs');
-const path = require('path');
-const RACINE = path.join(__dirname, '..');
-const lire = f => fs.readFileSync(path.join(RACINE, f), 'utf8');
+const { lire } = require('./depot.js');
 
 /* CE QUI COMPTE COMME « POSER UNE CLASSE ». Quatre façons, et il a fallu les quatre :
    `className = '…'`, `classList.add/toggle/remove('…')`, un `class="…"` écrit dans un

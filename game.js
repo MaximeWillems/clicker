@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.31.1';
+const VERSION = 'beta 4.31.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -5756,6 +5756,26 @@ function remplirMenus() {
     'Ce qu’il rachète');
 }
 
+/* UNE CASE D'ACHAT : un titre, une réserve, un prix, une description. La boutique et les
+   automates en posent chacun une liste, et les deux la bâtissaient ligne pour ligne — jusqu'au
+   commentaire, recopié lui aussi dans un endroit où il ne voulait plus rien dire : un automate
+   n'a pas de réserve.
+
+   LA RÉSERVE A SA PROPRE CASE. Elle vivait au bout de la description — « … En réserve : 3. » —
+   et la description est une ligne QUI SE REPLIE : passer de 2 à 3 œufs pouvait faire gagner ou
+   perdre une ligne au bouton, donc décaler tout ce qui est en dessous. Le compte change
+   plusieurs fois par minute, si bien que la colonne clignotait toute seule. Une case à part,
+   en chiffres tabulaires, ne pousse plus rien. */
+function caseAchat() {
+  const li = document.createElement('li');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'buy';
+  b.innerHTML = '<span class="t"></span><span class="s"></span>' +
+                '<span class="p"></span><span class="d"></span>';
+  return { li, b };
+}
+
 function buildChrome() {
   remplirMenus();
   // les actions de la scène : construites une fois, montrées selon le sujet
@@ -5788,17 +5808,7 @@ function buildChrome() {
   const shop = $('shop');
   shop.textContent = '';
   for (const it of items) {
-    const li = document.createElement('li');
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'buy';
-    /* LA RÉSERVE A SA PROPRE CASE. Elle vivait au bout de la description — « … En réserve :
-       3. » — et la description est une ligne QUI SE REPLIE : passer de 2 à 3 œufs pouvait
-       faire gagner ou perdre une ligne au bouton, donc décaler tout ce qui est en dessous.
-       Le compte change plusieurs fois par minute, si bien que la colonne clignotait toute
-       seule. Une case à part, en chiffres tabulaires, ne pousse plus rien. */
-    b.innerHTML = '<span class="t"></span><span class="s"></span>' +
-                  '<span class="p"></span><span class="d"></span>';
+    const { li, b } = caseAchat();
     b.querySelector('.t').textContent = it.title;
     b.querySelector('.d').textContent = it.desc;
     b.addEventListener('click', it.run);
@@ -5837,17 +5847,7 @@ function buildChrome() {
   const autos = $('autos');
   autos.textContent = '';
   for (const u of UPGRADES) {
-    const li = document.createElement('li');
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'buy';
-    /* LA RÉSERVE A SA PROPRE CASE. Elle vivait au bout de la description — « … En réserve :
-       3. » — et la description est une ligne QUI SE REPLIE : passer de 2 à 3 œufs pouvait
-       faire gagner ou perdre une ligne au bouton, donc décaler tout ce qui est en dessous.
-       Le compte change plusieurs fois par minute, si bien que la colonne clignotait toute
-       seule. Une case à part, en chiffres tabulaires, ne pousse plus rien. */
-    b.innerHTML = '<span class="t"></span><span class="s"></span>' +
-                  '<span class="p"></span><span class="d"></span>';
+    const { li, b } = caseAchat();
     b.addEventListener('click', () => buyUpgrade(u));
     li.appendChild(b);
     autos.appendChild(li);
@@ -7451,30 +7451,37 @@ function renderStage() {
   return s.kind === 'egg' ? renderOeuf(s) : renderBete(s);
 }
 
+/* REMETTRE LA SCÈNE À NU. Les deux écrans sans sujet — la plonge et « rien en vue » — se
+   posaient sur la même douzaine de lignes, recopiées : éteindre les trois axes, cacher les
+   quatre actions, retirer les quatre classes d'état, ramener l'échelle à un, effacer le
+   filtre et la ligne de boosts. Un écran de plus sans sujet aurait été une troisième copie. */
+function sceneNue() {
+  const stage = document.querySelector('.stage');
+  cacherAxes();
+  setText($('stage-boost'), '');
+  ['place', 'sell', 'evo', 'keep'].forEach(k => { refs.acts[k].hidden = true; });
+  stage.classList.remove('apex', 'ready', 'cracking', 'prodige');
+  setStageRarity(stage, null);
+  setVar($('subject'), '--sz', '1');
+  setFilter($('stage-glyph'), '');
+  $('stage-timer').classList.remove('done');
+}
+
 /* L'ÉVIER. Le seul écran du jeu où le clic ne fait rien grandir : la barre monte vers le prix
    d'un œuf, et le compte des assiettes descend. */
 function renderPlonge() {
-  const acts = refs.acts, stage = document.querySelector('.stage');
-  cacherAxes();
-  setText($('stage-boost'), '');
-  ['place', 'sell', 'evo', 'keep'].forEach(k => { acts[k].hidden = true; });
-
+  sceneNue();
   /* LA BARRE SUIT L'ASSIETTE EN COURS, pas la sortie de l'impasse. Cent vingt clics pour un
      œuf, c'est moins d'un pour cent par clic sur une barre globale — invisible. Sur l'assiette,
      chaque clic vaut dix pour cent, et la barre se remplit douze fois. Même règle que la scène
      d'une bête : la jauge vise le prochain palier, le texte dit la distance au but. */
   const reste = assiettesRestantes(), frotte = state.frotte || 0;
-  stage.classList.remove('apex', 'ready', 'cracking', 'prodige');
-  setStageRarity(stage, null);
-  setVar($('subject'), '--sz', '1');
   setCreature($('stage-glyph'), null, '🍽️');
-  setFilter($('stage-glyph'), '');
   setText($('stage-name'), 'La plonge');
   setHtml($('stage-meta'), ASSIETTE_CLICS + ' clics l’assiette, une pièce l’assiette');
   setWidth($('stage-fill'), (frotte / ASSIETTE_CLICS * 100).toFixed(1) + '%');
   setText($('stage-timer'), frotte + ' / ' + ASSIETTE_CLICS + ' · ' +
     reste + ' assiette' + (reste > 1 ? 's' : '') + ' avant un œuf');
-  $('stage-timer').classList.remove('done');
   setText($('stage-hint'), 'Rien ne compte double ici. Ni la force du clic, ni la frénésie, ' +
     'ni tes cartes : dix clics font une assiette, comme pour tout le monde.');
 }
@@ -7485,18 +7492,10 @@ function renderPlonge() {
    quelque chose à dire. On n'y montre pas la vaisselle : elle n'existe pas encore pour le
    joueur, et c'est tout l'intérêt. */
 function renderRien() {
-  const acts = refs.acts, stage = document.querySelector('.stage');
-  cacherAxes();
-  setText($('stage-boost'), '');
-  ['place', 'sell', 'evo', 'keep'].forEach(k => { acts[k].hidden = true; });
-  stage.classList.remove('apex', 'ready', 'cracking', 'prodige');
-  setStageRarity(stage, null);
-  setVar($('subject'), '--sz', '1');
+  sceneNue();
   setCreature($('stage-glyph'), null, '◌');
-  setFilter($('stage-glyph'), '');
   setWidth($('stage-fill'), '0%');
   setText($('stage-timer'), '');
-  $('stage-timer').classList.remove('done');
 
   if (!enPlonge()) {
     setText($('stage-name'), 'Rien en vue');

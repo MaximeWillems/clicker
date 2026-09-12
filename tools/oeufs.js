@@ -22,8 +22,8 @@
    ajouter un sixième. */
 
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const { ecrire } = require('./depot.js');
+const G = require('./grilles.js');
 
 const N = 32;
 const CX = 15.5, CY = 17.0;   // le centre, un peu bas : il y a plus de coquille dessous
@@ -126,31 +126,14 @@ const MOTIFS = {
 };
 
 /* Absorbe les cellules ISOLÉES — celles dont aucune des huit voisines n'a la même couleur.
-   C'est mot pour mot le contrôle de « vérifier », et le faire ici plutôt qu'à la main vaut
-   mieux : les points isolés ne viennent pas que des motifs, la quantification de l'ombrage en
-   fabrique autant, et une passe les prend tous. */
-function debruiter(g) {
-  for (let passe = 0; passe < 4; passe++) {
-    let reste = false;
-    for (let y = 0; y < N; y++)
-      for (let x = 0; x < N; x++) {
-        const c = g[y][x];
-        if (c === '.' || c === 'o') continue;
-        const autour = V8
-          .map(([dx, dy]) => (g[y + dy] || [])[x + dx])
-          .filter(k => k !== undefined);
-        if (autour.includes(c)) continue;
-        const corps = autour.filter(k => k !== '.' && k !== 'o');
-        if (!corps.length) continue;
-        const compte = {};
-        for (const k of corps) compte[k] = (compte[k] || 0) + 1;
-        g[y][x] = Object.keys(compte).sort((a, b) => compte[b] - compte[a])[0];
-        reste = true;
-      }
-    if (!reste) break;
-  }
-  return g;
-}
+   C'est mot pour mot le contrôle de « vérifier », et c'est maintenant LE MÊME CODE : la règle
+   vit dans `tools/grilles.js`, et ce qui distinguait la copie d'ici est devenu ses options.
+
+   Quatre passes, parce que les points isolés ne viennent pas que des motifs — la quantification
+   de l'ombrage en fabrique autant, et absorber l'un peut en isoler un autre. Le contour est du
+   fond : une coquille n'a pas à se refermer sur son propre trait. Et une cellule sans aucune
+   voisine de corps reste en place plutôt que de se vider — sur un œuf, elle est le reflet. */
+const debruiter = g => G.debruiter(g, { passes: 4, fond: ['.', 'o'], vider: false, gele: false });
 
 const PALETTES = {
   commun:    { o: '#2a241c', v: '#6b6155', V: '#8a7e6e', c: '#a99c88', b: '#c7bba6', n: '#e8e0ce' },
@@ -161,10 +144,7 @@ const PALETTES = {
 };
 const ORDRE = ['commun', 'rare', 'epique', 'mythique', 'merveille'];
 
-const ENTETE = `# Éclosion — grille de sprites, un caractère par pixel.
-# Les clés sont celles des palettes de tools/styles.js :
-#   o contour · v V c b corps · n blanc · p pupille · r rouge · t terre · . vide
-# Corriger un œuf, c'est éditer des caractères ici puis relancer « rendre ».
+const ENTETE = G.enTete('un œuf') + `
 #
 # CE FICHIER EST CALCULÉ par tools/oeufs.js — relancer « node tools/oeufs.js » écrase les
 # retouches faites à la main. Les cinq œufs partagent une silhouette au pixel près, ce qu'une
@@ -195,8 +175,7 @@ const rendu = ORDRE.map((cle, i) => {
   return `stade ${i + 1} ${cle}\n${palette}\n` + g.map(r => r.join('')).join('\n');
 });
 
-const cible = path.join(__dirname, '..', 'art', 'grilles', 'oeufs.txt');
-fs.writeFileSync(cible, ENTETE + '\n' + rendu.join('\n\n') + '\n', 'utf8');
+ecrire('art/grilles/oeufs.txt', ENTETE + '\n' + rendu.join('\n\n') + '\n');
 console.log(`\n  art/grilles/oeufs.txt écrit — ${ORDRE.length} œufs\n` +
             `  ensuite : node tools/pixel.js verifier oeufs\n` +
             `            node tools/pixel.js rendre oeufs\n`);

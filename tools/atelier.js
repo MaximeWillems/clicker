@@ -16,8 +16,7 @@
    les VRAIES, jusqu'au filtre CSS de chaque couleur, calculé par la fonction du jeu. */
 
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const { ecrire } = require('./depot.js');
 const { neuf } = require('./banc.js');
 
 const jeu = neuf();
@@ -348,8 +347,7 @@ peindre();
 </html>
 `;
 
-const dest = path.join(__dirname, 'atelier.html');
-fs.writeFileSync(dest, page);
+ecrire('tools/atelier.html', page);
 const dessinees = lignees.filter(l => l.formes.some(f => f.art)).length;
 console.log('');
 console.log('  tools/atelier.html');

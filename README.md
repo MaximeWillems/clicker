@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 19` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 31` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.31.1** | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
+| **beta 4.31.2** | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
+| beta 4.31.1 | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
 | beta 4.31.0 | la constellation se découvre : une étoile dont le parent n’est pas pris ne montre que sa place et son lien. Et un clic ne l’achète plus — il ouvre une carte, à côté, qui dit ce qu’elle fait |
 | beta 4.30.0 | le combo quitte le socle pour devenir une branche de la main : une première partie se joue à main nue, où une seconde de couvaison vaut un clic. Et la fourche se voit enfin dans le ciel |
 | beta 4.29.0 | l’œuf commun coûte enfin les cinquante clics qu’il annonce : sa couvaison était écrite en secondes, vécue en clics, et le combo mangeait la différence |
@@ -254,8 +255,18 @@ le moins cher à sa portée — et l'heure à laquelle chaque chose tombe. C'est
 voir un rythme sans jouer trois heures à la main à chaque retouche d'équilibrage. Il ne dit
 rien du plaisir : un joueur qui s'ennuie et un joueur qui s'amuse produisent la même courbe.
 
-Cent quarante-deux scénarios, deux mille vingt-trois vérifications. Passer un mot en argument ne joue
-que les scénarios dont le nom le contient : `node tools/test.js frénésie`.
+Cent cinquante-neuf scénarios, deux mille deux cent soixante-quinze vérifications. Passer un mot
+en argument ne joue que les scénarios dont le nom le contient : `node tools/test.js frénésie`.
+
+`tools/test.js` est le lanceur ; les scénarios vivent dans `tools/tests/`, **un fichier par
+sujet** — `pension.js`, `forge.js`, `sauvegarde.js` — et `_aides.js` porte le compteur du
+verdict avec les gestes que douze fichiers refont. Ils tenaient dans un seul fichier de six
+mille lignes, et ce fichier avait fini par contenir **cent cinquante-deux lignes recopiées mot
+pour mot** : quatre scénarios et une aide, écrits deux fois, qui passaient deux fois et ne
+prouvaient rien de plus. Ses titres de section, eux, avaient dérivé — « la poussière et la
+forge » annonçait un scénario de clic, et les vrais scénarios de forge vivaient sous « la
+constellation ». Un nom de fichier ne dérive pas, et on ne recopie pas dans un fichier ce
+qu'on voit déjà dedans.
 
 Et pour vérifier ce qui ne se teste pas — le rendu :
 
@@ -337,6 +348,14 @@ navigateur : `tools/banc.js` fait tourner `game.js` sous Node avec un DOM minima
 identifiants lus dans `index.html`, et expose **tout ce que `game.js` déclare au premier
 niveau**. Cette liste d'exports était écrite à la main et se périmait à chaque fonction
 ajoutée — un test échouait alors pour une raison qui ressemblait exactement à un bug du jeu.
+
+`tools/depot.js` répond à « où sont les fichiers » et `tools/lignees.js` à « comment s'appelle
+le dessin de ce stade ». Les deux existent pour la même raison : la racine du dépôt se
+calculait de quatre façons — dont une qui ne marchait que si l'on lançait l'outil depuis le bon
+dossier — et la règle qui fait un nom de fichier à partir d'un nom de forme était écrite deux
+fois, dans `grilles.js` et dans `prompt.js`, commentaire compris. Deux outils qui fabriquent le
+MÊME nom par deux chemins finissent par ne plus le fabriquer pareil, et c'est la table `ART`
+qui l'apprend en cherchant une image absente.
 
 Les scénarios ont été écrits au fil des versions, chacun le jour où quelque chose s'est
 cassé : ils visent des endroits précis plutôt que de couvrir uniformément. Trois d'entre eux

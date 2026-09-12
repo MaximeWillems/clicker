@@ -13,6 +13,8 @@
        palettes d'un stade à l'autre — la dérive de style — n'aurait rien à comparer. */
 'use strict';
 const fs = require('fs'), path = require('path');
+const depot = require('./depot.js');
+const { nomsDeLignee } = require('./lignees.js');
 const { clarte, versRVB } = require('./quantifier.js');
 
 /* Les clés sont rangées du sombre au clair et pas dans l'ordre d'apparition : deux palettes
@@ -22,19 +24,24 @@ const ordreCles = pal => Object.keys(pal).sort((a, b) =>
   clarte(versRVB(pal[a])) - clarte(versRVB(pal[b])) || (a < b ? -1 : 1));
 const signature = pal => ordreCles(pal).map(k => `${k} ${pal[k]}`).join(' ');
 
-const RACINE = path.resolve(__dirname, '..');
-const DOSSIER = path.join(RACINE, 'art', 'grilles');
+const DOSSIER = depot.chemin('art', 'grilles');
 const chemin = cle => path.join(DOSSIER, cle + '.txt');
 
-const ENTETE = `# Éclosion — grille de sprites, un caractère par pixel.
+/* L'EN-TÊTE D'UN FICHIER DE GRILLE. Le mode d'emploi des clés est le même pour tout ce qui se
+   dessine au caractère — une bête, un œuf, ce qui viendra — et seul le mot du sujet change.
+   `tools/oeufs.js` en portait sa propre copie, à un mot près : trois lignes recopiées, donc
+   trois lignes qui auraient dérivé au premier ajout de clé. */
+const enTete = sujet => `# Éclosion — grille de sprites, un caractère par pixel.
 # Les clés sont celles des palettes de tools/styles.js :
 #   o contour · v V c b corps · n blanc · p pupille · r rouge · t terre · . vide
-# Corriger une bête, c'est éditer des caractères ici puis relancer « rendre ».`;
+# Corriger ${sujet}, c'est éditer des caractères ici puis relancer « rendre ».`;
+
+const ENTETE = enTete('une bête');
 
 // ── lecture ───────────────────────────────────────────────────────────────
 function lire(cle) {
   const f = chemin(cle);
-  if (!fs.existsSync(f)) throw new Error(`grille introuvable : ${path.relative(RACINE, f)}`);
+  if (!fs.existsSync(f)) throw new Error(`grille introuvable : ${depot.rel(f)}`);
   return analyser(fs.readFileSync(f, 'utf8'), cle);
 }
 
@@ -93,9 +100,7 @@ function texteDoc(doc) {
 }
 
 function ecrire(cle, doc) {
-  fs.mkdirSync(DOSSIER, { recursive: true });
-  fs.writeFileSync(chemin(cle), texteDoc(doc));
-  return path.relative(RACINE, chemin(cle)).split(path.sep).join('/');
+  return depot.ecrire(chemin(cle), texteDoc(doc));
 }
 
 // ── outils de grille ──────────────────────────────────────────────────────
@@ -111,22 +116,48 @@ const en = (g, x, y) => (g[y] && g[y][x] !== undefined) ? g[y][x] : '.';
 
    La règle est délibérément posée sur les HUIT voisins, pas quatre : deux cellules en
    diagonale forment un reflet d'œil parfaitement légitime, et une règle à quatre voisins
-   les aurait effacées. C'est la même leçon que le détourage — on ne perce pas les yeux. */
-function debruiter(g) {
-  const src = g.map(r => r.slice());
+   les aurait effacées. C'est la même leçon que le détourage — on ne perce pas les yeux.
+
+   ELLE ÉTAIT ÉCRITE DEUX FOIS. `tools/oeufs.js` en portait sa propre copie, et son commentaire
+   disait déjà « c'est mot pour mot le contrôle de vérifier » — ce qui était vrai de l'idée et
+   faux du code : la copie repassait quatre fois au lieu d'une, épargnait le contour, laissait
+   en place une cellule sans aucune voisine de corps, et départageait deux couleurs à égalité
+   dans l'ordre où elles se présentaient. Quatre écarts, dont aucun n'était une décision. Ce
+   sont maintenant quatre options, et le seul départage est celui qui ne dépend pas de l'ordre
+   de lecture : à nombre égal, la clé la plus petite.
+
+     passes  combien de fois repasser — corriger une cellule peut en isoler une autre
+     fond    les clés qui ne sont ni du bruit ni des voisines : le vide, parfois le contour
+     vider   ce qu'on fait d'une cellule isolée sans AUCUNE voisine de corps
+     gele    une passe lit la grille d'avant, ou la grille en train de changer sous elle */
+function debruiter(g, o) {
+  const passes = (o && o.passes) || 1;
+  const fond = new Set((o && o.fond) || ['.']);
+  const vider = !o || o.vider !== false;
+  const gele = !o || o.gele !== false;
   const touchees = [];
-  for (let y = 0; y < g.length; y++) for (let x = 0; x < g.length; x++) {
-    const c = src[y][x];
-    if (c === '.') continue;
-    if (voisins8.some(([dx, dy]) => en(src, x + dx, y + dy) === c)) continue;
-    const compte = new Map();
-    for (const [dx, dy] of voisins8) {
-      const v = en(src, x + dx, y + dy);
-      if (v !== '.') compte.set(v, (compte.get(v) || 0) + 1);
+  for (let passe = 0; passe < passes; passe++) {
+    const src = gele ? g.map(r => r.slice()) : g;
+    let bouge = false;
+    for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) {
+      const c = src[y][x];
+      if (fond.has(c)) continue;
+      if (voisins8.some(([dx, dy]) => en(src, x + dx, y + dy) === c)) continue;
+      const compte = new Map();
+      for (const [dx, dy] of voisins8) {
+        const v = en(src, x + dx, y + dy);
+        if (!fond.has(v)) compte.set(v, (compte.get(v) || 0) + 1);
+      }
+      if (!compte.size) {
+        if (!vider) continue;
+        g[y][x] = '.';
+      } else {
+        g[y][x] = [...compte.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0][0];
+      }
+      touchees.push([x, y]);
+      bouge = true;
     }
-    if (!compte.size) { g[y][x] = '.'; touchees.push([x, y]); continue; }
-    g[y][x] = [...compte.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0][0];
-    touchees.push([x, y]);
+    if (!bouge) break;
   }
   return touchees;
 }
@@ -208,31 +239,9 @@ function cellulesDe(g, f) {
 }
 
 // ── les noms des stades ───────────────────────────────────────────────────
-/* Lus dans game.js, jamais recopiés à la main : c'est la règle de prompt.js, et les noms de
-   fichiers doivent tomber sur les mêmes suffixes que ceux que la table ART attend. La
-   descente sur l'épithète vient de là aussi — « Ouroboros » et « Ouroboros, la boucle du
-   monde » donnaient deux fois le même fichier. */
-function nomsDeLignee(cle) {
-  const src = fs.readFileSync(path.join(RACINE, 'game.js'), 'utf8');
-  const debut = src.indexOf('const LINES = [');
-  const bloc = src.slice(debut, src.indexOf('\n];', debut) + 3);
-  const LINES = eval('(' + bloc.replace('const LINES =', '').replace(/;\s*$/, '') + ')');
-  const ligne = LINES.find(l => l.key === cle);
-  if (!ligne) return null;
-  const sansAccents = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const vus = new Set();
-  return ligne.forms.map(f => {
-    const bouts = f[0].split(',').map(x => x.trim());
-    let su = sansAccents(bouts[0]);
-    if (vus.has(su) && bouts[1]) su = sansAccents(bouts[1]);
-    while (vus.has(su)) su += '-bis';
-    vus.add(su);
-    return su;
-  });
-}
+// La règle vit dans tools/lignees.js : un seul endroit fabrique un nom de fichier.
 
 module.exports = {
-  RACINE, DOSSIER, chemin, lire, analyser, ecrire, texteDoc, texteBloc,
+  DOSSIER, chemin, lire, analyser, ecrire, texteDoc, texteBloc, enTete,
   charte, ecarts, debruiter, ilots, clesUtilisees, ordreCles, signature, nomsDeLignee,
 };
