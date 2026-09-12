@@ -384,6 +384,90 @@ mieux avec le prix doré, qui est déjà une décision par cycle.
 > Ce qui suit reste la feuille de route des branches — un nœud par fonctionnalité, le jour
 > où elle existe.
 
+### Le robinet à jetons — à ouvrir
+
+**Le constat tient en une phrase :** le jeton n'a qu'une source, indexée sur une échelle qui ne
+coule que trois fois par cycle, et deux éviers puisent dedans.
+
+**Ce n'est pas un bug**, et il fallait le vérifier avant de proposer quoi que ce soit : au banc,
+les jetons tombent bien PENDANT le cycle, à chaque palier de fortune franchi. Le défaut est de
+RYTHME. Un jeton par multiplication de la fortune par mille se remarque trois fois dans une
+partie, et trois fois, ça se vit comme « on n'en gagne qu'à l'ascension ».
+
+#### Ce qui est mesuré
+
+La constellation coûte **372 jetons** — vingt-cinq nœuds, de 1 à 30 pièces.
+
+| axe | nœuds | coût |
+|---|---|---|
+| le tronc | 1 | 1 |
+| le sang | 4 | 72 |
+| la main | 4 | 50 |
+| le négoce | 4 | 54 |
+| la couvée | 4 | 54 |
+| la pension | 4 | 68 |
+| l'album | 4 | 73 |
+
+L'échelle monte de ×1000 : 1, 10³, 10⁶, 10⁹, 10¹². Un cycle mené à mille milliards franchit
+**cinq paliers** — dont les deux premiers, une pièce et mille pièces, tombent dans la première
+minute et ne se remarquent pas. **Le revenu réel d'un cycle est de trois jetons**, plus deux si
+l'on a déjà pris les deux nœuds « sommet », qui coûtent eux-mêmes 12 et 30.
+
+Et les cartes puisent au même robinet : deux cartes coûtent 3 jetons, trois en coûtent 6.
+
+| ce qu'on emporte | jetons nets par cycle | ascensions pour toute la constellation |
+|---|---|---|
+| aucune carte | 7 | **54** |
+| deux cartes | 4 | **93** |
+| trois cartes | 1 | **372** |
+
+Ce n'est pas l'arbitrage qu'on cherchait à créer, c'est une famine. Le dernier nœud d'un axe
+coûte 26 à 30 jetons : **quatre à six cycles entiers sans rien emporter**, pour un seul nœud.
+
+#### Le levier principal : resserrer l'échelle
+
+| échelle | paliers franchis à 10⁹ / 10¹² / 10¹⁵ | cycles pour la constellation, deux cartes prises |
+|---|---|---|
+| ×1000 — aujourd'hui | 4 / 5 / 6 | 93 |
+| ×100 | 5 / 7 / 8 | 62 |
+| ×32 | 6 / 8 / 10 | 54 |
+| **×10** | **10 / 13 / 16** | **31** |
+
+À ×10, un jeton tombe chaque fois que la fortune est multipliée par dix — donc régulièrement, en
+jouant, et non trois fois par cycle. C'est exactement le reproche qu'on répare : le joueur voit
+le compteur bouger sans avoir à sauter. Et la constellation devient l'affaire d'une trentaine
+d'ascensions, ce qui est un arc de partie plutôt qu'un mur.
+
+**Ce que ça touche, et c'est peu.** `JETON_PAS`, et la longueur de `JETON_PALIERS` — onze crans
+aujourd'hui, trente-et-un pour couvrir la même fortune. Rien d'autre : `RANG_PREMIER` se déduit
+de `JETON_PREMIER`, qui reste au million et garde le premier saut où il est. Une migration
+convertit `asc.paliers`, qui compte des crans pour toute la partie : k crans de mille valent
+3k−2 crans de dix.
+
+#### Trois autres leviers, et pourquoi ils viennent après
+
+- **Baisser le prix de la constellation** — 372 → 150. Même effet sur le volume, aucun sur le
+  rythme, et c'est le rythme que le reproche vise. À garder comme second tour de vis si trente
+  cycles restent trop : c'est un fichier à éditer, pas un système à refaire.
+- **Un second robinet, indexé sur la collection** — un jeton par lignée découverte, par
+  merveille, par trophée. Il coule pendant le cycle et récompense l'autre moitié du jeu, celle
+  qui ne fait pas de pièces. Mais c'est un revenu UNIQUE par accomplissement : bon pour
+  l'amorçage des dix premiers cycles, sans effet sur les quarante suivants. C'est un
+  assaisonnement, pas une source.
+- **Séparer les deux éviers** — les cartes cesseraient de coûter des jetons. Ça supprimerait la
+  concurrence, qui est la moitié du problème. Mais le prix doré EST la décision par cycle que la
+  `3.0.0` avait laissée ouverte, et le retirer rouvrirait la porte qu'il a fermée. À ne faire que
+  si l'échelle resserrée ne suffit pas.
+
+**Ordre proposé : l'échelle d'abord, seule, et remesurer.** Un seul nombre, une migration, et le
+reste du système intact — c'est le changement qui répare le plus en touchant le moins.
+
+**Ce qui reste à trancher :** faut-il que l'échelle démarre plus haut ? À ×10, les quatre
+premiers paliers — 1, 10, 100, 1000 — tombent dans la première minute et ne se remarqueront pas
+davantage qu'aujourd'hui. Les faire commencer au millier rendrait chaque jeton visible, au prix
+de retarder le tout premier ; il faudrait alors décider si le compteur d'ouverture de
+l'ascension suit ou non.
+
 ### Les faveurs, ou ce qu'on fait quand la liste se termine
 
 Les primes sont cinquante et une, et **les dix dernières sont presque toutes de pension** —
