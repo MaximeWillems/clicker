@@ -4152,6 +4152,56 @@ scenario('ascension — la porte, le nombre et la phrase disent tous la bourse',
   ok('elle dit ce qui reste', dit.indexOf('reste en bourse') >= 0, dit);
 });
 
+scenario('ascension — rien ne survit au saut que ce qui est nommé', () => {
+  /* « LE RESET N'A PAS TOUT REMIS À ZÉRO » EST UNE PHRASE QU'ON NE PEUT PAS VÉRIFIER À L'ŒIL.
+     L'ascension recopie une liste de champs par-dessus un état frais, et cette liste est
+     écrite à un seul endroit. Ce scénario la relit autrement : il compare l'état d'après-saut
+     à celui d'une partie neuve, CLÉ PAR CLÉ, et exige que tout écart soit dans la liste.
+
+     Un champ oublié dans la recopie est invisible — il ressemble à du progrès. Un champ ajouté
+     par erreur l'est encore plus : il ressemble à une récompense. */
+  const frais = neuf();
+  frais.state.tuto = false;
+  const temoin = JSON.parse(JSON.stringify(frais.state));
+
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e13; s.pens = 20; s.incubators = 6;
+  for (const u of Object.keys(s.up)) s.up[u] = 14;
+  for (const p of jeu.PRIMES) s.primes[p.cle] = true;
+  s.ciel = { poing: true, fracas: true, ferveur: true, nid: true };
+  jeu.oublierPrimes();
+  jeu.crediterJetons();
+
+  const avant = jeu.clickPower();
+  ok('la partie montée frappe fort', avant > 20, avant);
+
+  s.pen = [];
+  jeu.ascChoix = [];
+  jeu.ascensionner();
+
+  /* CE QUE LE SAUT EMPORTE EXPRÈS. Trois natures : ce qui se collectionne (l'album, le carnet,
+     les trophées), ce qui s'apprend (le tutoriel, les réglages), et ce qui est permanent par
+     décision (la constellation). `incub` en est parce que l'œuf de départ est tiré au hasard :
+     deux parties neuves n'ont pas la même lignée dedans. */
+  const VOULUS = new Set(['album', 'slots', 'ciel', 'asc', 'seen', 'dex', 'tri', 'triOeuf',
+    'achat', 'sound', 'poussiere', 'tuto', 'vu', 'dial', 'stats', 'dons', 'trophees',
+    't', 'v', 'incub']);
+  const restes = [];
+  for (const k of new Set(Object.keys(temoin).concat(Object.keys(jeu.state)))) {
+    if (VOULUS.has(k)) continue;
+    const a = JSON.stringify(temoin[k]), b = JSON.stringify(jeu.state[k]);
+    if (a !== b) restes.push(k + ' : ' + String(a).slice(0, 30) + ' → ' + String(b).slice(0, 30));
+  }
+  ok('rien d’autre ne traverse le saut', restes.length === 0, restes.join('  |  '));
+
+  /* ET LE CLIC RETOMBE EXACTEMENT À CE QUE LA CONSTELLATION LUI DONNE, ni plus ni moins. C'est
+     le nombre que le joueur voit, et le seul qui doive s'expliquer sans le code : un plus ce
+     que les nœuds de la main ajoutent. */
+  const duCiel = jeu.bonusCiel().clic;
+  eq('le clic ne garde que ce que le ciel lui donne', jeu.clickPower(), frais.clickPower() + duCiel);
+  ok('et le ciel lui en donne bien', duCiel > 0, duCiel);
+});
+
 scenario('ascension — ce qui n’est pas employé demeure vraiment', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 20;
