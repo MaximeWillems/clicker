@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.28.1';
+const VERSION = 'beta 4.28.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -3183,6 +3183,33 @@ function load() {
     isNewGame = true;
     return freshState();
   }
+}
+
+/* ── EFFACER LA PARTIE ────────────────────────────────────────────────────────
+   ON POSE UN ÉTAT NEUF AVANT D'EFFACER, et pas seulement après. Couper l'écriture avec
+   `stopSaving` suffit tant que TOUTES les écritures passent par `save()` — c'est vrai
+   aujourd'hui, mais c'est une discipline, pas une garantie. Il suffit qu'une écriture passe
+   à côté, ou qu'un rechargement tarde d'une fraction de seconde, pour que la partie qu'on
+   vient d'effacer soit réécrite par-dessus. Le joueur voit alors un reset qui n'a remis
+   qu'une partie des choses à zéro, ce qui est le pire des deux mondes : il ne sait pas ce
+   qu'il a gardé.
+
+   EN POSANT UN ÉTAT NEUF D'ABORD, la pire écriture possible écrit une partie neuve. Le reset
+   devient correct par construction et non par surveillance.
+
+   ET ON REMET AUSSI CE QUI NE VIT PAS DANS LA SAUVEGARDE. Le combo, l'heure du dernier clic,
+   l'heure de mise en veille, les caches de primes et de bonus : rien de tout cela n'est dans
+   le fichier, donc rien de tout cela n'est effacé en effaçant le fichier. Un rechargement de
+   page les remet à zéro tout seul — mais compter là-dessus, c'est encore une discipline. */
+
+function effacerLaPartie() {
+  state = freshState();
+  combo = 0; dernierClic = 0; veilleDepuis = 0; rattrapage = false;
+  primesPrises = false; ocelleReste = 0; enPause = false;
+  oublierPrimes();
+  stopSaving = true;
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
+  return true;
 }
 
 function save() {
@@ -9482,12 +9509,11 @@ function bindTools() {
     if (!r.ok) setText($('sav-resume'), r.dit);
   });
 
+  /* Le bouton ne fait que demander confirmation : le geste, lui, est une fonction, donc
+     il se vérifie au banc — un écouteur ne se vérifie nulle part. */
   $('btn-reset').addEventListener('click', () => {
     if (!confirm('Effacer la partie et repartir de zéro ?')) return;
-    // couper la sauvegarde AVANT de recharger : sinon le beforeunload réécrit
-    // aussitôt ce qu'on vient d'effacer, et le bouton semble ne rien faire.
-    stopSaving = true;
-    try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
+    effacerLaPartie();
     location.reload();
   });
 

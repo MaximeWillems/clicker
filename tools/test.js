@@ -5859,6 +5859,52 @@ scenario('album — l’ocellé clique à ta place, sans compter pour toi', () =
 
 /* ────────────────────────── la sauvegarde en clair ────────────────────────── */
 
+scenario('sauvegarde — effacer la partie efface aussi ce qui n’est pas dedans', () => {
+  /* « LE RESET N'A PAS TOUT REMIS À ZÉRO. » Ce bouton n'était vérifié par rien, et c'est le
+     seul des trois chemins de remise à zéro qui passe par `localStorage` et un rechargement de
+     page — donc le seul qu'on ne voit pas en jouant au banc.
+
+     IL ÉTAIT CORRECT PAR DISCIPLINE, PAS PAR CONSTRUCTION. Il coupait l'écriture, effaçait le
+     fichier, rechargeait. Ça tient tant que TOUTES les écritures passent par `save()` : il
+     suffit qu'une seule passe à côté, ou qu'un rechargement tarde, pour que la partie effacée
+     soit réécrite par-dessus — et le joueur voit alors un reset qui n'a remis qu'une partie
+     des choses à zéro, ce qui est pire que pas de reset du tout, parce qu'il ne sait pas ce
+     qu'il a gardé.
+
+     IL POSE MAINTENANT UN ÉTAT NEUF AVANT D'EFFACER : la pire écriture possible écrit une
+     partie neuve. Et il remet ce qui ne vit PAS dans la sauvegarde — le combo, l'heure du
+     dernier clic, les caches — que l'effacement du fichier ne pouvait pas atteindre. */
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e13; s.pens = 20; s.incubators = 6;
+  for (const u of Object.keys(s.up)) s.up[u] = 14;
+  for (const p of jeu.PRIMES) s.primes[p.cle] = true;
+  s.ciel = { poing: true, fracas: true, nid: true };
+  jeu.oublierPrimes();
+  jeu.noterClic();
+  jeu.save();
+
+  ok('la partie est bien montée', jeu.clickPower() > 20, jeu.clickPower());
+  ok('et elle est bien écrite', !!localStorage.getItem('eclosion.jalon0'));
+
+  jeu.effacerLaPartie();
+
+  ok('le fichier est effacé', !localStorage.getItem('eclosion.jalon0'));
+  eq('la bourse est à zéro', jeu.state.coins, 0);
+  eq('les améliorations aussi', JSON.stringify(jeu.state.up),
+     JSON.stringify({ clic: 0, couveuse: 0, eleveur: 0, mangeoire: 0 }));
+  eq('plus une seule prime', Object.keys(jeu.state.primes || {}).length, 0);
+  eq('et la constellation est vide', Object.keys(jeu.state.ciel || {}).length, 0);
+
+  /* LE CLIC EST LE NOMBRE QUE LE JOUEUR REGARDE, et c'est par lui qu'il a vu le défaut. */
+  eq('un clic revaut un', jeu.clickPower(), 1);
+
+  /* ET CE QUI NE VIT PAS DANS LE FICHIER : le combo tenait une série en cours, et un reset
+     qui laisserait la série laisserait des clics plus forts que prévu — exactement la forme
+     du reproche. */
+  eq('le combo est retombé', jeu.comboMult(), 1);
+  ok('et la ferme n’est pas au calme', !jeu.enIdle());
+});
+
 scenario('sauvegarde — une copie se relit, et dit ce qu’elle contient', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 4242; s.pens = 6;
