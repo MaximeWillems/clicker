@@ -31,28 +31,28 @@ function ok(quoi, vrai, detail) {
 }
 const eq = (quoi, a, b) => ok(quoi + ' (' + a + ' attendu ' + b + ')', a === b);
 
-/* POSER N JETONS, c'est remplir la BOURSE depuis la 4.0.0 — et non plus poser une fortune qui
-   aurait franchi n paliers. L'échelle n'a que onze crans, donc au-delà elle ne savait plus
-   représenter la demande ; la bourse, elle, n'a pas de plafond. `paliers` reste ce qui a ouvert
-   l'ascension une première fois. */
-function poserJetons(jeu, n) {
-  jeu.state.asc.jetons = n;
-  jeu.state.asc.sommet = 0;
-  jeu.state.asc.paliers = jeu.RANG_PREMIER;
-}
+/* POSER N JETONS, c'est remplir la BOURSE depuis la 4.0.0 — et non plus poser une fortune qui
+   aurait franchi n paliers. L'échelle n'a que onze crans, donc au-delà elle ne savait plus
+   représenter la demande ; la bourse, elle, n'a pas de plafond. `paliers` reste ce qui a ouvert
+   l'ascension une première fois. */
+function poserJetons(jeu, n) {
+  jeu.state.asc.jetons = n;
+  jeu.state.asc.sommet = 0;
+  jeu.state.asc.paliers = jeu.RANG_PREMIER;
+}
 
-// une bête posée dans l'enclos, sans passer par la couvaison
-function bete(jeu, ligne, age, p) {
-  const s = jeu.state;
-  s.incub[0] = { line: ligne || 'crapaud', p: 9999, kind: 'commun' };
-  jeu.hatchAll();
-  const c = s.pen[s.pen.length - 1];
-  if (age) c.age = age;
-  if (p !== undefined) c.p = p;
-  s.sel = 'c:' + c.id;
-  jeu.refresh();
-  return c;
-}
+// une bête posée dans l'enclos, sans passer par la couvaison
+function bete(jeu, ligne, age, p) {
+  const s = jeu.state;
+  s.incub[0] = { line: ligne || 'crapaud', p: 9999, kind: 'commun' };
+  jeu.hatchAll();
+  const c = s.pen[s.pen.length - 1];
+  if (age) c.age = age;
+  if (p !== undefined) c.p = p;
+  s.sel = 'c:' + c.id;
+  jeu.refresh();
+  return c;
+}
 
 /* UNE BÊTE SANS HASARD, POSÉE EN SÉRIE. `bete` ci-dessus sélectionne et rafraîchit, ce qui
    coûte cher quand on en pose douze d'affilée ; celle-ci pose, règle l'âge et la croissance,
@@ -77,113 +77,113 @@ function beteNeutre(j, ligne, age, p) {
   return c;
 }
 
-/* SATURER LE COMBO AVANT DE MESURER AUTRE CHOSE. Depuis qu'un clic monte le combo, deux clics
-   consécutifs ne valent plus la même chose — c'est le but de la mécanique, et c'est un poison
-   pour tout scénario qui compare un clic à un autre. Au plafond, `comboMult` ne bouge plus :
-   les deux clics redeviennent comparables. On repose ensuite ce que les clics ont poussé. */
-function saturerCombo(jeu) {
-  const s = jeu.state, sujet = jeu.current();
-  const p = sujet && sujet.c ? sujet.c.p : 0, over = sujet && sujet.c ? sujet.c.over : 0;
-  const oeuf = s.incub[0] ? s.incub[0].p : null;
-  for (let i = 0; i < jeu.COMBO_PLEIN; i++) jeu.tapStage();
-  if (sujet && sujet.c) { sujet.c.p = p; sujet.c.over = over; }
-  if (oeuf !== null && s.incub[0]) s.incub[0].p = oeuf;
-}
+/* SATURER LE COMBO AVANT DE MESURER AUTRE CHOSE. Depuis qu'un clic monte le combo, deux clics
+   consécutifs ne valent plus la même chose — c'est le but de la mécanique, et c'est un poison
+   pour tout scénario qui compare un clic à un autre. Au plafond, `comboMult` ne bouge plus :
+   les deux clics redeviennent comparables. On repose ensuite ce que les clics ont poussé. */
+function saturerCombo(jeu) {
+  const s = jeu.state, sujet = jeu.current();
+  const p = sujet && sujet.c ? sujet.c.p : 0, over = sujet && sujet.c ? sujet.c.over : 0;
+  const oeuf = s.incub[0] ? s.incub[0].p : null;
+  for (let i = 0; i < jeu.COMBO_PLEIN; i++) jeu.tapStage();
+  if (sujet && sujet.c) { sujet.c.p = p; sujet.c.over = over; }
+  if (oeuf !== null && s.incub[0]) s.incub[0].p = oeuf;
+}
 
-// ouvre une scène et une seule : toutes les autres sont marquées lues d'avance
-function seule(cle, prep) {
-  const jeu = neuf(); const s = jeu.state;
-  s.vu = {};
-  for (const n of jeu.NOTES) if (n.cle !== cle) s.vu[n.cle] = true;
-  s.dial = null;
-  if (prep) prep(jeu, s);
-  jeu.refresh();
-  return jeu;
-}
+// ouvre une scène et une seule : toutes les autres sont marquées lues d'avance
+function seule(cle, prep) {
+  const jeu = neuf(); const s = jeu.state;
+  s.vu = {};
+  for (const n of jeu.NOTES) if (n.cle !== cle) s.vu[n.cle] = true;
+  s.dial = null;
+  if (prep) prep(jeu, s);
+  jeu.refresh();
+  return jeu;
+}
 
-// en `function` : les scénarios s'exécutent dans l'ordre du fichier, et ceux du dialogue
-// s'en servent avant d'arriver ici
-function ditDial() { return noeuds.get('dial-dit').textContent || ''; }
+// en `function` : les scénarios s'exécutent dans l'ordre du fichier, et ceux du dialogue
+// s'en servent avant d'arriver ici
+function ditDial() { return noeuds.get('dial-dit').textContent || ''; }
 
-function dialOuvert() { return !noeuds.get('dial').hidden; }
+function dialOuvert() { return !noeuds.get('dial').hidden; }
 
-// l'impasse exacte : rien en enclos, rien en couvaison, rien en réserve, pas de quoi acheter
-function impasse(jeu, sous) {
-  const s = jeu.state;
-  s.pen = []; s.incub = [null];
-  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
-  s.coins = sous === undefined ? 5 : sous;
-  jeu.refresh();
-}
+// l'impasse exacte : rien en enclos, rien en couvaison, rien en réserve, pas de quoi acheter
+function impasse(jeu, sous) {
+  const s = jeu.state;
+  s.pen = []; s.incub = [null];
+  s.eggs = { commun: 0, rare: 0, epique: 0, mythique: 0 };
+  s.coins = sous === undefined ? 5 : sous;
+  jeu.refresh();
+}
 
-/* Deux bêtes prêtes à être confiées, dans une ferme assez grande pour les tenir — et la
-   pension achetée, puisque c'est un bâtiment depuis la beta 1.0.0. */
-function couple(jeu, ligneA, ligneB) {
-  jeu.state.pens = 8;
-  jeu.state.ciel = Object.assign(jeu.state.ciel || {}, { nid: 1 });
-  return [bete(jeu, ligneA, 4, 20000), bete(jeu, ligneB, 4, 20000)];
-}
+/* Deux bêtes prêtes à être confiées, dans une ferme assez grande pour les tenir — et la
+   pension achetée, puisque c'est un bâtiment depuis la beta 1.0.0. */
+function couple(jeu, ligneA, ligneB) {
+  jeu.state.pens = 8;
+  jeu.state.ciel = Object.assign(jeu.state.ciel || {}, { nid: 1 });
+  return [bete(jeu, ligneA, 4, 20000), bete(jeu, ligneB, 4, 20000)];
+}
 
-/* Le bloc d'un couple porte une ligne par parent depuis la 2.2.0 : ce qu'on y cherche n'est
-   plus un enfant direct. */
-function sousArbre(e, cls) {
-  const t = [];
-  const m = x => { if (x.classList && x.classList.contains(cls)) t.push(x); x.children.forEach(m); };
-  e.children.forEach(m);
-  return t;
-}
+/* Le bloc d'un couple porte une ligne par parent depuis la 2.2.0 : ce qu'on y cherche n'est
+   plus un enfant direct. */
+function sousArbre(e, cls) {
+  const t = [];
+  const m = x => { if (x.classList && x.classList.contains(cls)) t.push(x); x.children.forEach(m); };
+  e.children.forEach(m);
+  return t;
+}
 
-// ce que dit la phrase sous le nid, quel que soit le nombre de couples affichés au-dessus
-function ditPension(jeu) {
-  const p = noeuds.get('pension').children.find(c => c.classList.contains('pension-dit'));
-  return p ? p.textContent : '';
-}
+// ce que dit la phrase sous le nid, quel que soit le nombre de couples affichés au-dessus
+function ditPension(jeu) {
+  const p = noeuds.get('pension').children.find(c => c.classList.contains('pension-dit'));
+  return p ? p.textContent : '';
+}
 
-// les deux cases du nid, dans l'ordre
-function casesNid(jeu) {
-  const nid = noeuds.get('pension').children.find(c => c.classList.contains('nid'));
-  return nid ? nid.children.filter(c => c.classList.contains('nid-case')) : [];
-}
+// les deux cases du nid, dans l'ordre
+function casesNid(jeu) {
+  const nid = noeuds.get('pension').children.find(c => c.classList.contains('nid'));
+  return nid ? nid.children.filter(c => c.classList.contains('nid-case')) : [];
+}
 
-// ce que la fiche affiche, à plat : un texte par bloc
-function fiche(jeu, cle) {
-  jeu.encyLignee = cle;
-  jeu.renderEncyclopedie();
-  const plat = el => (el.textContent || '') +
-    el.children.map(c => ' ' + (c.textContent || '') + c.children.map(x => ' ' + x.textContent).join('')).join('');
-  return {
-    titre: noeuds.get('ency-title').textContent,
-    dit: noeuds.get('ency-dit').textContent,
-    blocs: noeuds.get('ency').children.map(plat),
-    tout: noeuds.get('ency').children.map(plat).join(' | '),
-  };
-}
+// ce que la fiche affiche, à plat : un texte par bloc
+function fiche(jeu, cle) {
+  jeu.encyLignee = cle;
+  jeu.renderEncyclopedie();
+  const plat = el => (el.textContent || '') +
+    el.children.map(c => ' ' + (c.textContent || '') + c.children.map(x => ' ' + x.textContent).join('')).join('');
+  return {
+    titre: noeuds.get('ency-title').textContent,
+    dit: noeuds.get('ency-dit').textContent,
+    blocs: noeuds.get('ency').children.map(plat),
+    tout: noeuds.get('ency').children.map(plat).join(' | '),
+  };
+}
 
-/* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
-function pave(jeu, id, ligne, etoiles) {
-  return { id, line: ligne || 'crapaud', age: 5, niv: 100, chroma: 7, rank: 5,
-           prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
-}
+/* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
+function pave(jeu, id, ligne, etoiles) {
+  return { id, line: ligne || 'crapaud', age: 5, niv: 100, chroma: 7, rank: 5,
+           prodige: false, etoiles: etoiles || 1, motif: 0, temper: 0 };
+}
 
-/* Une carte au sommet de ce que le jeu peut produire : c'est là que les bornes se testent.
-   Déclarée en `function` et non en `const` : les scénarios s'exécutent dans l'ordre du
-   fichier, et celui de la plonge s'en sert avant d'arriver ici. */
-/* PARFAITE VEUT DIRE PARFAITE SUR LES CINQ AXES, stats comprises depuis qu'elles en sont un.
-   Sans elles, `ivPart` lit la moyenne et la carte plafonne à 0,90 de qualité : le scénario
-   mesurait alors un « bonus maximal » qui n'était pas le maximum. */
-function parfaite(jeu, motif, id) {
-  return {
-    id, line: 'ouroboros', age: 5, niv: 100, chroma: 0,
-    rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif, temper: 0,
-    iv: jeu.IV_NOMS.map(() => jeu.IV_MAX),
-  };
-}
+/* Une carte au sommet de ce que le jeu peut produire : c'est là que les bornes se testent.
+   Déclarée en `function` et non en `const` : les scénarios s'exécutent dans l'ordre du
+   fichier, et celui de la plonge s'en sert avant d'arriver ici. */
+/* PARFAITE VEUT DIRE PARFAITE SUR LES CINQ AXES, stats comprises depuis qu'elles en sont un.
+   Sans elles, `ivPart` lit la moyenne et la carte plafonne à 0,90 de qualité : le scénario
+   mesurait alors un « bonus maximal » qui n'était pas le maximum. */
+function parfaite(jeu, motif, id) {
+  return {
+    id, line: 'ouroboros', age: 5, niv: 100, chroma: 0,
+    rank: jeu.RANKS.length - 1, prodige: true, etoiles: 1, motif, temper: 0,
+    iv: jeu.IV_NOMS.map(() => jeu.IV_MAX),
+  };
+}
 
-function equiper(jeu, motif, n) {
-  jeu.state.album = []; jeu.state.slots = [];
-  for (let i = 1; i <= n; i++) { jeu.state.album.push(parfaite(jeu, motif, i)); jeu.state.slots.push(i); }
-  jeu.oublierAlbum();
-}
+function equiper(jeu, motif, n) {
+  jeu.state.album = []; jeu.state.slots = [];
+  for (let i = 1; i <= n; i++) { jeu.state.album.push(parfaite(jeu, motif, i)); jeu.state.slots.push(i); }
+  jeu.oublierAlbum();
+}
 
 module.exports = {
   compte, scenario, ok, eq,
@@ -191,4 +191,3 @@ module.exports = {
   couple, sousArbre, ditPension, casesNid, fiche, pave, parfaite, equiper,
   neuf, noeuds, inconnus, RACINE, lire, brut, rechargements,
 };
-

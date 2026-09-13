@@ -8,7 +8,7 @@ scenario('album — sans limite, et cinq cartes actives qui s’échangent', () 
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 12; i++) beteNeutre(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
-  poserJetons(jeu, jeu.coutCartes(9));   // le prix doré : neuf cartes ne coûtent plus neuf jetons
+  poserJetons(jeu, jeu.coutCartes(9));   // neuf cartes ne coûtent plus neuf jetons
 
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.slice(0, 9).map(k => k.id);
@@ -406,4 +406,3 @@ scenario('album — l’ocellé clique à ta place, sans compter pour toi', () =
   for (let i = 0; i < 100; i++) jeu.tickOcelle(0.1);
   eq('sans la carte, aucun clic automatique', c.p, fige);
 });
-

@@ -42,4 +42,3 @@ if (compte.ratees.length) {
   process.exit(1);
 }
 console.log('  ' + compte.scenarios + ' scénarios, ' + compte.verifs + ' vérifications, tout passe');
-

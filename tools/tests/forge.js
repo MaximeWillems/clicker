@@ -286,7 +286,7 @@ scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () =>
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 10; i++) beteNeutre(jeu, 'crapaud', 3, 3000);
-  poserJetons(jeu, jeu.coutCartes(2));   // deux cartes coûtent trois jetons, prix doré
+  poserJetons(jeu, jeu.coutCartes(2));   // deux cartes coûtent trois jetons
 
   const ap = jeu.apercuAscension();
   jeu.ascChoix = ap.neuves.slice(0, 2).map(k => k.id);
@@ -300,4 +300,3 @@ scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () =>
   ok('la poussière traverse le saut',
      jeu.state.poussiere > 0 && jeu.state.coins === 0);
 });
-

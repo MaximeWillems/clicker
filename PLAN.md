@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.31.2 · sauvegarde v31 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.31.3 · sauvegarde v32 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -51,7 +51,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Les prix de moitié** | 1.5 | est-ce que la partie compressée se joue mieux ? | à mesurer encore |
 | **L'album et l'ascension** | 2.0 → 2.5 | est-ce qu'on veut recommencer ? | jouée plusieurs fois ; la question de fond reste ouverte |
 | **Les achats par lots** | 2.1 | est-ce que la fin de partie cesse d'être une paperasse ? | oui |
-| **Les jetons de fortune** | 2.2, 2.9, 2.30 | est-ce que l'ascension se mérite ? | oui — mais les deux moitiés de la réponse d'alors sont tombées : une carte coûte le prix doré depuis la `4.0.0`, et ce qu'on n'emploie pas reste en bourse |
+| **Les jetons de fortune** | 2.2, 2.9, 2.30 | est-ce que l'ascension se mérite ? | oui — mais les deux moitiés de la réponse d'alors sont tombées : chaque carte emportée coûte plus que la précédente depuis la `4.0.0`, et ce qu'on n'emploie pas reste en bourse |
 | **Dix lignées rares** | 2.3 | est-ce que l'ère rare cesse de se répéter ? | oui sur le papier — six lignées sans dessin |
 | **Le glisser-déposer des cartes** | 2.7 | est-ce que l'album se manipule ? | non vérifié : rien de visuel ne l'est |
 | **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
@@ -82,7 +82,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **La production** | beta 1.7 | la pension peut-elle concurrencer l'acheteur ? | oui, du même ordre qu'un acheteur de milieu de partie — et toujours perdante en argent |
 | **L'encyclopédie** | beta 1.9, 1.10 | la collection peut-elle dire autre chose que « combien m'en manque-t-il » ? | oui — une fiche par lignée, dans une vue à elle |
 | **Les merveilles jouables** | beta 1.1 → 1.5 | une merveille peut-elle se viser plutôt que se rencontrer ? | oui — la chimère devient un joker, la tarasque n'a pas de recette, et `tools/pixel.js` sert les planches |
-| **Le rabot de l'interface** | beta 1.11, 2.3, 2.4 | un réglage se prend-il d'un coup d'œil ? | oui — seize menus deviennent des segments, et deux passages de rabot sur le texte |
+| **Le rabot de l'interface** | beta 1.11, 2.3, 2.4, 4.31.3 | un réglage se prend-il d'un coup d'œil ? | oui — seize menus deviennent des segments, et deux passages de rabot sur le texte. La `4.31.3` en passe un troisième et pose la règle : **une description dit ce qu'un achat fait, rien d'autre** — ni ce qu'il vaut, ni son calcul, ni sa règle, que le joueur trouve en jouant. Le tutoriel est le seul endroit où le texte a le droit d'expliquer |
 | **Le chantier graphique** | beta 1.12 → 1.14, 2.4.1 | une carte, un œuf, une bête ressemblent-ils à quelque chose ? | oui — cadre et illustration, huit fonds animés, cinq coquilles, et le Kitsune ouvre les merveilleuses |
 | **L'atelier de forge** | beta 2.0, 2.1 | trois cartes ratées peuvent-elles en faire une bonne ? | oui — et l'atelier se désigne carte par carte |
 | **Les cases fixes** | beta 2.2, 2.5, 3.1.1 | peut-on viser une vignette pendant que le marchand vend ? | oui — l'enclos devient des cases, et le tri revient une seconde après |
@@ -340,7 +340,7 @@ elle laisse une porte ouverte : **si les jetons reviennent et que chaque carte e
 emporte cinq cartes à chaque ascension, indéfiniment.** L'album se remplit alors sans décision,
 et le seul frein restant est le nombre d'emplacements.
 
-**Le prix doré est exactement le contrepoids qui manquait.** Chaque carte prise dans une même
+**Un prix qui monte est exactement le contrepoids qui manquait.** Chaque carte prise dans une même
 ascension renchérit la suivante d'un facteur φ ≈ 1,618 :
 
 | Carte | Coût | Cumul |
@@ -360,7 +360,7 @@ et il en reste deux**, là où on en prenait cinq. Le geste redevient un arbitra
 #### La constellation est ce qui donne un sens au « je garde »
 
 Sans autre emploi, garder un jeton ne serait qu'un gaspillage — la question ne se poserait pas.
-**La constellation est le second évier**, et c'est lui qui transforme le prix doré en
+**La constellation est le second évier**, et c'est lui qui transforme le prix des cartes en
 décision plutôt qu'en taxe.
 
 Trois choses le distinguent de tout ce qui existe déjà, et il faut que les trois tiennent :
@@ -377,11 +377,11 @@ Trois choses le distinguent de tout ce qui existe déjà, et il faut que les tro
 Reste ouvert, et c'est ce qui décidera de sa forme : **l'arbre se remet-il à zéro à chaque
 ascension, ou s'accumule-t-il ?** S'il s'accumule, c'est un cliquet permanent et il doit être
 petit ; s'il se rejoue, c'est un build par cycle et il peut être ambitieux. La seconde forme va
-mieux avec le prix doré, qui est déjà une décision par cycle.
+mieux avec le prix des cartes, qui est déjà une décision par cycle.
 
 #### LA CONSTELLATION — **le socle est livré en `beta 4.0.0`**
 
-> Le tronc, les quatre nœuds de bâtiments, le prix doré et la bourse de jetons sont écrits.
+> Le tronc, les quatre nœuds de bâtiments, le prix des cartes et la bourse de jetons sont écrits.
 > Ce qui suit reste la feuille de route des branches — un nœud par fonctionnalité, le jour
 > où elle existe.
 
@@ -456,7 +456,7 @@ convertit `asc.paliers`, qui compte des crans pour toute la partie : k crans de 
   l'amorçage des dix premiers cycles, sans effet sur les quarante suivants. C'est un
   assaisonnement, pas une source.
 - **Séparer les deux éviers** — les cartes cesseraient de coûter des jetons. Ça supprimerait la
-  concurrence, qui est la moitié du problème. Mais le prix doré EST la décision par cycle que la
+  concurrence, qui est la moitié du problème. Mais le prix des cartes EST la décision par cycle que la
   `3.0.0` avait laissée ouverte, et le retirer rouvrirait la porte qu'il a fermée. À ne faire que
   si l'échelle resserrée ne suffit pas.
 
@@ -605,7 +605,7 @@ l'inverse :**
   ajouter un cran devient **une entrée de plus dans une table**, pas une ligne de code. C'est ce
   qui rend « plus de nœuds » presque gratuit.
 - **Un nœud de TRONC est une chose distincte**, donc il garde son `bonus` quand la clé existe, ou
-  son câblage quand il change une règle et non un nombre — le prix doré, le sommet de fortune, la
+  son câblage quand il change une règle et non un nombre — le prix des cartes, le sommet de fortune, la
   poussière de l'album. Ceux-là ne se rangent dans aucune table, et il ne faut pas les y forcer.
 
 Les quatre nœuds de pension sont déjà des crans : ils deviennent deux branches de trois en
@@ -784,7 +784,7 @@ boucle, sinon la première heure se joue au poignet.
 
 | Axe | Ce qu'il pousse | Nœuds | Jetons |
 |---|---|---|---|
-| **le sang** | l'ascension elle-même — prix doré, paliers de jetons | 4 | 72 |
+| **le sang** | l'ascension elle-même — prix des cartes, paliers de jetons | 4 | 72 |
 | **la main** | ce que vaut ta présence — clic, frénésie | 4 | 50 |
 | **le négoce** | ce que valent tes bêtes — valeur, œufs, péage | 4 | 54 |
 | **la couvée** | ce qui pousse — couvaison, croissance | 4 | 54 |
@@ -835,7 +835,7 @@ chaque système nouveau soit posé à côté des autres.
 
 #### Ce qu'il faut mesurer avant d'écrire une ligne
 
-Le prix doré et l'arbre **retirent tous les deux des cartes à l'album**. Trois cartes de moins
+Le prix des cartes et l'arbre **retirent tous les deux des cartes à l'album**. Trois cartes de moins
 par ascension, sur dix ascensions, c'est trente cartes — et la forge en demande neuf pour une
 seule trois-étoiles. Il y a un risque réel que l'album cesse de se remplir assez vite pour que
 la forge existe. **À chiffrer sur une partie simulée avant de figer φ**, et φ n'est peut-être pas

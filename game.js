@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.31.2';
+const VERSION = 'beta 4.31.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1406,23 +1406,23 @@ const PLAFOND_OEUFS = 50;
    déplacé déplace la case toute seule. */
 const PRIMES = [
   { cle: 'soin',      prix: 250,       glyphe: '💗', nom: 'Soins attentifs',
-    dit: 'Le bonheur de la bête que tu regardes monte deux fois plus vite — donc deux fois plus de cadeaux.' },
+    dit: 'Le bonheur monte deux fois plus vite.' },
   { cle: 'nichoir',   prix: 600,       glyphe: '🪺', nom: 'Nichoir',
-    dit: 'Deux incubateurs de plus, offerts. Ils ne font pas monter le prix des suivants.' },
+    dit: 'Deux incubateurs de plus.' },
   { cle: 'paille',    prix: 1200,      glyphe: '🌾', nom: 'Paille fraîche',
-    dit: 'Deux enclos de plus, offerts. Ils ne font pas monter le prix des suivants.' },
+    dit: 'Deux enclos de plus.' },
   { cle: 'acheteur',  prix: 2000,      glyphe: '🥚', glyphe: '🥚', nom: 'Acheteur automatique',
-    dit: 'Rachète un œuf dès qu’un incubateur se libère et que ta réserve est vide.' },
+    dit: 'Rachète des œufs tout seul.' },
   { cle: 'negoce-commune', prix: 4000, glyphe: '🪙', nom: 'Négoce commun',
     dit: 'Les communes se vendent un quart plus cher.' },
   { cle: 'poigne',    prix: 8000,      glyphe: '✊', nom: 'Poigne',
-    dit: 'Trois secondes de plus à chaque clic, quoi que tu aies acheté par ailleurs.' },
+    dit: 'Trois secondes de plus à chaque clic.' },
   { cle: 'marchand',  prix: 15000,     glyphe: '🤝', glyphe: '🤝', nom: 'Marchand automatique',
-    dit: 'Vend les bêtes mûres tout seul, à l’âge que tu règles pour chaque rareté.' },
+    dit: 'Vend les bêtes tout seul.' },
   { cle: 'grossiste', prix: 30000,     glyphe: '📦', nom: 'Grossiste',
     dit: 'Les œufs de la boutique coûtent un cinquième de moins.' },
   { cle: 'evolution', prix: 50000,     glyphe: '🧬', glyphe: '🧬', nom: 'Évolution automatique',
-    dit: 'Fait passer les bêtes mûres d’un âge au suivant, jusqu’où tu décides. Elle agit avant le marchand.' },
+    dit: 'Fait évoluer les bêtes toute seule.' },
   /* ── LES NÉGOCES ARRIVENT AVEC LEUR RARETÉ ──
      Ils étaient posés BIEN AVANT elle, et le compte était clair : le négoce rare coûtait
      80 000 quand un œuf rare en coûte 300 000, l'épique 2 M pour un œuf à 7,5 M, le mythique
@@ -1441,17 +1441,17 @@ const PRIMES = [
      acheter un œuf à 300 000, c'est-à-dire comme un cadeau et non comme une décision. Chacun
      vaut donc DEUX ŒUFS de sa rareté — on en a un, on en veut d'autres. */
   { cle: 'intendance', prix: 250000,   glyphe: '📋', nom: 'Intendance',
-    dit: 'Chaque évolution coûte un quart de moins. Passé l’ère commune, ce n’est plus la vitesse qui freine mais la mise de fonds.' },
+    dit: 'Chaque évolution coûte un quart de moins.' },
   { cle: 'oeil',      prix: 500000,    glyphe: '👁️', nom: 'Œil exercé',
-    dit: 'Une chance sur deux de plus de voir naître un chromatique — de 1 sur 8 192 à 1 sur 5 461.' },
+    dit: 'Une chance sur deux de plus de voir naître un chromatique.' },
   { cle: 'valeur-1', prix: 600000, glyphe: '🗣️', nom: 'Bouche à oreille',
-    dit: 'On parle de ta ferme au marché. Cinq pour cent de valeur en plus sur tout ce que tu élèves — à la vente comme à la rente.',
+    dit: 'Cinq pour cent de valeur en plus.',
     bonus: { valeur: 0.05 } },
   /* PREMIER CARREFOUR. Trois routes qui ne se comparent pas : un PRIX qui baisse, une VITESSE
      qui monte, un GESTE qui pèse. C'est ce qui en fait un choix plutôt qu'un menu — on ne peut
      pas dire laquelle est « la plus grosse », il faut dire comment on joue. */
   { cle: 'carrefour-1', prix: 700000, glyphe: '🜁', nom: 'Le premier carrefour',
-    dit: 'Trois routes. Tu en prends une, les deux autres se ferment jusqu’à la prochaine ascension.',
+    dit: 'Trois routes. Tu en prends une.',
     choix: [
       { cle: 'route-bourse', glyphe: '🪙', nom: 'La bourse',
         dit: 'Les œufs de la boutique coûtent un quart de moins. Tu achètes plus, tu couves plus.',
@@ -1464,28 +1464,28 @@ const PRIMES = [
         bonus: { clic: 1 } },
     ] },
   { cle: 'generosite', prix: 1000000,  glyphe: '🎁', nom: 'Générosité',
-    dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
+    dit: 'Les cadeaux de frénésie durent deux fois plus longtemps.' },
   { cle: 'vitesse-1', prix: 1500000, glyphe: '🐓', nom: 'Réveil matinal',
-    dit: 'Tout ce qui pousse tout seul pousse cinq pour cent plus vite : la couvaison, la croissance, l’engraissement.',
+    dit: 'Cinq pour cent de vitesse en plus.',
     bonus: { vitesse: 0.05 } },
   { cle: 'rente-1', prix: 2500000, glyphe: '🛏️', nom: 'Litière profonde',
-    dit: 'Cinq pour cent de rente en plus. Ne touche pas au prix de vente : ça ne paie que si tu gardes.',
+    dit: 'Cinq pour cent de rente en plus.',
     bonus: { rente: 0.05 } },
   { cle: 'intendance2', prix: 5000000, glyphe: '📜', nom: 'Grande intendance',
-    dit: 'Encore un quart de moins sur chaque évolution, par-dessus l’Intendance.' },
+    dit: 'Encore un quart de moins sur chaque évolution.' },
   { cle: 'valeur-2', prix: 8000000, glyphe: '🪧', nom: 'Enseigne peinte',
-    dit: 'Dix pour cent de valeur en plus. Une ferme qui a une enseigne est une ferme dont on retient le nom.',
+    dit: 'Dix pour cent de valeur en plus.',
     bonus: { valeur: 0.10 } },
   { cle: 'couvoir',   prix: 12000000,  glyphe: '🏠', nom: 'Couvoir',
-    dit: 'Trois incubateurs de plus, offerts.' },
+    dit: 'Trois incubateurs de plus.' },
   { cle: 'vitesse-2', prix: 15000000, glyphe: '⚡', nom: 'Ardeur',
-    dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse. Elle ne remplace aucun automate, elle les multiplie.',
+    dit: 'Dix pour cent de vitesse en plus.',
     bonus: { vitesse: 0.10 } },
   /* SECOND CARREFOUR, même règle et trois natures différentes : un péage qui baisse, une
      valeur qui monte, une rente qui porte. Il tombe assez tard pour que les trois routes
      décrivent des fins de partie distinctes, et pas trois façons d'aller au même endroit. */
   { cle: 'carrefour-2', prix: 25000000, glyphe: '🜃', nom: 'Le second carrefour',
-    dit: 'Trois routes, encore. Ce que tu choisis ici dit comment tu finiras ce cycle.',
+    dit: 'Trois routes, encore.',
     choix: [
       { cle: 'route-peage', glyphe: '🧬', nom: 'Le péage allégé',
         dit: 'Faire monter une bête d’un âge coûte un tiers de moins. Tu mènes plus loin, plus souvent.',
@@ -1498,32 +1498,32 @@ const PRIMES = [
         bonus: { rente: 0.30 } },
     ] },
   { cle: 'paturage',  prix: 30000000,  glyphe: '🏞️', nom: 'Pâturage',
-    dit: 'Trois enclos de plus, offerts.' },
+    dit: 'Trois enclos de plus.' },
   { cle: 'rente-2', prix: 40000000, glyphe: '💧', nom: 'Abreuvoir',
-    dit: 'Dix pour cent de rente en plus. Une bête qui boit à sa soif rapporte sans qu’on la touche.',
+    dit: 'Dix pour cent de rente en plus.',
     bonus: { rente: 0.10 } },
   { cle: 'negoce-rare', prix: 110000000, glyphe: '🔷', nom: 'Négoce rare',
     dit: 'Les rares se vendent un quart plus cher.',
     si: () => rareteVue('rare') },
   { cle: 'valeur-3', prix: 120000000, glyphe: '📯', nom: 'Renom',
-    dit: 'Quinze pour cent de valeur en plus. À ce stade, ce n’est plus toi qui cherches des acheteurs.',
+    dit: 'Quinze pour cent de valeur en plus.',
     bonus: { valeur: 0.15 } },
   { cle: 'main',      prix: 200000000, glyphe: '🖐️', nom: 'Main preste',
-    dit: 'Chacun de tes clics compte double. Le plus cher, et le seul qui touche à ce que tu fais de tes mains.' },
+    dit: 'Chacun de tes clics compte double.' },
   { cle: 'vitesse-3', prix: 300000000, glyphe: '👟', nom: 'Bon pied',
-    dit: 'Quinze pour cent de vitesse en plus. Le temps ne se rattrape pas, mais il se serre.',
+    dit: 'Quinze pour cent de vitesse en plus.',
     bonus: { vitesse: 0.15 } },
   { cle: 'rente-3', prix: 800000000, glyphe: '🛋️', nom: 'Patience',
-    dit: 'Quinze pour cent de rente en plus. La seule prime du jeu qui paie uniquement pour ne rien faire.',
+    dit: 'Quinze pour cent de rente en plus.',
     bonus: { rente: 0.15 } },
   { cle: 'valeur-4', prix: 2000000000, glyphe: '🏆', nom: 'On vient de loin',
-    dit: 'Vingt pour cent de valeur en plus, et le compte est bon : cinquante pour cent en tout si tu as pris les quatre.',
+    dit: 'Vingt pour cent de valeur en plus.',
     bonus: { valeur: 0.20 } },
   { cle: 'vitesse-4', prix: 5000000000, glyphe: '🌪️', nom: 'Sans relâche',
-    dit: 'Vingt pour cent de vitesse en plus. La dernière du lot, et la quatrième qui compte.',
+    dit: 'Vingt pour cent de vitesse en plus.',
     bonus: { vitesse: 0.20 } },
   { cle: 'rente-4', prix: 15000000000, glyphe: '🌝', nom: 'Rien ne presse',
-    dit: 'Vingt pour cent de rente en plus. La prime la plus chère du jeu, pour la façon de jouer la plus lente.',
+    dit: 'Vingt pour cent de rente en plus.',
     bonus: { rente: 0.20 } },
 
   /* ── LA FIN DE PARTIE CESSAIT D'ÊTRE UN CHOIX ─────────────────────────────────
@@ -1543,19 +1543,19 @@ const PRIMES = [
      à 5, 10, 15 et 20 % font cinquante pour cent par famille, un chiffre annoncé et tenu
      ailleurs dans ce fichier. L'étirer aurait réglé la variété en cassant une règle. */
   { cle: 'peage-1', prix: 20000000000, glyphe: '🗝️', nom: 'Le grand œuvre',
-    dit: 'Faire monter une bête d’un âge coûte un quart de moins. Le péage se paie à chaque évolution : c’est là qu’une fin de partie se joue.',
+    dit: 'Faire monter une bête d’un âge coûte un quart de moins.',
     bonus: { peage: 0.25 } },
   { cle: 'oeuf-1', prix: 50000000000, glyphe: '🛒', nom: 'Marché de gros',
-    dit: 'Les œufs de la boutique coûtent un quart de moins, quelle que soit leur rareté. Un mythique à cent trente-cinq millions au lieu de cent quatre-vingts.',
+    dit: 'Les œufs de la boutique coûtent un quart de moins.',
     bonus: { oeuf: 0.25 } },
   { cle: 'clic-1', prix: 120000000000, glyphe: '🤜', nom: 'Poing d’acier',
-    dit: 'Chacun de tes clics porte deux fois plus loin. En fin de partie, une bête menée au bout paie au clic — et c’est ce qui rend ce poing utile.',
+    dit: 'Chacun de tes clics porte deux fois plus loin.',
     bonus: { clic: 1 } },
   /* TROISIÈME CARREFOUR, et il arrive assez tard pour que les trois routes décrivent trois
      fins de partie et non trois façons d'aller au même endroit. Même règle que les deux
      autres : un prix, une vitesse, un geste — trois grandeurs qui ne se comparent pas. */
   { cle: 'carrefour-3', prix: 400000000000, glyphe: '🜄', nom: 'Le dernier carrefour',
-    dit: 'Trois routes, une dernière fois. Celle-ci décide de ce que ta ferme aura été.',
+    dit: 'Trois routes, une dernière fois.',
     choix: [
       { cle: 'route-couvee', glyphe: '🔥', nom: 'La grande couvée',
         dit: 'Les œufs coûtent moitié moins. Tu en achètes deux fois plus, tu en éclos deux fois plus.',
@@ -1876,7 +1876,7 @@ const JETON_PALIERS = Array.from({ length: 11 }, (v, n) => Math.pow(JETON_PAS, n
 const JETON_PREMIER = 1e6;
 const RANG_PREMIER = JETON_PALIERS.indexOf(JETON_PREMIER) + 1;
 
-/* ── LE PRIX DORÉ D'UNE CARTE ──────────────────────────────────────────────────
+/* ── LE PRIX D'UNE CARTE EMPORTÉE ──────────────────────────────────────────────────
    Chaque carte emportée dans une même ascension renchérit la suivante d'un facteur φ.
 
    POURQUOI IL FALLAIT L'ÉCRIRE. La 3.0.0 a fait REGAGNER les jetons à chaque cycle, ce qui a
@@ -1896,10 +1896,10 @@ const RANG_PREMIER = JETON_PALIERS.indexOf(JETON_PREMIER) + 1;
    Un cycle mené à mille milliards crédite cinq jetons : deux cartes, et il en reste deux pour
    la constellation. C'est là qu'est l'arbitrage — une carte de plus, ou une étoile de plus. */
 const NOMBRE_OR = (1 + Math.sqrt(5)) / 2;
-/* `or-doux` recule l'escalade d'un cran : la deuxième carte coûte le prix de la première, et
+/* `bagage` recule l'escalade d'un cran : la deuxième carte coûte le prix de la première, et
    ainsi de suite. C'est le seul achat du jeu qui change la valeur de tous les achats suivants,
    d'où son prix et son rang. */
-const adoucis = () => (etoilePrise('or-doux') ? 1 : 0) + (etoilePrise('or-doux-2') ? 1 : 0);
+const adoucis = () => (etoilePrise('bagage') ? 1 : 0) + (etoilePrise('bagage-2') ? 1 : 0);
 const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, Math.max(0, n - adoucis())));
 function coutCartes(k) {
   let t = 0;
@@ -1970,30 +1970,30 @@ const CIEL = [
   { cle: 'etincelle', axe: null, parent: null, prix: 0, glyphe: '✦', nom: 'Le moyeu' },
 
   // ── LE SANG · l'ascension elle-même ──
-  { cle: 'or-doux', axe: 'sang', parent: 'etincelle', prix: 8, glyphe: '🌀',
-    nom: 'Le prix doré s’adoucit',
-    dit: 'Chaque carte emportée coûte un cran de moins : la deuxième au prix de la première.' },
-  { cle: 'sommet', axe: 'sang', parent: 'or-doux', prix: 12, glyphe: '⛰',
+  { cle: 'bagage', axe: 'sang', parent: 'etincelle', prix: 8, glyphe: '🎒',
+    nom: 'Le bagage léger',
+    dit: 'Les cartes emportées coûtent moins cher.' },
+  { cle: 'sommet', axe: 'sang', parent: 'bagage', prix: 12, glyphe: '⛰',
     nom: 'Le sommet compte plus',
-    dit: 'Ton sommet de fortune vaut un palier de plus. Un jeton de plus à chaque cycle, pour toujours.' },
-  { cle: 'or-doux-2', axe: 'sang', parent: 'sommet', prix: 22, glyphe: '🜚',
-    nom: 'L’or coule',
-    dit: 'Un second cran d’adoucissement. Cinq cartes coûtent alors ce que trois coûtaient.' },
-  { cle: 'sommet-2', axe: 'sang', parent: 'or-doux-2', prix: 30, glyphe: '🏔',
+    dit: 'Ton sommet de fortune vaut un palier de plus.' },
+  { cle: 'bagage-2', axe: 'sang', parent: 'sommet', prix: 22, glyphe: '🧳',
+    nom: 'Le second bagage',
+    dit: 'Les cartes emportées coûtent encore moins cher.' },
+  { cle: 'sommet-2', axe: 'sang', parent: 'bagage-2', prix: 30, glyphe: '🏔',
     nom: 'Le second sommet',
-    dit: 'Encore un palier. Deux jetons de plus par cycle que ta fortune seule ne donnerait.' },
+    dit: 'Ton sommet de fortune vaut encore un palier de plus.' },
 
   // ── LA MAIN · ce que vaut ta présence ──
   { cle: 'poing', axe: 'main', parent: 'etincelle', prix: 4, glyphe: '✊',
     nom: 'Le poing', dit: 'Chacun de tes clics porte deux fois plus loin.',
     bonus: { clic: 1 } },
   { cle: 'doigts', axe: 'main', parent: 'poing', prix: 8, glyphe: '👆',
-    nom: 'Les doigts agiles', dit: 'Un demi-clic par seconde, sans que tu touches à rien.',
+    nom: 'Les doigts agiles', dit: 'Un demi-clic par seconde.',
     bonus: { clicAuto: 0.5 } },
   { cle: 'ferveur', axe: 'main', parent: 'doigts', prix: 14, glyphe: '⚡',
-    nom: 'La ferveur', dit: 'Les cadeaux de frénésie durent deux fois plus longtemps, et le plafond suit.' },
+    nom: 'La ferveur', dit: 'Les cadeaux de frénésie durent deux fois plus longtemps.' },
   { cle: 'fracas', axe: 'main', parent: 'ferveur', prix: 24, glyphe: '💥',
-    nom: 'Le fracas', dit: 'Tes clics portent deux fois plus loin encore. En fin de partie, une bête menée au bout paie au clic.',
+    nom: 'Le fracas', dit: 'Tes clics portent deux fois plus loin encore.',
     bonus: { clic: 2 } },
 
 
@@ -2002,30 +2002,30 @@ const CIEL = [
      le premier n'est pas pris, ce qui rend à l'ouverture les cadences qu'elle annonce. */
   { cle: 'serie-1', axe: 'main', parent: 'poing', branche: 'serie', prix: 5, glyphe: '🔥',
     nom: 'La série',
-    dit: 'Cliquer sans t’arrêter échauffe la main : jusqu’à une fois et demie plus fort après cent clics. Quinze secondes sans cliquer et tout retombe.' },
+    dit: 'Cliquer sans t’arrêter échauffe la main, jusqu’à 1,5 fois plus fort.' },
   { cle: 'serie-2', axe: 'main', parent: 'serie-1', branche: 'serie', prix: 9, glyphe: '🌋',
     nom: 'La chauffe',
-    dit: 'La même série monte jusqu’à deux fois deux. La main chauffe plus haut, pas plus vite.' },
+    dit: 'La série monte jusqu’à 2,2 fois plus fort.' },
   { cle: 'serie-3', axe: 'main', parent: 'serie-2', branche: 'serie', prix: 14, glyphe: '☄️',
     nom: 'L’embrasement',
-    dit: 'Jusqu’à trois fois plus fort au bout de cent clics — ce que le combo valait quand il était donné.' },
+    dit: 'La série monte jusqu’à 3 fois plus fort.' },
   // ── LE NÉGOCE · ce que valent tes bêtes ──
   { cle: 'renom', axe: 'negoce', parent: 'etincelle', prix: 4, glyphe: '🏷️',
-    nom: 'Le renom', dit: 'Dix pour cent de valeur en plus sur tout ce que tu élèves — vente comme rente.',
+    nom: 'Le renom', dit: 'Dix pour cent de valeur en plus.',
     bonus: { valeur: 0.10 } },
   { cle: 'marche', axe: 'negoce', parent: 'renom', prix: 9, glyphe: '🛒',
-    nom: 'Le marché', dit: 'Les œufs de la boutique coûtent un cinquième de moins, quelle que soit leur rareté.',
+    nom: 'Le marché', dit: 'Les œufs de la boutique coûtent un cinquième de moins.',
     bonus: { oeuf: 0.20 } },
   { cle: 'passage', axe: 'negoce', parent: 'marche', prix: 15, glyphe: '🗝️',
-    nom: 'Le passage', dit: 'Faire monter une bête d’un âge coûte un quart de moins. Le péage se paie à chaque évolution.',
+    nom: 'Le passage', dit: 'Faire monter une bête d’un âge coûte un quart de moins.',
     bonus: { peage: 0.25 } },
   { cle: 'fortune', axe: 'negoce', parent: 'passage', prix: 26, glyphe: '👑',
-    nom: 'La fortune', dit: 'Vingt pour cent de valeur de plus. Ce que tu élèves vaut ce qu’il n’a jamais valu.',
+    nom: 'La fortune', dit: 'Vingt pour cent de valeur de plus.',
     bonus: { valeur: 0.20 } },
 
   // ── LA COUVÉE · ce qui pousse ──
   { cle: 'ardeur', axe: 'couvee', parent: 'etincelle', prix: 4, glyphe: '🐓',
-    nom: 'L’ardeur', dit: 'Dix pour cent de vitesse en plus sur tout ce qui pousse.',
+    nom: 'L’ardeur', dit: 'Dix pour cent de vitesse en plus.',
     bonus: { vitesse: 0.10 } },
   { cle: 'chaleur', axe: 'couvee', parent: 'ardeur', prix: 9, glyphe: '🔥',
     nom: 'La chaleur', dit: 'Les œufs éclosent trente pour cent plus vite.',
@@ -2034,7 +2034,7 @@ const CIEL = [
     nom: 'La sève', dit: 'Les bêtes montent de niveau trente pour cent plus vite.',
     bonus: { pousse: 0.30 } },
   { cle: 'torrent', axe: 'couvee', parent: 'sève', prix: 26, glyphe: '🌊',
-    nom: 'Le torrent', dit: 'Vingt-cinq pour cent de vitesse de plus. Toute la ferme accélère d’un cran.',
+    nom: 'Le torrent', dit: 'Vingt-cinq pour cent de vitesse de plus.',
     bonus: { vitesse: 0.25 } },
 
   // ── LES BÂTIMENTS · ce que ta ferme contient ──
@@ -2073,20 +2073,20 @@ const CIEL = [
      beaucoup de couples lents, ou peu de couples rapides. */
   { cle: 'nid', axe: 'pension', parent: 'etincelle', prix: 3, glyphe: '🛖',
     nom: 'La pension',
-    dit: 'Le bâtiment. Deux bêtes adultes qu’on confie l’une à l’autre, et un œuf dont tu connais déjà la lignée.' },
+    dit: 'Deux bêtes confiées l’une à l’autre, et un œuf.' },
   { cle: 'sang-epais', axe: 'pension', parent: 'nid', prix: 6, glyphe: '🩸',
     nom: 'Le sang épais',
     dit: 'Trois œufs par ponte au lieu d’un, et la lignée du parent le plus rare sort deux fois plus souvent.' },
   { cle: 'nid-riche', axe: 'pension', parent: 'sang-epais', prix: 10, glyphe: '🌡',
     nom: 'Le sang ne pèse plus',
-    dit: 'La rareté d’un couple cesse d’allonger sa couvaison. Deux mythiques mettent le temps de deux communes.' },
+    dit: 'La rareté d’un couple cesse d’allonger sa couvaison.' },
 
   { cle: 'place-1', axe: 'pension', parent: 'nid', branche: 'places', prix: 2, glyphe: '🪹',
     nom: 'Le second nid', dit: 'Un couple de plus à la fois.' },
   { cle: 'place-2', axe: 'pension', parent: 'place-1', branche: 'places', prix: 3, glyphe: '🪺',
     nom: 'La rangée de nids', dit: 'Quatre couples à la fois.' },
   { cle: 'place-3', axe: 'pension', parent: 'place-2', branche: 'places', prix: 5, glyphe: '🏘',
-    nom: 'Le bâtiment entier', dit: 'Huit couples à la fois. Il n’y a plus de mur qu’à l’enclos.' },
+    nom: 'Le bâtiment entier', dit: 'Huit couples à la fois.' },
 
   { cle: 'hate-1', axe: 'pension', parent: 'nid', branche: 'hate', prix: 2, glyphe: '🌬',
     nom: 'Le premier souffle', dit: 'Les couvaisons de pension vont moitié plus vite.' },
@@ -2102,12 +2102,12 @@ const CIEL = [
   { cle: 'cendres', axe: 'album', parent: 'etincelle', prix: 5, glyphe: '✧',
     nom: 'Les cendres', dit: 'Fondre une carte rend deux fois plus de poussière.' },
   { cle: 'creuset', axe: 'album', parent: 'cendres', prix: 16, glyphe: '⚒',
-    nom: 'Le creuset', dit: 'La forge accepte les cartes équipées : plus besoin de les retirer avant de forger.' },
+    nom: 'Le creuset', dit: 'La forge accepte les cartes équipées.' },
   { cle: 'braise-douce', axe: 'album', parent: 'creuset', prix: 22, glyphe: '⚖',
     nom: 'La braise douce',
-    dit: 'Forger coûte moitié moins de poussière : neuf cartes pour une trois-étoiles, mais deux fois moins de cendres.' },
+    dit: 'Forger coûte moitié moins de poussière.' },
   { cle: 'prisme', axe: 'album', parent: 'braise-douce', prix: 30, glyphe: '🌈',
-    nom: 'Le prisme', dit: 'Une bête chromatique naît une fois sur 8 192. Ce nœud améliore ce tirage de moitié.',
+    nom: 'Le prisme', dit: 'Les chromatiques naissent moitié plus souvent.',
     bonus: { prodige: 0.5 } },
 ];
 
@@ -2279,16 +2279,16 @@ const UPGRADES = [
      Un achat, une seconde. Le prix suit : c'est le palier entier qu'on paie, donc le rapport
      pièce/seconde est exactement celui d'avant. */
   { key: 'clic', name: 'Force du clic', base: 30, mult: 1.6, grain: false,
-    desc: 'Chaque clic fait gagner une seconde de plus — une seconde de ce que tes automates produisent, pas une seconde de vie brute.',
+    desc: 'Chaque clic fait gagner une seconde de plus.',
     value: n => 1 + n, unit: ' s gagnées par clic' },
   { key: 'couveuse', name: 'Couveuse automatique', base: 120, mult: 1.9,
-    desc: 'Les œufs couvent tout seuls, même quand tu n’es pas là. Sur du commun l’incubateur est le meilleur achat ; sur du mythique, qui couve quarante-cinq minutes, c’est elle.',
+    desc: 'Les œufs couvent tout seuls.',
     value: n => n / GRAIN, unit: '× la vitesse de couvaison' },
   { key: 'eleveur', name: 'Éleveur automatique', base: 500, mult: 1.65,
-    desc: 'Les bêtes grandissent toutes seules jusqu’à leur maturité, âge après âge.',
+    desc: 'Les bêtes grandissent toutes seules.',
     value: n => n * ELEVEUR_X / GRAIN, unit: '× la vitesse de croissance' },
   { key: 'mangeoire', name: 'Mangeoire automatique', base: 1000, mult: 1.65,
-    desc: 'Prend le relais de l’éleveur : engraisse les bêtes mûres sans fin, sans rien coûter.',
+    desc: 'Engraisse les bêtes toute seule.',
     value: n => n * FATTEN_X / GRAIN, unit: ' s d’engraissement par seconde' },
 
 ];
@@ -2661,7 +2661,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 31;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 32;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -3134,6 +3134,16 @@ function load() {
       if (rendu && merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + rendu;
     }
 
+    // v31 → v32 : deux nœuds du sang changent de clé, et qui les avait pris les garde
+    if ((s.v || 0) < 32) {
+      merged.ciel = merged.ciel || {};
+      for (const [vieux, neuf] of [['or-doux', 'bagage'], ['or-doux-2', 'bagage-2']]) {
+        if (!merged.ciel[vieux]) continue;
+        merged.ciel[neuf] = true;
+        delete merged.ciel[vieux];
+      }
+    }
+
     /* v30 → v31 : le combo quitte le socle et devient une branche de la main. Il était donné
        à tous dès le premier clic ; il se prend maintenant au ciel, en trois crans.
 
@@ -3183,10 +3193,11 @@ function load() {
       }
     }
 
-    /* v20 → v21 : le jeton redevient une bourse, et une carte coûte le prix doré. Une partie
-       d'avant a un `jetons` qui ne voulait plus rien dire depuis la 3.0.0 — il était remis à
-       zéro à chaque saut et jamais lu. On le laisse tel quel : ce que le cycle en cours a
-       gagné se lit sur le sommet, et s'y ajoutera. Rien à convertir, rien à rendre. */
+    /* v20 → v21 : le jeton redevient une bourse, et chaque carte emportée coûte plus que la
+       précédente. Une partie d'avant a un `jetons` qui ne voulait plus rien dire depuis la
+       3.0.0 — il était remis à zéro à chaque saut et jamais lu. On le laisse tel quel : ce que
+       le cycle en cours a gagné se lit sur le sommet, et s'y ajoutera. Rien à convertir, rien
+       à rendre. */
 
     /* v12 → v13 : quatre améliorations quittent la liste à niveaux pour devenir des primes.
        On ne retire jamais rien à qui avait payé — les trois achats uniques se transposent tels
@@ -6357,7 +6368,7 @@ function jetonsDus() {
 /* CE QU'ON A EN MAIN : ce que le cycle vient de créditer, PLUS ce qui n'a pas été dépensé
    auparavant. Le jeton redevient donc une BOURSE, et non plus une lecture.
 
-   C'est le prix doré et la constellation qui l'exigent : deux éviers qui puisent au même
+   C'est le prix des cartes et la constellation qui l'exigent : deux éviers qui puisent au même
    endroit ne peuvent pas se partager un nombre calculé — il faut un solde. Sauter en
    n'emportant qu'une carte laisse les autres jetons pour la constellation, et c'est
    exactement l'arbitrage qu'on cherchait à créer. */
@@ -6588,7 +6599,7 @@ let cielSig = '';
 let etoileVue = null;
 
 function voirEtoile(cle) {
-  etoileVue = ETOILE_BY_KEY[cle] ? cle : null;
+  etoileVue = ETOILE_BY_KEY[cle] && ETOILE_BY_KEY[cle].prix ? cle : null;   // le moyeu ne s’ouvre pas
   cielSig = '';
   renderCiel();          // qui finit par la carte : une seule descente, un seul rendu
 }
@@ -6612,10 +6623,10 @@ function renderCarteCiel() {
   carte.classList.toggle('devinee', cache);
   setText($('ciel-carte-glyphe'), cache ? '·' : (n.glyphe || '✦'));
   setText($('ciel-carte-nom'), cache ? 'Encore dans l’ombre' : n.nom);
-  setText($('ciel-carte-axe'), n.axe ? NOM_BRANCHE[n.axe] : 'Le moyeu');
+  setText($('ciel-carte-axe'), NOM_BRANCHE[n.axe]);
   setText($('ciel-carte-dit'), cache
     ? 'Tu vois sa place et son lien, pas ce qu’elle donne. Prends d’abord ' + nomParent(n) + '.'
-    : (n.dit || 'Le centre de la roue. Tout part d’ici.'));
+    : n.dit);
   const effet = cache ? '' : effetEtoile(n);
   $('ciel-carte-effet').hidden = !effet;
   setText($('ciel-carte-effet'), effet);
@@ -6701,6 +6712,9 @@ function renderCiel() {
       const ic = svgEl('text', { class: 'etoile-icone', x: p.x, y: p.y + 7, 'text-anchor': 'middle' });
       ic.textContent = n.glyphe || '';
       g2.appendChild(ic);
+    }
+    // le moyeu n'a rien à lire : ni nom, ni prix, ni infobulle
+    if (!cache && n.prix) {
       /* LE NOM SE LIT SANS SURVOL : un arbre dont il faut survoler chaque nœud pour savoir ce
          qu'il fait n'est pas une carte qu'on lit, c'est une devinette. */
       const nom = svgEl('text', { class: 'etoile-nom', x: p.x, y: p.y + CIEL_VUE.r + 20, 'text-anchor': 'middle' });
@@ -6714,7 +6728,7 @@ function renderCiel() {
     t.textContent = cache ? 'Encore dans l’ombre — clique pour savoir ce qu’elle demande.'
       : etat === 'prise' ? n.nom + ' — acquis pour toujours.'
       : n.nom + ' — ✦ ' + n.prix + '. Clique pour la lire.';
-    g2.appendChild(t);
+    if (n.prix) g2.appendChild(t);
     svg.appendChild(g2);
   }
 
@@ -7386,7 +7400,7 @@ function ascensionner() {
     /* LE RESTE DE LA BOURSE DEMEURE. Les jetons partaient tous, employés ou non — c'était le
        prix de sauter trop tôt, et ça n'a plus de sens depuis qu'ils ont un second emploi :
        garder ses jetons pour la constellation EST une décision, pas un gâchis. Ce qui se paie
-       ici, c'est le prix doré des cartes emportées, et rien d'autre. */
+       ici, c'est le prix des cartes emportées, et rien d'autre. */
     /* LA DÉPENSE DU CYCLE SE SOLDE ICI. `ap.jetons` est déjà ce qu'on a en main, dépense
        déduite — la bourse du cycle suivant repart donc d'un nombre net, et le compteur avec
        elle. Le laisser courir referait payer les nœuds du cycle précédent. */
@@ -7482,8 +7496,7 @@ function renderPlonge() {
   setWidth($('stage-fill'), (frotte / ASSIETTE_CLICS * 100).toFixed(1) + '%');
   setText($('stage-timer'), frotte + ' / ' + ASSIETTE_CLICS + ' · ' +
     reste + ' assiette' + (reste > 1 ? 's' : '') + ' avant un œuf');
-  setText($('stage-hint'), 'Rien ne compte double ici. Ni la force du clic, ni la frénésie, ' +
-    'ni tes cartes : dix clics font une assiette, comme pour tout le monde.');
+  setText($('stage-hint'), '');
 }
 
 /* Rien en scène. Cette fonction n'était atteignable par personne — `subjects()` liste les
@@ -7634,8 +7647,7 @@ function renderBete(s) {
        où l'on n'a plus rien à faire grandir : sans cette phrase, on clique sur une bête au
        bout en croyant qu'il ne se passe rien. */
     setText($('stage-hint'), estFinie(c)
-      ? 'Elle est au bout : plus de niveau, plus de rang. Chaque clic te rapporte ' +
-        fmt(gainClicFini(c, s)) + ' — c’est ta main seule qui compte, pas une carte ocellée.'
+      ? 'Elle est au bout. Chaque clic te rapporte ' + fmt(gainClicFini(c, s)) + '.'
       : c.age < AGES.length
       ? 'Elle est mûre : son niveau ne montera plus tant que tu ne l’auras pas fait évoluer. ' +
         (r ? 'En attendant, elle rapporte ' + fmtRente(r) + ' / s et s’engraisse.'
@@ -8544,7 +8556,7 @@ const TROPHEES = [
     dit: 'Tenir un million de pièces à la fois.',
     test: () => state.stats.fortune >= 1e6 },
   { cle: 'saut', glyphe: '🌀', montre: true, nom: 'Recommencer',
-    dit: 'Ascensionner une fois — tout perdre, et garder une carte.',
+    dit: 'Ascensionner une fois.',
     test: () => (state.asc.n || 0) > 0 },
   { cle: 'equipe', glyphe: '🃏', montre: true, nom: 'Main pleine',
     dit: 'Équiper cinq cartes en même temps.',
@@ -8552,19 +8564,19 @@ const TROPHEES = [
 
   // ── les surprises, invisibles tant qu'on ne les a pas ──
   { cle: 'vaisselle', glyphe: '🍽️', nom: 'La plonge',
-    dit: 'Laver sa première assiette. Ça arrive à tout le monde, et à personne deux fois.',
+    dit: 'Laver sa première assiette.',
     test: () => (state.stats.assiettes || 0) > 0 },
   /* IL EST DANS LES SURPRISES, ET C'EST TOUT LE PROPOS. Annoncé, il disait la recette
      entière — « aucun œuf n'en donne, il faut la pension et le bon couple » — à quelqu'un qui
      n'avait aucune raison de savoir que la cinquième rareté existe. */
   { cle: 'merveille', glyphe: '✨', nom: 'Une merveille',
-    dit: 'Faire naître une merveilleuse. Aucun œuf n’en donne — il faut la pension, et le bon couple.',
+    dit: 'Faire naître une merveilleuse.',
     test: () => LINES.some(l => l.rarity === 'merveilleuse' && state.seen[l.key + ':1']) },
   { cle: 'fond', glyphe: '🌌', nom: 'Un décor',
-    dit: 'Croiser une bête née avec un fond. Une sur huit cents, et seulement dans les œufs de la boutique.',
+    dit: 'Croiser une bête née avec un fond.',
     test: () => Object.values(state.dex || {}).some(d => Object.keys(d.fonds || {}).length) },
   { cle: 'chromatique', glyphe: '🌈', nom: 'Coup d’œil',
-    dit: 'Voir naître un chromatique. Une chance sur huit mille cent quatre-vingt-douze.',
+    dit: 'Voir naître un chromatique.',
     test: () => state.stats.prodiges > 0 },
   { cle: 'demesure', glyphe: '🫧', nom: 'Démesuré',
     dit: 'Engraisser une bête jusqu’au dernier rang de taille.',
@@ -8573,33 +8585,33 @@ const TROPHEES = [
     dit: 'Faire éclore une lignée mythique.',
     test: () => LINES.some(l => l.rarity === 'mythique' && state.seen[l.key + ':1']) },
   { cle: 'complicite', glyphe: '💗', nom: 'Complicité',
-    dit: 'Recevoir dix cadeaux d’une bête qu’on garde en scène.',
+    dit: 'Recevoir dix cadeaux.',
     test: () => (state.dons || 0) >= 10 },
   { cle: 'couvee', glyphe: '🪺', montre: true, nom: 'Une première couvée',
-    dit: 'Faire naître un œuf en pension. Il faut deux bêtes adultes, un enclos de libre, et du temps.',
+    dit: 'Faire naître un œuf en pension.',
     test: () => (state.stats.pension || 0) > 0 },
   { cle: 'assorti', glyphe: '🪶', nom: 'Bien assortis',
-    dit: 'Confier deux bêtes qui se ressemblent en tout. C’est là que la pension va le plus vite.',
+    dit: 'Confier deux bêtes qui se ressemblent en tout.',
     test: () => couples().some(k => {
       const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
       return a && b && distanceDe(a, b) === 0;
     }) },
   { cle: 'emplettes', glyphe: '🧾', nom: 'Tout acheté',
-    dit: 'Prendre toutes les primes dans une même partie, sans en oublier une seule.',
+    dit: 'Prendre toutes les primes dans une même partie.',
     test: () => PRIMES.every(p => prime(p.cle)) },
 
   // ── l'album, et ce qu'on en fait ──
   { cle: 'deuxEtoiles', glyphe: '★', montre: true, nom: 'Deux étoiles',
-    dit: 'Forger une carte. Trois de la même lignée et du même motif, et la poussière avec.',
+    dit: 'Forger une carte.',
     test: () => state.album.some(k => (k.etoiles || 1) >= 2) || state.stats.fusions > 0 },
   { cle: 'troisEtoiles', glyphe: '✦', montre: true, nom: 'Trois étoiles',
-    dit: 'Mener une carte au bout. Neuf cartes d’une même lignée, et il n’y a pas de quatrième.',
+    dit: 'Mener une carte au bout.',
     test: () => state.album.some(k => (k.etoiles || 1) >= ETOILES.length) },
   { cle: 'poussiere', glyphe: '✧', nom: 'Poussière',
-    dit: 'Fondre sa première carte. Une carte ratée n’est pas une carte perdue.',
+    dit: 'Fondre sa première carte.',
     test: () => (state.stats.fondues || 0) > 0 },
   { cle: 'fondeur', glyphe: '🔥', nom: 'Fondeur',
-    dit: 'En fondre cinquante. À ce stade, l’album n’est plus une collection mais une fonderie.',
+    dit: 'En fondre cinquante.',
     test: () => (state.stats.fondues || 0) >= 50 },
 ];
 
@@ -9455,7 +9467,7 @@ function bindTools() {
     /* L'AVERTISSEMENT EST TOMBÉ, ET IL ÉTAIT FAUX DEUX FOIS. Il annonçait que les jetons
        inemployés « partaient avec » — ils restent en bourse depuis la 4.0.0. Et il les comptait
        en soustrayant un NOMBRE DE CARTES à un nombre de jetons, alors que trois cartes coûtent
-       six jetons depuis que le prix est doré. Un avertissement faux est pire qu'aucun : il
+       six jetons depuis que leur prix monte. Un avertissement faux est pire qu'aucun : il
        fait prendre des cartes dont on ne veut pas. */
     const reste = Math.max(0, jetonsEnMain() - coutCartes(prises));
     if (!confirm('Ascensionner ?\n\n' + prises + ' bête' + (prises > 1 ? 's deviennent' : ' devient') +

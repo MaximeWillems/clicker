@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 31` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 32` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.31.2** | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
+| **beta 4.31.3** | les descriptions ne disent plus que ce qu’un achat fait — ni jugement, ni calcul, ni règle à lire. Le moyeu se tait, deux nœuds du sang changent de nom, et seul le tutoriel reste bavard |
+| beta 4.31.2 | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
 | beta 4.31.1 | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
 | beta 4.31.0 | la constellation se découvre : une étoile dont le parent n’est pas pris ne montre que sa place et son lien. Et un clic ne l’achète plus — il ouvre une carte, à côté, qui dit ce qu’elle fait |
 | beta 4.30.0 | le combo quitte le socle pour devenir une branche de la main : une première partie se joue à main nue, où une seconde de couvaison vaut un clic. Et la fourche se voit enfin dans le ciel |
@@ -126,7 +127,7 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 | beta 4.3.0 | la constellation devient un arbre — la géométrie porte la règle |
 | beta 4.2.0 | la fin de partie cesse d'être monothématique, la forge migre dans la constellation |
 | beta 4.1.0 | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |
-| beta 4.0.0 | la constellation : le jeton devient une monnaie à deux éviers, et une carte coûte le prix doré |
+| beta 4.0.0 | la constellation : le jeton devient une monnaie à deux éviers, et chaque carte emportée coûte plus que la précédente |
 | beta 3.1.2 | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
 | beta 3.1.1 | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
 | beta 3.1.0 | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
@@ -1962,7 +1963,7 @@ réclame rien.*
 | durée | le cycle, puis effacées | acquises pour toujours |
 | ce qu'elles font | pousser ce qu'on a | **ouvrir ce qu'on n'a pas** |
 
-#### Le prix doré d'une carte
+#### Le prix d'une carte emportée
 
 Chaque carte emportée dans une même ascension renchérit la suivante d'un facteur **φ ≈ 1,618**.
 
@@ -2033,7 +2034,7 @@ aucune fonctionnalité manquante :
 
 | Nœud | Rang | Prix | Ce qu'il change |
 |---|---|---|---|
-| **Le prix doré s'adoucit** | 12 | ✦ 16 | chaque carte coûte un cran de moins — la deuxième au prix de la première |
+| **Le bagage léger** | 12 | ✦ 16 | chaque carte coûte un cran de moins — la deuxième au prix de la première |
 | **Le sommet compte plus** | 15 | ✦ 20 | un palier de jetons de plus, à chaque cycle |
 
 Ce sont les seuls achats du jeu qui **changent la valeur de tous les achats suivants** : d'où
