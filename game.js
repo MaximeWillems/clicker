@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.31.3';
+const VERSION = 'beta 4.32.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1703,6 +1703,30 @@ const PRIME_BY_CLE = Object.fromEntries(PRIMES.map(p => [p.cle, p]));
    cette mémoire, il disparaîtrait juste après avoir été acheté. */
 const SEUIL_VOIR = 0.6;
 
+/* ── LA MAIN TENUE ─────────────────────────────────────────────────────────────
+   Le dévoilement de la boutique, étendu à la scène : un geste n'apparaît que le jour où il sert.
+   Vendre, Évoluer et Garder arrivaient ensemble à l'éclosion ; vendre tout de suite rapportait
+   cinq pièces pour un œuf à dix-huit, et l'impasse suivait dès la première minute.
+
+   Même mémoire que la boutique — `vu['voir:geste:…']` — et même règle : rien ne se recache, et
+   le 📖 lève tout. Les conditions comptent ce qui a DÉJÀ été fait, si bien qu'une partie en cours
+   retrouve tous ses boutons au premier affichage. */
+const vautUnOeuf  = c => sellValue(c) >= prixOeuf(EGG_BY_KEY.commun);
+const evoluable   = c => estMur(c) && c.age < AGES.length && state.coins >= evoCost(c);
+const joieEnScene = () => { const s = current(); return s && s.c ? (s.c.bonheur || 0) : 0; };
+
+const GESTES = [
+  { cle: 'vendre',  quand: () => state.stats.vendues > 0 || state.pen.some(vautUnOeuf) },
+  { cle: 'taille',  quand: () => state.stats.evolutions > 0 || state.pen.some(estMur) },
+  // le cœur attend le premier rachat : pendant la première bête, il n'était qu'une ligne de plus
+  { cle: 'joie',    quand: () => (state.dons || 0) > 0 ||
+                                 (state.stats.eclos >= 2 && joieEnScene() >= JOIE_PALIER / 3) },
+  { cle: 'evoluer', quand: () => state.stats.evolutions > 0 || state.pen.some(evoluable) },
+  /* GARDER NE PROTÈGE QUE DES AUTOMATES. Ou d'une bête déjà gardée : un chromatique l'est d'office
+     à l'éclosion, et une bête gardée ne se vend pas — sans le bouton, elle serait invendable. */
+  { cle: 'garder',  quand: () => prime('marchand') || prime('evolution') || state.pen.some(c => c.keep) },
+];
+
 /* Les notes du mode histoire. Une par étape, dans l'ordre, chacune à usage unique — c'est la
    même forme que les jalons d'ascension, et pour la même raison : une table se relit, une
    cascade de `if` se perd.
@@ -1757,6 +1781,16 @@ const PROF = {
    toujours possible. Et elle doit être INDISPENSABLE à la suite : le reste du mode histoire
    n'a pas de sens si on ne l'a pas faite.
 
+   ELLE NOMME CE QU'ELLE VISE. Le voile éteignait tout sauf le sujet, y compris le bouton Vendre
+   pendant qu'elle disait « vends-la » : le geste demandé était le seul impossible, et il ne
+   restait qu'à cliquer la bête. `vise` laisse vivants les boutons de la consigne, `sujet` met en
+   scène la bête dont elle parle, et `fait` reçoit ce que les compteurs valaient quand la
+   réplique est apparue — « décide » ne peut pas se contenter des ventes d'avant.
+
+   LE RACHAT EST LA SEULE ENTORSE À « GRATUITE ». Il tient parce que la vente ne s'ouvre qu'à la
+   valeur d'un œuf : quiconque arrive là a de quoi en racheter un, et la réplique lâche si la
+   bourse retombe en dessous.
+
    ET UNE SCÈNE PEUT SE PÉRIMER. `perime` dit quand ce dont elle parle n'existe plus : l'œuf
    dont elle annonçait le craquement a éclos, la bête mûre dont elle expliquait le choix est
    vendue, l'évier devant lequel elle plaisantait est vide. La scène se ferme alors où qu'elle
@@ -1792,6 +1826,16 @@ const NOTES = [
     'Son niveau montera jusqu’à cent, et il ne redescendra jamais — quoi qu’il lui arrive.',
     'Je te laisse faire connaissance.',
   ] },
+  /* LA VENTE S'OUVRE QUAND ELLE PAIE UN ŒUF, et pas un clic avant. Elle ne retient pas : vendre
+     maintenant ou laisser monter est un vrai choix. Et elle se tait si la bête mûrit avant qu'on
+     ait tranché — la scène de la maturité prend le relais. */
+  { cle: 'vente',
+    test: () => !state.stats.vendues && state.pen.some(c => !estMur(c) && vautUnOeuf(c)),
+    perime: () => !!state.stats.vendues || !state.pen.some(c => !estMur(c) && vautUnOeuf(c)),
+    repliques: [
+    'Regarde ce qu’elle vaut maintenant : le prix d’un œuf.',
+    'Tu peux la vendre et en racheter un. Ou la laisser grandir encore : plus elle monte, plus elle vaut.',
+  ] },
   /* Pas de `perime` ici, ni sur le péage, et c'est un arbitrage : vendre ou évoluer fait
      disparaître la bête mûre dont elle parle, mais les répliques qui suivent sont la LEÇON —
      ce que le péage garde, pourquoi la question n'a pas de bonne réponse. Fermer sur l'action
@@ -1799,25 +1843,41 @@ const NOTES = [
      on avance, on n'efface pas. */
   { cle: 'mure', test: () => state.pen.some(estMur), repliques: [
     'Son niveau s’est bloqué. On dit qu’elle est mûre : elle a fini l’âge où elle était.',
-    /* Le troisième et dernier passage obligé. Vendre est toujours possible et ne coûte rien,
-       donc la porte est ouverte même sans un sou ; et tout ce que le mode histoire raconte
-       ensuite suppose qu'on a tranché une fois. */
-    { dit: 'C’est ici que le métier commence. Tu peux la vendre, ou payer son péage pour qu’elle passe à l’âge suivant. Décide.',
-      tient: 1,
-      fait: () => state.stats.vendues > 0 || state.stats.evolutions > 0 },
-    'Il n’y a pas de bonne réponse à cette question. Il y en a une pour aujourd’hui.',
+    'Son niveau ne montera plus à cet âge. Ce qu’elle mange maintenant part dans sa taille.',
+    /* LE TROISIÈME PASSAGE OBLIGÉ, et seulement pour qui n'a encore rien vendu : pour les autres
+       `fait` est déjà vrai, et la réplique passe d'elle-même. Le « décide » qui vivait ici est
+       parti au péage — à ce moment-là le péage coûte deux cents pièces, et la bourse est vide. */
+    { dit: 'Vends-la.', tient: 1, vise: ['sell'],
+      sujet: () => state.pen.find(c => estMur(c) && !c.keep) || state.pen.find(c => !c.keep),
+      fait: () => state.stats.vendues > 0 || !state.pen.some(c => !c.keep) },
+    'Une bête mûre se vend au prix fort. Plus tôt, elle n’en vaut qu’une part.',
   ] },
-  { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun) * SEUIL_VOIR, repliques: [
-    'Voilà tes premières pièces. La boutique s’ouvre à toi.',
-    { dit: 'Un œuf commun coûte dix-huit pièces et s’en revend trente une fois la bête mûre. Ce n’est pas grand-chose ; c’est ce qui fait tout. Reprends-en un.',
-      fait: () => state.incub.some(o => o) || totalEggs() > 0 },
+  /* LE RACHAT RETIENT, et seul l'œuf reste vivant dans la boutique. Vendue mûre, une bête rapporte
+     trente pièces — le prix exact de la Force du clic, déjà visible : l'acheter à la place de
+     l'œuf vidait la bourse, et c'était l'impasse. */
+  { cle: 'boutique', test: () => state.coins >= prixOeuf(EGG_BY_KEY.commun), repliques: [
+    { dit: 'Voilà tes premières pièces. Un œuf commun en coûte dix-huit, et s’en revend trente une fois la bête mûre. Reprends-en un.',
+      tient: 1, vise: ['oeuf-commun'],
+      fait: () => state.incub.some(o => o) || totalEggs() > 0 ||
+                  state.coins < prixOeuf(EGG_BY_KEY.commun) },
     'Vends, rachète, recommence. C’est la boucle qui te nourrira longtemps.',
   ] },
-  { cle: 'peage', test: () => state.coins >= peagesJusque('commune', 2) && state.pen.some(estMur), repliques: [
-    { dit: 'Tu as de quoi payer un péage, maintenant.',
-      fait: () => state.stats.evolutions > 0 },
-    'Une bête qui le franchit garde tout — son niveau, sa taille, son nom — et vaudra douze fois plus. Mais elle t’immobilise un enclos pendant ce temps.',
-    'Vendre tout de suite, ou attendre davantage. Toute la partie tient dans cette hésitation-là.',
+  { cle: 'joie', test: () => !state.dons && state.stats.eclos >= 2 && joieEnScene() >= JOIE_PALIER / 3,
+    repliques: [
+    'Tu vois ce cœur ? Elle s’attache à toi.',
+    'Plus tu restes avec une bête sous les yeux, plus elle est heureuse. Et une bête heureuse finit parfois par t’offrir quelque chose.',
+  ] },
+  { cle: 'peage', test: () => state.pen.some(evoluable), repliques: [
+    'Tu as de quoi payer un péage, maintenant.',
+    /* Le « décide » vit ici, là où les deux portes existent. `fait` compte depuis que la réplique
+       est apparue : des ventes, il y en a déjà eu des dizaines. */
+    { dit: 'Vends-la, ou fais-la passer à l’âge suivant. Décide.', tient: 1, vise: ['sell', 'evo'],
+      sujet: () => state.pen.find(c => !c.keep && evoluable(c)) ||
+                   state.pen.find(c => !c.keep && estMur(c)) || state.pen.find(c => !c.keep),
+      fait: avant => state.stats.vendues > avant.vendues || state.stats.evolutions > avant.evolutions ||
+                     !state.pen.some(c => !c.keep) },
+    'Une bête qui franchit le péage garde tout : son niveau, sa taille, son nom. Mûre à l’âge suivant, elle vaudra plus de seize fois plus. Mais elle t’immobilise un enclos pendant ce temps.',
+    'Il n’y a pas de bonne réponse à cette question. Il y en a une pour aujourd’hui.',
   ] },
   { cle: 'clic', test: () => state.coins >= UP_BY_KEY.clic.base * SEUIL_VOIR, repliques: [
     { dit: 'Il y a des choses à acheter qui ne sont pas des œufs.',
@@ -1840,6 +1900,11 @@ const NOTES = [
       fait: () => state.pens > 1 },
     'Retiens ceci : bientôt, ce ne sera plus l’argent qui te limitera, mais la place. Une bête que tu gardes est un enclos qui ne tourne pas.',
     'Voilà. Tu sais tout ce que je sais. Le reste, tu vas me l’apprendre.',
+  ] },
+  { cle: 'garder', test: () => (prime('marchand') || prime('evolution')) && state.pen.length > 0, repliques: [
+    'Tes automates décident maintenant à ta place, sans te demander ton avis.',
+    { dit: 'Celle que tu veux voir grandir, garde-la. Ils n’y toucheront pas.',
+      fait: () => state.pen.some(c => c.keep) },
   ] },
   /* Pas de `fait` sur cette scène : ce qu'elle propose n'existe pas encore. L'évier n'ouvre
      qu'à la dernière réplique, quand `vu.plonge` se marque — c'est elle qui ouvre la porte,
@@ -5608,6 +5673,8 @@ const RAR_CLASSES = ['rar-commune', 'rar-rare', 'rar-epique', 'rar-mythique', 'r
    grandit, puis la taille une fois qu'elle est mûre, sans que rien ne le dise. */
 function peindreAxes(c, mur, rank, niv, dernier, mult) {
   $('stage-axes').hidden = false;
+  $('axe-age').hidden = !estDevoile('geste:evoluer');
+  $('axe-taille').hidden = !estDevoile('geste:taille');
 
   setText($('axe-age-val'), AGES[c.age - 1].nom);
   // cinq pastilles : on voit d'un coup qu'il y a cinq âges, et lequel est atteint
@@ -5630,12 +5697,11 @@ function peindreAxes(c, mur, rank, niv, dernier, mult) {
   $('timer-axe').hidden = false;
 }
 
-/* La ligne du bonheur. Pendant le mode histoire elle attend qu'il y ait quelque chose à
-   voir — un tiers de palier, une trentaine de secondes — pour ne pas arriver dans la même
-   seconde que la bête elle-même et les trois colonnes. */
+/* La ligne du bonheur. Pendant le mode histoire elle attend le premier rachat — c'est un geste
+   de la main tenue, et elle ne se recache plus une fois ouverte. */
 function peindreJoie(c) {
   const j = c.bonheur || 0, n = Math.floor(j / JOIE_PALIER);
-  $('stage-joie').hidden = state.tuto && j < JOIE_PALIER / 3 && !(state.dons || 0);
+  $('stage-joie').hidden = !estDevoile('geste:joie');
   setWidth($('joie-fill'), ((j % JOIE_PALIER) / JOIE_PALIER * 100).toFixed(1) + '%');
   setText($('joie-n'), n ? n + ' palier' + (n > 1 ? 's' : '') : '');
   $('joie-fren').hidden = !enFrenesie();
@@ -6114,7 +6180,8 @@ function plier(cle) {
   refresh();
   save();
 }
-const estPlie = cle => !!(state.plie && state.plie[cle]);
+let panneauVise = null;
+const estPlie = cle => cle !== panneauVise && !!(state.plie && state.plie[cle]);
 
 
 /* ── L'ENCYCLOPÉDIE : LA LISTE ─────────────────────────────────────────────────
@@ -6287,6 +6354,11 @@ function meriteDevoilement(cle) {
 function suivreTuto(libre) {
   if (!state.tuto) return null;
   for (const cle of CLES_VOIR) if (meriteDevoilement(cle)) devoiler(cle);
+  for (const g of GESTES) {
+    let pret = false;
+    try { pret = !!g.quand(); } catch (e) { pret = false; }
+    if (pret) devoiler('geste:' + g.cle);
+  }
 
   /* PENDANT UN RATTRAPAGE on marque tout sans rien dire : une absence de huit heures franchit
      cinq seuils en quelques secondes, et le joueur qui revient recevrait cinq bandeaux à la
@@ -7649,7 +7721,9 @@ function renderBete(s) {
     setText($('stage-hint'), estFinie(c)
       ? 'Elle est au bout. Chaque clic te rapporte ' + fmt(gainClicFini(c, s)) + '.'
       : c.age < AGES.length
-      ? 'Elle est mûre : son niveau ne montera plus tant que tu ne l’auras pas fait évoluer. ' +
+      ? (estDevoile('geste:evoluer')
+          ? 'Elle est mûre : son niveau ne montera plus tant que tu ne l’auras pas fait évoluer. '
+          : 'Elle est mûre : son niveau ne montera plus. ') +
         (r ? 'En attendant, elle rapporte ' + fmtRente(r) + ' / s et s’engraisse.'
            : 'En attendant, ce qu’elle avale part dans sa taille — et ce n’est pas perdu.')
       : paie);
@@ -7700,7 +7774,7 @@ function renderBete(s) {
   }
 
   acts.place.hidden = true;
-  acts.sell.hidden = false;
+  acts.sell.hidden = !estDevoile('geste:vendre');
   setText(acts.sell, 'Vendre ' + fmt(sellValue(c)));
   /* L'infobulle suit les mêmes trois états que la couleur : alerte, fait, bonne affaire.
      Annoncer « vente au prix fort » sur une bête encore sous le prix de son œuf serait le
@@ -7714,7 +7788,7 @@ function renderBete(s) {
       'ça libère la place, et c’est possible à tout moment.';
   acts.sell.disabled = !!c.keep;
 
-  acts.keep.hidden = false;
+  acts.keep.hidden = !estDevoile('geste:garder');
   setText(acts.keep, c.keep ? '★ Gardée' : '☆ Garder');
   acts.keep.title = c.keep
     ? 'Aucun automate n’y touchera. Clique pour la relâcher.'
@@ -7722,7 +7796,7 @@ function renderBete(s) {
   acts.keep.classList.toggle('on', !!c.keep);
   acts.keep.disabled = false;
 
-  acts.evo.hidden = false;
+  acts.evo.hidden = !estDevoile('geste:evoluer');
   if (c.age >= AGES.length) {
     setText(acts.evo, 'Forme finale');
     acts.evo.title = 'Plus rien au-dessus — il ne reste qu’à la faire grossir.';
@@ -8036,8 +8110,12 @@ function avanceSeule() {
     try { mort = !!(n.perime && n.perime()); } catch (e) { mort = false; }
     if (mort) { state.vu[n.cle] = true; state.dial = null; return; }
     const l = ligne(n, state.dial.i);
+    if (state.dial.pour !== state.dial.i) {
+      state.dial.pour = state.dial.i;
+      state.dial.avant = { vendues: state.stats.vendues, evolutions: state.stats.evolutions };
+    }
     let ok = false;
-    try { ok = !!(l.fait && l.fait()); } catch (e) { ok = false; }
+    try { ok = !!(l.fait && l.fait(state.dial.avant)); } catch (e) { ok = false; }
     if (!ok) return;
     if (state.dial.i + 1 >= n.repliques.length) { state.vu[n.cle] = true; state.dial = null; }
     else state.dial.i++;
@@ -8059,6 +8137,36 @@ function replique(saut) {
   }
   refresh();
   save();
+}
+
+/* CE QUE LE VOILE LAISSE VIVANT, EN PLUS DU SUJET. Le bouton visé, et chacun de ses parents
+   jusqu'à la colonne : le voile descend d'un étage à chaque parent, et n'éteint que ses voisins. */
+const VISEES = {
+  sell: () => refs.acts && refs.acts.sell,
+  evo:  () => refs.acts && refs.acts.evo,
+  'oeuf-commun': () => refs.shop && refs.shop['egg-commun'] && refs.shop['egg-commun'].el,
+};
+const PANNEAU_VISE = { 'oeuf-commun': 'boutique' };
+let visees = [];
+
+function viser(cles) {
+  for (const e of visees) e.classList.remove('vise', 'vise-dans');
+  visees = [];
+  panneauVise = null;
+  for (const cle of cles) {
+    const el = VISEES[cle] && VISEES[cle]();
+    if (!el) continue;
+    el.classList.add('vise');
+    visees.push(el);
+    for (let p = el.parentElement || el.parent; p && p.classList &&
+         !p.classList.contains('side') && !p.classList.contains('stage-acts');
+         p = p.parentElement || p.parent) {
+      p.classList.add('vise-dans');
+      visees.push(p);
+    }
+    if (PANNEAU_VISE[cle]) panneauVise = PANNEAU_VISE[cle];
+  }
+  document.body.classList.toggle('vise-on', visees.length > 0);
 }
 
 function renderTuto() {
@@ -8100,8 +8208,16 @@ function renderTuto() {
   /* L'ÉCRAN S'ÉTEINT PENDANT QU'ELLE TIENT. Tout devient inerte sauf le sujet — l'œuf ou la
      bête qu'elle demande de toucher — et le bouton 📖, qui est la seule sortie. */
   const n2 = scene();
-  const tenu = !!(n2 && state.tuto && ligne(n2, Math.min(state.dial.i, n2.repliques.length - 1)).tient);
+  const l2 = n2 && state.tuto ? ligne(n2, Math.min(state.dial.i, n2.repliques.length - 1)) : null;
+  const tenu = !!(l2 && l2.tient);
   document.body.classList.toggle('tenu', tenu);
+  // la bête dont elle parle monte en scène : ses boutons sont ceux de la bête visible
+  if (tenu && l2.sujet) {
+    let c = null;
+    try { c = l2.sujet(); } catch (e) { c = null; }
+    if (c && state.sel !== 'c:' + c.id) state.sel = 'c:' + c.id;
+  }
+  viser(tenu && l2.vise ? l2.vise : []);
 
   document.body.classList.toggle('debut', state.tuto && !seenCount());
 

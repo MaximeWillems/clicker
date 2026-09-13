@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.31.3** | les descriptions ne disent plus que ce qu’un achat fait — ni jugement, ni calcul, ni règle à lire. Le moyeu se tait, deux nœuds du sang changent de nom, et seul le tutoriel reste bavard |
+| **beta 4.32.0** | la main tenue : chaque geste s’ouvre le jour où il sert — vendre quand la bête paie un œuf, la taille à la maturité, le bonheur après le premier rachat, évoluer quand le péage est payable, garder avec le premier automate. Et le voile ne cache plus le bouton qu’elle demande |
+| beta 4.31.3 | les descriptions ne disent plus que ce qu’un achat fait — ni jugement, ni calcul, ni règle à lire. Le moyeu se tait, deux nœuds du sang changent de nom, et seul le tutoriel reste bavard |
 | beta 4.31.2 | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
 | beta 4.31.1 | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
 | beta 4.31.0 | la constellation se découvre : une étoile dont le parent n’est pas pris ne montre que sa place et son lien. Et un clic ne l’achète plus — il ouvre une carte, à côté, qui dit ce qu’elle fait |
@@ -480,6 +481,46 @@ Le tout est **conditionné au mode histoire** : le bouton 📖 relève l'interfa
 coup, comme il dévoile la boutique entière. Une partie déjà avancée n'est jamais concernée —
 ses compteurs sont à deux et plus depuis longtemps.
 
+#### La main tenue
+
+**Un geste n'apparaît que le jour où il sert, et c'est la professeure qui l'ouvre.** À l'éclosion,
+Vendre, Évoluer et Garder arrivaient ensemble : vendre tout de suite rapportait 5 pièces pour un
+œuf à 18, et c'était l'impasse dès la première minute. Mesuré au banc sur une partie neuve :
+
+| Ce qui s'ouvre | Quand | Elle retient ? |
+|---|---|---|
+| **Vendre** | quand la bête paie un œuf — niveau 12, 88 clics après l'éclosion | non : vendre à 20 ou attendre 30 est un vrai choix |
+| **la taille** | à la première maturité — niveau 15, 30 pièces | sur « vends-la », si rien n'est encore vendu |
+| **racheter** | à la première vente | oui, et seul l'œuf reste vivant dans la boutique |
+| **le bonheur** | après le premier rachat, à 30 s de présence — ou au premier cadeau | non |
+| **Évoluer**, et l'âge | quand un péage est payable — 34 min au banc | sur « décide », là où les deux portes existent |
+| **Garder** | au premier automate, ou dès qu'une bête est gardée | non |
+
+C'est le dévoilement de la boutique étendu à la scène : même mémoire (`vu['voir:geste:…']`),
+même règle — rien ne se recache, et le `📖` lève tout. Les conditions comptent ce qui a déjà été
+fait, si bien qu'**une partie en cours retrouve tous ses boutons**, sans que le format de
+sauvegarde bouge.
+
+**Le voile éteignait le bouton qu'elle demandait.** Quand la bête mûre retenait sur « vends-la,
+ou paie son péage », tout s'éteignait sauf le sujet, bouton Vendre compris : le seul geste
+possible était de cliquer la bête. Le scénario qui vérifiait la scène appelait `sell()`
+directement, et ne pouvait pas le voir. Une réplique nomme maintenant ce qu'elle vise, et le
+voile le laisse vivant.
+
+**Le « décide » a changé de place.** Il tombait à la première maturité, quand le péage coûtait
+200 pièces pour une bourse vide ; il vit maintenant au moment où le péage est payable. Au
+passage, la professeure promettait qu'une bête évoluée vaudrait « douze fois plus » : c'est vrai
+de l'âge adulte, pas du premier péage, où la bête mûre à l'âge suivant vaut 16,7 fois plus.
+
+**Le rachat retient parce que trente pièces achetaient aussi la Force du clic.** C'est ce que
+rapporte une bête vendue mûre, et la Force du clic est déjà visible : l'acheter à la place de
+l'œuf vidait la bourse. C'est la seule réplique qui retient sur un achat, et elle lâche si la
+bourse retombe sous le prix d'un œuf.
+
+**Garder s'ouvre aussi pour une bête déjà gardée**, et ce n'est pas un détail : un chromatique
+est gardé d'office à l'éclosion, et une bête gardée ne se vend pas. Sans le bouton, il serait
+invendable.
+
 #### La professeure
 
 Le mode histoire ne récite plus des consignes : **quelqu'un les dit**. C'est toute la
@@ -487,7 +528,7 @@ différence entre « clique sur l'œuf » et *« il ne demande qu'une chose, et 
 fera à ta place »*.
 
 La **professeure Aubier** étudie les lignées. Elle accueille le joueur, lui donne son premier
-œuf, et revient à chaque étape — dix scènes, de l'accueil jusqu'à l'enclos. Elle n'a pas encore
+œuf, et revient à chaque étape — quinze scènes, de l'accueil jusqu'aux premiers automates. Elle n'a pas encore
 de portrait : le glyphe tient la place exactement comme les emoji tiennent celle des créatures,
 et le jour où le dessin arrive, on pose un fichier dans `art/` et on remplit `portrait`. Rien
 d'autre ne bouge. Son nom et sa personne vivent dans une seule constante, `PROF`.
@@ -530,12 +571,13 @@ garde, pourquoi la question n'a pas de bonne réponse. Fermer sur l'action ferai
 l'explication à qui a agi vite, c'est-à-dire à qui joue bien. `fait` y suffit : on avance, on
 n'efface pas.
 
-#### Trois passages obligés
+#### Cinq passages obligés
 
 Une réplique peut **tenir**, et alors elle tient vraiment. **La boîte ne s'avance plus du
 tout** — ni par un clic sur le texte, ni par la croix, qui disparaît. Et **le reste de l'écran
 s'éteint** : la boutique, la bande, les réglages, les outils, la bourse deviennent inertes et
-grisés. Il ne reste que le sujet, qui pulse doucement.
+grisés. Il ne reste que le sujet, qui pulse doucement — et ce qu’elle vise : le bouton Vendre quand elle
+dit « vends-la », l’œuf de la boutique quand elle dit « reprends-en un ».
 
 Les deux moitiés étaient nécessaires. Tenir sans éteindre le reste ne bloquait rien : on lisait
 la consigne, on allait cliquer ailleurs, et la scène restait plantée là. Tenir en laissant la
@@ -553,10 +595,12 @@ le mode histoire d'un coup. On peut refuser le tutoriel ; on ne peut pas le suiv
   vendre est toujours possible, même sans un sou ;
 - **indispensable à la suite** — le reste du mode histoire n'a pas de sens sans elle.
 
-Il en reste donc trois, et un scénario du banc vérifie qu'il n'y en a pas une de plus : cliquer
-l'œuf, cliquer la bête, et **trancher le premier vrai choix du jeu** — vendre sa première bête
-mûre ou payer son péage. Chacune sait aussi reconnaître qu'on l'a faite, ce que le même
-scénario vérifie.
+Il en reste donc cinq, et un scénario du banc vérifie qu'il n'y en a pas un de plus : cliquer
+l'œuf, cliquer la bête, **vendre sa première bête mûre** si rien n'est encore vendu, **racheter
+un œuf**, et **trancher le premier vrai choix du jeu** — vendre ou payer le péage, au moment où
+le péage est payable. Le rachat est la seule entorse à « gratuite », et elle tient parce que la
+vente ne s'ouvre qu'à la valeur d'un œuf. Chacune sait aussi reconnaître qu'on l'a faite, ce que
+le même scénario vérifie.
 
 La vérification tourne à chaque rendu, ce qui règle aussi le rechargement : une consigne déjà
 exécutée avant la fermeture de la page ne se redemande pas à la réouverture. La boucle est
@@ -567,7 +611,7 @@ page.
 sauvegarde : un rechargement au milieu d'un dialogue de quatre phrases le reprend où on l'avait
 laissé, au lieu d'avaler le reste de ce qu'elle avait à dire.
 
-Les scènes s'arrêtent à l'enclos — la suite s'écrira en jouant, quand on saura ce qui manque.
+Les scènes vont maintenant jusqu'aux premiers automates : la main tenue les a prolongées d'une marche par geste.
 
 Trois règles les gouvernent, et les trois ont été trouvées en les testant plutôt qu'en les
 écrivant :

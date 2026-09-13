@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.31.3 · sauvegarde v32 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.32.0 · sauvegarde v32 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -56,7 +56,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le glisser-déposer des cartes** | 2.7 | est-ce que l'album se manipule ? | non vérifié : rien de visuel ne l'est |
 | **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
 | **La charte « idole »** | 2.6, 2.7.1 | est-ce qu'une mythique impressionne ? | oui — validé sur l'Ouroboros |
-| **Le mode histoire** | 2.8, 2.11 → 2.12 | est-ce qu'on se sent accompagné ? | à voir en jouant |
+| **Le mode histoire** | 2.8, 2.11 → 2.12, 4.32 | est-ce qu'on se sent accompagné ? | en partie : la main tenue ouvre chaque geste le jour où il sert, et la professeure ne retient plus sur un bouton éteint. Le reste, à voir en jouant |
 | **Les trois axes** | 2.13 | est-ce qu'on comprend ce qui monte ? | oui — âge, niveau, taille, chacun sa colonne |
 | **Le confort de la ferme** | 2.14 | est-ce que l'achat par lots tient sa promesse ? | oui — la réserve se vide seule |
 | **Le vocabulaire** | 2.15 | est-ce qu'un nom peut contredire une colonne ? | plus maintenant, et c'est vérifié |
@@ -132,7 +132,6 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
 | **La taille des menus** — densité et ordre, sauvés | rien | la ferme peut-elle se ranger comme on la regarde ? |
-| **La main tenue** — le mode histoire ouvre la scène geste par geste. Analysée [plus bas](#la-main-tenue--à-ouvrir) | rien | un joueur qui n'a jamais joué sait-il toujours quoi faire, et jamais trop tôt ? |
 
 **Le second mode de jeu** — seul de sa taille, donc seul dans son bloc : le mettre parmi les
 lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il demande.
@@ -141,7 +140,13 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 |---|---|---|
 | **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | **les quatre stats sont posées depuis la `4.16.0`** ; restent les tempéraments à second effet et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
 
-### La main tenue — à ouvrir
+### La main tenue — **livrée en `beta 4.32.0`**
+
+> **Livrée en entier**, avec les deux recommandations : le rachat retient, et le bonheur attend
+> le premier rachat. En la posant, le vrai défaut de l'ancienne scène s'est montré : le voile
+> éteignait aussi le bouton Vendre pendant qu'elle disait « vends-la », si bien que le seul
+> geste possible était de cliquer la bête. Le scénario qui vérifiait la scène appelait `sell()`
+> directement, et ne pouvait pas le voir.
 
 **Le constat, mesuré au banc sur une partie neuve en mode histoire :**
 
@@ -193,12 +198,12 @@ Côté scénarios : « trois passages obligés » devient cinq — quatre sans l
 se déplie » gagne un geste par marche — absent avant, présent après, tout présent sans le mode
 histoire ; et une vente au niveau 1 devient impossible en mode histoire.
 
-#### À trancher
+#### Tranché
 
-1. **Retenir sur le rachat ?** Recommandé : oui. Vendue mûre, la bête rapporte 30 pièces — le
+1. **Retenir sur le rachat ?** Oui. Vendue mûre, la bête rapporte 30 pièces — le
    prix exact de la Force du clic. L'acheter à la place de l'œuf vide la bourse, et c'est
    l'impasse.
-2. **Le bonheur après le premier rachat, ou au premier cadeau ?** Recommandé : après le rachat.
+2. **Le bonheur après le premier rachat, ou au premier cadeau ?** Après le rachat.
    Il arrive comme une marche, et non comme une surprise au milieu de la première bête.
 
 ### Le chantier qui barre la route : les dessins
