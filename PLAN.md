@@ -132,6 +132,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
 | **La taille des menus** — densité et ordre, sauvés | rien | la ferme peut-elle se ranger comme on la regarde ? |
+| **La main tenue** — le mode histoire ouvre la scène geste par geste. Analysée [plus bas](#la-main-tenue--à-ouvrir) | rien | un joueur qui n'a jamais joué sait-il toujours quoi faire, et jamais trop tôt ? |
 
 **Le second mode de jeu** — seul de sa taille, donc seul dans son bloc : le mettre parmi les
 lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il demande.
@@ -139,6 +140,66 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | **les quatre stats sont posées depuis la `4.16.0`** ; restent les tempéraments à second effet et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
+
+### La main tenue — à ouvrir
+
+**Le constat, mesuré au banc sur une partie neuve en mode histoire :**
+
+- **À l'éclosion, Vendre, Évoluer et Garder arrivent ensemble.** Vendre tout de suite rapporte
+  5 pièces, pour un œuf qui en coûte 18 : c'est l'impasse, dès la première minute.
+- **Entre « Essaie » et la bête mûre, 120 clics sans une phrase**, et un bouton Vendre qui ne
+  dit pas qu'il est trop tôt.
+- **La bête mûre retient sur « vends-la, ou paie son péage — décide »**, mais le péage coûte 200
+  et la bourse est vide : il n'y a rien à décider. Au banc, la première évolution devient
+  possible à la 34ᵉ minute.
+- **Évoluer reste affiché, éteint, pendant ces 34 minutes.** Garder ne protège de rien tant
+  qu'aucun automate ne décide à ta place — le marchand, à 15 000 pièces.
+- **La colonne taille s'affiche dès l'éclosion**, alors qu'une bête ne grossit qu'une fois mûre.
+
+**La règle :** un geste n'apparaît que le jour où il sert, et c'est la professeure qui l'ouvre.
+C'est le dévoilement de la boutique, étendu à la scène.
+
+#### L'escalier
+
+| | Ce qui s'ouvre | Quand | Ce qu'elle dit | Elle retient ? |
+|---|---|---|---|---|
+| 1 | le clic sur l'œuf | au départ | « Clique dessus » *(existe)* | oui |
+| 2 | la bête et son niveau | à l'éclosion — 50 clics | « Elle grandit au clic. Essaie » *(existe)* | oui |
+| 3 | **Vendre** | quand sa vente paie un œuf — niveau 12, 88 clics plus tard, 20 pièces | elle vaut un œuf : la vendre maintenant, ou la laisser monter | non, c'est un vrai choix |
+| 4 | **la taille** | à la première maturité — niveau 15, 120 clics, 30 pièces | son niveau s'est bloqué, ce qu'elle mange part dans sa taille | « Vends-la », si rien n'est encore vendu |
+| 5 | **racheter** | à la première vente | « Reprends-en un » *(existe)* | à trancher |
+| 6 | **le bonheur** | après le premier rachat, à 30 s de présence | elle s'attache à qui reste ; puis le premier cadeau *(existe)* | non |
+| 7 | **Évoluer**, et l'âge | une bête mûre et de quoi payer son péage — 34 min | « vends-la, ou fais-la évoluer : décide » — la réplique de la bête mûre, déplacée là où elle devient vraie | oui |
+| 8 | **Garder** | au marchand automatique — 15 000 pièces | il vend tout ce qui est mûr ; ce que tu gardes, il n'y touche pas | non |
+
+Les scènes des achats — force du clic, couveuse, incubateur, enclos — ne bougent pas : les prix
+les ordonnent déjà, et elles s'intercalent entre ces marches comme aujourd'hui.
+
+#### Comment ça s'écrit
+
+- **Une table `GESTES`, sœur de `CLES_VOIR`** : une clé, une condition. `suivreTuto` la passe
+  en revue, et `estDevoile('geste:vendre')` décide du bouton. Même mémoire, même règle : rien
+  ne se recache, et le 📖 lève tout d'un coup.
+- **Les conditions comptent ce qui a déjà été fait** — `stats.vendues`, `stats.evolutions`, une
+  bête gardée. Une partie en cours retrouve donc tous ses boutons, sans toucher au format de
+  sauvegarde.
+- `renderBete`, `peindreAxes` et `peindreJoie` lisent la table au lieu de tout montrer.
+- **Une phrase de scène ne nomme pas un geste fermé** : « tant que tu ne l'auras pas fait
+  évoluer » attend la marche 7.
+- **Le voile d'une réplique qui retient n'épargne que le sujet.** Retenir sur le rachat demande
+  qu'il épargne aussi le bouton de l'œuf.
+
+Côté scénarios : « trois passages obligés » devient cinq — quatre sans le rachat ; « l'interface
+se déplie » gagne un geste par marche — absent avant, présent après, tout présent sans le mode
+histoire ; et une vente au niveau 1 devient impossible en mode histoire.
+
+#### À trancher
+
+1. **Retenir sur le rachat ?** Recommandé : oui. Vendue mûre, la bête rapporte 30 pièces — le
+   prix exact de la Force du clic. L'acheter à la place de l'œuf vide la bourse, et c'est
+   l'impasse.
+2. **Le bonheur après le premier rachat, ou au premier cadeau ?** Recommandé : après le rachat.
+   Il arrive comme une marche, et non comme une surprise au milieu de la première bête.
 
 ### Le chantier qui barre la route : les dessins
 
