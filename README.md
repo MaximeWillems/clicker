@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 32` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 33` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.32.0** | la main tenue : chaque geste s’ouvre le jour où il sert — vendre quand la bête paie un œuf, la taille à la maturité, le bonheur après le premier rachat, évoluer quand le péage est payable, garder avec le premier automate. Et le voile ne cache plus le bouton qu’elle demande |
+| **beta 4.32.1** | la dernière barre de chaque âge disparaît : elle affichait « 15 / 15 » en annonçant un niveau 16, ne rapportait rien et ne servait qu’à mûrir. Les âges raccourcissent d’autant — un niveau dure toujours dix secondes à l’enfance — et l’équilibrage est à reprendre |
+| beta 4.32.0 | la main tenue : chaque geste s’ouvre le jour où il sert — vendre quand la bête paie un œuf, la taille à la maturité, le bonheur après le premier rachat, évoluer quand le péage est payable, garder avec le premier automate. Et le voile ne cache plus le bouton qu’elle demande |
 | beta 4.31.3 | les descriptions ne disent plus que ce qu’un achat fait — ni jugement, ni calcul, ni règle à lire. Le moyeu se tait, deux nœuds du sang changent de nom, et seul le tutoriel reste bavard |
 | beta 4.31.2 | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
 | beta 4.31.1 | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
@@ -493,7 +494,7 @@ Vendre, Évoluer et Garder arrivaient ensemble : vendre tout de suite rapportait
 | **la taille** | à la première maturité — niveau 15, 30 pièces | sur « vends-la », si rien n'est encore vendu |
 | **racheter** | à la première vente | oui, et seul l'œuf reste vivant dans la boutique |
 | **le bonheur** | après le premier rachat, à 30 s de présence — ou au premier cadeau | non |
-| **Évoluer**, et l'âge | quand un péage est payable — 34 min au banc | sur « décide », là où les deux portes existent |
+| **Évoluer**, et l'âge | quand un péage est payable | sur « décide », là où les deux portes existent |
 | **Garder** | au premier automate, ou dès qu'une bête est gardée | non |
 
 C'est le dévoilement de la boutique étendu à la scène : même mémoire (`vu['voir:geste:…']`),
@@ -1301,7 +1302,7 @@ traînaient depuis le passage de l'intendant en prime.
 #### L'ouverture, resserrée trois fois
 
 L'âge enfant a été rallongé deux fois : 45 s à l'origine, 90 s en 2.18.0, **150 s depuis la
-2.29.0** — dix clics par niveau au lieu de trois. Un niveau qui tombe en trois clics n'est pas
+2.29.0**, 140 s depuis la 4.32.1 — dix clics par niveau au lieu de trois. Un niveau qui tombe en trois clics n'est pas
 un palier, c'est une case qu'on traverse.
 
 Mais allonger ne suffisait pas. **Mesuré au banc** sur un joueur qui clique quatre fois par
@@ -1335,7 +1336,8 @@ problème n'était que dans les cent premiers clics.
 
 **Chaque niveau paie.** Le multiplicateur de valeur suit une courbe géométrique de 0,15 à 1,00
 à l'intérieur de chaque tranche : un niveau vaut donc entre +7 % et +14 % de prix de vente. Il
-n'y a plus un seul palier mort, la barre qui se remplit rapporte toujours quelque chose. Les
+n'y a plus un seul palier mort, la barre qui se remplit rapporte toujours quelque chose — vrai depuis la 4.32.1 seulement :
+la dernière barre de chaque âge n’ouvrait qu’un niveau déjà affiché. Les
 bornes ne bougent pas — une bête mûre vaut toujours la valeur de son âge, une bête fraîchement
 évoluée toujours 15 % de la sienne.
 

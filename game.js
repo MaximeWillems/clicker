@@ -28,7 +28,7 @@
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
    trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.32.0';
+const VERSION = 'beta 4.32.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -77,12 +77,18 @@ RIEN D'AUTRE NE BOUGE, et c'est délibéré. Une première version resserrait au
    Ce qu'on ne touche pas, et pourquoi : le PRIX DES AUTOMATES. Ils ne sont pas trop bon marché
    en eux-mêmes — c'est le revenu qui arrivait trop vite. Les monter en plus aurait déplacé le
    mur sans changer le rythme. */
+/* UNE TRANCHE DE k NIVEAUX DURE k − 1 BARRES. On entre dans un âge à son premier niveau, et
+   chaque barre en fait gagner un : il en faut donc une de moins que de niveaux. La tranche en
+   comptait k depuis le premier jour, et la dernière barre affichait « 15 / 15 » en annonçant un
+   niveau 16 qui n'existe pas — une barre entière qui ne rapportait rien et ne servait qu'à
+   mûrir. Elle est retirée, et chaque âge raccourcit d'autant : la durée d'UN niveau, elle, ne
+   bouge pas — dix secondes à l'enfance, neuf à l'adolescence, trente à l'âge adulte. */
 const AGES = [
-  { nom: 'enfant',     niv: 15,  grow: 150,   value: 30 },
-  { nom: 'adolescent', niv: 35,  grow: 180,   value: 500 },
-  { nom: 'adulte',     niv: 65,  grow: 900,   value: 6000 },
-  { nom: 'ancien',     niv: 85,  grow: 3600,  value: 80000 },
-  { nom: 'légende',    niv: 100, grow: 21600, value: 1500000, fem: true },
+  { nom: 'enfant',     niv: 15,  grow: 140,   value: 30 },
+  { nom: 'adolescent', niv: 35,  grow: 171,   value: 500 },
+  { nom: 'adulte',     niv: 65,  grow: 870,   value: 6000 },
+  { nom: 'ancien',     niv: 85,  grow: 3420,  value: 80000 },
+  { nom: 'légende',    niv: 100, grow: 20160, value: 1500000, fem: true },
 ];
 const NIV_MAX = AGES[AGES.length - 1].niv;
 
@@ -2726,7 +2732,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 32;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 33;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -3050,6 +3056,23 @@ function load() {
     merged.incub = (merged.incub || []).slice(0, merged.incubators);
     while (merged.incub.length < merged.incubators) merged.incub.push(null);
     merged.pen = merged.pen || [];
+    /* v32 → v33 : LA DERNIÈRE BARRE DE CHAQUE ÂGE EST RETIRÉE, et les tranches raccourcissent
+       d'autant. Une bête garde son niveau et l'avancement de sa barre : on conserve ce qu'elle a
+       parcouru depuis le début de SA tranche, et celle qui était dans la barre retirée —
+       « 15 / 15 » sans être mûre — devient mûre. L'embonpoint se compte en largeurs de tranche :
+       il suit leur largeur, pour que personne ne change de taille au chargement. */
+    if ((s.v || 0) < 33) {
+      const AVANT = [150, 180, 900, 3600, 21600];
+      for (const c of merged.pen) {
+        if (c.age === undefined) continue;          // la conversion v2 → v3 s'en charge
+        const i = c.age - 1;
+        if (!(i >= 0 && i < AVANT.length)) continue;
+        const debutAvant = AVANT.slice(0, i).reduce((a, g) => a + g, 0);
+        const parcouru = Math.max(0, (c.p || 0) - debutAvant);
+        c.p = (i > 0 ? CUM[i - 1] : 0) + Math.min(GROW[i], parcouru);
+        if (c.over) c.over *= GROW[i] / AVANT[i];
+      }
+    }
     /* v2 → v3 : le palier devient l'âge, et la croissance devient un total qui ne repart
        jamais de zéro. L'avancement dans l'ancien palier devient l'avancement dans la
        tranche correspondante — une bête à mi-croissance reste à mi-croissance, et une
@@ -3386,7 +3409,7 @@ const temperOf  = c => TEMPERS[c.temper] || TEMPERS[0];
 const motifOf   = c => MOTIFS[c.motif] || MOTIFS[0];
 
 /* Une bête porte UN compteur de croissance, `p`, qui ne repart jamais de zéro : il court de
-   0 à 26 325 secondes, du premier niveau au centième. Son âge y découpe une tranche, et `p`
+   zéro au bout de la légende, du premier niveau au centième. Son âge y découpe une tranche, et `p`
    se bloque au bout de la sienne tant qu'on n'a pas payé le péage. */
 const ageGrow   = c => GROW[c.age - 1];                     // largeur de sa tranche
 const bandFrom  = c => (c.age > 1 ? CUM[c.age - 2] : 0);    // là où sa tranche commence
@@ -3402,8 +3425,10 @@ const nivBase    = age => (age > 1 ? AGES[age - 2].niv : 0);
    monter, et de l'âge, qui ne fait que monter aussi. */
 function niveau(c) {
   const k = nivDansAge(c.age);
-  return nivBase(c.age) + Math.min(k, 1 + Math.floor(bandRatio(c) * k));
+  return nivBase(c.age) + 1 + Math.floor(bandRatio(c) * (k - 1));
 }
+// La durée d'un niveau : k niveaux, k − 1 barres, et le dernier niveau tombe avec la maturité.
+const dureeNiveau = c => ageGrow(c) / (nivDansAge(c.age) - 1);
 // Son rang dans sa propre tranche : 0 fraîchement évoluée, k−1 mûre.
 const nivDansTranche = c => niveau(c) - nivBase(c.age) - 1;
 
@@ -7691,7 +7716,7 @@ function renderBete(s) {
     /* La barre vise le PROCHAIN NIVEAU, jamais la maturité : cent niveaux dans une vie, donc
        cent barres qui se remplissent. Où en est la bête dans son âge se lit juste au-dessus,
        « mûre au niv. 65 » — deux informations, deux endroits, aucune redite. */
-    const pas = ageGrow(c) / nivDansAge(c.age);
+    const pas = dureeNiveau(c);
     const dedans = (c.p - bandFrom(c)) - nivDansTranche(c) * pas;
     setWidth($('stage-fill'), Math.min(100, (dedans / pas) * 100).toFixed(1) + '%');
     setText($('stage-timer'), remaining((pas - dedans) / growRate(c), autoReel(s), s) +
@@ -7825,7 +7850,7 @@ function ligneBoosts(sujet) {
     const c = sujet.c, t = temperOf(c);
     if (!estMur(c)) {
       // la durée annoncée est celle d'UN NIVEAU : c'est l'attente que le joueur vit
-      const pas = ageGrow(c) / nivDansAge(c.age), brut = force('eleveur') * ELEVEUR_X, n = brut * alb;
+      const pas = dureeNiveau(c), brut = force('eleveur') * ELEVEUR_X, n = brut * alb;
       bouts.push('Croissance ' + fmtTime(pas) + ' par niveau → ' +
                  (n ? fmtTime(pas / (n * t.grow)) : 'rien sans toi'));
       if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.32.0 · sauvegarde v32 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 4.32.1 · sauvegarde v33 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -57,7 +57,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **L'ergonomie du clic** | 2.7.2 → 2.7.3 | est-ce que la barre espace se comporte ? | oui |
 | **La charte « idole »** | 2.6, 2.7.1 | est-ce qu'une mythique impressionne ? | oui — validé sur l'Ouroboros |
 | **Le mode histoire** | 2.8, 2.11 → 2.12, 4.32 | est-ce qu'on se sent accompagné ? | en partie : la main tenue ouvre chaque geste le jour où il sert, et la professeure ne retient plus sur un bouton éteint. Le reste, à voir en jouant |
-| **Les trois axes** | 2.13 | est-ce qu'on comprend ce qui monte ? | oui — âge, niveau, taille, chacun sa colonne |
+| **Les trois axes** | 2.13, 4.32.1 | est-ce qu'on comprend ce qui monte ? | oui — âge, niveau, taille, chacun sa colonne. Et depuis la `4.32.1` le dernier niveau d'un âge tombe à la maturité : une barre entière affichait « 15 / 15 » en annonçant un niveau 16, et les âges ont raccourci d'autant — l'équilibrage est à reprendre |
 | **Le confort de la ferme** | 2.14 | est-ce que l'achat par lots tient sa promesse ? | oui — la réserve se vide seule |
 | **Le vocabulaire** | 2.15 | est-ce qu'un nom peut contredire une colonne ? | plus maintenant, et c'est vérifié |
 | **Le bonheur** | 2.16 | est-ce qu'être présent paie ? | un peu, enfin |

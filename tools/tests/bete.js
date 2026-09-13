@@ -395,3 +395,29 @@ scenario('enclos — une bête gardée compte, une bête confiée non', () => {
   eq('les deux confiées libèrent leurs enclos', jeu.penUsed(), 0);
   ok('la place se rouvre', !jeu.penFull());
 });
+
+scenario('niveau — le dernier niveau d’un âge tombe à la maturité, pas une barre avant', () => {
+  /* LA BARRE MORTE. Une tranche de quinze niveaux se découpait en quinze barres, et la dernière
+     affichait « 15 / 15 » en annonçant un niveau 16 : elle ne rapportait rien et ne servait qu'à
+     mûrir. Quinze niveaux, c'est quatorze barres. */
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 5;
+  const c = bete(jeu, 'crapaud', 1, 0);
+  for (let age = 1; age <= jeu.AGES.length; age++) {
+    c.age = age;
+    const nom = jeu.AGES[age - 1].nom, dernier = jeu.nivBase(age) + jeu.nivDansAge(age);
+    const debut = jeu.bandFrom(c), fin = jeu.bandTo(c), pas = jeu.dureeNiveau(c);
+    c.p = debut;
+    eq(nom + ' : on entre à son premier niveau', jeu.niveau(c), jeu.nivBase(age) + 1);
+    eq(nom + ' : chaque barre fait gagner un niveau', (fin - debut) / pas, jeu.nivDansAge(age) - 1);
+    c.p = fin - pas / 10;
+    eq(nom + ' : juste avant la maturité, l’avant-dernier niveau', jeu.niveau(c), dernier - 1);
+    ok(nom + ' : pas encore mûre', !jeu.estMur(c));
+    c.p = fin;
+    eq(nom + ' : le dernier niveau arrive avec la maturité', jeu.niveau(c), dernier);
+    ok(nom + ' : mûre', jeu.estMur(c));
+  }
+  c.age = 1; c.p = jeu.bandTo(c) - jeu.dureeNiveau(c) / 2; jeu.refresh();
+  const t = noeuds.get('stage-timer').textContent || '';
+  ok('la minuterie annonce le niveau 15 avec la maturité, jamais un niveau 16', /niv\. 15 · mûre/.test(t), t);
+});

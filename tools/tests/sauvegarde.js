@@ -217,3 +217,32 @@ scenario('sauvegarde — l’écran juge ce qu’on colle avant de laisser resta
   ok('le bouton s’ouvre', !noeuds.get('sav-go').disabled);
   ok('et la ligne n’est plus rouge', !noeuds.get('sav-resume').classList.contains('sav-non'));
 });
+
+scenario('sauvegarde — la barre retirée ne change ni le niveau ni la taille d’une bête', () => {
+  /* Le niveau et la taille d'avant se recalculent ICI, avec les durées d'avant : un juge qui
+     emprunte sa règle à l'accusé ne juge rien. */
+  const AVANT = [150, 180, 900, 3600, 21600], NIV = [15, 20, 30, 20, 15];
+  const debutAvant = age => AVANT.slice(0, age - 1).reduce((a, g) => a + g, 0);
+  const niveauAvant = (age, p) => NIV.slice(0, age - 1).reduce((a, n) => a + n, 0) +
+    Math.min(NIV[age - 1], 1 + Math.floor(Math.min(1, (p - debutAvant(age)) / AVANT[age - 1]) * NIV[age - 1]));
+
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 5;
+  bete(jeu, 'crapaud', 1, 0); bete(jeu, 'crapaud', 1, 0); bete(jeu, 'crapaud', 2, 0);
+  const brut = JSON.parse(JSON.stringify(s));
+  brut.v = 32;
+  const [a, m, b] = brut.pen;
+  a.age = 1; a.p = 75;                       // au milieu de l'enfance
+  m.age = 1; m.p = 145;                      // dans la barre retirée : « 15 / 15 », pas mûre
+  b.age = 2; b.p = debutAvant(2) + 95; b.over = 90;   // adolescente, un peu engraissée
+
+  const vieux = neuf(brut);
+  const lu = id => vieux.state.pen.find(x => x.id === id);
+  eq('une enfant garde son niveau', vieux.niveau(lu(a.id)), niveauAvant(1, 75));
+  eq('une adolescente aussi', vieux.niveau(lu(b.id)), niveauAvant(2, b.p));
+  ok('celle qui était dans la barre retirée devient mûre', vieux.estMur(lu(m.id)));
+  eq('au même niveau', vieux.niveau(lu(m.id)), niveauAvant(1, 145));
+  const tailleAvant = 1 + vieux.OVER_GAIN * Math.log(1 + 90 / AVANT[1]);
+  ok('et personne ne change de taille', Math.abs(vieux.sizeFactor(lu(b.id)) - tailleAvant) < 1e-9,
+     vieux.sizeFactor(lu(b.id)) + ' contre ' + tailleAvant);
+});
