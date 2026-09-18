@@ -41,6 +41,25 @@ function poserJetons(jeu, n) {
   jeu.state.asc.paliers = jeu.RANG_PREMIER;
 }
 
+/* SEMER DES CARTES DANS L'ALBUM. L'ascension ne fabrique plus de cartes — elles viendront des
+   boosters — mais une douzaine de scénarios s'en servaient pour peupler l'album avant de tester
+   autre chose : une couleur, une fusion, un fond. On leur donne le geste direct, celui que le
+   booster fera un jour : une bête devient une capsule, la capsule entre dans l'album et s'équipe
+   tant qu'il reste une place. */
+function emporter(jeu, betes) {
+  const faites = [];
+  for (const c of betes) {
+    const cap = Object.assign(jeu.capsuleBrute(c), { id: jeu.nextCard });
+    jeu.nextCard = jeu.nextCard + 1;
+    jeu.state.album.push(cap);
+    if (jeu.state.slots.length < jeu.SLOTS) jeu.state.slots.push(cap.id);
+    faites.push(cap);
+  }
+  jeu.oublierAlbum();
+  jeu.refresh();
+  return faites;
+}
+
 // une bête posée dans l'enclos, sans passer par la couvaison
 function bete(jeu, ligne, age, p) {
   const s = jeu.state;
@@ -187,7 +206,7 @@ function equiper(jeu, motif, n) {
 
 module.exports = {
   compte, scenario, ok, eq,
-  poserJetons, bete, beteNeutre, saturerCombo, seule, ditDial, dialOuvert, impasse,
+  poserJetons, emporter, bete, beteNeutre, saturerCombo, seule, ditDial, dialOuvert, impasse,
   couple, sousArbre, ditPension, casesNid, fiche, pave, parfaite, equiper,
   neuf, noeuds, inconnus, RACINE, lire, brut, rechargements,
 };

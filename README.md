@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 4.32.1** | la dernière barre de chaque âge disparaît : elle affichait « 15 / 15 » en annonçant un niveau 16, ne rapportait rien et ne servait qu’à mûrir. Les âges raccourcissent d’autant — un niveau dure toujours dix secondes à l’enfance — et l’équilibrage est à reprendre |
+| **beta 5.0.0** | la refonte de l’ascension : on ne choisit plus de bêtes à emporter, le saut ne fabrique plus de cartes. Son seul objet devient d’investir ses jetons dans la constellation, **et seulement à ce moment-là** — le reste du temps, elle se consulte. L’enclos entier se défait en poussière, le bouton sépare la réserve du gain du cycle (« 1 (+4) »), et l’axe du sang perd ses deux « bagage » avec le prix des cartes qu’ils adoucissaient. Les cartes viendront des boosters, à venir |
+| beta 4.32.1 | la dernière barre de chaque âge disparaît : elle affichait « 15 / 15 » en annonçant un niveau 16, ne rapportait rien et ne servait qu’à mûrir. Les âges raccourcissent d’autant — un niveau dure toujours dix secondes à l’enfance — et l’équilibrage est à reprendre |
 | beta 4.32.0 | la main tenue : chaque geste s’ouvre le jour où il sert — vendre quand la bête paie un œuf, la taille à la maturité, le bonheur après le premier rachat, évoluer quand le péage est payable, garder avec le premier automate. Et le voile ne cache plus le bouton qu’elle demande |
 | beta 4.31.3 | les descriptions ne disent plus que ce qu’un achat fait — ni jugement, ni calcul, ni règle à lire. Le moyeu se tait, deux nœuds du sang changent de nom, et seul le tutoriel reste bavard |
 | beta 4.31.2 | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
@@ -2009,35 +2010,25 @@ réclame rien.*
 | durée | le cycle, puis effacées | acquises pour toujours |
 | ce qu'elles font | pousser ce qu'on a | **ouvrir ce qu'on n'a pas** |
 
-#### Le prix d'une carte emportée
+#### Le prix d'une carte emportée — **retiré en `5.0.0`**
 
-Chaque carte emportée dans une même ascension renchérit la suivante d'un facteur **φ ≈ 1,618**.
+Chaque carte emportée renchérissait la suivante d'un facteur **φ ≈ 1,618** (1, 2, 3, 5, 7…), pour
+que les jetons regagnés à chaque cycle ne donnent pas cinq cartes gratuites à chaque saut. La
+`5.0.0` a **retiré la sélection de cartes au saut** : on ne choisit plus de bêtes à emporter, et
+l'album ne se remplit plus là — il se remplira par les **boosters**. Il n'y a donc plus de carte
+à mettre en balance, plus de prix doré, et le jeton n'a plus qu'un évier : la constellation. Le
+prix reviendra, réécrit, sur ce que coûte une carte tirée d'un booster.
 
-| Carte | 1 | 2 | 3 | 4 | 5 | 6 |
-|---|---|---|---|---|---|---|
-| coût | 1 | 2 | 3 | 5 | 7 | 12 |
-| cumul | 1 | 3 | 6 | 11 | 18 | 30 |
+#### Le jeton, une bourse à un seul évier
 
-**Pourquoi il fallait l'écrire.** La `beta 3.0.0` a fait *regagner* les jetons à chaque cycle,
-ce qui a abattu le mur de fin de partie — et ouvert un trou dans le même geste : si les jetons
-reviennent et qu'une carte en coûte un, on emporte cinq cartes à chaque ascension,
-indéfiniment. L'album se remplit alors sans qu'aucune décision ne soit prise, et la forge, qui
-demande neuf cartes pour une seule trois-étoiles, devient triviale.
+Il fut une *lecture* en `3.0.0`, puis une bourse à **deux éviers** en `4.0.0` — les cartes et la
+constellation. Depuis la `5.0.0`, plus qu'un :
 
-φ plutôt que ×2 : le doublement écrase trop vite — la quatrième carte coûterait huit jetons
-quand la première en coûte un, et on n'en prendrait jamais plus de trois. Le nombre d'or monte
-assez pour qu'on hésite, assez peu pour qu'on puisse viser la cinquième.
+    en main  =  ce qui reste en réserve  +  ce que le cycle vient de créditer
 
-#### Le jeton redevient une bourse
-
-Il était devenu une *lecture* en `3.0.0` — le nombre de paliers franchis par le sommet du
-cycle. Avec deux éviers qui puisent au même endroit, il faut un **solde** :
-
-    en main  =  ce qui reste en bourse  +  ce que le cycle vient de créditer
-
-Et **le reste demeure au saut**. Les jetons partaient tous, employés ou non ; c'était le prix de
-sauter trop tôt, et ça n'a plus de sens depuis qu'ils ont un second emploi. *Garder ses jetons
-pour la constellation est une décision, pas un gâchis.*
+Et le bouton d'ascension **sépare les deux à l'écran** — « 1 (+4) » : un jeton en réserve, quatre
+que le cycle crédite *au moment du saut*. Le « + » n'est pas encore à toi ; il le devient quand tu
+ascensionnes. Ce qu'on n'investit pas dans la constellation reste en réserve pour la fois d'après.
 
 #### Le tronc porte les nombres, les branches portent les règles
 
@@ -2075,17 +2066,19 @@ d'où elle vient.
 
 #### Le sang — ce que tu emportes
 
-Deux nœuds qui touchent l'ascension elle-même, et ce sont les seuls du plan qui n'attendent
-aucune fonctionnalité manquante :
+Deux nœuds qui touchent l'ascension elle-même :
 
 | Nœud | Rang | Prix | Ce qu'il change |
 |---|---|---|---|
-| **Le bagage léger** | 12 | ✦ 16 | chaque carte coûte un cran de moins — la deuxième au prix de la première |
-| **Le sommet compte plus** | 15 | ✦ 20 | un palier de jetons de plus, à chaque cycle |
+| **Le sommet compte plus** | 1 | ✦ 12 | un palier de jetons de plus, à chaque cycle |
+| **Le second sommet** | 2 | ✦ 30 | encore un palier de plus |
 
-Ce sont les seuls achats du jeu qui **changent la valeur de tous les achats suivants** : d'où
-leur prix et leur rang. Le second ne crédite jamais sur zéro — un cycle où l'on n'a pas tenu une
-pièce ne doit rien rapporter, sinon sauter aussitôt après un saut donnerait un jeton gratuit.
+L'axe en portait quatre : deux « bagage » l'ouvraient, qui adoucissaient le **prix des cartes
+emportées**. La `5.0.0` a retiré ce prix — le saut ne fabrique plus de cartes — donc les deux
+bagage avec, et le « sommet » a repris l'étincelle pour parent. Ils reviendront, réécrits, avec
+les boosters : c'est là que se paiera une carte tirée. Le sommet ne crédite jamais sur zéro — un
+cycle où l'on n'a pas tenu une pièce ne doit rien rapporter, sinon sauter aussitôt après un saut
+donnerait un jeton gratuit.
 
 #### L'atelier de forge a migré ici
 
@@ -2984,23 +2977,21 @@ d'arrivée.
 ### L'album et l'ascension
 
 Le jeu s'arrêtait sur une fin sèche : légendes mythiques, ferme pleine, plus rien. L'ascension
-lui donne un deuxième tour, et **l'album est la seule chose qu'on emporte**.
+lui donne un deuxième tour, et **l'album traverse le saut** — mais il ne s'y remplit plus.
 
-Le cycle tient en cinq temps. On joue. On franchit un **jalon**. On ascensionne : les bêtes
-présentes dans l'enclos deviennent des **capsules** — la bête figée telle qu'elle était. On
-choisit les cartes à équiper. Tout le reste repart de zéro.
-
-**Une bête ne devient jamais une carte en cours de partie.** La transformation n'a lieu qu'au
-moment du saut, sur ce qu'il reste dans l'enclos. Il n'y a donc aucun arbitrage à faire devant
-chaque animal — la question devient « lesquelles je garde en vie pour le saut ? », posée une
-fois sur une ferme entière plutôt que trente fois sur trente bêtes.
+Le cycle tient en quelques temps. On joue. On franchit des **paliers de fortune**, qui créditent
+des jetons. On ascensionne : c'est le moment — **et le seul** — où l'on investit ces jetons dans
+la **constellation**. L'enclos entier se défait en poussière, et tout le reste repart de zéro.
+*(Jusqu'à la `5.0.0`, le saut fabriquait les cartes : on choisissait quelles bêtes de l'enclos
+emporter dans l'album. Cette sélection a disparu — les cartes viendront des **boosters**.)*
 
 | Ce qui traverse | Ce qui repart de zéro |
 |---|---|
-| L'album — toutes les capsules | Les pièces |
-| Les emplacements, et **toutes** les cartes | Les œufs non éclos |
+| L'album — toutes les cartes | Les pièces |
+| Les emplacements | Les œufs non éclos |
+| **La constellation** | L'enclos, défait en poussière |
 | La collection des formes vues | Incubateurs et enclos |
-| Les paliers de fortune déjà franchis | Les huit améliorations |
+| Les paliers de fortune déjà franchis, la réserve de jetons | Les huit améliorations |
 | Le confort d'affichage : tri, taille des lots, son | **Les consignes du marchand, de l'évolution et de l'acheteur** |
 
 La collection survit : c'est un musée de ce qu'on a rencontré, pas une ressource. Elle ne
@@ -3187,8 +3178,8 @@ fait toutes les cartes, et la limite ne limiterait rien.
 
 #### Les jetons d'ascension
 
-**Un jeton s'obtient en franchissant un palier de fortune. Un jeton vaut une carte à emporter,
-et sauter les dépense TOUS.** Les paliers montent d'un facteur mille à chaque cran :
+**Un jeton s'obtient en franchissant un palier de fortune, et se dépense dans la constellation
+au moment du saut.** Les paliers montent d'un facteur mille à chaque cran :
 
 | # | Palier | # | Palier |
 |---|---|---|---|
@@ -3218,54 +3209,42 @@ Le pas était de ×1 000 000 : l'économie s'arrêtait alors avant l'échelle, e
 contenait que deux ou trois ascensions. À ×1 000, elle en contient une dizaine — assez pour que
 l'album se construise vraiment.
 
-#### Un jeton, une carte — et le saut les prend tous
+#### Le saut n'a plus qu'un objet : investir dans la constellation
 
-**Corrigé en 2.30.0, et deux défauts s'y cachaient — le second masquait le premier.**
+**Refonte en `5.0.0`.** Le saut fabriquait des cartes — on choisissait quelles bêtes de l'enclos
+emporter dans l'album, chaque carte coûtant des jetons. **Cela n'existe plus.** On ne choisit
+plus rien : le bouton d'ascension **ouvre la constellation**, on y dépense ses jetons, et on
+valide — ce qui réinitialise la ferme.
 
-`apercuAscension` rendait `max: SLOTS` : le nombre de jetons n'entrait nulle part, si bien
-qu'**un seul jeton laissait choisir cinq cartes**. Et l'ascension n'en consommait qu'un
-(`jetons - 1`), donc les autres restaient en poche : on sautait avec cinq jetons et on en
-retrouvait quatre de l'autre côté. Le second défaut rendait le premier invisible — puisqu'on
-gardait ses jetons, on ne remarquait pas qu'ils ne servaient à rien.
+- **on n'investit qu'au saut** — le reste du temps, la constellation se consulte, elle ne
+  s'achète pas ;
+- **l'enclos entier se défait en poussière** — plus de tri, plus de cartes à retenir. Un dixième
+  de ce qu'une carte aurait rendu, la matière des futurs boosters ;
+- **quitter sans valider ne dépense rien** — le saut est un geste engagé : les jetons ne partent
+  qu'à la validation, et une sortie « par la bande » (changer d'onglet, recharger) rend tout ;
+- **l'album ne se remplit plus ici** — il traverse le saut intact, et se remplira par les
+  **boosters**, à venir.
 
-La règle est maintenant celle qu'on voulait depuis le début :
+C'est ce qui donne enfin un sens à l'attente : plus on tient de fortune, plus le cycle crédite
+de jetons, et plus la constellation avance d'un saut. Le bouton sépare la réserve du gain à venir
+— « 1 (+4) ».
 
-- **chaque jeton vaut une carte** qu'on emporte dans l'album ;
-- **sauter les dépense tous**, y compris ceux qu'on n'a pas employés ;
-- **aucun plafond** — neuf jetons emportent neuf cartes.
+**Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
+entière. Un jeton en réserve ne réclame rien, ne clignote pas et n'expire pas — il attend. Le
+bouton porte le gris des outils plutôt qu'une couleur d'appel, pour ne pas faire croire à une
+étape obligatoire.
 
 #### L'album et les cartes actives sont deux choses
 
-Ma première correction plafonnait à cinq ce qui entre dans l'album, et c'était **la même
-confusion sous un autre nom**. Les deux ne sont pas la même chose :
+Deux choses distinctes, et le saut ne touche ni l'une ni l'autre :
 
 | | |
 |---|---|
 | **l'album** | tout ce qu'on possède, **sans aucune limite**, gardé d'une ascension à l'autre |
 | **les cartes actives** | **cinq**, et elles seules agissent — on les échange avec le reste de l'album au glisser-déposer |
 
-`SLOTS` ne borne donc **que les actives**. Le jeton, lui, borne ce qui **entre dans l'album**.
-Neuf jetons emportent neuf cartes : cinq s'équipent, les quatre autres attendent en réserve.
-
-L'écrêtage `.slice(0, SLOTS)` de `ascensionner` datait d'avant que les deux soient distinctes,
-et il **jetait purement et simplement** les cartes gagnées au-delà de la cinquième. Il porte
-maintenant sur les jetons.
-
-C'est ce qui donne enfin un sens à l'attente : **sauter au premier jeton n'emporte qu'une
-carte, en attendre trois en emporte trois.** Et c'est ce qui empêche une réserve de jetons de
-rendre les ascensions suivantes gratuites — sans quoi on accumulait dix paliers et on
-enchaînait dix sauts sans rien mériter.
-
-La confirmation prévient de ce qu'on laisse : *« ⚠ 3 jetons que tu n'emploies pas partent
-avec. »*
-
-**Rien n'oblige jamais à ascensionner.** C'est un sacrifice qu'on choisit : on perd sa ferme
-entière contre quelques cartes. Un jeton en poche ne réclame rien, ne clignote pas et n'expire
-pas — il attend. Le bouton porte le gris des outils plutôt qu'une couleur d'appel, pour ne pas
-faire croire à une étape obligatoire.
-
-Et **une ascension sans carte est refusée** : sauter avec un enclos vide serait une perte sèche,
-pas un choix. Le panneau le dit et le bouton reste éteint, le jeton restant en poche.
+`SLOTS` ne borne donc **que les actives**. L'album, lui, n'a pas de limite — et sa source, depuis
+la `5.0.0`, ce sont les boosters, plus le saut.
 
 **Les jetons se regagnent à chaque cycle** — c'est la `beta 3.0.0`, et elle remplace une règle
 qui posait un mur.
@@ -3276,21 +3255,21 @@ sauter les dépensait tous. Celui qui sautait avec cinq jetons repartait à zér
 jouant, à mille milliards de pièces : plus de jeton, et le palier suivant à 10¹⁵ — de l'ordre
 de mille huit cents ventes maximales.
 
-Maintenant, ce qu'on emporte se lit sur le **sommet de fortune atteint depuis la dernière
-ascension**. Un cycle mené au milliard rend quatre cartes, un cycle mené à mille milliards en
-rend cinq, et le compte **se refait entièrement** à chaque fois.
+Maintenant, ce que le cycle crédite se lit sur le **sommet de fortune atteint depuis la dernière
+ascension**. Un cycle mené au milliard crédite quatre jetons, un cycle mené à mille milliards en
+crédite cinq, et le compte **se refait entièrement** à chaque fois. Le bouton d'ascension le
+montre à côté de la réserve : « 1 (+4) ».
 
 **La porte n'est plus une monnaie, c'est un déblocage** : avoir atteint le million une fois
 dans la partie ouvre l'ascension pour de bon. Sauter tôt reste permis, et rend peu — c'est le
 sommet qui décide, pas la permission.
 
-**Le sommet, et non la bourse du moment** : dépenser tout juste avant de sauter ne coûte aucune
-carte. Ce qu'on emporte se décide sur ce qu'on a *su gagner*.
+**Le sommet, et non la bourse du moment** : dépenser tout juste avant de sauter ne coûte aucun
+jeton du cycle. Ce qu'on crédite se décide sur ce qu'on a *su gagner*.
 
-Ce que ça coûte, et c'est assumé : le nombre d'ascensions d'une partie n'est plus borné. La
-puissance de l'album reste bornée — par les cinq emplacements et les trois étoiles — mais plus
-par l'échelle. *Ce que l'échelle bornait vraiment, c'était le temps qu'il fallait pour y
-arriver, et ce n'était pas une borne : c'était un mur.*
+Ce que ça coûte, et c'est assumé : le nombre d'ascensions d'une partie n'est plus borné. *Ce
+que l'échelle bornait vraiment, c'était le temps qu'il fallait pour y arriver, et ce n'était pas
+une borne : c'était un mur.*
 
 **Deux remises à zéro ne sont pas dans l'état sauvegardé**, et sans elles le saut ne se voit
 pas. La **vitesse** revient à ×1 : elle traversait le saut, alors que le bouton ⟲ la rend à ×1,
@@ -3301,53 +3280,28 @@ suivant la boucle rattrapait le temps écoulé, plafonné à cinq secondes mais 
 vitesse — jusqu'à cinq cents secondes de jeu injectées d'un coup dans une ferme qui vient de
 naître.
 
-#### Le piège du marchand
+#### L'écran d'ascension, c'est la constellation
 
-C'est la conséquence la moins évidente de la règle. **Les cartes viennent des bêtes présentes
-dans l'enclos au moment du saut** — or le marchand automatique vide l'enclos en continu,
-absences comprises. Un joueur qui ascensionne sans y penser trouve une ferme vide et repart
-avec zéro carte, après des heures de jeu.
+Il n'y a plus d'écran à part : le bouton **Ascension** ouvre la **constellation** en mode saut.
+On y dépense ses jetons — c'est le seul moment où l'arbre s'achète — puis on valide, ce qui
+réinitialise la ferme. Hors du saut, la même vue se consulte : on lit les nœuds, on ne les prend
+pas (le bouton d'une étoile dit « À l'ascension »).
 
-**La ferme s'arrête pendant l'écran d'ascension.** On y décide du sort de bêtes précises ; les
-laisser vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le panneau menteur
-au moment même où il demande une décision irréversible. Et les capsules d'aperçu portent
-l'identifiant de leur **bête**, non leur position dans l'enclos : elles étaient numérotées « la
-première, la deuxième », si bien qu'une vente automatique décalait tout et qu'on gardait une
-carte qu'on n'avait pas choisie.
+**La ferme s'arrête pendant le saut.** C'est un moment hors du temps : laisser la ferme vieillir,
+vendre ou créditer de nouveaux jetons derrière rendrait la décision mouvante. L'horloge est
+recalée à chaque tour pour qu'aucune dette de temps ne s'accumule.
 
-**L'écran d'ascension ne montre que les bêtes de l'enclos.** Il en a montré deux listes, puis
-une seule où les cartes de l'album se mêlaient aux capsules à naître. Ni l'un ni l'autre :
-la question qu'il pose n'est pas *quel build veux-tu ?* — celui-là se règle à tout moment dans
-l'album, en glissant les cartes d'un bloc à l'autre — mais **laquelle de tes bêtes veux-tu voir
-agir tout de suite ?**
+**Le saut est un geste engagé, et les jetons ne se dépensent qu'à la validation.** Tant qu'on n'a
+pas validé, on prend et reprend des nœuds sans que rien ne soit payé ni sauvegardé ; une sortie
+« par la bande » — changer d'onglet, recharger — **rend tout**, et rien n'a été dépensé. La
+« Tout reprendre » permet de réviser sa constellation d'un geste, au saut et seulement là.
 
-Elles sont proposées **dans l'ordre de la bande**, tri compris : une liste qui contredirait
-l'enclos obligerait à chercher deux fois la même bête.
+**L'enclos entier se défait en poussière.** Plus de tri, plus de bête à retenir : chaque bête
+laisse un dixième de ce que sa carte aurait rendu — la matière des futurs boosters — puis la
+ferme repart de zéro.
 
-**Les bêtes qu'on ne retient pas sont perdues avec la ferme.** Elles ne deviennent pas des
-cartes, elles ne rejoignent pas la réserve : elles n'existent tout simplement plus. La réserve
-garde les *cartes* qu'on possède déjà et qu'on n'équipe pas — c'est son rôle, et le
-glisser-déposer en dépend — mais elle n'a jamais eu à recueillir tout un enclos : une ferme de
-vingt bêtes y versait vingt cartes d'un coup, et le choix qu'on venait de faire ne coûtait rien.
-
-Le panneau compte les pertes en direct, la confirmation les redit, et **sauter sans avoir rien
-retenu est refusé** — ce serait tout perdre pour rien. Les cartes déjà équipées, elles, comblent
-les emplacements laissés libres : on ne perd pas son build en gardant peu de bêtes.
-
-**La ferme s'arrête pendant l'écran.** On y décide du sort de bêtes précises ; les laisser
-vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le panneau menteur au
-moment même où il demande une décision irréversible.
-
-Le récap des pertes annonçait aussi « les bêtes non transformées », ce qui était **faux**
-depuis que toutes les bêtes de l'enclos deviennent des capsules : il n'en reste aucune. Un
-récap qui invente une perte qui n'existe pas discrédite tout le reste, y compris ce qu'il dit
-de juste.
-
-L'écran **prévient quand le marchand est encore actif**. Préparer une ascension, c'est passer ses consignes sur « jamais » —
-ce qui donne enfin un usage stratégique à un réglage qui n'était qu'un confort.
-
-Effet de bord heureux : garder une bête vivante rapporte maintenant deux fois, en rente pendant
-la partie et en carte au moment du saut.
+Effet de bord heureux du saut qui ne détruit plus rien qu'on choisit : le seul arbitrage restant
+est *combien j'investis maintenant, combien je garde en réserve pour la fois d'après.*
 
 #### Ce qui n'est pas encore là
 

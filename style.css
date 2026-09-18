@@ -1176,6 +1176,22 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 
+/* LE PIED D'ASCENSION. Il ne paraît qu'au saut, et c'est le seul geste irréversible de l'écran :
+   la phrase dit ce qu'on perd, le bouton vert le valide. Il vit sous l'arbre, en pleine largeur,
+   pour qu'on lise la dépense avant de la faire. */
+.ciel-asc {
+  flex: none; display: flex; align-items: center; gap: 1rem;
+  padding-top: 0.8rem; border-top: 1px solid var(--rule);
+}
+.ciel-asc-dit { flex: 1; margin: 0; font-size: 0.8rem; color: var(--soft); line-height: 1.5; }
+.ciel-asc-go {
+  flex: none;
+  font-family: var(--f-num); font-size: 0.85rem; letter-spacing: 0.06em;
+  background: var(--jade); color: var(--ground);
+  border: none; border-radius: 4px; padding: 0.6rem 1.2rem; cursor: pointer;
+}
+.ciel-asc-go:hover { filter: brightness(1.08); }
+
 /* LE CIEL. Un fond plus sombre que la page, deux lueurs très diffuses pour qu'il ne soit pas
    plat, et le semis d'étoiles par-dessus — celui-là est dans le SVG, parce qu'il doit se
    déplacer avec l'arbre : un fond fixe sous un arbre qui bouge trahit la fenêtre. */
@@ -1887,38 +1903,6 @@ body.en-pause .subject { cursor: default; }
   color: var(--ink); font-size: 0.8rem; line-height: 1.5;
   padding: 0.6rem 0.8rem; margin: 0 0 0.7rem;
 }
-.asc-perte, .asc-slots {
-  font-size: 0.8rem; color: var(--soft); line-height: 1.55; margin: 0 0 0.6rem;
-}
-.asc-slots { font-family: var(--f-num); font-size: 0.74rem; color: var(--jade); }
-
-.asc-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 6px; }
-/* ON Y CHOISIT DES BÊTES, pas de la poussière : fondre et fusionner n'ont rien à y faire, et
-   leurs boutons y étaient de toute façon inertes — l'écouteur vit sur le panneau de l'album. */
-.asc-choix .carte-actes { display: none; }
-.asc-choix .carte { cursor: pointer; opacity: 0.5; }
-.asc-choix .carte:hover { opacity: 0.85; }
-.asc-choix .carte.active {
-  opacity: 1;
-  box-shadow: inset 0 0 0 2px var(--jade);
-}
-.asc-perte {
-  margin-top: 1.6rem; padding-top: 0.9rem;
-  border-top: 1px solid var(--rule);
-}
-
-.asc-foot {
-  margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--rule);
-  display: flex; justify-content: flex-end; gap: 0.6rem; flex: none;
-}
-/* LA RAFLE EST UN RACCOURCI, PAS UNE ACTION : elle a le poids d'un lien, pas d'un bouton
-   vert. Ce qu'on décide ici reste « ascensionner », et rien ne doit le concurrencer. */
-.asc-rafle {
-  font: inherit; font-size: 0.78rem; color: var(--soft);
-  background: none; border: 1px solid var(--rule); border-radius: 3px;
-  padding: 0.5rem 0.9rem; cursor: pointer;
-}
-.asc-rafle:hover { color: var(--ink); border-color: var(--soft); }
 .asc-go {
   font-family: var(--f-num); font-size: 0.85rem; letter-spacing: 0.06em;
   background: var(--jade); color: var(--ground);

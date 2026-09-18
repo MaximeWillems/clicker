@@ -176,8 +176,6 @@ scenario('trophées — ils ne donnent rien, et traversent l’ascension', () =>
   bete(jeu, 'crapaud', 3, 3000);
   poserJetons(jeu, 1);
   const pris = jeu.tropheesPris();
-  const ap = jeu.apercuAscension();
-  jeu.ascChoix = [ap.neuves[0].id];
   jeu.ascensionner();
   eq('les trophées traversent l’ascension', jeu.tropheesPris(), pris);
 });

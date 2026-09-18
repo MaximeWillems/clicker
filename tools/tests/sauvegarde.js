@@ -35,12 +35,18 @@ scenario('sauvegarde — qui avait pris le poing garde une série', () => {
   eq('son plafond vaut un', sans.plafondCombo(), 1);
 });
 
-scenario('sauvegarde — le bagage garde ce qui avait été pris sous son ancien nom', () => {
-  const vieux = neuf({ v: 31, ciel: { 'or-doux': true, sommet: true, 'or-doux-2': true } });
-  ok('le premier cran est repris', vieux.state.ciel.bagage, JSON.stringify(vieux.state.ciel));
-  ok('le second aussi', vieux.state.ciel['bagage-2']);
-  ok('et les anciennes clés ont disparu', !vieux.state.ciel['or-doux'] && !vieux.state.ciel['or-doux-2']);
-  eq('la troisième carte coûte toujours comme la première', vieux.coutCarte(2), 1);
+scenario('sauvegarde — les bagage retirés rendent leurs jetons', () => {
+  /* L'ASCENSION NE FABRIQUE PLUS DE CARTES : les deux « bagage » qui adoucissaient leur prix
+     s'en vont avec lui. On ne dépossède personne — leur prix (8 et 22) revient en réserve, comme
+     au retrait de l'automatisation. Le « sommet » qui les séparait reste, lui. */
+  const vieux = neuf({
+    v: 33, coins: 0, asc: { n: 2, paliers: 4, jetons: 1, sommet: 0 },
+    ciel: { bagage: true, sommet: true, 'bagage-2': true },
+  });
+  ok('le premier bagage a quitté le ciel', !vieux.state.ciel.bagage, JSON.stringify(vieux.state.ciel));
+  ok('le second aussi', !vieux.state.ciel['bagage-2']);
+  ok('mais le sommet reste', vieux.etoilePrise('sommet'));
+  eq('et les trente jetons sont rendus', vieux.state.asc.jetons, 1 + 8 + 22);
 });
 
 scenario('sauvegarde — les nœuds retirés rendent leurs jetons', () => {

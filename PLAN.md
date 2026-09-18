@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 4.32.1 · sauvegarde v33 · 13 lignées illustrées sur 30 · 5 œufs sur 5
+    aujourd'hui : beta 5.0.0 · sauvegarde v34 · 13 lignées illustrées sur 30 · 5 œufs sur 5
 
 ---
 
@@ -101,6 +101,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **L'écran et le doigt** | beta 4.14.0, 4.22.0, 4.22.2 | peut-on voir ce qu'on change, avant de changer quoi que ce soit ? | la première marche sur six. La planche est posée ; les cinq autres sont du CSS et se jugent dessus. Le chantier reste OUVERT — 48 `:hover` pour 2 `:active`, zéro garde `@media (hover: hover)`, 30 informations qui n'existent que dans une infobulle. La `4.22.0` ajoute l’atelier, qui montre les DONNÉES là où la planche montre le BALISAGE ; la `4.22.2` répare les deux — elles citaient `style.css` et héritaient sans le savoir de sa mise en page « application », donc se coupaient au premier écran au-dessus de 62 rem de large. Le filet est désormais dans `tools/outil.css`, en un seul endroit, et un scénario le vérifie |
 | **Une porte par règle** | beta 4.13.1, 4.13.2, 4.31.2 | une même faute peut-elle vivre à quatre endroits ? | plus maintenant. Choisir entre l'échelle des communes et celle des rangs était écrit à la main quatre fois, et faux quatre fois — jusqu'à annoncer « elle ne rembourse jamais » sur une bête payée un billion. Deux portes, et un scénario qui refuse la cinquième recopie. La `4.31.2` passe le même rabot sur tout le dépôt et trouve que la recopie coûte davantage quand elle est INVISIBLE : `tools/test.js` portait **cent cinquante-deux lignes écrites deux fois** — quatre scénarios et une aide — qui passaient deux fois et ne prouvaient rien de plus ; `.carte-etoiles` était déclarée deux fois dans `style.css` avec des valeurs contraires, si bien que ce qui s'affichait n'était écrit nulle part en entier ; la racine du dépôt se calculait de quatre façons, dont une qui dépendait du dossier d'où l'on tapait la commande ; et la règle qui fait un nom de fichier de dessin vivait dans `grilles.js` ET dans `prompt.js`, chacune avec sa copie de `sansAccents` et son commentaire. Trois fichiers neufs répondent chacun à une question — `tools/depot.js` où sont les fichiers, `tools/lignees.js` comment s'appelle un dessin, `tools/tests/_aides.js` ce que douze fichiers de scénarios refont — et les scénarios se rangent par sujet, un fichier chacun, parce qu'un titre de section dérive et qu'un nom de fichier non |
 | **L'absence, l'idle et le combo** | beta 4.12.3, 4.13.0 | s'arrêter et s'acharner peuvent-ils tous deux valoir quelque chose, et revenir doit-il valoir plus qu'être resté ? | oui, et non. L'absence est bornée à deux heures rendues au quart — un onglet caché compris. Le calme pousse ce qui tourne, le combo pousse le clic, et les deux s'excluent par construction |
+| **La refonte de l'ascension** | beta 5.0.0 | à quoi sert le saut, une fois qu'il ne fabrique plus de cartes ? | à investir. La sélection de créatures disparaît — on ne choisit plus quelles bêtes emporter — et le saut n'a plus qu'un objet : dépenser ses jetons dans la constellation, **et seulement à ce moment-là**. Le jeton passe de deux éviers à un ; l'axe du sang perd ses deux « bagage » (le prix des cartes emportées n'existe plus) ; l'enclos entier se défait en poussière ; et le bouton sépare la réserve du gain du cycle — « 1 (+4) ». Les cartes viendront des BOOSTERS, l'album se remplit désormais par là, pas par le saut. **Renverse** tout l'arbitrage « une carte de plus ou une étoile de plus » de la `4.0.0` : il n'y a plus de carte à mettre en balance. L'équilibrage de la constellation est donc à reprendre — un axe a rétréci |
 
 ### Ce qui vient ensuite
 
@@ -139,6 +140,15 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | **les quatre stats sont posées depuis la `4.16.0`** ; restent les tempéraments à second effet et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
+
+**La nouvelle source des cartes** — ouverte par la refonte de l'ascension en `5.0.0`, qui a coupé
+l'ancienne. L'album ne se remplit plus au saut ; ces deux pièces le rempliront, et la poussière
+en est la monnaie.
+
+| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
+|---|---|---|
+| **Les boosters** — on ouvre un booster en poussière, on en tire des cartes. C'est la source de l'album depuis que le saut ne l'alimente plus. C'est ici que le prix des cartes (l'ancien « prix doré », et les deux nœuds « bagage » de l'axe du sang) reviendra, sur ce que coûte une carte tirée | la refonte de l'ascension (faite) | de quoi est faite ma collection, si le saut ne la fait plus ? |
+| **Le marchand de sable** — un événement temporaire où l'on dépense sa poussière : il y vend des boosters, entre autres | les boosters | la poussière a-t-elle un rendez-vous, plutôt qu'un robinet toujours ouvert ? |
 
 ### La main tenue — **livrée en `beta 4.32.0`**
 

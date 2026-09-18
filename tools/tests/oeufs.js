@@ -299,7 +299,6 @@ scenario('œufs — la file se trie comme l’enclos : arrivée, ou rareté', ()
      ressource. */
   s.pens = 20; s.coins = 1e12; jeu.crediterJetons();
   s.pen = [bete(jeu, 'crapaud', 3, 3000)];
-  jeu.ascChoix = [-s.pen[0].id];
   jeu.ascensionner();
   eq('il survit au saut', jeu.state.triOeuf, 'rarete');
 });

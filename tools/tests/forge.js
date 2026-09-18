@@ -282,21 +282,20 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
   eq('un album vide ramène à la ferme', jeu.vue, 'ferme');
 });
 
-scenario('poussière — l’ascension laisse ce qu’on n’emporte pas', () => {
+scenario('poussière — l’ascension défait tout l’enclos', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
   for (let i = 0; i < 10; i++) beteNeutre(jeu, 'crapaud', 3, 3000);
-  poserJetons(jeu, jeu.coutCartes(2));   // deux cartes coûtent trois jetons
+  poserJetons(jeu, 1);                    // de quoi ouvrir la porte du saut
 
-  const ap = jeu.apercuAscension();
-  jeu.ascChoix = ap.neuves.slice(0, 2).map(k => k.id);
   eq('rien en poche avant', s.poussiere || 0, 0);
   jeu.ascensionner();
-  eq('deux cartes emportées', jeu.state.album.length, 2);
-  /* Les huit sacrifiées laissent un dixième de ce que leur carte aurait rendu. Ce n'est pas
-     grand-chose — et c'est voulu : ça récompense d'ascensionner sur une ferme pleine sans
-     rendre le sacrifice indolore. */
-  eq('les huit autres laissent un peu de poussière', jeu.state.poussiere, 8);
+  /* PLUS DE CARTES AU SAUT : l'album ne gagne rien ici, les cartes viennent des boosters. Et
+     comme on n'emporte plus rien, l'enclos ENTIER se défait — un dixième de ce que chaque carte
+     aurait rendu. Ce n'est pas grand-chose, et c'est voulu : ça récompense d'ascensionner sur
+     une ferme pleine sans rendre le sacrifice indolore. */
+  eq('l’album ne gagne rien au saut', jeu.state.album.length, 0);
+  eq('les dix bêtes laissent leur poussière', jeu.state.poussiere, 10);
   ok('la poussière traverse le saut',
      jeu.state.poussiere > 0 && jeu.state.coins === 0);
 });

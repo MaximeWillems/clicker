@@ -1,23 +1,21 @@
 /* ── L’ALBUM — la carte, ses étoiles, ses stats, son hérédité */
 
 'use strict';
-const { scenario, ok, eq, neuf, noeuds, poserJetons, bete, beteNeutre, seule, couple,
+const { scenario, ok, eq, neuf, noeuds, poserJetons, emporter, bete, beteNeutre, seule, couple,
   pave, parfaite, equiper } = require('./_aides.js');
 
 scenario('album — sans limite, et cinq cartes actives qui s’échangent', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 5e6; s.pens = 20;
-  for (let i = 0; i < 12; i++) beteNeutre(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
-  poserJetons(jeu, jeu.coutCartes(9));   // neuf cartes ne coûtent plus neuf jetons
-
-  const ap = jeu.apercuAscension();
-  jeu.ascChoix = ap.neuves.slice(0, 9).map(k => k.id);
-  jeu.ascensionner();
+  const betes = [];
+  for (let i = 0; i < 12; i++) betes.push(beteNeutre(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000));
+  // neuf cartes dans l'album — l'album n'a pas de limite, seules cinq s'équipent
+  emporter(jeu, betes.slice(0, 9));
   const t = jeu.state;
 
   /* L'écrêtage à cinq datait d'avant que l'album et les cartes actives soient deux choses :
      il JETAIT les quatre cartes gagnées au-delà de la cinquième. */
-  eq('neuf jetons emportent neuf cartes dans l’album', t.album.length, 9);
+  eq('neuf cartes dans l’album', t.album.length, 9);
   eq('cinq seulement s’équipent', t.slots.length, jeu.SLOTS);
   eq('les quatre autres attendent en réserve',
      t.album.filter(k => t.slots.indexOf(k.id) === -1).length, 4);

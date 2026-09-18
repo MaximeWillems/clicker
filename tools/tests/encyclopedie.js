@@ -202,8 +202,6 @@ scenario('encyclopédie — elle traverse l’ascension, et une partie d’avant
   eq('le carnet a une entrée', Object.keys(s.dex).length, 1);
 
   poserJetons(jeu, 1);
-  const ap = jeu.apercuAscension();
-  jeu.ascChoix = ap.neuves.length ? [ap.neuves[0].id] : [];
   jeu.ascensionner();
   /* C'est une mémoire de FICHIER, comme la collection : l'ascension efface la ferme, jamais
      ce qu'on a appris. */

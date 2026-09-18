@@ -82,6 +82,7 @@ scenario('ciel — la carte de détail dit ce qu’une étoile fait, et c’est 
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   poserJetons(jeu, 500);
+  jeu.ouvrirAscension();          // on n'investit qu'au saut : c'est là que la carte achète
   const lu = id => noeuds.get('ciel-carte-' + id).textContent;
 
   ok('la carte est fermée tant qu’on n’a rien regardé', noeuds.get('ciel-carte').hidden);
@@ -194,65 +195,10 @@ scenario('ciel — la série est une branche, et une branche se voit', () => {
   eq('comme les doigts', jeu.profondeurEtoile(par.doigts), 2);
 });
 
-scenario('jetons — le prix d’une carte monte par le nombre d’or', () => {
-  const jeu0 = neuf();
-  const bete2 = (jeu, ligne, age, p) => {
-    const s = jeu.state;
-    s.incub[0] = { line: ligne, p: 9999, kind: 'commun' };
-    jeu.hatchAll();
-    const c = s.pen[s.pen.length - 1];
-    c.age = age; c.p = p;
-    return c;
-  };
-
-  /* DEUX DÉFAUTS SE CACHAIENT ICI, et le second masquait le premier. `max` valait SLOTS : le
-     nombre de jetons n'entrait nulle part, un seul jeton laissait choisir cinq cartes. Et
-     l'ascension n'en consommait qu'un — on sautait avec cinq et on en retrouvait quatre. */
-  /* ⚠ L'ALBUM ET LES CARTES ACTIVES SONT DEUX CHOSES. L'album n'a pas de limite ; SLOTS ne
-     borne que les cinq cartes qui agissent. Ce qui borne ce qui ENTRE DANS L'ALBUM, c'est la
-     bourse — et depuis la 4.0.0, le PRIX DORÉ.
-
-     UN JETON N'ACHÈTE PLUS UNE CARTE. Chaque carte prise dans la même ascension renchérit la
-     suivante d'un facteur φ : 1, 2, 3, 5, 7, 12 — cumul 1, 3, 6, 11, 18, 30. Sans cette
-     escalade, les jetons regagnés à chaque cycle depuis la 3.0.0 auraient donné cinq cartes à
-     chaque saut, indéfiniment, et l'album se serait rempli sans qu'aucune décision ne soit
-     prise. */
-  eq('le coût de la première carte', jeu0.coutCarte(0), 1);
-  eq('puis deux', jeu0.coutCarte(1), 2);
-  eq('puis trois', jeu0.coutCarte(2), 3);
-  eq('puis cinq', jeu0.coutCarte(3), 5);
-  eq('puis sept', jeu0.coutCarte(4), 7);
-  eq('cinq cartes coûtent dix-huit jetons', jeu0.coutCartes(5), 18);
-
-  for (const [n, cartes] of [[1, 1], [2, 1], [3, 2], [5, 2], [9, 3], [11, 4], [18, 5]]) {
-    const jeu = neuf(); const s = jeu.state;
-    s.tuto = false; s.coins = 5e6; s.pens = 20;
-    for (let i = 0; i < 16; i++) bete2(jeu, i % 2 ? 'crabe' : 'crapaud', 3, 3000);
-    poserJetons(jeu, n);
-    eq(n + ' jeton(s) → ' + cartes + ' carte(s)', jeu.apercuAscension().max, cartes);
-  }
-
-  const jeu = neuf(); const s = jeu.state;
-  s.tuto = false; s.coins = 5e6; s.pens = 10;
-  for (let i = 0; i < 6; i++) bete2(jeu, 'crapaud', 3, 3000);
-  poserJetons(jeu, 5);
-  const ap = jeu.apercuAscension();
-  jeu.ascChoix = [ap.neuves[0].id, ap.neuves[1].id];   // il n'en emploie que deux
-  jeu.ascensionner();
-  eq('le sommet repart à zéro', jeu.state.asc.sommet, 0);
-  eq('deux cartes emportées', jeu.state.album.length, 2);
-  /* LE RESTE DE LA BOURSE DEMEURE. Les jetons partaient tous, employés ou non ; ils ont
-     désormais un second emploi — la constellation — donc en garder EST une décision. Deux
-     cartes coûtent trois jetons sur cinq : il en reste deux. */
-  eq('et il reste ce qu’on n’a pas dépensé', jeu.state.asc.jetons, 5 - jeu.coutCartes(2));
-  /* L'ASCENSION NE SE REFERME PLUS. Elle demandait un jeton NON DÉPENSÉ, si bien qu'un joueur
-     qui venait de sauter devait multiplier sa fortune par mille pour pouvoir sauter à
-     nouveau — le mur rencontré en jouant à mille milliards. La porte est désormais un
-     déblocage : ce qui varie, c'est le nombre de cartes emportées. */
-  ok('mais la porte reste ouverte', jeu.peutAscensionner());
-  eq('et les deux jetons restants valent encore une carte', jeu.apercuAscension().max, 1);
-  eq('les paliers déjà franchis restent franchis', jeu.state.asc.paliers, jeu.RANG_PREMIER);
-});
+/* LE PRIX DORÉ DES CARTES A ÉTÉ RETIRÉ. L'ascension ne fabrique plus de cartes — elles
+   viendront des boosters — donc `coutCarte`, `coutCartes` et l'aperçu de sélection n'existent
+   plus. Le scénario qui vérifiait l'escalade φ (1, 2, 3, 5, 7, 12) tombe avec eux ; il reviendra,
+   réécrit, quand le booster fixera ce que coûte une carte tirée. */
 
 scenario('jetons — un palier de fortune tous les ×1000, à partir du premier million', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -310,7 +256,9 @@ scenario('constellation — un nœud s’ouvre avec son parent, jamais avant', (
   eq('six axes', jeu.AXES.length, 6);
   for (const a of jeu.AXES) {
     ok(a.cle + ' part du centre', jeu.PAR_AXE[a.cle][0].parent === 'etincelle');
-    ok(a.cle + ' porte au moins quatre nœuds', jeu.PAR_AXE[a.cle].length >= 4);
+    /* L'AXE DU SANG EST TOMBÉ À DEUX NŒUDS : ses deux « bagage » adoucissaient le prix des
+       cartes emportées, et ce prix n'existe plus. Les autres axes en gardent quatre ou plus. */
+    ok(a.cle + ' porte au moins deux nœuds', jeu.PAR_AXE[a.cle].length >= 2);
   }
 
   /* UNE BRANCHE EST UNE SUITE DE FRÈRES QUI SE SUIVENT, pas un éventail : chaque nœud d'une
@@ -505,7 +453,7 @@ scenario('constellation — chaque nœud change quelque chose de mesurable', () 
     j => JSON.stringify(j.bonusCiel()),
     j => j.placesPension(), j => j.porteePension(),
     j => j.richessePension(), j => j.vitessePension(),
-    j => j.coutCartes(3), j => j.jetonsDus(),
+    j => j.jetonsDus(),
     j => j.state.album[0] ? j.coutFusion(j.state.album[0]) : 0,
     j => j.state.album[0] ? j.forgeable(j.state.album[0]) : 0,
     j => j.state.pen[0] ? j.evoCost(j.state.pen[0]) : 0,
@@ -580,6 +528,8 @@ scenario('constellation — le bouton de reprise dit ce qu’il rend', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   poserJetons(jeu, 500);
+  // la reprise ne se propose qu'au saut : c'est là qu'on révise sa constellation
+  jeu.ouvrirAscension();
   jeu.cielSig = '';
   jeu.refresh();
 
@@ -663,21 +613,15 @@ scenario('constellation — le sang touche l’ascension elle-même', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
 
-  /* LE PRIX DORÉ S'ADOUCIT : chaque carte coûte un cran de moins. C'est le seul achat du jeu
-     qui change la valeur de tous les achats suivants — d'où son prix et son rang. */
-  eq('sans le nœud, la troisième carte coûte trois', jeu.coutCarte(2), 3);
-  eq('et cinq cartes en coûtent dix-huit', jeu.coutCartes(5), 18);
-  s.ciel.bagage = true;
-  eq('avec, la troisième coûte comme la deuxième', jeu.coutCarte(2), 2);
-  eq('la première reste à un', jeu.coutCarte(0), 1);
-  ok('et cinq cartes coûtent nettement moins', jeu.coutCartes(5) < 18, jeu.coutCartes(5));
-
-  /* LE SOMMET COMPTE PLUS : un jeton de plus par cycle, pour toujours. */
-  s.ciel = {};
+  /* L'AXE DU SANG NE GARDE QUE LES DEUX « SOMMET ». Les « bagage », qui adoucissaient le prix
+     des cartes emportées, sont partis avec ce prix — les cartes viendront des boosters.
+     LE SOMMET COMPTE PLUS : un jeton de plus par cycle, pour toujours. */
   s.coins = 1e9; jeu.crediterJetons();
   eq('un milliard vaut quatre paliers', jeu.jetonsDus(), 4);
   s.ciel.sommet = true;
   eq('avec le nœud, cinq', jeu.jetonsDus(), 5);
+  s.ciel['sommet-2'] = true;
+  eq('avec les deux, six', jeu.jetonsDus(), 6);
 
   /* MAIS JAMAIS SUR ZÉRO : un cycle où l'on n'a pas tenu une seule pièce ne doit rien
      créditer, sinon sauter aussitôt après un saut rapporterait un jeton gratuit. */

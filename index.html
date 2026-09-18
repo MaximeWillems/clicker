@@ -343,38 +343,18 @@
       </div>
     </aside>
   </div>
+  <!-- LE PIED D'ASCENSION. Il ne paraît qu'au saut, ouvert par le bouton Ascension : c'est là
+       qu'on dépense ses jetons dans la constellation, et que Ascensionner réinitialise la ferme.
+       Hors du saut, la vue n'est qu'une consultation. -->
+  <div class="ciel-asc" id="ciel-asc" hidden>
+    <p class="ciel-asc-dit" id="ciel-asc-dit"></p>
+    <button type="button" class="ciel-asc-go" id="ciel-asc-go">Ascensionner</button>
+  </div>
 </section>
 
-<!-- L'écran d'ascension. Trois blocs, dans l'ordre des questions que le joueur se pose :
-     ce que je gagne, ce que je perds, avec quoi je repars. -->
-<div id="ascension" class="asc" hidden>
-  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="asc-title">
-    <div class="asc-head">
-      <h2 id="asc-title">Ascension</h2>
-      <button type="button" class="asc-close" id="asc-close" title="Fermer">✕</button>
-    </div>
-    <p class="asc-jalon" id="asc-jalon"></p>
-
-    <!-- Une seule liste. Les capsules à naître y figurent au milieu de celles qu'on possède
-         déjà : elles apparaissaient auparavant deux fois, une fois en « ce que tu vas gagner »
-         et une fois dans le choix, et rien ne disait que c'étaient les mêmes. -->
-    <section class="asc-sec">
-      <h3>Tes cartes</h3>
-      <p class="asc-warn" id="asc-warn" hidden></p>
-      <p class="asc-slots" id="asc-slots"></p>
-      <div class="asc-cartes asc-choix" id="asc-choix"></div>
-    </section>
-
-    <p class="asc-perte" id="asc-perte"></p>
-
-    <!-- LE PIED NE BOUGE PLUS. Il vivait sous la liste des cartes : à quinze bêtes il fallait
-         dérouler tout l'écran pour retrouver le bouton, à chaque changement d'avis. -->
-    <div class="asc-foot">
-      <button type="button" class="asc-rafle" id="asc-rafle" hidden></button>
-      <button type="button" class="asc-go" id="asc-go">Ascensionner</button>
-    </div>
-  </div>
-</div>
+<!-- L'ascension n'a plus d'écran à elle : le bouton Ascension ouvre la constellation en mode
+     saut (voir #vue-ciel et son pied #ciel-asc). On n'y choisit plus de créatures — on y investit
+     ses jetons, puis on valide. -->
 
 <!-- LES STATISTIQUES. Le contenu se fabrique en JS depuis une table : ajouter un compteur
      est une ligne, et la mise en page suit toute seule. -->

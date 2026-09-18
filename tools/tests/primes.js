@@ -1,7 +1,7 @@
 /* ── LES PRIMES, LES CARREFOURS ET LES FAVEURS — les achats uniques */
 
 'use strict';
-const { scenario, ok, eq, neuf, noeuds, lire, poserJetons, bete, seule } = require('./_aides.js');
+const { scenario, ok, eq, neuf, noeuds, lire, poserJetons, emporter, bete, seule } = require('./_aides.js');
 
 scenario('primes — la grille ne montre que les cinq prochaines', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -313,8 +313,7 @@ scenario('faveur — elles tombent à l’ascension, comme les primes', () => {
   /* ELLES SE PAIENT EN PIÈCES, DONC ELLES TOMBENT. C'est ce qui les range du côté du cycle et
      non du côté de ce qu'on emporte — la constellation est l'autre côté. */
   poserJetons(jeu, 20);
-  const c = bete(jeu, 'crapaud', 3, 3000);
-  jeu.ascChoix = [-c.id];
+  bete(jeu, 'crapaud', 3, 3000);
   jeu.ascensionner();
   eq('après le saut, plus rien', jeu.faveursPris(), 0);
   eq('et le prix repart du bas', jeu.prixFaveur(), jeu.FAVEUR_BASE);
@@ -442,10 +441,8 @@ scenario('primes — elles ne traversent pas l’ascension, la migration ne perd
   s.tuto = false; s.coins = 5e6; s.pens = 6;
   jeu.buyPrime(jeu.PRIME_BY_CLE.soin);
   jeu.buyPrime(jeu.PRIME_BY_CLE.acheteur);
-  bete(jeu, 'crapaud', 3, 3000);
+  emporter(jeu, [bete(jeu, 'crapaud', 3, 3000)]);   // une carte, pour vérifier qu'elle traverse
   poserJetons(jeu, 1);
-  const ap = jeu.apercuAscension();
-  jeu.ascChoix = [ap.neuves[0].id];
   jeu.ascensionner();
   eq('les primes repartent de zéro', Object.keys(jeu.state.primes).length, 0);
   ok('alors que l’album traverse', jeu.state.album.length > 0);

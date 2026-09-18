@@ -92,9 +92,9 @@ scenario('fonds — la carte emporte celui de la bête', () => {
   const c = bete(jeu, 'loup', 3, 20000);
   c.fond = 'givre'; c.keep = true;
 
-  poserJetons(jeu, 1);
-  const neuve = jeu.apercuAscension().neuves.find(x => x.line === 'loup');
-  ok('la capsule existe', !!neuve);
+  // la capsule est ce qu'une carte garde d'une bête — le geste que fera le booster
+  const neuve = Object.assign(jeu.capsuleBrute(c), { id: 1 });
+  ok('la capsule existe', neuve.line === 'loup');
   eq('et elle emporte le fond', neuve.fond, 'givre');
 
   s.album = [neuve]; s.slots = []; s.asc.n = 1;

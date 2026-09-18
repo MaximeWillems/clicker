@@ -27,8 +27,14 @@
    `alpha` n'a jamais été un quatrième nombre. Les nombres sont repartis de 1 avec la bêta —
    une seule fois, et le README dit pourquoi. La série 2 est ouverte par L'ATELIER DE FORGE :
    une pièce de plus dans le jeu, et une règle qui rebat l'album entier puisqu'une carte à
-   trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière. */
-const VERSION = 'beta 4.32.1';
+   trois étoiles y coûte désormais neuf cartes au lieu de la seule poussière.
+
+   LA SÉRIE 5 EST OUVERTE PAR LA REFONTE DE L'ASCENSION. Le saut ne fabrique plus de cartes et
+   ne demande plus de choisir des bêtes : son seul objet devient d'investir ses jetons dans la
+   constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
+   les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
+   fin de partie, d'où le majeur. */
+const VERSION = 'beta 5.0.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1947,42 +1953,17 @@ const JETON_PALIERS = Array.from({ length: 11 }, (v, n) => Math.pow(JETON_PAS, n
 const JETON_PREMIER = 1e6;
 const RANG_PREMIER = JETON_PALIERS.indexOf(JETON_PREMIER) + 1;
 
-/* ── LE PRIX D'UNE CARTE EMPORTÉE ──────────────────────────────────────────────────
-   Chaque carte emportée dans une même ascension renchérit la suivante d'un facteur φ.
+/* ── L'ASCENSION NE FABRIQUE PLUS DE CARTES ────────────────────────────────────────
+   Un cycle entier a vécu ici : chaque carte emportée au saut renchérissait la suivante d'un
+   facteur φ, et le jeton se partageait entre deux éviers — les cartes et la constellation.
+   TOUT CE PAN EST RETIRÉ. On ne choisit plus de bêtes à emporter ; le saut ne verse rien dans
+   l'album. Les cartes viendront des BOOSTERS, qu'on ouvre en poussière — un chantier à part,
+   pas encore là. Le jeton n'a donc plus qu'un seul évier, la constellation, et c'est ce que le
+   saut sert à dépenser.
 
-   POURQUOI IL FALLAIT L'ÉCRIRE. La 3.0.0 a fait REGAGNER les jetons à chaque cycle, ce qui a
-   abattu le mur de fin de partie — et ouvert un trou dans le même geste : si les jetons
-   reviennent et qu'une carte en coûte un, on emporte cinq cartes à chaque ascension,
-   indéfiniment. L'album se remplit alors sans qu'aucune décision ne soit prise, et la forge,
-   qui demande neuf cartes pour une seule trois-étoiles, devient triviale.
-
-   φ plutôt que ×2 : le doublement écrase trop vite — la quatrième carte coûterait huit jetons
-   quand la première en coûte un, et on n'en prendrait jamais plus de trois. Le nombre d'or
-   monte assez pour qu'on hésite, assez peu pour qu'on puisse viser la cinquième.
-
-       carte    1    2    3    4    5    6
-       coût     1    2    3    5    7   12
-       cumul    1    3    6   11   18   30
-
-   Un cycle mené à mille milliards crédite cinq jetons : deux cartes, et il en reste deux pour
-   la constellation. C'est là qu'est l'arbitrage — une carte de plus, ou une étoile de plus. */
-const NOMBRE_OR = (1 + Math.sqrt(5)) / 2;
-/* `bagage` recule l'escalade d'un cran : la deuxième carte coûte le prix de la première, et
-   ainsi de suite. C'est le seul achat du jeu qui change la valeur de tous les achats suivants,
-   d'où son prix et son rang. */
-const adoucis = () => (etoilePrise('bagage') ? 1 : 0) + (etoilePrise('bagage-2') ? 1 : 0);
-const coutCarte = n => Math.ceil(Math.pow(NOMBRE_OR, Math.max(0, n - adoucis())));
-function coutCartes(k) {
-  let t = 0;
-  for (let i = 0; i < k; i++) t += coutCarte(i);
-  return t;
-}
-// combien de cartes une bourse permet d'emporter
-function cartesAbordables(jetons) {
-  let k = 0;
-  while (coutCartes(k + 1) <= jetons) k++;
-  return k;
-}
+   Ce qui a disparu avec le prix doré : les nœuds « bagage » de l'axe du sang, qui l'adoucissaient
+   — ils ne réduisaient que ce coût-là. Ils reviendront avec les boosters, sur ce que coûte une
+   carte tirée. */
 
 /* ── LA CONSTELLATION ──────────────────────────────────────────────────────────
    Le second évier des jetons, et le seul objet du jeu — avec l'album — qui traverse
@@ -2040,17 +2021,16 @@ const CIEL = [
      et non le droit d'en avoir un. */
   { cle: 'etincelle', axe: null, parent: null, prix: 0, glyphe: '✦', nom: 'Le moyeu' },
 
-  // ── LE SANG · l'ascension elle-même ──
-  { cle: 'bagage', axe: 'sang', parent: 'etincelle', prix: 8, glyphe: '🎒',
-    nom: 'Le bagage léger',
-    dit: 'Les cartes emportées coûtent moins cher.' },
-  { cle: 'sommet', axe: 'sang', parent: 'bagage', prix: 12, glyphe: '⛰',
+  /* ── LE SANG · l'ascension elle-même ──
+     IL PORTAIT QUATRE NŒUDS, IL N'EN GARDE QUE DEUX. Les deux « bagage » adoucissaient le prix
+     des cartes emportées ; ce prix n'existe plus, donc ils ne feraient plus rien. Un nœud qui
+     ne fait rien ment au joueur, on le retire plutôt que de le laisser en décor — il reviendra
+     avec les boosters, sur ce qu'ils coûtent. Restent les deux « sommet », qui pèsent sur ce que
+     le cycle crédite, et qui sont toute la matière du « + » affiché au bouton d'ascension. */
+  { cle: 'sommet', axe: 'sang', parent: 'etincelle', prix: 12, glyphe: '⛰',
     nom: 'Le sommet compte plus',
     dit: 'Ton sommet de fortune vaut un palier de plus.' },
-  { cle: 'bagage-2', axe: 'sang', parent: 'sommet', prix: 22, glyphe: '🧳',
-    nom: 'Le second bagage',
-    dit: 'Les cartes emportées coûtent encore moins cher.' },
-  { cle: 'sommet-2', axe: 'sang', parent: 'bagage-2', prix: 30, glyphe: '🏔',
+  { cle: 'sommet-2', axe: 'sang', parent: 'sommet', prix: 30, glyphe: '🏔',
     nom: 'Le second sommet',
     dit: 'Ton sommet de fortune vaut encore un palier de plus.' },
 
@@ -2732,7 +2712,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 33;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 34;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2753,6 +2733,10 @@ const OFFLINE_CAP  = 2 * 3600;
 const OFFLINE_PART = 0.25;
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
+/* Le saut est un geste engagé, pas un état de partie : ces deux-là vivent hors du fichier.
+   Déclarés ici et non près de `ouvrirAscension` parce que `save()` les lit, et `save()` est
+   écrit bien avant — un `let` plus bas les laisserait en zone morte au premier appel. */
+let enAscension = false, ascAvant = null;
 
 /* Vrai pendant qu'on rejoue une absence. Les automates tournent alors des milliers de fois
    d'affilée : ni son, ni étincelles, ni redessin à chaque tour — on n'affiche que le résultat.
@@ -3222,6 +3206,20 @@ function load() {
       if (rendu && merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + rendu;
     }
 
+    /* v33 → v34 : L'ASCENSION NE FABRIQUE PLUS DE CARTES, ET LES DEUX « BAGAGE » S'EN VONT AVEC
+       le prix qu'ils adoucissaient. On ne dépossède personne — leur prix revient en bourse, à
+       l'unité près, comme au retrait de l'automatisation en `v23`. Leur clé disparaît de la
+       table, donc `etoilePrise` ne les verrait plus de toute façon ; c'est le remboursement,
+       et non la suppression, qui demande cette ligne. Le nœud `sommet` qui les suivait a repris
+       l'étincelle pour parent dans la table, et `etoileOuverte` le rouvre seul. */
+    if ((s.v || 0) < 34 && merged.ciel) {
+      let rendu = 0;
+      for (const [cle, prix] of [['bagage', 8], ['bagage-2', 22]]) {
+        if (merged.ciel[cle]) { rendu += prix; delete merged.ciel[cle]; }
+      }
+      if (rendu && merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + rendu;
+    }
+
     // v31 → v32 : deux nœuds du sang changent de clé, et qui les avait pris les garde
     if ((s.v || 0) < 32) {
       merged.ciel = merged.ciel || {};
@@ -3393,6 +3391,12 @@ function effacerLaPartie() {
 
 function save() {
   if (stopSaving) return;          // le bouton ⟲ coupe la sauvegarde avant de recharger
+  /* PENDANT L'ÉCRAN D'ASCENSION, RIEN NE S'ÉCRIT. Investir dans la constellation mute bien
+     l'état — c'est ce qui rend l'aperçu vrai — mais tant que le saut n'est pas validé, ces
+     achats ne sont pas payés : les geler hors du fichier fait qu'une sortie « par la bande »
+     (recharger, fermer l'onglet) retrouve la partie d'avant, sans un jeton dépensé. La
+     validation éteint le drapeau AVANT de sauvegarder ; c'est elle, et elle seule, qui grave. */
+  if (enAscension) return;
   state.t = Date.now();
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* quota / privé */ }
 }
@@ -5562,11 +5566,11 @@ function loop() {
   if (document.hidden) { veilleDepuis = veilleDepuis || now; lastFrame = now; return; }
   // la ferme s'arrête aussi quand on le demande, et pour les mêmes raisons que l'ascension
   if (enPause) { lastFrame = now; return; }
-  /* LA FERME S'ARRÊTE PENDANT L'ÉCRAN D'ASCENSION. On y décide du sort de bêtes précises ;
-     les laisser vieillir, évoluer ou se faire vendre sous les yeux du joueur rendrait le
-     panneau menteur au moment même où il demande une décision irréversible. On recale
-     l'horloge à chaque tour pour qu'aucune dette de temps ne s'accumule derrière. */
-  if (!$('ascension').hidden) { lastFrame = now; return; }
+  /* LA FERME S'ARRÊTE PENDANT LE SAUT. L'écran d'ascension est un moment hors du temps : on y
+     investit ses jetons dans la constellation, et laisser la ferme vieillir, vendre ou créditer
+     de nouveaux jetons derrière rendrait la décision mouvante. On recale l'horloge à chaque tour
+     pour qu'aucune dette de temps ne s'accumule. */
+  if (enAscension) { lastFrame = now; return; }
   const dt = Math.min(5, (now - lastFrame) / 1000) * state.speed;
   lastFrame = now;
   if (dt <= 0) return;
@@ -6472,6 +6476,21 @@ function jetonsDus() {
 const jetonsEnMain = () =>
   Math.max(0, (state.asc.jetons || 0) + jetonsDus() - (state.asc.depense || 0));
 
+/* ── LA RÉSERVE ET LE GAIN, SÉPARÉS ──────────────────────────────────────────────
+   Le bouton d'ascension disait un seul nombre, la somme des deux, et le joueur ne savait pas ce
+   qui lui appartenait déjà. On les montre à part : « 1 (+4) » — un jeton en réserve, quatre que
+   le cycle en cours crédite AU MOMENT du saut. Le « + » n'est pas encore à toi ; il le devient
+   quand tu ascensionnes, et c'est ce qui donne son poids à l'attente.
+
+   `reserve` est ce qui reste des cycles passés, dépense déduite ; `gain` est ce que le sommet du
+   cycle vaut. Leur somme est `jetonsEnMain`, mais la somme ne se montre qu'une fois dans l'écran
+   d'ascension, où les deux sont enfin dans la même poche. */
+const jetonsReserve = () => Math.max(0, (state.asc.jetons || 0) - (state.asc.depense || 0));
+function ditJetons() {
+  const g = jetonsDus();
+  return jetonsReserve() + (g ? ' (+' + g + ')' : '');
+}
+
 
 
 /* La bête telle qu'elle était, figée. `capsuleBrute` ne consomme pas d'identifiant : l'écran
@@ -6729,18 +6748,23 @@ function renderCarteCiel() {
   setText($('ciel-carte-effet'), effet);
 
   setText($('ciel-carte-prix'), etat === 'prise' ? 'acquis' : cache ? '✦ ?' : '✦ ' + n.prix);
+  /* ON N'INVESTIT QU'AU SAUT. Hors de l'écran d'ascension, la carte se lit mais ne s'achète
+     pas : le bouton dit où le geste se fait, il ne le fait pas. C'est la même règle que la
+     constellation entière — un évier qui ne coule qu'à l'ascension. */
   const bout = $('ciel-carte-prendre');
   bout.hidden = etat === 'prise' || !n.prix;
-  bout.disabled = etat !== 'ouverte';
-  setText(bout, etat === 'ouverte' ? 'Prendre · ✦ ' + n.prix
+  bout.disabled = !enAscension || etat !== 'ouverte';
+  setText(bout, !enAscension ? 'À l’ascension'
+              : etat === 'ouverte' ? 'Prendre · ✦ ' + n.prix
               : etat === 'chere' ? 'Il te manque ✦ ' + fmt(n.prix - jetonsEnMain())
               : 'Pas encore ouverte');
 }
 
-/* Le bouton de la carte est le SEUL chemin d'achat depuis cet écran. `acheterEtoile` garde ses
-   trois refus — déjà prise, pas ouverte, pas les jetons — et reste la porte unique de la règle. */
+/* Le bouton de la carte est le SEUL chemin d'achat depuis cet écran, et il ne s'ouvre qu'au
+   saut. `acheterEtoile` garde ses trois refus — déjà prise, pas ouverte, pas les jetons — et
+   `enAscension` en ajoute un quatrième : on n'investit qu'au moment de l'ascension. */
 function prendreEtoileVue() {
-  if (!etoileVue) return false;
+  if (!etoileVue || !enAscension) return false;
   const ok = acheterEtoile(etoileVue);
   if (!ok) { blip(300, 0.05, 'sine', 0.03); return false; }
   renderCarteCiel();
@@ -6748,18 +6772,37 @@ function prendreEtoileVue() {
 }
 function renderCiel() {
   const jetons = jetonsEnMain();
-  const sig = Object.keys(state.ciel || {}).sort().join(',') + '|' + jetons;
+  const sig = Object.keys(state.ciel || {}).sort().join(',') + '|' + jetons +
+              '|' + (enAscension ? 'A' : '-');
   if (sig === cielSig) return;
   cielSig = sig;
 
-  setText($('ciel-jetons'), '✦ ' + fmt(jetons) + (jetons > 1 ? ' jetons' : ' jeton'));
+  /* LA BOURSE SE LIT EN DEUX TEMPS. Au saut, les deux poches sont réunies : un seul nombre, ce
+     qu'on a à investir. Hors du saut, on montre la réserve et, à part, ce que le cycle
+     crédite — « 1 (+4) » — parce que le « + » n'est pas encore à toi. */
+  setText($('ciel-jetons'), enAscension
+    ? '✦ ' + fmt(jetons) + ' à investir'
+    : '✦ ' + ditJetons() + (jetonsReserve() > 1 ? ' jetons' : ' jeton'));
 
-  /* LE BOUTON N'EXISTE QUE S'IL Y A QUELQUE CHOSE À DÉFAIRE. Un « tout reprendre » sur un ciel
-     vide est un bouton qui ment sur ce qu'il fait. */
+  /* ── LE PIED D'ASCENSION ──
+     Il ne paraît qu'au saut : c'est là que la constellation devient une dépense, et que le
+     bouton réinitialise la ferme. Hors du saut, la vue n'est qu'une consultation. */
+  const pied = $('ciel-asc');
+  pied.hidden = !enAscension;
+  if (enAscension) {
+    const suivant = prochainPalier();
+    setText($('ciel-asc-dit'), perteAscension() +
+      (suivant ? ' Le prochain jeton se gagne à ' + fmt(suivant) + ' pièces.' : '') +
+      ' Ce que tu n’investis pas reste en réserve.');
+    setText($('ciel-asc-go'), 'Ascensionner');
+  }
+
+  /* LE BOUTON DE REPRISE N'EXISTE QUE S'IL Y A QUELQUE CHOSE À DÉFAIRE, ET QU'AU SAUT : réviser
+     sa constellation est une décision d'ascension, pas de tous les jours. */
   const pris = prixDuCiel();
   const bout = $('ciel-reprendre');
-  bout.hidden = !pris;
-  if (pris) setText(bout, 'Tout reprendre · ✦ ' + fmt(pris));
+  bout.hidden = !pris || !enAscension;
+  if (!bout.hidden) setText(bout, 'Tout reprendre · ✦ ' + fmt(pris));
 
   const hote = $('ciel-arbre');
   hote.textContent = '';
@@ -7266,250 +7309,92 @@ function deplacerCarte(id, versBuild) {
   return true;
 }
 
-/* Ce que le saut produira, calculé sans rien changer : les capsules d'aperçu portent
-   l'identifiant de leur bête, EN NÉGATIF — il ne peut donc se confondre avec aucune carte de
-   l'album, et il désigne un animal précis. Elles reçoivent leur vrai numéro à la validation.
+/* ── L'ASCENSION EST UN GESTE ENGAGÉ, ET SON SEUL OBJET EST LA CONSTELLATION ────────
+   On ne choisit plus de bêtes à emporter. Le saut ouvre la constellation, on y investit ses
+   jetons, et on valide — ce qui réinitialise la ferme. Investir NE SE FAIT QU'ICI : le reste du
+   temps, la constellation se consulte, elle ne s'achète pas.
 
-   L'aperçu était numéroté par POSITION — la première, la deuxième — et l'enclos bougeait sous
-   les pieds du joueur pendant qu'il choisissait : une vente automatique décalait tout, et « la
-   troisième » n'était plus la même bête entre le clic et la confirmation. On gardait une carte
-   qu'on n'avait pas choisie, et depuis que les autres sont détruites, on perdait la bonne. */
-let ascChoix = [];
-
-/* Ce que le saut produira. L'ordre est CELUI DE LA BANDE, pas celui du tableau interne :
-   `subjects()` porte déjà le tri choisi par le joueur — arrivée, rareté ou âge — et une liste
-   qui contredirait la bande obligerait à chercher deux fois la même bête. */
-/* UN JETON, UNE CARTE — et le saut les prend TOUS.
-
-   Deux défauts se cachaient ici, et le second masquait le premier. `max` valait SLOTS : le
-   nombre de jetons n'entrait nulle part, si bien qu'un seul jeton laissait choisir cinq
-   cartes. Et l'ascension n'en consommait qu'un, donc les autres restaient en poche — on
-   sautait avec cinq jetons et on en retrouvait quatre de l'autre côté.
-
-   La règle est maintenant celle qu'on voulait depuis le début : chaque jeton vaut une carte
-   qu'on emporte, et SAUTER LES DÉPENSE TOUS, y compris ceux qu'on n'a pas employés. C'est ce
-   qui donne un sens à l'attente — sauter au premier jeton n'emporte qu'une carte, en attendre
-   trois en emporte trois — et c'est ce qui empêche une réserve de jetons de rendre les
-   ascensions suivantes gratuites.
-
-   ⚠ L'ALBUM ET LES CARTES ACTIVES SONT DEUX CHOSES. L'ALBUM N'A PAS DE LIMITE : il garde tout
-   ce qu'on possède, ascension après ascension. SLOTS ne borne que les CARTES ACTIVES — les
-   cinq qui agissent, qu'on échange avec le reste de l'album au glisser-déposer.
-
-   Le jeton borne donc ce qui ENTRE DANS L'ALBUM, et rien d'autre. Neuf jetons emportent neuf
-   cartes ; cinq d'entre elles s'équipent, les quatre autres attendent leur tour. Plafonner à
-   SLOTS revenait à jeter quatre cartes gagnées, et confondait la vitrine avec la collection. */
-function apercuAscension() {
-  const jetons = jetonsEnMain();
-  const neuves = subjects().filter(s => s.kind === 'creature')
-    .map(s => Object.assign(capsuleBrute(s.c), { id: -s.c.id }));
-  /* `max` n'est plus le nombre de jetons mais ce que la bourse PERMET : le prix d'une carte
-     monte, donc cinq jetons n'achètent plus cinq cartes. */
-  return { jetons, neuves, max: cartesAbordables(jetons) };
-}
+   POURQUOI UN ÉTAGE, ET NON UN ACHAT LIVE. Les jetons ne se dépensent qu'à la VALIDATION du
+   saut. Tant qu'on n'a pas validé, on peut prendre et reprendre des nœuds sans que rien ne soit
+   payé ni sauvegardé ; une sortie « par la bande » — changer d'onglet, recharger — jette tout et
+   ne coûte rien. On tient ça sans copie de travail : les achats mutent bien l'état, mais
+   `save()` est SUSPENDU pendant le saut (voir sa garde), et quitter l'écran sans valider REND
+   l'état d'avant. Seule la validation garde les achats, et c'est elle qui sauvegarde.
+   (`enAscension` et `ascAvant` sont déclarés tout en haut, près de `state` : `save()` les lit.) */
 
 function ouvrirAscension() {
   if (!peutAscensionner()) return;
-  /* On repart d'une ardoise vide : l'écran ne propose QUE les bêtes de l'enclos, et une
-     sélection héritée des cartes déjà équipées n'y aurait aucun repère à l'écran. */
-  ascChoix = [];
-  $('ascension').hidden = false;
-  renderAscension();
+  enAscension = true;
+  // ce que le saut annulerait : la constellation, la réserve et la dépense du cycle
+  ascAvant = { ciel: Object.assign({}, state.ciel || {}),
+               jetons: state.asc.jetons || 0, depense: state.asc.depense || 0 };
+  cielSig = '';
+  ouvrirVue('ciel');
 }
 
-function fermerAscension() { $('ascension').hidden = true; }
+/* QUITTER SANS VALIDER REND TOUT. On ne touche qu'à ce que l'écran a pu changer — les nœuds, la
+   réserve, la dépense — jamais à la ferme, qui a continué de tourner pendant qu'on lisait. */
+function quitterAscension() {
+  if (!enAscension) return;
+  if (ascAvant) {
+    state.ciel = ascAvant.ciel;
+    state.asc.jetons = ascAvant.jetons;
+    state.asc.depense = ascAvant.depense;
+  }
+  enAscension = false; ascAvant = null;
+  cielSig = '';
+}
 
-function renderAscension() {
-  const ap = apercuAscension();
-  if (!peutAscensionner()) { fermerAscension(); return; }
-
-  const suivant = prochainPalier();
-  setText($('asc-jalon'),
-    ap.jetons + ' jeton' + (ap.jetons > 1 ? 's' : '') + ' d’ascension, donc ' +
-    ap.max + ' carte' + (ap.max > 1 ? 's' : '') + ' à emporter dans ton album' +
-    (ap.max > SLOTS ? ' — cinq s’équipent, le reste attend en réserve' : '') + '. ' +
-    /* IL DISAIT « Sauter les dépense tous, employés ou non ». C'ÉTAIT VRAI JUSQU'À LA
-       4.0.0 ET FAUX DEPUIS : le reste de la bourse demeure, et c'est même toute la raison
-       d'être du second évier. La phrase poussait donc à brûler ses jetons en cartes qu'on ne
-       veut pas, c'est-à-dire exactement contre l'arbitrage qu'on voulait créer. */
-    'Ce que tu n’emploies pas reste en bourse pour la constellation — rien ne t’oblige à sauter, ni maintenant ni jamais.' +
-    (suivant ? ' Le prochain se gagne à ' + fmt(suivant) + ' pièces.'
-             : ' C’était le dernier palier de l’échelle.'));
-
-  /* Une ascension sans carte à naître est une perte sèche, pas un choix : on la refuse
-     plutôt que de laisser le joueur se saborder d'un clic. Le jeton, lui, reste en poche. */
-  /* Sauter sans avoir rien retenu, c'est tout perdre pour rien : on le refuse, comme on refuse
-     de sauter sur un enclos vide. */
-  $('asc-go').disabled = !ap.neuves.length || !ascChoix.length;
-  setText($('asc-go'), !ap.neuves.length ? 'Enclos vide'
-                     : !ascChoix.length ? 'Choisis une bête'
-                     : 'Ascensionner');
-
-  /* Le marchand vide l'enclos en continu, absences comprises — et les cartes viennent de ce
-     qui reste dedans. Sans cet avertissement, un joueur ascensionne après des heures de jeu
-     et repart avec zéro carte. C'est le seul piège que la règle crée. */
-  const vend = prime('marchand') &&
-               Object.keys(RARITY).some(cle => (state.sellAt[cle] || 0) > 0);
-  $('asc-warn').hidden = !vend;
-  if (vend) setText($('asc-warn'),
-    '⚠ Ton marchand vend encore. Tant qu’il tourne il vide l’enclos, et les cartes viennent ' +
-    'de ce qu’il y reste au moment du saut. Passe ses consignes sur « jamais » avant.');
-
-  /* La perte tient en une ligne. Elle annonçait « les bêtes non transformées », ce qui était
-     faux depuis que TOUTES les bêtes de l'enclos deviennent des capsules : il n'en reste
-     aucune. Un récap qui invente une perte qui n'existe pas discrédite le reste. */
+/* CE QUE LE SAUT COÛTE, EN UNE LIGNE. La collection et l'album demeurent ; tout le reste de la
+   ferme repart de zéro, et les bêtes de l'enclos se défont en poussière. */
+function perteAscension() {
   const eggs = totalEggs(), autos = UPGRADES.filter(u => lvl(u.key)).length;
-  setText($('asc-perte'), 'Tu perds ' + fmt(state.coins) + ' pièces, ' +
+  const betes = subjects().filter(s => s.kind === 'creature').length;
+  return 'Tu perds ' + fmt(state.coins) + ' pièces, ' +
     (eggs ? eggs + ' œuf' + (eggs > 1 ? 's' : '') + ' non éclos, ' : '') +
     state.incubators + ' incubateur' + (state.incubators > 1 ? 's' : '') + ', ' +
     state.pens + ' enclos et ' +
-    autos + ' amélioration' + (autos > 1 ? 's' : '') + ' sur ' + UPGRADES.length +
-    '. Ta collection et tes cartes restent.');
-
-  /* Une bête vendue ou une carte disparue ne doit pas rester cochée en fantôme : le compte
-     d'emplacements mentirait, et la confirmation promettrait ce qu'elle ne peut pas tenir. */
-  /* SEULES LES BÊTES DE L'ENCLOS, jamais les cartes de l'album. L'écran mélangeait les deux,
-     et la question qu'il pose n'est pas « quel build veux-tu ? » — celui-là se règle à tout
-     moment dans l'album, en glissant les cartes d'un bloc à l'autre — mais « laquelle de tes
-     bêtes veux-tu voir agir tout de suite ? ». Les cartes déjà équipées ne bougent pas d'un
-     écran auquel elles n'appartiennent plus. */
-  const dispo = ap.neuves;
-  ascChoix = ascChoix.filter(id => dispo.some(k => k.id === id));
-
-  const choix = $('asc-choix');
-  choix.textContent = '';
-  for (const k of dispo) {
-    const el = carteEl(k);
-    el.classList.add('choisir');
-    if (ascChoix.indexOf(k.id) !== -1) el.classList.add('active');
-    el.addEventListener('click', () => {
-      const i = ascChoix.indexOf(k.id);
-      if (i !== -1) ascChoix.splice(i, 1);
-      else if (ascChoix.length < ap.max) ascChoix.push(k.id);
-      else return;                       // plein : on ne remplace pas au hasard
-      renderAscension();
-    });
-    choix.appendChild(el);
-  }
-  const perdues = ap.neuves.length - Math.min(ascChoix.length, ap.max);
-  const garde = Math.max(0, ap.max - ascChoix.length);
-  const bouts = ['Choisis jusqu’à ' + ap.max + ' bête' + (ap.max > 1 ? 's' : '') +
-                 ' à garder en cartes — ' + ascChoix.length +
-                 ' retenue' + (ascChoix.length > 1 ? 's' : '') + '.'];
-  if (perdues) bouts.push('⚠ ' + (perdues > 1 ? 'Les ' + perdues + ' autres sont perdues'
-                                              : 'L’autre est perdue') + ' avec la ferme.');
-  const gardees = Math.min(garde, state.slots.length);
-  if (gardees) bouts.push(gardees + ' de tes cartes actuelles garde' + (gardees > 1 ? 'nt' : '') +
-                          ' sa place.'.replace('sa', gardees > 1 ? 'leur' : 'sa'));
-  setText($('asc-slots'), bouts.join(' '));
-
-  /* CHOISIR À LA MAIN QUINZE FOIS EST UNE CORVÉE, PAS UNE DÉCISION. La décision, c'est
-     « lesquelles » — et neuf fois sur dix la réponse est « les meilleures ». Le bouton la donne
-     d'un geste ; le choix fin reste possible en cliquant les cartes, comme avant. */
-  const plein = ascChoix.length >= Math.min(ap.max, dispo.length);
-  const rafle = $('asc-rafle');
-  rafle.hidden = dispo.length < 2;
-  setText(rafle, plein ? 'Tout enlever'
-                       : 'Prendre les ' + Math.min(ap.max, dispo.length) + ' meilleures');
+    autos + ' amélioration' + (autos > 1 ? 's' : '') + ' sur ' + UPGRADES.length + '. ' +
+    (betes ? 'Tes ' + betes + ' bête' + (betes > 1 ? 's se défont' : ' se défait') +
+             ' en poussière. ' : '') +
+    'Ta collection, ton album et ta constellation restent.';
 }
 
-/* LES MEILLEURES, ET SUR QUEL CRITÈRE. On trie sur ce que la carte VAUDRA — la rareté
-   d'abord, l'âge ensuite, le niveau pour départager. Trier sur le prix de vente serait faux :
-   une carte ne se vend pas, elle s'équipe, et deux cartes de même rareté ne diffèrent à
-   l'usage que par ce qu'elles portent. */
-const rangCarte = k => [rarityOf(k).rank, k.age || 0, k.niv || 0, k.etoiles || 1];
-const meilleuresCartes = (liste, n) => liste.slice()
-  .sort((a, b) => {
-    const x = rangCarte(b), y = rangCarte(a);
-    for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i];
-    return 0;
-  })
-  .slice(0, n).map(k => k.id);
-
+/* LE SAUT LUI-MÊME. Plus de cartes à fabriquer : toutes les bêtes de l'enclos laissent leur
+   poussière — la matière des futurs boosters — et la ferme repart à neuf. Les jetons investis
+   dans la constellation ont déjà muté `depense` ; ce qui reste en main (`jetonsEnMain`) devient
+   la réserve du prochain cycle. */
 function ascensionner() {
-  const ap = apercuAscension();
   if (!peutAscensionner()) return;
 
-  /* SEULES LES BÊTES RETENUES DEVIENNENT DES CAPSULES. Les autres partent avec la ferme :
-     elles ne rejoignent pas la réserve, elles n'existent tout simplement pas.
+  /* CE QU'ON N'EMPORTE PAS LAISSE UN PEU DE POUSSIÈRE — et maintenant on n'emporte plus rien,
+     donc l'enclos ENTIER se défait. Un dixième de ce qu'une carte aurait rendu ne rend pas le
+     sacrifice indolore, mais il récompense d'ascensionner sur une ferme pleine plutôt que sur
+     trois têtards. */
+  const laisse = subjects().filter(s => s.kind === 'creature')
+    .reduce((n, s) => n + Math.round(poussiereDe(capsuleBrute(s.c)) * POUSSIERE_SAUT), 0);
 
-     La réserve garde les CARTES qu'on possède déjà et qu'on n'équipe pas — c'est son rôle, et
-     le glisser-déposer de l'album en dépend. Elle n'a jamais eu à recueillir tout un enclos :
-     une ferme de vingt bêtes y versait vingt cartes d'un coup, et le choix qu'on venait de
-     faire ne coûtait rien. */
-  /* On borne par les JETONS, pas par SLOTS. L'écrêtage à cinq datait d'avant que l'album et
-     les cartes actives soient deux choses : il jetait les cartes gagnées au-delà de la
-     cinquième, alors que l'album n'a pas de limite et que c'est justement lui qui les garde. */
-  const vrai = {};
-  const neuves = ap.neuves
-    .filter(k => ascChoix.indexOf(k.id) !== -1)
-    .map(k => {
-      const c = Object.assign({}, k, { id: nextCard++ });
-      vrai[k.id] = c.id;
-      return c;
-    })
-    .slice(0, ap.max);
-  /* Ce qui entre dans l'album, ce sont les bêtes RETENUES, et rien d'autre : le filtre juste
-     au-dessus a déjà écarté les autres. Ce commentaire disait l'inverse — « rien ne se perd,
-     les capsules qu'on n'équipe pas rejoignent la réserve » — et décrivait l'ascension d'avant
-     la 2.10, quand tout un enclos y était versé. Ce qui glisse en réserve aujourd'hui, ce sont
-     les cartes DÉJÀ POSSÉDÉES qu'un nouveau choix déloge de leurs emplacements. */
-  /* CE QU'ON N'EMPORTE PAS LAISSE UN PEU DE POUSSIÈRE. Les bêtes non retenues disparaissaient
-     sans rien laisser : un dixième de ce que leur carte aurait rendu ne rend pas le sacrifice
-     indolore, mais il récompense d'ascensionner sur une ferme pleine plutôt que sur trois
-     têtards — ce que le jeu voulait déjà encourager sans avoir de moyen de le dire. */
-  const laisse = ap.neuves
-    .filter(k => ascChoix.indexOf(k.id) === -1)
-    .reduce((n, k) => n + Math.round(poussiereDe(k) * POUSSIERE_SAUT), 0);
+  /* CE QUI RESTE EN MAIN DEVIENT LA RÉSERVE. `jetonsEnMain` vaut réserve + crédit du cycle −
+     dépense : c'est le net après ce qu'on vient d'investir dans la constellation. Le sommet et
+     la dépense repartent à zéro, la bourse du cycle suivant part de ce net. */
+  const jetons = jetonsEnMain();
 
-  const album = state.album.concat(neuves);
-  /* Les bêtes retenues d'abord, puis les cartes déjà équipées pour combler ce qui reste : ne
-     rien choisir ne doit pas vider son build. Le joueur réarrangera dans l'album s'il veut. */
-  const slots = ascChoix.map(id => vrai[id])
-                        .concat(state.slots)
-                        .filter((id, i, t) => id !== undefined && t.indexOf(id) === i)
-                        .filter(id => album.some(k => k.id === id))
-                        .slice(0, SLOTS);
+  /* TOUT REPART DE ZÉRO SAUF CE QUI SE COLLECTIONNE, S'APPREND OU EST PERMANENT PAR DÉCISION.
+     L'album et les emplacements traversent — les cartes viennent des boosters, pas d'ici, donc
+     ils ne bougent pas au saut. La constellation traverse comme ce qu'on a appris.
 
-  /* TOUT REPART DE ZÉRO SAUF QUATRE CHOSES : l'album, les emplacements, le compte
-     d'ascensions et la collection. Le reste de la liste n'est que du confort d'affichage —
-     l'ordre de la bande, la taille des lots, le son — qui n'agit sur rien.
-
-     LES CONSIGNES DE LA FERME NE TRAVERSENT PLUS. Elles le faisaient, au motif que les refaire
-     rareté par rareté serait une corvée. C'était un mauvais calcul sur deux points.
-
-     D'abord elles deviennent fausses : on finit une partie sur « ne vends jamais les
-     mythiques, monte les communes jusqu'à la légende », consignes qui n'ont aucun sens sur une
-     ferme qui recommence avec un œuf commun et zéro pièce. Les objectifs d'un cycle ne sont
-     pas ceux du suivant.
-
-     Ensuite, et c'est plus grave, elles étaient INVISIBLES. Les trois panneaux de réglage ne
-     s'affichent qu'avec l'automate correspondant, et une ferme neuve n'en possède aucun : les
-     consignes gouvernaient donc en silence, et tombaient d'un coup sur la ferme à l'instant du
-     rachat du marchand. Un réglage qu'on ne peut pas voir ne doit pas agir. */
+     LES CONSIGNES DE LA FERME NE TRAVERSENT PLUS : elles deviennent fausses sur une ferme neuve,
+     et elles étaient invisibles tant qu'aucun automate ne les affichait. */
   oublierPrimes();
   state = Object.assign(freshState(), {
-    album, slots,
-    // la constellation traverse le saut, comme l'album : c'est ce qu'on a appris
+    album: state.album, slots: state.slots,
     ciel: state.ciel || {},
-    /* Les paliers déjà franchis ne reviennent pas : la bourse repart de zéro, l'échelle non.
-       C'est ce qui fait qu'une partie a un nombre fini d'ascensions. */
-    /* LE RESTE DE LA BOURSE DEMEURE. Les jetons partaient tous, employés ou non — c'était le
-       prix de sauter trop tôt, et ça n'a plus de sens depuis qu'ils ont un second emploi :
-       garder ses jetons pour la constellation EST une décision, pas un gâchis. Ce qui se paie
-       ici, c'est le prix des cartes emportées, et rien d'autre. */
-    /* LA DÉPENSE DU CYCLE SE SOLDE ICI. `ap.jetons` est déjà ce qu'on a en main, dépense
-       déduite — la bourse du cycle suivant repart donc d'un nombre net, et le compteur avec
-       elle. Le laisser courir referait payer les nœuds du cycle précédent. */
     asc: { n: (state.asc.n || 0) + 1, paliers: state.asc.paliers,
-           jetons: Math.max(0, ap.jetons - coutCartes(neuves.length)),
-           sommet: 0, depense: 0 },
+           jetons, sommet: 0, depense: 0 },
     seen: state.seen, dex: state.dex, tri: state.tri, triOeuf: state.triOeuf,
     achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
-    // on ne réapprend pas le jeu au deuxième cycle : les notes voyagent avec la collection
     tuto: state.tuto, vu: state.vu, dial: state.dial,
-    // et les compteurs aussi : ils comptent une vie de fichier, pas une partie
     stats: state.stats, dons: state.dons, trophees: state.trophees,
   });
   nextId = 1;
@@ -7533,7 +7418,10 @@ function ascensionner() {
 
   oublierAlbum();
   albumSig = collSig = '';
-  fermerAscension();
+  // le saut est validé : le mode s'éteint, la sauvegarde reprend, et on retombe sur la ferme
+  enAscension = false; ascAvant = null;
+  cielSig = '';
+  ouvrirVue('ferme');
   remplirMenus();          // les prix des œufs bougent avec le zébré
   syncReglages();
   syncTri();
@@ -7942,15 +7830,18 @@ function tickView() {
      rien crédité — donc juste après un saut, quand `sommet` repart de zéro. On pouvait avoir
      quatre jetons en poche, le droit de sauter, et aucun bouton.
 
-     Ce qui décide de la porte, c'est `peutAscensionner` et lui seul. Le nombre montré est ce
-     qu'on a EN MAIN, puisque c'est lui qui achète les cartes. */
-  const jetons = jetonsEnMain();
+     Ce qui décide de la porte, c'est `peutAscensionner` et lui seul. Le nombre montré sépare la
+     réserve de ce que le cycle crédite — « 1 (+4) » — pour que le joueur voie ce qui est déjà à
+     lui et ce que le saut ajoutera. */
+  const reserve = jetonsReserve(), gain = jetonsDus();
   $('btn-asc').hidden = !peutAscensionner();
   if (!$('btn-asc').hidden) {
-    setText($('btn-asc'), 'Ascension' + (jetons ? ' · ' + jetons : ''));
-    $('btn-asc').title = (jetons ? jetons + ' jeton' + (jetons > 1 ? 's' : '') + ' en bourse — '
-                                 : 'Bourse vide, et ce n’est pas un obstacle — ') +
-      'tu peux sauter quand tu veux, ou jamais.';
+    setText($('btn-asc'), 'Ascension' + (reserve || gain ? ' · ' + ditJetons() : ''));
+    $('btn-asc').title = (reserve || gain
+        ? reserve + ' jeton' + (reserve > 1 ? 's' : '') + ' en réserve' +
+          (gain ? ', +' + gain + ' au saut' : '') + ' — '
+        : 'Rien en réserve, et ce n’est pas un obstacle — ') +
+      'tu ascensionnes pour investir dans la constellation, quand tu veux ou jamais.';
   }
 
   /* Le panneau s'ouvre quand la première prime est à portée, comme la boutique : voir une
@@ -8287,7 +8178,8 @@ function renderTuto() {
   }
   if (!dexPret && vue === 'dex') ouvrirVue('ferme');
   if (!forgePret && vue === 'forge') ouvrirVue('ferme');
-  if (!cielPret && vue === 'ciel') ouvrirVue('ferme');
+  // pendant le saut, le ciel reste ouvert même sans jeton en réserve : c'est là qu'on valide
+  if (!cielPret && vue === 'ciel' && !enAscension) ouvrirVue('ferme');
 
   // le pied de page parle du prototype, pas du jeu : il attend qu'on ait de quoi acheter
   $('foot').hidden = jeune && !estDevoile('egg-commun');
@@ -8935,6 +8827,11 @@ let vue = 'ferme';
 
 function ouvrirVue(v) {
   vue = VUES.indexOf(v) === -1 ? 'ferme' : v;
+  /* QUITTER LA CONSTELLATION SANS VALIDER ANNULE LE SAUT. On y entre par le bouton d'ascension ;
+     partir vers un autre écran est la sortie « par la bande » — on rend les jetons et les nœuds
+     pris, rien n'a été dépensé. `ouvrirAscension` rouvre le ciel juste après avoir levé le
+     drapeau, donc on ne se coupe pas soi-même. */
+  if (enAscension && vue !== 'ciel') quitterAscension();
   document.body.classList.toggle('vue-dex', vue === 'dex');
   document.body.classList.toggle('vue-forge', vue === 'forge');
   document.body.classList.toggle('vue-ciel', vue === 'ciel');
@@ -9588,39 +9485,21 @@ function bindTools() {
     if (e.target.closest && e.target.closest('.note-x')) $('offline-note').hidden = true;
   });
 
+  // le bouton ouvre la constellation en mode saut : c'est là qu'on investit, puis qu'on valide
   $('btn-asc').addEventListener('click', ouvrirAscension);
-  $('asc-close').addEventListener('click', fermerAscension);
-  $('ascension').addEventListener('click', e => {
-    if (e.target === $('ascension')) fermerAscension();     // clic sur le fond
-  });
-  $('asc-rafle').addEventListener('click', () => {
-    const ap = apercuAscension();
-    const plein = ascChoix.length >= Math.min(ap.max, ap.neuves.length);
-    ascChoix = plein ? [] : meilleuresCartes(ap.neuves, ap.max);
-    renderAscension();
-  });
-  $('asc-go').addEventListener('click', () => {
-    const n = state.pen.length;
-    if (!n) return;                       // pas d'ascension à vide, même par un clic égaré
-    const ap = apercuAscension();
-    const prises = Math.min(ascChoix.length, ap.max);
-    const perdues = n - prises;
-    /* L'AVERTISSEMENT EST TOMBÉ, ET IL ÉTAIT FAUX DEUX FOIS. Il annonçait que les jetons
-       inemployés « partaient avec » — ils restent en bourse depuis la 4.0.0. Et il les comptait
-       en soustrayant un NOMBRE DE CARTES à un nombre de jetons, alors que trois cartes coûtent
-       six jetons depuis que leur prix monte. Un avertissement faux est pire qu'aucun : il
-       fait prendre des cartes dont on ne veut pas. */
-    const reste = Math.max(0, jetonsEnMain() - coutCartes(prises));
-    if (!confirm('Ascensionner ?\n\n' + prises + ' bête' + (prises > 1 ? 's deviennent' : ' devient') +
-        ' une carte.' +
-        (perdues ? '\nLes ' + perdues + ' autre' + (perdues > 1 ? 's sont perdues' : ' est perdue') + '.' : '') +
-        (reste ? '\n✦ ' + reste + ' jeton' + (reste > 1 ? 's restent' : ' reste') +
-                 ' en bourse pour la constellation.' : '') +
-        '\nTout le reste repart de zéro. C’est irréversible.')) return;
+  /* LA VALIDATION EST LE SEUL GESTE IRRÉVERSIBLE. Elle dépense pour de bon ce qu'on a mis dans
+     la constellation, et réinitialise la ferme. Le `confirm` reste dans la langue du système en
+     attendant la marche 6 du chantier « l'écran, le doigt ». */
+  $('ciel-asc-go').addEventListener('click', () => {
+    if (!enAscension) return;
+    const reste = jetonsEnMain();
+    if (!confirm('Ascensionner ?\n\n' + perteAscension() +
+        (reste ? '\n\n✦ ' + reste + ' jeton' + (reste > 1 ? 's restent' : ' reste') +
+                 ' en réserve pour la prochaine fois.' : '') +
+        '\n\nC’est irréversible.')) return;
     ascensionner();
   });
   window.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !$('ascension').hidden) fermerAscension();
     if (e.key === 'Escape' && !$('carrefour').hidden) fermerCarrefour();
   });
 
@@ -9654,7 +9533,7 @@ function bindTools() {
     e.preventDefault();          // le défilement est bloqué même sur une répétition
     if (espaceTenue || e.repeat) return;
     espaceTenue = true;
-    if (!$('ascension').hidden) return;
+    if (enAscension) return;      // pendant le saut, l'espace ne martèle rien
     tapStage();
   });
 
@@ -10032,6 +9911,7 @@ function bindTools() {
   $('ciel-carte-prendre').addEventListener('click', prendreEtoileVue);
 
   $('ciel-reprendre').addEventListener('click', () => {
+    if (!enAscension) return;              // on ne révise sa constellation qu'au saut
     const rendu = prixDuCiel();
     if (!rendu) return;
     if (!confirm('Reprendre toute ta constellation ?\n\n' + rendu + ' jeton' +
@@ -10141,6 +10021,8 @@ function start() {
        par le même chemin. `loop` a laissé `lastFrame` à l'heure à chaque tour passé derrière,
        donc rien ne s'est accumulé en double. */
     if (!veilleDepuis) return;
+    // pendant le saut la ferme est gelée : on ne lui rattrape pas une absence non plus
+    if (enAscension) { veilleDepuis = 0; lastFrame = Date.now(); return; }
     catchUp(veilleDepuis);
     veilleDepuis = 0;
     refresh();
