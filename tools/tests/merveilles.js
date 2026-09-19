@@ -86,9 +86,13 @@ scenario('recettes — un mythique par famille, et la chimère n’en est pas un
   eq('la kitsune a deux routes', kitsune.length, 2);
   ok('toutes deux par l’ouroboros — son axe est le temps',
      kitsune.every(r => r.a === 'ouroboros' || r.b === 'ouroboros'));
-  ok('la recette est plus généreuse que l’accident',
-     Math.max(...kitsune.map(r => r.chance)) === 0.01 &&
-     Math.min(...kitsune.map(r => r.chance)) === 0.001);
+  /* LA RECETTE (le sphinx) EST PLUS GÉNÉREUSE QUE L'ACCIDENT (le chat) — on compare les deux
+     routes entre elles, sans coller à un chiffre : les chances ont bougé avec le plafond d'une
+     heure, la hiérarchie non. */
+  const parSphinx = kitsune.find(r => r.b === 'sphinx' || r.a === 'sphinx');
+  const parChat = kitsune.find(r => r.b === 'chat' || r.a === 'chat');
+  ok('la recette est plus généreuse que l’accident', parSphinx.chance > parChat.chance,
+     parSphinx.chance + ' vs ' + parChat.chance);
 
   /* L'EXACT DOIT TOUJOURS ÉCRASER L'ACCIDENT EN RENDEMENT, sinon il ne sert à rien. */
   for (const donne of [...new Set(jeu.RECETTES.map(r => r.donne))]) {
@@ -239,14 +243,14 @@ scenario('merveilles — la phrase ne nomme rien tant qu’on n’a pas vu la b�
   jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
   ok('elle annonce autre chose', /peut-être autre chose/.test(dit()), dit());
   ok('sans la nommer', !/Kitsune/.test(dit()), dit());
-  ok('et la durée est celle de la recette', /12 h/.test(dit()), dit());
+  ok('et la durée est celle de la recette', /1 h/.test(dit()), dit());
 
   jeu.pensionB = loup.id; jeu.refresh();
   ok('un couple ordinaire ne promet rien', !/autre chose/.test(dit()), dit());
 
   s.seen['kitsune:1'] = true;
   jeu.pensionA = a.id; jeu.pensionB = b.id; jeu.refresh();
-  ok('une fois rencontrée, la phrase la nomme', /1 % Kitsune/.test(dit()), dit());
+  ok('une fois rencontrée, la phrase la nomme', /2 % Kitsune/.test(dit()), dit());
 });
 
 scenario('merveilles — un cran de puissance, mais jamais un raccourci', () => {

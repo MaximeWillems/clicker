@@ -23,13 +23,16 @@ scenario('pension — la distance, la durée, et ce qui est refusé', () => {
   eq('donc pas de durée', jeu.dureePension(a, golem), null);
   ok('et le refus le dit', /pierre/.test(jeu.refusPension(a, golem)), jeu.refusPension(a, golem));
 
-  /* LA RICHESSE RALENTIT, PAS L'ÉCART. Deux mythiques sont à écart nul : sans le
-     multiplicateur de rareté elles pondraient en quinze minutes ce qui vaut cent
-     quatre-vingts millions. C'est l'imprimante à billets qu'on a trouvée à la mesure. */
+  /* LE TEMPS DE BASE EST PLAFONNÉ À UNE HEURE. Deux mythiques à écart nul valaient seize heures
+     par le multiplicateur de rareté — un mur, pas un choix. Elles sont désormais ramenées au
+     plafond comme tout le reste. Le multiplicateur joue encore en dessous ; au-delà, il ne fait
+     plus qu'atteindre le plafond. L'imprimante à billets que ce ralenti bornait est donc à
+     resurveiller — l'équilibrage se reprend avec ce plafond. */
   const behe = bete(jeu, 'behemoth', 4, 20000);
   eq('deux mythiques se ressemblent', jeu.distanceDe(ouro, behe), 0);
-  ok('mais leur couvaison est longue', jeu.dureePension(ouro, behe) >= 12 * 3600,
-     jeu.dureePension(ouro, behe));
+  eq('mais leur couvaison est plafonnée à une heure', jeu.dureePension(ouro, behe),
+     jeu.PENSION.plafond);
+  eq('et le plafond vaut bien une heure', jeu.PENSION.plafond, 3600);
 
   const bebe = bete(jeu, 'crapaud', 1, 0);
   ok('un jeune ne peut pas être parent', /âge/.test(jeu.refusPension(a, bebe)),

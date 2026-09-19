@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.2.2';
+const VERSION = 'beta 5.2.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1253,7 +1253,12 @@ const PENSION = {
   base: 900,           // secondes pour deux bêtes qui se ressemblent en tout
   parDistance: 600,    // ce que chaque étiquette non partagée ajoute
   parRarete: 1800,     // ce que chaque cran d'écart de rareté ajoute
-  plafond: 24 * 3600,  // au-delà on refuse : une attente de deux jours n'est pas un choix
+  /* LE TEMPS DE BASE EST PLAFONNÉ À UNE HEURE. Attendre dix heures un œuf n'est pas un choix,
+     c'est un mur : deux mythiques ou une recette montaient jusqu'à douze ou seize heures. Tout
+     ce qui dépasse une heure au temps de base y est ramené (voir `dureePension`), et les hâtes
+     de la constellation descendent encore sous l'heure. L'équilibrage — la pension comme source
+     d'argent — est à reprendre avec ce plafond. */
+  plafond: 3600,
   ageMin: 3,           // il faut être adulte pour être parent
 };
 
@@ -1334,15 +1339,19 @@ const PENSION_CHANCE = [0.5, 0.20, 0.05, 0.01];
 
    • L'ACCIDENT — des parents qu'on a déjà, un pour mille. Personne ne le vise. C'est ce qui
      fait qu'une merveille se rencontre avant de se chercher.
-   • LA RECETTE — le couple exact, un pour cent. C'est la route.
+   • LA RECETTE — le couple exact, deux pour cent. C'est la route.
 
-   L'exact doit toujours écraser l'accident en rendement, sinon il ne sert à rien. Mesuré :
-   0,083 %/h contre 0,020 pour la Kitsune, 0,100 contre rien pour Wukong. Un facteur quatre :
-   l'accident n'est jamais une stratégie, seulement une histoire.
+   L'exact doit toujours écraser l'accident en rendement, sinon il ne sert à rien — et il doit
+   aussi battre le joker aux chimères, sinon on chasse la merveille au hasard plutôt qu'à sa
+   recette. Depuis que le temps de base est plafonné à une heure, tous les couples couvent aussi
+   vite : c'est la CHANCE seule qui départage, d'où des recettes remontées à 2 % (l'accident
+   reste à 0,1 %). Le facteur d'avance tient toujours, mais il se lit sur la chance, plus sur la
+   durée.
 
-   CE QUE ÇA COÛTE EN TEMPS RÉEL, la pension tournant jour et nuit (elle avance hors ligne) :
-   trente-quatre jours de médiane pour la Kitsune par sa recette, vingt-neuf pour Wukong. Un
-   mois chacune, par deux chemins qui n'ont rien à voir — l'une se trouve, l'autre se cherche.
+   CE QUE ÇA COÛTE EN TEMPS RÉEL, la pension tournant jour et nuit (elle avance hors ligne) : de
+   l'ordre de deux jours de médiane par recette, là où c'était un mois avant le plafond. La
+   pension est devenue franchement plus rapide — l'équilibrage de ce qu'elle rend est à
+   reprendre avec ce plafond.
 
    UN MYTHIQUE PAR FAMILLE, ET LA CHIMÈRE N'EN EST PAS UNE. Elle était le carrefour de la
    moitié des recettes, au motif qu'elle est faite d'autres bêtes — mais c'était lui prêter le
@@ -1366,24 +1375,27 @@ const RECETTES = [
      La recette : celui qui pose une énigme pour dévorer, et celui qui ne finit jamais. Ce qui
      en sort cache neuf queues et mille ans. L'accident : Bastet et le temps — le félin donne
      la silhouette, l'anneau donne les siècles, et il manque l'énigme. */
-  { a: 'ouroboros', b: 'sphinx', donne: 'kitsune', duree: 12 * 3600, chance: 0.01 },
-  { a: 'ouroboros', b: 'chat',   donne: 'kitsune', duree:  5 * 3600, chance: 0.001 },
+  /* LES DURÉES ONT ÉTÉ RAMENÉES SOUS L'HEURE (plafond de la pension), et les chances ont dû
+     monter avec : à seize heures de couvaison, une recette à 1 % battait largement le joker aux
+     chimères ; à une heure, les deux couvent aussi vite, et c'est la CHANCE seule qui décide qui
+     est la bonne route. Les recettes remontent donc à 2 %, l'accident reste à 0,1 % — la route
+     exacte garde son avance, le joker redevient l'accident qu'il doit être. */
+  { a: 'ouroboros', b: 'sphinx', donne: 'kitsune', duree: 3600, chance: 0.02 },
+  { a: 'ouroboros', b: 'chat',   donne: 'kitsune', duree: 1800, chance: 0.001 },
 
   /* SUN WUKONG. Il naît d'un œuf de pierre, sur une montagne, sans parents : le mythe ne
      demande pas de singe, il demande une pierre qui s'ouvre. Or « on ne croise pas la pierre »
      laisse passer exactement un couple, et personne n'a de raison de l'essayer. Une
      interdiction devient un secret, et il n'y a pas de seconde route. */
-  { a: 'golem',   b: 'golem',  donne: 'wukong',  duree:  1 * 3600, chance: 0.001 },
+  { a: 'golem',   b: 'golem',  donne: 'wukong',  duree: 3600, chance: 0.02 },
 ];
 
 /* CE QUI SE PASSE APRÈS LA PREMIÈRE, et c'est voulu : une merveille se reproduit comme le
    reste. Elle n’a pas de règle à part — `ligneeDe` la traite comme n’importe quel parent,
-   et la recette n'est le passage obligé que pour la PREMIÈRE. Ce que ça donne, mesuré :
-
-     Wukong × golem     20 h   5 %    il retourne à la pierre dont il sort
-     Kitsune × sphinx   20 h   5 %    par la même famille que sa recette
-     Kitsune × loup      7 h   1 %    la route pauvre, plus lente en rendement
-     Kitsune × chimère  48 h   —      refusé : au-delà du plafond
+   et la recette n'est le passage obligé que pour la PREMIÈRE. Les durées données jadis ici
+   (vingt heures, quarante-huit) sont caduques : le temps de base est plafonné à une heure, donc
+   tout couple couve en une heure ou moins, et plus aucun n'est refusé « trop long ». Ce qui
+   distingue encore les routes, c'est la CHANCE, pas la durée.
 
    La seconde est donc plus facile que la première, et c'est la bonne asymétrie : elle donne
    une raison de GARDER une merveille plutôt que de la vendre, ce qui est exactement ce qu'on
@@ -8410,17 +8422,19 @@ const ecartRarete = (a, b) =>
 const rareteBasse = (a, b) =>
   RARITY[lineOf(a).rarity].rank <= RARITY[lineOf(b).rarity].rank ? lineOf(a).rarity : lineOf(b).rarity;
 
-// Ce que coûte l'attente. Bornée : au-delà du plafond, le couple est refusé plutôt que subi.
+/* Ce que coûte l'attente. PLAFONNÉE À UNE HEURE DE TEMPS DE BASE : ce qui dépasse y est ramené,
+   recette comprise, puis les hâtes de la constellation descendent encore. Plus de refus « trop
+   long » — rien n'est plus trop long. */
 function dureePension(a, b) {
   const rec = recetteDe(a, b);
-  if (rec) return Math.round(rec.duree / vitessePension());
+  if (rec) return Math.round(Math.min(PENSION.plafond, rec.duree) / vitessePension());
   const d = distanceDe(a, b);
   if (d === null) return null;
   // la richesse se desserre mais ne descend jamais sous un : sinon les communes iraient plus
   // vite que la boucle de jeu, et le plafond de réserve serait le seul reste du système
   const riche = Math.max(1, PENSION_MULT[rareteBasse(a, b)] / richessePension());
-  return Math.round((PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b))
-                    * riche / vitessePension());
+  const brut = (PENSION.base + PENSION.parDistance * d + PENSION.parRarete * ecartRarete(a, b)) * riche;
+  return Math.round(Math.min(PENSION.plafond, brut) / vitessePension());
 }
 
 /* Pourquoi ce couple ne peut pas se former — une phrase, ou null s'il le peut. Rendre la
@@ -8434,7 +8448,7 @@ function refusPension(a, b) {
   if (a.age < PENSION.ageMin || b.age < PENSION.ageMin)
     return 'Il faut deux bêtes d’au moins l’âge ' + AGES[PENSION.ageMin - 1].nom + '.';
   if (distanceDe(a, b) === null) return 'On ne croise pas la pierre.';
-  if (dureePension(a, b) > PENSION.plafond) return 'Ces deux-là mettraient trop longtemps.';
+  // plus de refus « trop long » : le temps de base est plafonné à une heure, rien ne dépasse
   return null;
 }
 const peutAccoupler = (a, b) => refusPension(a, b) === null;

@@ -81,7 +81,7 @@ scenario('recettes — le couple et les chances se lisent, même créature cach�
   /* LE CHEMIN N'EST PAS SECRET : les parents et les chances se voient toujours. C'est la
      récompense qu'on cache, pas la question. */
   ok('les parents se nomment', /Golem/.test(tout), tout);
-  ok('la chance se lit', /0,1 %|0.1 %/.test(tout), tout);
+  ok('la chance se lit', /2 %/.test(tout), tout);
   ok('la durée se lit', /1 h/.test(tout), tout);
 });
 

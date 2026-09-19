@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.2.2** | le combo et le calme quittent la ligne des boosts pour une **pastille dans le coin de la scène** — « 🔥 47/100 · ×1,34 » ou « 🌙 calme ×1,5 », avec le compteur qu’on cherchait. Et la ligne des boosts se **dégonfle** : elle empilait une douzaine de « ×1,2 » sans contexte, dont l’effet était déjà dans le temps effectif de l’action ; il ne reste que ce temps, la rente, et ce qu’un clic vaut |
+| **beta 5.2.3** | la pension **plafonnée à une heure** de temps de base. Deux mythiques montaient à seize heures, la recette de la Kitsune à douze : un mur, pas un choix. Tout ce qui dépasse une heure y est ramené, les hâtes de la constellation descendent encore, et plus aucun couple n’est refusé « trop long ». Les recettes remontent à 2 % (l’accident reste à 0,1 %) pour rester la bonne route face au joker maintenant que tous couvent aussi vite. L’équilibrage de ce que la pension rend est à reprendre |
+| beta 5.2.2 | le combo et le calme quittent la ligne des boosts pour une **pastille dans le coin de la scène** — « 🔥 47/100 · ×1,34 » ou « 🌙 calme ×1,5 », avec le compteur qu’on cherchait. Et la ligne des boosts se **dégonfle** : elle empilait une douzaine de « ×1,2 » sans contexte, dont l’effet était déjà dans le temps effectif de l’action ; il ne reste que ce temps, la rente, et ce qu’un clic vaut |
 | beta 5.2.1 | trois réglages en vrac : une bête à fond est **gardée d’office** (comme un chromatique) ; l’**album ne s’affiche plus sans carte** (le saut ne le remplit plus, seuls les boosters le feront) ; et la faveur « L’œil neuf » disparaît — **plus aucune faveur ne buffe les chromatiques**, cette voie n’existe que dans la constellation |
 | beta 5.2.0 | le carnet des recettes : réussir la ponte d’un couple à recette l’apprend, et une vue à elle rassemble les recettes acquises — les parents et les chances, toujours ; la créature au bout seulement si on l’a découverte. Il ne montre que l’acquis, jamais un total ni une case vide : on apprend le chemin, pas la récompense. C’est le préalable au marchand de sable |
 | beta 5.1.1 | le fond des boîtes modales tient au défilement : les statistiques, plus hautes que l’écran une fois assez de compteurs, débordaient de leur fond et s’étalaient sur le voile sombre. La boîte défile désormais à l’intérieur, fond compris — même correctif pour la sauvegarde et le carrefour |
@@ -2264,14 +2265,19 @@ l'est pas se mérite — ce qui est exactement ce qu'on veut d'un système de s�
 | 3 | 1 h 45 | 1 h 55 | 2 h 05 |
 
 …le tout **multiplié par la rareté du parent le moins rare** : ×1 commune, ×4 rare, ×16
-épique, ×64 mythique. Au-delà de **24 h**, le couple est refusé plutôt que subi.
+épique, ×64 mythique — **puis plafonné à une heure** (`beta 5.2.3`). Au-delà, tout est ramené à
+l'heure : attendre dix ou seize heures un œuf n'était pas un choix, c'était un mur. Plus aucun
+couple n'est refusé « trop long », puisque plus rien ne l'est.
 
 **Pourquoi la richesse et non l'écart.** La première version ne pénalisait que l'écart, et la
 mesure a trouvé le trou tout de suite : deux mythiques de même corps sont à écart **nul**, donc
 à durée minimale, alors que ce qui en sort vaut 180 M. Quinze minutes pour un œuf mythique —
-**720 M l'heure, une imprimante à billets**. Le facteur manquant était la richesse. Le moins
+**720 M l'heure, une imprimante à billets**. Le facteur manquant était la richesse : le moins
 rare et non le plus, parce que c'est *sa* lignée qui sort dans 99 % des cas quand l'écart est
-grand. Deux mythiques passent ainsi de quinze minutes à **seize heures**.
+grand. Deux mythiques passaient ainsi de quinze minutes à seize heures — **et depuis la `5.2.3`
+elles sont ramenées à une heure comme tout le reste**. L'imprimante à billets que ce ralenti
+bornait est donc à resurveiller : l'équilibrage de ce que rend la pension se reprend avec ce
+plafond.
 
 #### Ce qui sort du couple
 
