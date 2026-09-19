@@ -1292,10 +1292,17 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   color: var(--ink); margin: 0;
 }
 .forge-dit { grid-column: 1; margin: 0; max-width: 46rem; color: var(--soft); font-size: 0.82rem; line-height: 1.5; }
-.forge-poussiere {
+.forge-poussieres {
   grid-column: 2; grid-row: 1 / span 2;
-  font-family: var(--f-ui); font-size: 1rem; color: var(--ink);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem;
 }
+.forge-poussiere {
+  font-family: var(--f-ui); font-size: 1rem; color: var(--ink);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* L'or est réservé aux mythiques et aux prodiges — et la poussière dorée vient des
+   chromatiques, qui sont des prodiges. Elle a donc le droit à cet ambre. */
+.forge-poussiere-or { color: var(--amber); }
 .forge-vide { color: var(--soft); font-size: 0.85rem; max-width: 40rem; line-height: 1.6; }
 
 /* LE PLAN DE TRAVAIL RESTE EN HAUT pendant qu'on parcourt la grille : c'est lui qu'on regarde
@@ -1448,6 +1455,11 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   background: var(--ground); border: 1px solid var(--rule-hi); border-radius: 4px;
   width: min(46rem, 100%); padding: 1.4rem 1.6rem 1.6rem;
   display: flex; flex-direction: column; max-height: 94vh;
+  /* LA BOÎTE DÉFILE ELLE-MÊME. Sans ça, un contenu plus haut que `max-height` — les
+     statistiques, une fois assez de compteurs — débordait hors du fond de la boîte : on faisait
+     défiler l'`.asc` derrière, et le contenu s'étalait sur le voile sombre, sans fond. Ce qui se
+     lisait comme « les stats perdent leur arrière-plan quand on scrolle ». */
+  overflow-y: auto;
 }
 .asc-box > .asc-sec { display: flex; flex-direction: column; min-height: 0; }
 .asc-choix { overflow-y: auto; min-height: 0; }
@@ -1828,6 +1840,8 @@ body.en-pause .subject { cursor: default; }
 .carte-acte:hover:not(:disabled) { color: var(--ink); border-color: var(--rule-hi); }
 .carte-acte:disabled { opacity: 0.35; cursor: not-allowed; }
 .carte-acte.fondre:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+/* Fondre un chromatique rend de l'or : le montant se lit d'emblée dans l'ambre des prodiges. */
+.carte-acte.fondre.fondre-or { color: var(--amber); }
 .carte-acte.fusion:hover:not(:disabled) { border-color: var(--coin); color: var(--coin); }
 
 /* ── LES TROPHÉES ─────────────────────────────────────────────────────────────

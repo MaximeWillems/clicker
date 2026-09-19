@@ -67,6 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
+| **beta 5.1.1** | le fond des boîtes modales tient au défilement : les statistiques, plus hautes que l’écran une fois assez de compteurs, débordaient de leur fond et s’étalaient sur le voile sombre. La boîte défile désormais à l’intérieur, fond compris — même correctif pour la sauvegarde et le carrefour |
+| beta 5.1.0 | la poussière dorée : un chromatique (un prodige) fondu ou défait au saut ne rend plus de poussière bleue en plus grande quantité, mais une ressource à part — la poussière **dorée**, dans l’ambre réservé aux prodiges. La forge montre les deux bassins. Elle n’a pas encore d’emploi : l’évier viendra avec les boosters |
 | **beta 5.0.0** | la refonte de l’ascension : on ne choisit plus de bêtes à emporter, le saut ne fabrique plus de cartes. Son seul objet devient d’investir ses jetons dans la constellation, **et seulement à ce moment-là** — le reste du temps, elle se consulte. L’enclos entier se défait en poussière, le bouton sépare la réserve du gain du cycle (« 1 (+4) »), et l’axe du sang perd ses deux « bagage » avec le prix des cartes qu’ils adoucissaient. Les cartes viendront des boosters, à venir |
 | beta 4.32.1 | la dernière barre de chaque âge disparaît : elle affichait « 15 / 15 » en annonçant un niveau 16, ne rapportait rien et ne servait qu’à mûrir. Les âges raccourcissent d’autant — un niveau dure toujours dix secondes à l’enfance — et l’équilibrage est à reprendre |
 | beta 4.32.0 | la main tenue : chaque geste s’ouvre le jour où il sert — vendre quand la bête paie un œuf, la taille à la maturité, le bonheur après le premier rachat, évoluer quand le péage est payable, garder avec le premier automate. Et le voile ne cache plus le bouton qu’elle demande |
@@ -798,7 +800,7 @@ pendant qu'on parcourt la grille : c'est lui qu'on regarde pour décider.
 
 #### Ce qu'une carte rend, ce qu'une fusion coûte
 
-    poussière = 10 × rareté(1 / 3 / 10 / 30) × chromatique(×3) × fond(×2)
+    poussière = 10 × rareté(1 / 3 / 10 / 30) × fond(×2)
     fusion    = 100 puis 400, × la même rareté
 
 | Rareté | Une carte rend | ★→★★ | ★★→★★★ |
@@ -807,6 +809,13 @@ pendant qu'on parcourt la grille : c'est lui qu'on regarde pour décider.
 | rare | ✧ 30 | 300 | 1 200 |
 | épique | ✧ 100 | 1 000 | 4 000 |
 | mythique | ✧ 300 | 3 000 | 12 000 |
+
+**Deux poussières, deux bassins (`5.1.0`).** La bleue (✧) est celle du tout-venant ; un
+**chromatique** — un prodige — rend de la poussière **dorée** (❂), pour le même montant que le
+tout-venant de sa rareté. Avant, il rendait ×3 de bleue ; désormais être doré *est* la
+récompense, et l'or ne se mélange pas au bleu. La forge affiche les deux, et le bouton *fondre*
+d'un chromatique passe à l'ambre. La dorée n'a pas encore d'emploi — l'évier viendra avec les
+boosters.
 
 **La rareté est du même côté des deux équations, et elle s'annule** : monter une commune ou une
 mythique coûte le **même nombre de cartes de sa propre rareté** en poussière — dix pour la

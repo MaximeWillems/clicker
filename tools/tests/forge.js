@@ -16,9 +16,18 @@ scenario('poussière — la rareté s’annule des deux côtés', () => {
     eq(ligne + ' : quarante pour la troisième',
        jeu.coutFusion(k2) / jeu.poussiereDe(k1), 40);
   }
+  /* UN CHROMATIQUE REND DE L'OR, PAS DU BLEU. Le montant suit la même règle que le tout-venant
+     de sa rareté — c'est le BASSIN qui change, pas la quantité. On le fond et on regarde où la
+     poussière tombe. */
   const nu = pave(jeu, 1, 'crapaud');
   const chroma = Object.assign(pave(jeu, 2, 'crapaud'), { prodige: true });
-  eq('un chromatique rend trois fois plus', jeu.poussiereDe(chroma), jeu.poussiereDe(nu) * 3);
+  eq('même montant qu’un tout-venant de sa rareté', jeu.poussiereDe(chroma), jeu.poussiereDe(nu));
+  const jeu2 = neuf(); const s2 = jeu2.state;
+  s2.album = [Object.assign(pave(jeu2, 7, 'crapaud'), { prodige: true })];
+  s2.slots = []; s2.poussiere = 0; s2.poussiereOr = 0;
+  jeu2.desintegrer(7);
+  eq('rien dans le bassin bleu', s2.poussiere, 0);
+  ok('tout dans le bassin doré', s2.poussiereOr > 0, s2.poussiereOr);
 
   /* LA QUALITÉ N'ENTRE PAS : niveau, teinte et rang décident déjà de la puissance. */
   const bacle = Object.assign(pave(jeu, 3, 'crapaud'), { niv: 1, chroma: 0, rank: 0 });
@@ -49,6 +58,23 @@ scenario('poussière — fondre, et ne jamais défaire une fusion', () => {
   jeu.desintegrer(1);
   eq('une carte à trois étoiles rend autant qu’une neuve',
      s.poussiere - avant, jeu.poussiereDe(pave(jeu, 9)));
+});
+
+scenario('poussière dorée — l’enclos se partage en deux bassins au saut', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 20;
+  poserJetons(jeu, 1);                     // de quoi ouvrir la porte du saut
+
+  const nu = beteNeutre(jeu, 'crapaud', 3, 3000);
+  const chroma = beteNeutre(jeu, 'crapaud', 3, 3000); chroma.prodige = true;
+  jeu.refresh();
+
+  jeu.ascensionner();
+  const t = jeu.state;
+  /* LE TOUT-VENANT LAISSE DU BLEU, LE CHROMATIQUE DE L'OR — deux bassins qui ne se mélangent
+     pas, et les deux traversent le saut comme l'album. */
+  ok('du bleu, du tout-venant', t.poussiere > 0, t.poussiere);
+  ok('de l’or, du chromatique', t.poussiereOr > 0, t.poussiereOr);
 });
 
 scenario('forge — trois entrent, une sort, et les trois disparaissent', () => {

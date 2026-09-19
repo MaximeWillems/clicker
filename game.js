@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.0.0';
+const VERSION = 'beta 5.1.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1008,7 +1008,10 @@ const ETOILES = [1, 1.8, 3];
    une partie de ce qu'on vient de payer. */
 const POUSSIERE_BASE    = 10;
 const POUSSIERE_RARETE  = { commune: 1, rare: 3, epique: 10, mythique: 30, merveilleuse: 90 };
-const POUSSIERE_PRODIGE = 3;
+/* UN CHROMATIQUE NE REND PLUS PLUS DE POUSSIÈRE, IL EN REND UNE AUTRE. Il donnait ×3 de poussière
+   bleue ; il donne désormais de la poussière DORÉE — une ressource à part, la matière des
+   chromatiques. Le montant suit la même règle que la bleue (la rareté), c'est le BASSIN qui
+   change : être doré est la récompense, pas un multiplicateur. */
 const POUSSIERE_FOND    = 2;      // les fonds n'existent pas encore : le facteur dort
 // ce qu'une bête sacrifiée à l'ascension laisse, en fraction de ce que sa carte aurait rendu
 const POUSSIERE_SAUT    = 0.1;
@@ -2712,7 +2715,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 34;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 35;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2834,8 +2837,10 @@ function freshState() {
     // les trophées décrochés, par clé. Ils traversent l'ascension, comme les compteurs.
     trophees: {},
     /* La poussière de carte. Elle traverse l'ascension comme l'album : la remettre à zéro
-       obligerait à tout fondre avant chaque saut, une corvée déguisée en décision. */
+       obligerait à tout fondre avant chaque saut, une corvée déguisée en décision.
+       `poussiereOr` est sa sœur dorée, celle des chromatiques — même règle, autre bassin. */
     poussiere: 0,
+    poussiereOr: 0,
     /* Les clics déjà donnés sur l'assiette en cours, de 0 à neuf. Dans la sauvegarde : perdre
        neuf clics parce qu'on a rechargé la page ajouterait une punition à la punition. */
     frotte: 0,
@@ -3489,10 +3494,14 @@ const puissanceDe = k => plafondDe(k) * ETOILES[(k.etoiles || 1) - 1] * qualiteD
 const cleForge = k => k.line + ':' + k.motif + ':' + (k.etoiles || 1);
 
 const rareteDe    = k => LINE_BY_KEY[k.line].rarity;
+/* UN CHROMATIQUE REND DE L'OR, PAS DU BLEU. C'est un prodige — la seule chose, avec les
+   mythiques, à qui le jeu réserve la couleur or. Sa poussière est donc dorée, et `estChroma`
+   décide dans quel bassin elle tombe. */
+const estChroma   = k => !!k.prodige;
 // Ce qu'une carte rend si on la fond. Les étoiles n'entrent pas : on ne défait pas une fusion.
+// Le montant est le même quel que soit le bassin ; c'est `estChroma` qui dit bleu ou doré.
 const poussiereDe = k => Math.round((etoilePrise('cendres') ? 2 : 1)
                                     * POUSSIERE_BASE * POUSSIERE_RARETE[rareteDe(k)]
-                                    * (k.prodige ? POUSSIERE_PRODIGE : 1)
                                     * (k.fond ? POUSSIERE_FOND : 1));
 // Ce que coûte l'étoile suivante, ou null quand la carte est au bout.
 const coutFusion  = k => (k.etoiles || 1) >= ETOILES.length ? null
@@ -6619,10 +6628,14 @@ function carteEl(k, actes) {
   if (actes !== false) {
     const fondre = el.querySelector('.fondre');
     const equipee = state.slots.indexOf(k.id) !== -1;
-    fondre.textContent = '✧ ' + fmt(poussiereDe(k));
+    // un chromatique rend de la poussière DORÉE : le glyphe et la couleur le disent
+    const or = estChroma(k);
+    fondre.textContent = (or ? '❂ ' : '✧ ') + fmt(poussiereDe(k));
+    fondre.classList.toggle('fondre-or', or);
     fondre.disabled = equipee;
     fondre.title = equipee ? 'Retire-la de tes cartes actives avant de la fondre.'
-                           : 'Fondre : + ' + fmt(poussiereDe(k)) + ' de poussière. Sans retour.';
+                           : 'Fondre : + ' + fmt(poussiereDe(k)) +
+                             (or ? ' de poussière dorée' : ' de poussière') + '. Sans retour.';
   }
   return el;
 }
@@ -6959,11 +6972,13 @@ function renderForge() {
   elaguerForge();
   const sig = state.album.map(k => k.id + ':' + (k.etoiles || 1)).join(',') + '|' +
               state.slots.join(',') + '|' + (state.poussiere || 0) + '|' +
-              forgeBase + ':' + forgeAmies.join('.');
+              (state.poussiereOr || 0) + '|' + forgeBase + ':' + forgeAmies.join('.');
   if (sig === forgeSig) return;
   forgeSig = sig;
 
+  // deux bassins : la bleue (\u2727) et la dor\u00e9e (\u2742), celle des chromatiques
   setText($('forge-poussiere'), '\u2727 ' + fmt(state.poussiere || 0));
+  setText($('forge-poussiere-or'), '\u2742 ' + fmt(state.poussiereOr || 0));
 
   const base = forgeBase === null ? null : carteDe(forgeBase);
   const trou = (texte, cls) => {
@@ -7129,7 +7144,9 @@ function renderAlbum() {
 function desintegrer(id) {
   const k = carteDe(id);
   if (!k || state.slots.indexOf(id) !== -1) return false;
-  state.poussiere = (state.poussiere || 0) + poussiereDe(k);
+  // un chromatique tombe dans le bassin doré, tout le reste dans le bleu
+  const pot = estChroma(k) ? 'poussiereOr' : 'poussiere';
+  state[pot] = (state[pot] || 0) + poussiereDe(k);
   state.stats.fondues = (state.stats.fondues || 0) + 1;
   state.album = state.album.filter(x => x.id !== id);
   oublierAlbum();
@@ -7370,9 +7387,13 @@ function ascensionner() {
   /* CE QU'ON N'EMPORTE PAS LAISSE UN PEU DE POUSSIÈRE — et maintenant on n'emporte plus rien,
      donc l'enclos ENTIER se défait. Un dixième de ce qu'une carte aurait rendu ne rend pas le
      sacrifice indolore, mais il récompense d'ascensionner sur une ferme pleine plutôt que sur
-     trois têtards. */
-  const laisse = subjects().filter(s => s.kind === 'creature')
-    .reduce((n, s) => n + Math.round(poussiereDe(capsuleBrute(s.c)) * POUSSIERE_SAUT), 0);
+     trois têtards. Les chromatiques laissent de l'or, le reste du bleu — deux bassins séparés. */
+  let laisse = 0, laisseOr = 0;
+  for (const s of subjects().filter(s => s.kind === 'creature')) {
+    const cap = capsuleBrute(s.c);
+    const p = Math.round(poussiereDe(cap) * POUSSIERE_SAUT);
+    if (estChroma(cap)) laisseOr += p; else laisse += p;
+  }
 
   /* CE QUI RESTE EN MAIN DEVIENT LA RÉSERVE. `jetonsEnMain` vaut réserve + crédit du cycle −
      dépense : c'est le net après ce qu'on vient d'investir dans la constellation. Le sommet et
@@ -7394,6 +7415,7 @@ function ascensionner() {
     seen: state.seen, dex: state.dex, tri: state.tri, triOeuf: state.triOeuf,
     achat: state.achat, sound: state.sound,
     poussiere: (state.poussiere || 0) + laisse,
+    poussiereOr: (state.poussiereOr || 0) + laisseOr,
     tuto: state.tuto, vu: state.vu, dial: state.dial,
     stats: state.stats, dons: state.dons, trophees: state.trophees,
   });
@@ -8711,6 +8733,7 @@ const STATS = [
   ]],
   ['L’album', () => [
     ['Poussière en poche', fmt(state.poussiere || 0)],
+    ['Poussière dorée', fmt(state.poussiereOr || 0)],
     ['Cartes fondues', fmt(state.stats.fondues || 0)],
     ['Fusions', fmt(state.stats.fusions || 0)],
   ]],
