@@ -102,3 +102,32 @@ const MARCHAND = {
    - argent → bleue : rend un usage aux pièces qui ne servent plus à rien en fin de partie. */
 const CHANGE_OR    = { ratio: 20000, orMin: 1, orMax: 5, variance: 0.35 };
 const CHANGE_BLEUE = { prix: 50, bleueMin: 500, bleueMax: 5000, variance: 0.35 };
+
+/* LES CARTES, LES PAQUETS ET LES RECETTES — les marchandises qui remplissent l'album et le carnet.
+   La MONNAIE décide de la QUALITÉ : payé en poussière BLEUE (abondante), le tirage est basique ;
+   payé en poussière DORÉE (rare), il vise plus haut. Un paquet, c'est cinq cartes, une rare+
+   garantie. Un paquet doré peut être un GOD PACK : cinq cartes épique+, chromatisme doublé. */
+const TIRAGE = {                       // rareté d'une carte tirée, par qualité (somme = 1)
+  bleu: [['commune', 0.70], ['rare', 0.25], ['epique', 0.045], ['mythique', 0.005]],
+  or:   [['commune', 0.20], ['rare', 0.40], ['epique', 0.30], ['mythique', 0.09], ['merveilleuse', 0.01]],
+};
+const PAQUET_N       = 5;              // cartes par paquet
+const CARTE_CHROMA   = 0.01;           // 1 % qu'une carte tirée soit chromatique (donne de l'or à la fonte)
+const GODPACK_ODDS   = 1 / 500;        // un paquet doré sur 500 est un god pack
+const GODPACK_CHROMA = 0.02;           // chromatisme doublé dans un god pack
+const GODPACK_SOL    = 'epique';       // le plancher de rareté d'un god pack
+
+/* Les prix, en poussière (bleue pour la qualité bleu, dorée pour la qualité or), tirés au sort par
+   venue comme le changeur. À ÉQUILIBRER. */
+const PRIX_CARTE  = { bleu: 400,  or: 12, variance: 0.3 };
+const PRIX_PAQUET = { bleu: 1600, or: 45, variance: 0.3 };
+/* La recette se paie en OR (une marchandise premium), à un prix qui suit la rareté de la créature
+   au bout : base × le multiplicateur de rareté (1 / 3 / 10 / 30 / 90). Aujourd'hui toutes les
+   recettes donnent une merveille, donc toutes coûtent base × 90 ; le barème s'ouvrira de lui-même
+   le jour où des recettes d'autres raretés existeront. */
+const RECETTE_BASE = 1;
+const RECETTE_VARIANCE = 0.3;
+
+/* Le poids de chaque marchandise dans le tirage d'une offre. La recette ne paraît que s'il reste
+   une recette à apprendre ; sinon son poids se reporte sur le reste. */
+const MARCHANDISES = { change: 3, carte: 3, paquet: 2, recette: 2 };

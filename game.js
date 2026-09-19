@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.5.2';
+const VERSION = 'beta 5.6.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7890,8 +7890,8 @@ const delaiMarchand = () => (86400 / MARCHAND.parJour)
 const auHasardEntre = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
 const avecVariance  = (base, v) => Math.max(1, Math.round(base * (1 + (Math.random() * 2 - 1) * v)));
 
-/* Une offre du changeur, tirée au sort. Tant que les boosters n'existent pas, c'est la seule
-   marchandise : une conversion de poussière, dans un sens (bleue → or) ou l'autre (argent → bleue). */
+/* Une offre du changeur : une conversion de poussière, dans un sens (bleue → or) ou l'autre
+   (argent → bleue). */
 function offreDuChange() {
   if (Math.random() < 0.5) {
     const or = auHasardEntre(CHANGE_OR.orMin, CHANGE_OR.orMax);
@@ -7903,7 +7903,89 @@ function offreDuChange() {
            prix: avecVariance(bleue * CHANGE_BLEUE.prix, CHANGE_BLEUE.variance) };
 }
 
-const tirerEtal = () => Array.from({ length: MARCHAND.offres }, offreDuChange);
+/* ── LE BOOSTER : « TIRER UNE CARTE » ──────────────────────────────────────────
+   La primitive qui remplit l'album. Une carte tirée est une capsule neuve — jeune, une étoile,
+   motif et teinte au hasard, peut-être chromatique. C'est la même forme qu'une carte de fusion,
+   pour que la forge, la fonte et l'album n'aient rien de nouveau à connaître. */
+const tirerRarete = table => {
+  let r = Math.random();
+  for (const [cle, p] of table) { if ((r -= p) < 0) return cle; }
+  return table[table.length - 1][0];
+};
+
+function carteBooster(rarete, chanceChroma) {
+  const v = rollVariants(false);                 // motif, teinte, tempérament, iv au hasard ; pas de fond
+  return {
+    id: nextCard++, line: pickLine(rarete), age: 1, niv: 1,
+    motif: v.motif, chroma: v.chroma, temper: v.temper, rank: 0, iv: v.iv,
+    prodige: Math.random() < chanceChroma, fond: null, etoiles: 1,
+  };
+}
+
+const rareteTiree = qualite => tirerRarete(TIRAGE[qualite] || TIRAGE.bleu);
+
+// une carte seule, à la qualité voulue
+const tirerUneCarte = qualite => carteBooster(rareteTiree(qualite), CARTE_CHROMA);
+
+/* un paquet de cinq. Une rare+ garantie ; un paquet doré peut être un GOD PACK — cinq cartes
+   épique+, chromatisme doublé. */
+function tirerUnPaquet(qualite) {
+  const god = qualite === 'or' && Math.random() < GODPACK_ODDS;
+  const solRang = god ? RARITY[GODPACK_SOL].rank : 0;
+  const chroma = god ? GODPACK_CHROMA : CARTE_CHROMA;
+  const cartes = [];
+  for (let i = 0; i < PAQUET_N; i++) {
+    let rar = rareteTiree(qualite);
+    if (RARITY[rar].rank < solRang) rar = GODPACK_SOL;      // le plancher du god pack
+    cartes.push(carteBooster(rar, chroma));
+  }
+  // garantie « une rare+ » : si tout est commun, on relève la première
+  if (!god && cartes.every(k => RARITY[rareteDe(k)].rank === 0))
+    cartes[0] = carteBooster('rare', chroma);
+  return { cartes, god };
+}
+
+// une recette encore inconnue, tirée au sort (ou null) ; `exclus` évite d'en reproposer une déjà
+// posée sur le même étal.
+function recetteInconnue(exclus) {
+  const reste = RECETTES.filter(r => !recetteConnue(r) && !(exclus && exclus.has(cleRecette(r))));
+  return reste.length ? reste[Math.floor(Math.random() * reste.length)] : null;
+}
+
+/* Le tirage d'une offre : une marchandise, choisie par poids. La recette ne paraît que s'il en
+   reste une à apprendre (hors de celles déjà sur l'étal) ; son poids se reporte sinon sur le reste. */
+function offreMarchande(exclus) {
+  const pool = [];
+  for (const [cat, poids] of Object.entries(MARCHANDISES)) {
+    if (cat === 'recette' && !recetteInconnue(exclus)) continue;
+    for (let i = 0; i < poids; i++) pool.push(cat);
+  }
+  const cat = pool[Math.floor(Math.random() * pool.length)] || 'change';
+  if (cat === 'change') return offreDuChange();
+
+  const qualite = Math.random() < 0.5 ? 'or' : 'bleu';
+  const monnaie = qualite === 'or' ? 'poussiereOr' : 'poussiere';
+  if (cat === 'carte')
+    return { type: 'carte', qualite, monnaie, prix: avecVariance(PRIX_CARTE[qualite], PRIX_CARTE.variance) };
+  if (cat === 'paquet')
+    return { type: 'paquet', qualite, monnaie, prix: avecVariance(PRIX_PAQUET[qualite], PRIX_PAQUET.variance) };
+  // recette : payée en or, prix selon la rareté de la créature au bout
+  const r = recetteInconnue(exclus);
+  const rarete = LINE_BY_KEY[r.donne].rarity;
+  return { type: 'recette', cle: cleRecette(r), rarete, monnaie: 'poussiereOr',
+           prix: avecVariance(RECETTE_BASE * POUSSIERE_RARETE[rarete], RECETTE_VARIANCE) };
+}
+
+// un étal : `offres` marchandises, sans jamais deux fois la même recette
+function tirerEtal() {
+  const offres = [], recettesPrises = new Set();
+  for (let i = 0; i < MARCHAND.offres; i++) {
+    const o = offreMarchande(recettesPrises);
+    if (o.type === 'recette') recettesPrises.add(o.cle);
+    offres.push(o);
+  }
+  return offres;
+}
 
 function tickMarchand() {
   const m = state.marchand;
@@ -7935,9 +8017,21 @@ function acheterMarchand(i) {
   if (!marchandIci() || etalPlein()) return false;
   const o = m.offres[i];
   if (!offreAbordable(o)) return false;
+
+  // une recette peut avoir été apprise autrement depuis que l'étal a figé l'offre
+  let rec = null;
+  if (o.type === 'recette') {
+    rec = RECETTES.find(x => cleRecette(x) === o.cle);
+    if (!rec || recetteConnue(rec)) return false;
+  }
+
   state[o.monnaie] = (state[o.monnaie] || 0) - o.prix;
   if (o.type === 'or') state.poussiereOr = (state.poussiereOr || 0) + o.donne;
-  else state.poussiere = (state.poussiere || 0) + o.donne;
+  else if (o.type === 'bleue') state.poussiere = (state.poussiere || 0) + o.donne;
+  else if (o.type === 'carte') { state.album.push(tirerUneCarte(o.qualite)); oublierAlbum(); }
+  else if (o.type === 'paquet') { for (const c of tirerUnPaquet(o.qualite).cartes) state.album.push(c); oublierAlbum(); }
+  else if (o.type === 'recette') apprendreRecette(rec);
+
   o.pris = true;
   m.achats++;
   save();
@@ -7946,18 +8040,38 @@ function acheterMarchand(i) {
 }
 
 /* Les icônes d'un échange : ce qu'on paie à gauche, ce qu'on gagne à droite. Émojis en attendant
-   les dessins — la pièce 🪙, la poussière bleue ✧ et la dorée ❂. */
-const ICONE_MONNAIE = { coins: '🪙', poussiere: '✧' };
+   les dessins — la pièce 🪙, la poussière bleue ✧, la dorée ❂, la carte 🃏, le paquet 📦, la
+   recette 📜. */
+const ICONE_MONNAIE = { coins: '🪙', poussiere: '✧', poussiereOr: '❂' };
+const ICONE_GAIN    = { or: '❂', bleue: '✧', carte: '🃏', paquet: '📦', recette: '📜' };
 const iconePayer  = o => ICONE_MONNAIE[o.monnaie] || '?';
-const iconeGagner = o => o.type === 'or' ? '❂' : '✧';
-const nomGain     = o => o.type === 'or' ? 'poussière dorée' : 'poussière bleue';
+const iconeGagner = o => ICONE_GAIN[o.type] || '✧';
+function nomGain(o) {
+  switch (o.type) {
+    case 'or':      return 'poussière dorée';
+    case 'bleue':   return 'poussière bleue';
+    case 'carte':   return 'Carte · qualité ' + (o.qualite === 'or' ? 'dorée' : 'bleue');
+    case 'paquet':  return 'Paquet · ' + PAQUET_N + ' cartes' + (o.qualite === 'or' ? ' dorées' : '');
+    case 'recette': return 'Recette · ' + RARITY[o.rarete].name;
+    default:        return '';
+  }
+}
+// ce que le côté « gagné » affiche comme montant : un nombre pour les poussières, un compte sinon
+function qteGain(o) {
+  if (o.type === 'or' || o.type === 'bleue') return o.donne;
+  if (o.type === 'paquet') return '×' + PAQUET_N;
+  if (o.type === 'carte')  return '×1';
+  return '';        // recette : l'icône suffit
+}
 
-// un bloc « icône + montant », un côté de l'échange
+// un bloc « icône + montant », un côté de l'échange. Le montant est un nombre (poussière) ou déjà
+// une chaîne (× compte).
 function coteEchange(icone, montant, classe) {
   const c = document.createElement('span');
   c.className = 'echange-cote ' + classe;
   const i = document.createElement('span'); i.className = 'echange-icone'; setText(i, icone);
-  const n = document.createElement('span'); n.className = 'echange-montant'; setText(n, fmt(montant));
+  const n = document.createElement('span'); n.className = 'echange-montant';
+  setText(n, typeof montant === 'number' ? fmt(montant) : montant);
   c.appendChild(i); c.appendChild(n);
   return c;
 }
@@ -7968,8 +8082,8 @@ let marchandSig = '';
 function renderMarchand() {
   if (vue !== 'marchand') { marchandSig = ''; return; }
   const m = state.marchand, plein = etalPlein();
-  const sig = m.offres.map(o => o.type + o.donne + o.prix + (o.pris ? 'P' : '')
-              + (offreAbordable(o) ? 'A' : '')).join('|') + '|' + (plein ? 'plein' : m.achats);
+  const sig = m.offres.map(o => o.type + (o.qualite || '') + (o.cle || '') + o.donne + o.prix
+              + (o.pris ? 'P' : '') + (offreAbordable(o) ? 'A' : '')).join('|') + '|' + (plein ? 'plein' : m.achats);
   if (sig === marchandSig) return;
   marchandSig = sig;
 
@@ -7985,8 +8099,8 @@ function renderMarchand() {
     b.className = 'marchand-offre' + (o.pris ? ' pris' : '');
     b.dataset.i = i;
     b.disabled = o.pris || plein || !offreAbordable(o);
-    b.title = 'Payer ' + fmt(o.prix) + (o.monnaie === 'coins' ? ' pièces' : ' de poussière bleue')
-            + ' pour ' + fmt(o.donne) + ' de ' + nomGain(o);
+    const nomMonnaie = o.monnaie === 'coins' ? 'pièces' : o.monnaie === 'poussiereOr' ? 'poussière dorée' : 'poussière bleue';
+    b.title = 'Payer ' + fmt(o.prix) + ' ' + nomMonnaie + ' pour : ' + nomGain(o);
 
     // le titre : ce que la marchandise donne, avec son icône
     const titre = document.createElement('span');
@@ -8004,13 +8118,14 @@ function renderMarchand() {
     fleche.className = 'echange-fleche';
     setText(fleche, '→');
     troc.appendChild(fleche);
-    troc.appendChild(coteEchange(iconeGagner(o), o.donne, 'gagne'));
+    troc.appendChild(coteEchange(iconeGagner(o), qteGain(o), 'gagne'));
     b.appendChild(troc);
 
     // l'état : à prendre, pris, ou hors de portée
+    const verbe = (o.type === 'or' || o.type === 'bleue') ? 'Échanger' : 'Acheter';
     const etat = document.createElement('span');
     etat.className = 'offre-etat';
-    setText(etat, o.pris ? '✓ pris' : plein ? '—' : offreAbordable(o) ? 'Échanger' : 'trop cher');
+    setText(etat, o.pris ? '✓ pris' : plein ? '—' : offreAbordable(o) ? verbe : 'trop cher');
     b.appendChild(etat);
 
     liste.appendChild(b);

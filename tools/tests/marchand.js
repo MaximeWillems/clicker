@@ -53,7 +53,7 @@ scenario('marchand — l’étal se ferme au bout du quart d’heure', () => {
 scenario('marchand — on ne prend que deux offres sur trois', () => {
   const jeu = neuf();
   const m = ouvrir(jeu);
-  jeu.state.coins = 1e15; jeu.state.poussiere = 1e12;   // de quoi tout payer
+  jeu.state.coins = 1e15; jeu.state.poussiere = 1e12; jeu.state.poussiereOr = 1e9;   // de quoi tout payer
   ok('la première offre se prend', jeu.acheterMarchand(0));
   ok('la deuxième aussi', jeu.acheterMarchand(1));
   ok('la troisième est refusée : le plafond est atteint', !jeu.acheterMarchand(2));
@@ -63,7 +63,7 @@ scenario('marchand — on ne prend que deux offres sur trois', () => {
 scenario('marchand — une offre déjà prise ne se reprend pas', () => {
   const jeu = neuf();
   ouvrir(jeu);
-  jeu.state.coins = 1e15; jeu.state.poussiere = 1e12;
+  jeu.state.coins = 1e15; jeu.state.poussiere = 1e12; jeu.state.poussiereOr = 1e9;
   ok('prise une fois', jeu.acheterMarchand(0));
   ok('pas deux', !jeu.acheterMarchand(0));
 });
@@ -95,6 +95,88 @@ scenario('marchand — sans de quoi payer, l’offre est refusée', () => {
   jeu.state.poussiere = 100;                 // trop peu
   ok('l’achat est refusé', !jeu.acheterMarchand(0));
   eq('rien n’a bougé', jeu.state.poussiereOr, 0);
+});
+
+scenario('marchand — acheter une carte la pose dans l’album', () => {
+  const jeu = neuf();
+  const m = ouvrir(jeu);
+  jeu.state.poussiere = 1e6;
+  m.offres = [{ type: 'carte', qualite: 'bleu', monnaie: 'poussiere', prix: 400 }];
+  const n = jeu.state.album.length;
+  ok('la carte s’achète', jeu.acheterMarchand(0));
+  eq('l’album gagne une carte', jeu.state.album.length, n + 1);
+  const k = jeu.state.album[jeu.state.album.length - 1];
+  eq('elle est neuve : une étoile', k.etoiles, 1);
+  ok('et elle a une lignée', !!k.line);
+});
+
+scenario('marchand — un paquet pose cinq cartes', () => {
+  const jeu = neuf();
+  const m = ouvrir(jeu);
+  jeu.state.poussiere = 1e6;
+  m.offres = [{ type: 'paquet', qualite: 'bleu', monnaie: 'poussiere', prix: 1600 }];
+  const n = jeu.state.album.length;
+  jeu.acheterMarchand(0);
+  eq('cinq cartes de plus', jeu.state.album.length, n + jeu.PAQUET_N);
+});
+
+scenario('marchand — un paquet bleu garantit au moins une rare', () => {
+  const jeu = neuf();
+  const rang = r => jeu.RARITY[r].rank;
+  const vrai = Math.random;
+  try {
+    Math.random = () => 0.999;                 // tout pousse vers la commune
+    const { cartes } = jeu.tirerUnPaquet('bleu');
+    ok('pas que du commun', cartes.some(k => rang(jeu.LINE_BY_KEY[k.line].rarity) >= 1),
+       cartes.map(k => jeu.LINE_BY_KEY[k.line].rarity).join(','));
+  } finally { Math.random = vrai; }
+});
+
+scenario('marchand — un god pack ne sort que de l’épique ou mieux', () => {
+  const jeu = neuf();
+  const rang = r => jeu.RARITY[r].rank, sol = jeu.RARITY[jeu.GODPACK_SOL].rank;
+  const vrai = Math.random;
+  try {
+    Math.random = () => 0.0001;                // sous GODPACK_ODDS
+    const paq = jeu.tirerUnPaquet('or');
+    ok('c’est bien un god pack', paq.god);
+    ok('toutes épique+', paq.cartes.every(k => rang(jeu.LINE_BY_KEY[k.line].rarity) >= sol));
+  } finally { Math.random = vrai; }
+});
+
+scenario('marchand — acheter une recette l’apprend, et pas deux fois', () => {
+  const jeu = neuf();
+  const m = ouvrir(jeu);
+  jeu.state.poussiereOr = 1e6;
+  const r = jeu.recetteInconnue();
+  m.offres = [{ type: 'recette', cle: jeu.cleRecette(r), rarete: jeu.LINE_BY_KEY[r.donne].rarity,
+                monnaie: 'poussiereOr', prix: 90 }];
+  const avant = jeu.recettesConnues();
+  ok('la recette s’achète', jeu.acheterMarchand(0));
+  eq('le carnet gagne une entrée', jeu.recettesConnues(), avant + 1);
+  ok('c’est la bonne', jeu.recetteConnue(r));
+});
+
+scenario('marchand — une recette déjà connue n’est plus vendable', () => {
+  const jeu = neuf();
+  const m = ouvrir(jeu);
+  jeu.state.poussiereOr = 1e6;
+  const r = jeu.recetteInconnue();
+  jeu.apprendreRecette(r);                      // apprise autrement entre-temps
+  m.offres = [{ type: 'recette', cle: jeu.cleRecette(r), rarete: jeu.LINE_BY_KEY[r.donne].rarity,
+                monnaie: 'poussiereOr', prix: 90 }];
+  ok('l’achat est refusé', !jeu.acheterMarchand(0));
+});
+
+scenario('marchand — un étal ne pose jamais deux fois la même recette', () => {
+  const jeu = neuf();
+  const vues = {};
+  for (let t = 0; t < 40; t++) {
+    for (const o of jeu.tirerEtal()) if (o.type === 'recette') vues[o.cle] = (vues[o.cle] || 0);
+    const etal = jeu.tirerEtal();
+    const cles = etal.filter(o => o.type === 'recette').map(o => o.cle);
+    ok('pas de doublon sur cet étal', new Set(cles).size === cles.length, cles.join(','));
+  }
 });
 
 scenario('marchand — l’état de l’étal traverse l’ascension', () => {

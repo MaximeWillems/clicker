@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.5.2 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
+    aujourd'hui : beta 5.6.0 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
 
 ---
 
@@ -1763,11 +1763,16 @@ certaines cases sont vides.
    étal de trois offres, deux prises), et vend les deux conversions de poussière. C'est aussi son
    ossature entière — apparition, cadence, sauvegarde, plafond d'achats — sur laquelle les
    marchandises suivantes viendront se brancher comme offres de plus.
-3. **Les boosters** — la primitive « tirer une carte », qui remplit l'album. C'est le prochain
-   verrou : sans elle, ni cartes ni paquets ni god pack à l'étal.
-4. **Le marchand complet** — les cinq marchandises. Il ne reste qu'à ajouter au pool d'offres, une
-   fois les boosters posés, les cartes / paquets / god pack (voir les barèmes calés ci-dessous) et
-   la recette (qui attend, elle, une rareté de recette une fois le carnet élargi).
+3. ~~**Les boosters**~~ — **livré en `beta 5.6.0`.** La primitive « tirer une carte »
+   (`carteBooster`, `tirerRarete`, `tirerUnPaquet`) fabrique une capsule neuve — jeune, une étoile,
+   motif et teinte au hasard, peut-être chromatique — de la même forme qu'une carte de fusion, et
+   la pose dans l'album.
+4. ~~**Le marchand complet**~~ — **livré en `beta 5.6.0`.** Les cinq marchandises sont là : le
+   changeur (2), plus la **carte seule**, le **paquet** (cinq cartes, une rare+ garantie, god pack
+   ≈ 1/500 sur un paquet doré) et la **recette** (une inconnue au hasard, jamais deux fois la même
+   sur un étal, apprise à l'achat). La monnaie décide de la qualité : bleu basique, or premium.
+   *Reste ouvert :* la rareté d'une recette une fois le carnet élargi (toutes donnent une merveille
+   aujourd'hui, donc toutes coûtent le tarif merveille), et l'équilibrage des prix (dans `constantes.js`).
 
 **LES BARÈMES CALÉS (avec Maxime), en attente des boosters :**
 
