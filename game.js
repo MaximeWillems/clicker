@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.3.1';
+const VERSION = 'beta 5.3.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7926,8 +7926,8 @@ function majEtatMain() {
     const plafond = plafondCombo();
     b.hidden = false;
     b.className = 'subject-etat combo';
-    setText(b, '🔥 ' + combo + (combo >= COMBO_PLEIN ? ' max' : '/' + COMBO_PLEIN) +
-               ' · ×' + dec(comboMult(), 2));
+    // juste le compte et le multiplicateur, sans le « / 100 » : le plafond ne se montre pas
+    setText(b, '🔥 ' + combo + ' · ×' + dec(comboMult(), 2));
     b.title = plafond > 1
       ? 'Cliquer sans t’arrêter chauffe la main, jusqu’à ×' + dec(plafond, 1) + ' au plafond.'
       : 'Cliquer sans t’arrêter monte le combo, mais il ne multiplie encore rien : la série de la constellation lui donne sa force.';
