@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.3.0';
+const VERSION = 'beta 5.3.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7915,11 +7915,22 @@ function majEtatMain() {
     b.hidden = false;
     b.className = 'subject-etat calme';
     setText(b, '🌙 calme ×' + dec(IDLE_X, 1));
-  } else if (combo && plafondCombo() > 1) {
+    b.title = 'Une minute sans cliquer : la ferme tourne ×' + dec(IDLE_X, 1) + ' mieux sans toi.';
+  } else if (combo) {
+    /* LE COMBO SE VOIT DÈS QU'ON CLIQUE, comme le calme — même sans la série. Il montrait
+       auparavant sa pastille SEULEMENT si la série de la constellation était prise (sans elle
+       le plafond vaut 1) : le joueur qui martèle voyait le calme apparaître au repos mais
+       jamais le combo à l'effort, une asymétrie qui le laissait croire que le combo n'existait
+       pas. On montre donc le compteur et le multiplicateur courant dans tous les cas ; quand la
+       série n'est pas prise, il vaut ×1, et l'infobulle dit où il se muscle. */
+    const plafond = plafondCombo();
     b.hidden = false;
     b.className = 'subject-etat combo';
     setText(b, '🔥 ' + combo + (combo >= COMBO_PLEIN ? ' max' : '/' + COMBO_PLEIN) +
                ' · ×' + dec(comboMult(), 2));
+    b.title = plafond > 1
+      ? 'Cliquer sans t’arrêter chauffe la main, jusqu’à ×' + dec(plafond, 1) + ' au plafond.'
+      : 'Cliquer sans t’arrêter monte le combo, mais il ne multiplie encore rien : la série de la constellation lui donne sa force.';
   } else {
     b.hidden = true;
   }
