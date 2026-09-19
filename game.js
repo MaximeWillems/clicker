@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.2.0';
+const VERSION = 'beta 5.2.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1669,8 +1669,10 @@ const FAVEURS = [
     bonus: { pousse: 0.06 },   dit: 'Les jeunes grandissent 6 % plus vite.' },
   { cle: 'ration',    glyphe: '🥣', nom: 'La ration double', levier: 'gras',
     bonus: { gras: 0.06 },     dit: 'Les bêtes mûres engraissent 6 % plus vite.' },
-  { cle: 'oeil-neuf', glyphe: '👁', nom: 'L’œil neuf', levier: 'prodige',
-    bonus: { prodige: 0.10 },  dit: 'Un dixième de chance en plus de voir naître un chromatique.' },
+  /* PLUS DE FAVEUR SUR LES CHROMATIQUES. « L'œil neuf » donnait +10 % de chance de prodige, et
+     empilé sur d'autres sources il rendait le chromatique trop fréquent pour un événement qui
+     doit rester un trophée. La seule voie qui le touche encore est la constellation — le nœud
+     « prisme » — où il coûte un choix et ne s'empile pas à volonté. */
 ];
 const FAVEUR_BY_KEY = Object.fromEntries(FAVEURS.map(f => [f.cle, f]));
 const FAVEUR_MAIN = 3;
@@ -5157,6 +5159,8 @@ function hatchAll() {
     // un prodige est protégé d'office : on ne perd pas une bête sur huit mille
     // parce que le marchand l'a vendue avant qu'on l'ait vue
     if (c.prodige) { c.keep = true; state.stats.prodiges++; }
+    // une bête à fond est rare aussi : on la garde d'office, pour la même raison
+    if (c.fond) c.keep = true;
     state.pen.push(c);
     state.incub[i] = null;
     markSeen(slot.line, 1);
@@ -7122,7 +7126,11 @@ function renderAlbum() {
   if (sig === albumSig) return;
   albumSig = sig;
 
-  $('panel-album').hidden = !state.album.length && !state.asc.n;
+  /* PAS D'ALBUM SANS CARTE. Il s'affichait dès la première ascension, même vide — un cadre qui
+     ne montre rien. Depuis que les cartes viennent des boosters et non du saut, « avoir
+     ascensionné » ne veut plus dire « avoir une carte » : on ne montre le panneau qu'avec au
+     moins une carte à montrer. */
+  $('panel-album').hidden = !state.album.length;
   const host = $('album');
   host.textContent = '';
   $('album-meta').textContent = state.album.length +

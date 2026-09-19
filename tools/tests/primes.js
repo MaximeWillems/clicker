@@ -277,13 +277,14 @@ scenario('faveur — ce qui multiplie s’additionne, ce qui remise s’use', ()
   ok('et l’œuf coûte toujours quelque chose', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) > 0);
 });
 
-scenario('faveur — les quatre leviers neufs bougent vraiment', () => {
+scenario('faveur — les trois leviers neufs bougent vraiment', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e6;
   jeu.choisirRoute('carrefour-1', 'route-bourse');
 
-  /* CES QUATRE-LÀ N'ÉTAIENT LUS QUE DE L'ALBUM ET DU CIEL : les primes ne savaient pas les
-     toucher. Une carte qui ne change rien est du remplissage, donc chacune se vérifie. */
+  /* CES TROIS-LÀ N'ÉTAIENT LUS QUE DE L'ALBUM ET DU CIEL : les primes ne savaient pas les
+     toucher. Une carte qui ne change rien est du remplissage, donc chacune se vérifie.
+     (« L'œil neuf », le quatrième, a été retiré : plus de faveur sur les chromatiques.) */
   const poser = cle => { jeu.state.faveurs.acquis[cle] = 5; jeu.oublierPrimes(); };
 
   const oeuf = { kind: 'egg', c: null };
@@ -298,8 +299,10 @@ scenario('faveur — les quatre leviers neufs bougent vraiment', () => {
 
   poser('ration');
   ok('la ration compte pour l’engraissement', jeu.bonusPrimes().gras > 0);
-  poser('oeil-neuf');
-  ok('l’œil neuf monte la chance de chromatique', jeu.bonusPrimes().prodige > 0);
+
+  /* ET AUCUNE FAVEUR NE TOUCHE PLUS LES CHROMATIQUES : le levier « prodige » n'existe que dans
+     la constellation désormais. */
+  ok('aucune faveur ne porte le prodige', !jeu.FAVEURS.some(f => f.bonus && f.bonus.prodige));
 });
 
 scenario('faveur — elles tombent à l’ascension, comme les primes', () => {
