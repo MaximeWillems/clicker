@@ -239,7 +239,11 @@ global.localStorage = {
   removeItem: k => { delete store[k]; },
 };
 
-const src = lire('game.js');
+/* Les constantes vivent dans leur fichier, chargé avant game.js dans le navigateur. Ici on les
+   colle en tête : tout devient un seul corps de fonction, donc elles sont déclarées et exposées
+   comme le reste. `constantes.js` ouvre par `'use strict';` — il reste ainsi la première
+   instruction du corps combiné, et le mode strict couvre les deux fichiers. */
+const src = lire('constantes.js') + '\n' + lire('game.js');
 
 /* TOUT CE QUE game.js DÉCLARE AU PREMIER NIVEAU EST EXPOSÉ. La liste était écrite à la main
    et se périmait à chaque fonction ajoutée — deux fois dans la même session, un test échouait

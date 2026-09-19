@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.3.4** | les deux poussières (bleue ✧ et dorée ❂) se lisent en permanence en haut, à côté des pièces, dès qu’on en a — la forge, seul endroit qui les montrait, reste cachée tant que l’album est vide |
+| **beta 5.3.5** | les constantes de réglage commencent à quitter `game.js` pour un fichier à elles, `constantes.js` — chargé avant le jeu, collé en tête par le banc d’essai. Première salve : la poussière de carte et le coût de fusion. Aucun changement de jeu, c’est de la mise en place ; le reste suivra petit à petit |
+| beta 5.3.4 | les deux poussières (bleue ✧ et dorée ❂) se lisent en permanence en haut, à côté des pièces, dès qu’on en a — la forge, seul endroit qui les montrait, reste cachée tant que l’album est vide |
 | beta 5.3.3 | les grands nombres s’affichent en milliers, nommés sur l’échelle longue : million, milliard, billion, billiard, trillion, trilliard… Chaque cran vaut mille fois le précédent (`Bd`, `Td`, `Qd` comblent les crans qui manquaient) |
 | beta 5.3.2 | la pastille de combo n’affiche plus le plafond « / 100 » — juste le compte et le multiplicateur (`🔥 47 · ×1,34`). Le bonus reste, lui, accordé par la seule série de la constellation |
 | beta 5.3.1 | la pastille de combo se voit **dès qu’on cliote**, comme le calme — avec son compteur et son multiplicateur. Elle ne paraissait qu’une fois la série de la constellation prise (sans elle le plafond vaut 1), si bien qu’on voyait le calme au repos mais jamais le combo à l’effort. Quand la série n’est pas prise, il affiche ×1 et l’infobulle dit où il se muscle |

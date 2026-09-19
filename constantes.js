@@ -1,0 +1,80 @@
+'use strict';
+
+/* ── LES CONSTANTES DU JEU ───────────────────────────────────
+   Les valeurs qu’on règle et rééquilibre, sorties de game.js pour se trouver et se
+   modifier d’un coup d’œil. Ce fichier se charge AVANT game.js (voir index.html), et le banc
+   d’essai le colle en tête de game.js (tools/banc.js) : tout ce qu’on déclare ici au premier
+   niveau (const/let au ras de la marge) est visible du jeu comme s’il y était.
+
+   On y déplace les constantes PETIT À PETIT, au fil des modifications, jamais d’un bloc. */
+
+/* ── LA POUSSIÈRE DE CARTE ─────────────────────────────────────────────────────
+   Une monnaie qui n'existe que pour l'album. On l'obtient en DÉSINTÉGRANT une carte, un peu à
+   chaque ascension pour les bêtes qu'on n'emporte pas, et elle ne sert qu'à FUSIONNER.
+
+   LA POUSSIÈRE SEULE NE FAISAIT PAS UNE FUSION. Pendant vingt versions, « fusionner » voulait
+   dire payer une étoile avec de la monnaie : rien ne disparaissait, rien ne se mariait, et le
+   mot mentait sur ce qu'il faisait. Une fusion, c'est des cartes QUI FUSIONNENT — elles entrent
+   à trois et il en sort une.
+
+   L'OBJECTION D'ORIGINE ÉTAIT MAL POSÉE, et c'est ce qui avait fait naître la monnaie seule :
+   « une fusion classique demande deux cartes IDENTIQUES, or une carte porte une lignée, un âge,
+   un niveau, un motif, une teinte, un rang et un chromatique — treize millions de combinaisons,
+   deux exemplaires identiques n'arriveront jamais. » C'est vrai, et ça ne conclut rien :
+   SIMILAIRE N'EST PAS IDENTIQUE.
+
+   Deux cartes se marient quand elles partagent LA LIGNÉE ET LE MOTIF — exactement les deux
+   champs qui décident de CE QUE la carte fait. Tout le reste — âge, niveau, teinte, rang — ne
+   dit que COMBIEN, et se moyenne. Trois béhémoths unis se réunissent donc, quel que soit leur
+   âge, et le résultat vaut ce que valaient les trois, plus une étoile.
+
+   La poussière ne disparaît pas pour autant, et son barème ne bouge pas : une fusion coûte
+   TROIS CARTES ET DE LA POUSSIÈRE. Ce qu'on fond sert toujours à ça, et le problème que la
+   monnaie résolvait reste résolu — une ferme de vingt bêtes rend vingt cartes par saut, dont
+   trois valent la peine, et les dix-sept autres redeviennent du carburant.
+
+   LA RARETÉ EST DU MÊME CÔTÉ DES DEUX ÉQUATIONS, et c'est délibéré : elle multiplie ce qu'une
+   carte rend ET ce qu'une fusion coûte, donc elle s'annule. Monter une commune ou une mythique
+   demande le même nombre de cartes DE SA PROPRE RARETÉ — dix pour la deuxième étoile, quarante
+   pour la troisième. Personne n'a intérêt à fondre ses mythiques pour nourrir ses communes.
+
+   LA QUALITÉ N'ENTRE PAS. Niveau, teinte et rang décident déjà de la puissance : les faire
+   entrer aussi punirait deux fois d'avoir une bonne carte, et rendrait « garder ou fondre »
+   insoluble. Une carte vaut sa puissance, OU sa poussière, et les deux ne se ressemblent pas.
+
+   ET ON NE DÉFAIT PAS UNE FUSION : les étoiles n'entrent pas dans ce qu'une carte rend. Sinon
+   fusionner puis désintégrer fabriquerait de la poussière à l'infini. La règle vaut d'autant
+   plus maintenant que trois cartes entrent pour une : sans elle, forger puis fondre rendrait
+   une partie de ce qu'on vient de payer. */
+const POUSSIERE_BASE    = 10;
+const POUSSIERE_RARETE  = { commune: 1, rare: 3, epique: 10, mythique: 30, merveilleuse: 90 };
+/* UN CHROMATIQUE NE REND PLUS PLUS DE POUSSIÈRE, IL EN REND UNE AUTRE. Il donnait ×3 de poussière
+   bleue ; il donne désormais de la poussière DORÉE — une ressource à part, la matière des
+   chromatiques. Le montant suit la même règle que la bleue (la rareté), c'est le BASSIN qui
+   change : être doré est la récompense, pas un multiplicateur. */
+const POUSSIERE_FOND    = 2;      // les fonds n'existent pas encore : le facteur dort
+// ce qu'une bête sacrifiée à l'ascension laisse, en fraction de ce que sa carte aurait rendu
+const POUSSIERE_SAUT    = 0.1;
+// pour aller à la deuxième étoile, puis à la troisième — multiplié par la rareté
+const FUSION_COUT       = [0, 100, 400];
+
+/* TROIS ENTRENT, UNE SORT. Le compte décide de tout le reste : neuf cartes d'une même lignée
+   et d'un même motif pour une seule à trois étoiles, contre trois si le compte était deux.
+   Deux rendait la troisième étoile presque gratuite pour qui joue une lignée ; quatre la
+   rendait inatteignable avant la dixième ascension. Trois est le seul compte qui fasse de la
+   deuxième étoile une décision et de la troisième un objectif.
+
+   C'EST LE JOUEUR QUI DÉSIGNE LES TROIS. La forge a d'abord pris les trois plus fortes toute
+   seule, au motif qu'une fusion doit rendre la meilleure carte possible ; c'était décider à sa
+   place ce qu'il perd. Une teinte se DILUE dans une fusion, une bête menée à l'âge légende ne
+   se remplace pas en une ascension : quelles trois cartes entrent est la seule vraie question
+   de l'atelier, et une machine ne peut pas y répondre.
+
+   D'où le geste en deux temps : on choisit LA CARTE À FAIRE MONTER, et l'atelier ne montre
+   plus alors que celles qui peuvent la rejoindre. C'est ce qui rend la règle de mariage
+   visible sans l'énoncer — on ne lit pas « même lignée, même motif », on voit la grille se
+   réduire.
+
+   UNE CARTE ÉQUIPÉE N'ENTRE PAS DANS LA FORGE, comme elle ne se fond pas : elle s'évaporerait
+   d'un emplacement et changerait le build en silence. */
+const FUSION_N          = 3;
