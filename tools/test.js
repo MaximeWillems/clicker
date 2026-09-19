@@ -25,7 +25,7 @@ const SUJETS = [
   'bonheur', 'histoire', 'plonge', 'pension',
   'merveilles', 'encyclopedie', 'globales', 'primes',
   'constellation', 'ascension', 'forge', 'album',
-  'couleurs', 'recettes', 'marchand', 'sauvegarde',
+  'couleurs', 'recettes', 'marchand', 'dev', 'sauvegarde',
 ];
 
 for (const s of SUJETS) require('./tests/' + s + '.js');

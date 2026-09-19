@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.4.0';
+const VERSION = 'beta 5.5.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7985,6 +7985,77 @@ function renderMarchand() {
   });
 }
 
+/* ── LE MODE DÉVELOPPEUR ────────────────────────────────────────────────────────
+   Ouvert par `?userType=Dev` dans l'URL. Purement administrateur : il n'ajoute que des outils de
+   test, et le joueur ordinaire n'y a pas accès — la vitesse ×10/×100 lui est même retirée. */
+function detecterDev() {
+  try {
+    const q = (typeof location !== 'undefined' && location.search) || '';
+    return (new URLSearchParams(q).get('userType') || '').toLowerCase() === 'dev';
+  } catch (e) { return false; }
+}
+let modeDev = false;
+
+// montre ou cache tout ce qui est réservé au développeur
+function appliquerModeDev() {
+  if (document.body) document.body.classList.toggle('mode-dev', modeDev);
+  const speed = $('btn-speed'); if (speed) speed.hidden = !modeDev;   // la vitesse est un outil de test
+  const dev = $('btn-dev');     if (dev) dev.hidden = !modeDev;
+  if (!modeDev) ouvrirDev(false);
+}
+
+// ── les gestes d'administration ──
+function devAjouterJetons(n) {
+  state.asc.jetons = (state.asc.jetons || 0) + n;
+  save(); refresh();
+}
+/* Rend les jetons investis dans la constellation : on vide le ciel et on remet la dépense à zéro,
+   si bien que tout ce qui était placé revient en main — pour re-tester un autre build. */
+function devRendreJetons() {
+  state.ciel = {};
+  state.asc.depense = 0;
+  save(); refresh();
+}
+function devMarchandVenir() {
+  const m = state.marchand;
+  m.paru = Date.now(); m.offres = tirerEtal(); m.achats = 0;
+  m.prochain = Date.now() + delaiMarchand();
+  etalOuvert = true;
+  save(); refresh();
+}
+function devMarchandPartir() {
+  const m = state.marchand;
+  m.paru = 0; m.offres = []; m.achats = 0; etalOuvert = false;
+  save(); refresh();
+}
+/* Écrit le texte tel quel dans la sauvegarde et recharge. En mode dev on n'impose pas la
+   validation du joueur : on laisse ajouter ou retirer des champs à la main. Seul le JSON doit
+   tenir, sinon on le dit sans rien écrire. */
+function devAppliquerSave(texte) {
+  let d;
+  try { d = JSON.parse(texte); }
+  catch (e) { return { ok: false, dit: 'JSON invalide : ' + e.message }; }
+  stopSaving = true;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); }
+  catch (e) { stopSaving = false; return { ok: false, dit: 'Le navigateur a refusé d’écrire.' }; }
+  location.reload();
+  return { ok: true, dit: 'Sauvegarde posée, rechargement…' };
+}
+
+// le panneau dev : ouvrir/fermer, et remplir le texte avec l'état vivant
+function ouvrirDev(v) {
+  const p = $('dev-panel'); if (!p) return;
+  p.hidden = !v;
+  if (v) devRelireSave();
+}
+function devRelireSave() {
+  const t = $('dev-save'); if (!t) return;
+  try { t.value = JSON.stringify(JSON.parse(texteSauvegarde()), null, 2); }
+  catch (e) { t.value = texteSauvegarde(); }
+  const etat = $('dev-save-etat');
+  if (etat) { setText(etat, ''); etat.classList.remove('sav-non'); }
+}
+
 // ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
 function valeurAu(c, age) {
   return Math.round(valeurMure(lineOf(c).rarity, age) * variantMult(c)
@@ -10085,6 +10156,21 @@ function bindTools() {
     if (b) acheterMarchand(+b.dataset.i);
   });
 
+  // les outils développeur (visibles seulement en ?userType=Dev)
+  $('btn-dev').addEventListener('click', () => ouvrirDev($('dev-panel').hidden));
+  $('dev-close').addEventListener('click', () => ouvrirDev(false));
+  $('dev-panel').addEventListener('click', e => { if (e.target === $('dev-panel')) ouvrirDev(false); });
+  $('dev-jetons-10').addEventListener('click', () => devAjouterJetons(10));
+  $('dev-jetons-100').addEventListener('click', () => devAjouterJetons(100));
+  $('dev-jetons-rendre').addEventListener('click', () => devRendreJetons());
+  $('dev-marchand-venir').addEventListener('click', () => devMarchandVenir());
+  $('dev-marchand-partir').addEventListener('click', () => devMarchandPartir());
+  $('dev-save-relire').addEventListener('click', () => devRelireSave());
+  $('dev-save-appliquer').addEventListener('click', () => {
+    const r = devAppliquerSave($('dev-save').value);
+    if (!r.ok) { setText($('dev-save-etat'), '✕ ' + r.dit); $('dev-save-etat').classList.add('sav-non'); }
+  });
+
   $('btn-sav').addEventListener('click', () => ouvrirSav(true));
   $('sav-close').addEventListener('click', () => ouvrirSav(false));
   $('sauvegarde').addEventListener('click', e => { if (e.target === $('sauvegarde')) ouvrirSav(false); });
@@ -10338,6 +10424,8 @@ function start() {
 
   $('version').textContent = VERSION;
   $('btn-speed').textContent = '×' + state.speed;
+  modeDev = detecterDev();          // ?userType=Dev ouvre les outils d'administration
+  appliquerModeDev();
   $('btn-sound').setAttribute('aria-pressed', String(state.sound));
   $('btn-tuto').setAttribute('aria-pressed', String(state.tuto));
   syncReglages();

@@ -49,7 +49,10 @@
   <div class="tools">
     <button type="button" id="btn-pause" class="tool" aria-pressed="false"
             title="Arrêter la ferme — rien ne pousse, rien ne se vend, rien ne couve">⏸</button>
-    <button type="button" id="btn-speed" class="tool" title="Accélérer le temps (test)">×1</button>
+    <!-- La vitesse est un outil de test : réservée au mode développeur, masquée au joueur. -->
+    <button type="button" id="btn-speed" class="tool" title="Accélérer le temps (test)" hidden>×1</button>
+    <!-- Le mode développeur (?userType=Dev) : outils d'administration, masqué au joueur. -->
+    <button type="button" id="btn-dev" class="tool" title="Outils développeur" hidden>🛠</button>
     <button type="button" id="btn-tuto" class="tool" aria-pressed="true"
             title="Mode histoire — l'éteindre montre tout d'un coup, le rallumer rejoue les notes">📖</button>
     <button type="button" id="btn-sound" class="tool" title="Couper le son" aria-pressed="true">♪</button>
@@ -449,6 +452,46 @@
       <p class="sav-resume" id="sav-resume"></p>
       <div class="sav-actes">
         <button type="button" class="asc-go" id="sav-go" disabled>Restaurer</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ── LE PANNEAU DÉVELOPPEUR ── outils d'administration, ouvert par le bouton 🛠 en mode dev -->
+<div id="dev-panel" class="asc" hidden>
+  <div class="asc-box" role="dialog" aria-modal="true" aria-labelledby="dev-title">
+    <div class="asc-head">
+      <h2 id="dev-title">🛠 Outils développeur</h2>
+      <button type="button" class="asc-close" id="dev-close" title="Fermer">✕</button>
+    </div>
+
+    <section class="asc-sec">
+      <h3>Ascension</h3>
+      <p class="sav-dit">Créditer des jetons pour tester la constellation, ou récupérer ceux déjà investis.</p>
+      <div class="sav-actes">
+        <button type="button" class="sav-second" id="dev-jetons-10">+10 jetons</button>
+        <button type="button" class="sav-second" id="dev-jetons-100">+100 jetons</button>
+        <button type="button" class="asc-go" id="dev-jetons-rendre">Récupérer les jetons investis</button>
+      </div>
+    </section>
+
+    <section class="asc-sec">
+      <h3>Marchand de sable</h3>
+      <p class="sav-dit">Le faire venir tout de suite pour tester ses offres, ou le renvoyer.</p>
+      <div class="sav-actes">
+        <button type="button" class="asc-go" id="dev-marchand-venir">Faire venir</button>
+        <button type="button" class="sav-second" id="dev-marchand-partir">Renvoyer</button>
+      </div>
+    </section>
+
+    <section class="asc-sec">
+      <h3>Sauvegarde (localStorage)</h3>
+      <p class="asc-warn">⚠ « Appliquer » écrit ce texte dans la sauvegarde et recharge la page.</p>
+      <textarea id="dev-save" class="sav-colle" rows="12" spellcheck="false"></textarea>
+      <p class="sav-resume" id="dev-save-etat"></p>
+      <div class="sav-actes">
+        <button type="button" class="sav-second" id="dev-save-relire">Relire depuis le jeu</button>
+        <button type="button" class="asc-go" id="dev-save-appliquer">Appliquer</button>
       </div>
     </section>
   </div>
