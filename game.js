@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.3.5';
+const VERSION = 'beta 5.4.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2885,6 +2885,11 @@ function freshState() {
        `poussiereOr` est sa sœur dorée, celle des chromatiques — même règle, autre bassin. */
     poussiere: 0,
     poussiereOr: 0,
+    /* LE MARCHAND DE SABLE. `prochain` est l'instant réel de la prochaine venue (0 = à
+       programmer), `paru` l'instant où l'étal en cours s'est ouvert (0 = fermé), `offres` le
+       tirage figé et `achats` ce qu'on a déjà pris cette venue. Comme un événement d'horloge et
+       non de ferme, il traverse l'ascension. */
+    marchand: { prochain: 0, paru: 0, offres: [], achats: 0 },
     /* Les clics déjà donnés sur l'assiette en cours, de 0 à neuf. Dans la sauvegarde : perdre
        neuf clics parce qu'on a rechargé la page ajouterait une punition à la punition. */
     frotte: 0,
@@ -5632,6 +5637,7 @@ function loop() {
      de nouveaux jetons derrière rendrait la décision mouvante. On recale l'horloge à chaque tour
      pour qu'aucune dette de temps ne s'accumule. */
   if (enAscension) { lastFrame = now; return; }
+  tickMarchand();          // le marchand se lit sur l'horloge réelle, pas sur le temps de jeu
   const dt = Math.min(5, (now - lastFrame) / 1000) * state.speed;
   lastFrame = now;
   if (dt <= 0) return;
@@ -7474,6 +7480,7 @@ function ascensionner() {
     achat: state.achat, sound: state.sound, cacherPrimes: state.cacherPrimes,
     poussiere: (state.poussiere || 0) + laisse,
     poussiereOr: (state.poussiereOr || 0) + laisseOr,
+    marchand: state.marchand,
     tuto: state.tuto, vu: state.vu, dial: state.dial,
     stats: state.stats, dons: state.dons, trophees: state.trophees,
   });
@@ -7873,6 +7880,111 @@ function majEtatMain() {
   }
 }
 
+/* ── LE MARCHAND DE SABLE ───────────────────────────────────────────────────────
+   Un rendez-vous à l'heure réelle. `tickMarchand` le programme, l'ouvre et le ferme ; la boucle
+   l'appelle à chaque tour. Rien ne dépend du temps de jeu : tout se lit sur l'horloge, donc une
+   venue tombée pendant qu'on ne joue pas est simplement manquée. */
+const delaiMarchand = () => (86400 / MARCHAND.parJour)
+  * (1 + (Math.random() * 2 - 1) * MARCHAND.ecart) * 1000;      // en millisecondes
+
+const auHasardEntre = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+const avecVariance  = (base, v) => Math.max(1, Math.round(base * (1 + (Math.random() * 2 - 1) * v)));
+
+/* Une offre du changeur, tirée au sort. Tant que les boosters n'existent pas, c'est la seule
+   marchandise : une conversion de poussière, dans un sens (bleue → or) ou l'autre (argent → bleue). */
+function offreDuChange() {
+  if (Math.random() < 0.5) {
+    const or = auHasardEntre(CHANGE_OR.orMin, CHANGE_OR.orMax);
+    return { type: 'or', donne: or, monnaie: 'poussiere',
+             prix: avecVariance(or * CHANGE_OR.ratio, CHANGE_OR.variance) };
+  }
+  const bleue = auHasardEntre(CHANGE_BLEUE.bleueMin, CHANGE_BLEUE.bleueMax);
+  return { type: 'bleue', donne: bleue, monnaie: 'coins',
+           prix: avecVariance(bleue * CHANGE_BLEUE.prix, CHANGE_BLEUE.variance) };
+}
+
+const tirerEtal = () => Array.from({ length: MARCHAND.offres }, offreDuChange);
+
+function tickMarchand() {
+  const m = state.marchand;
+  const now = Date.now();
+  if (!m.prochain) { m.prochain = now + delaiMarchand(); return; }
+  // l'étal ouvert se ferme au bout d'un quart d'heure
+  if (m.paru && now - m.paru >= MARCHAND.fenetre * 1000) { m.paru = 0; m.offres = []; etalOuvert = false; }
+  if (m.paru || now < m.prochain) return;
+  /* L'heure est passée : on ouvre l'étal si on est ENCORE dans le quart d'heure qui suit l'instant
+     prévu — sinon la fenêtre s'est écoulée pendant qu'on ne regardait pas, et la venue est manquée.
+     Dans les deux cas on reprogramme la suivante. */
+  if (now - m.prochain < MARCHAND.fenetre * 1000) { m.paru = m.prochain; m.offres = tirerEtal(); m.achats = 0; }
+  m.prochain = now + delaiMarchand();
+}
+
+const marchandIci   = () => !!(state.marchand && state.marchand.paru);
+const marchandReste = () => !marchandIci() ? 0
+  : Math.max(0, MARCHAND.fenetre - (Date.now() - state.marchand.paru) / 1000);
+const offreAbordable = o => !!o && !o.pris && (state[o.monnaie] || 0) >= o.prix;
+const etalPlein = () => (state.marchand.achats || 0) >= MARCHAND.achats;
+
+/* Prendre une offre : refuse si l'étal est fermé, le plafond d'achats atteint, l'offre déjà prise
+   ou impayable. La troisième non prise part avec le marchand — c'est le plafond qui fait choisir. */
+function acheterMarchand(i) {
+  const m = state.marchand;
+  if (!marchandIci() || etalPlein()) return false;
+  const o = m.offres[i];
+  if (!offreAbordable(o)) return false;
+  state[o.monnaie] = (state[o.monnaie] || 0) - o.prix;
+  if (o.type === 'or') state.poussiereOr = (state.poussiereOr || 0) + o.donne;
+  else state.poussiere = (state.poussiere || 0) + o.donne;
+  o.pris = true;
+  m.achats++;
+  save();
+  refresh();
+  return true;
+}
+
+let etalOuvert = false;
+
+// le texte d'une offre : ce qu'on paie, ce qu'on gagne
+function libelleOffre(o) {
+  return o.type === 'or'
+    ? fmt(o.prix) + ' ✧  →  ' + fmt(o.donne) + ' ❂'
+    : fmt(o.prix) + ' pièces  →  ' + fmt(o.donne) + ' ✧';
+}
+
+/* Le panneau des offres, ouvert par la pastille. Une signature évite de le redessiner à chaque
+   frame ; le minuteur, lui, se rafraîchit dans tickView, à part. */
+let marchandSig = '';
+function renderMarchand() {
+  const panneau = $('marchand-etal');
+  if (!panneau) return;
+  if (!marchandIci()) etalOuvert = false;
+  panneau.hidden = !(marchandIci() && etalOuvert);
+  if (panneau.hidden) { marchandSig = ''; return; }
+
+  const m = state.marchand, plein = etalPlein();
+  const sig = m.offres.map(o => o.type + o.donne + o.prix + (o.pris ? 'P' : '')
+              + (offreAbordable(o) ? 'A' : '')).join('|') + '|' + (plein ? 'plein' : m.achats);
+  if (sig === marchandSig) return;
+  marchandSig = sig;
+
+  setText($('marchand-reste-achats'),
+    plein ? 'plus rien à prendre' : (MARCHAND.achats - m.achats) + ' achat'
+            + (MARCHAND.achats - m.achats > 1 ? 's' : '') + ' possible'
+            + (MARCHAND.achats - m.achats > 1 ? 's' : ''));
+
+  const liste = $('marchand-offres');
+  liste.innerHTML = '';
+  m.offres.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'marchand-offre' + (o.pris ? ' pris' : '');
+    b.dataset.i = i;
+    b.disabled = o.pris || plein || !offreAbordable(o);
+    setText(b, o.pris ? '✓ ' + libelleOffre(o) : libelleOffre(o));
+    liste.appendChild(b);
+  });
+}
+
 // ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
 function valeurAu(c, age) {
   return Math.round(valeurMure(lineOf(c).rarity, age) * variantMult(c)
@@ -7900,6 +8012,14 @@ function tickView() {
   if (pb) setText($('hud-poussiere'), '✧ ' + fmt(pb));
   $('hud-poussiere-or').hidden = !po;
   if (po) setText($('hud-poussiere-or'), '❂ ' + fmt(po));
+
+  /* La pastille du marchand : visible tant que l'étal est ouvert, avec le temps qui reste. Elle
+     se rafraîchit à chaque frame, à part du panneau des offres (qui, lui, a sa signature). */
+  const past = $('marchand-pastille');
+  if (past) {
+    past.hidden = !marchandIci();
+    if (marchandIci()) setText(past, '🕐 Marchand de sable · ' + fmtTime(marchandReste()));
+  }
 
   for (const s of subjects()) {
     const t = thumbs.get(s.key);
@@ -8321,6 +8441,7 @@ function refresh() {
   renderForge();
   renderCiel();
   renderRecettes();
+  renderMarchand();
   renderStage();
   syncReglages();
   renderEncyclopedie();
@@ -9955,6 +10076,13 @@ function bindTools() {
   $('stat-close').addEventListener('click', () => ouvrirStats(false));
   $('statistiques').addEventListener('click', e => {
     if (e.target === $('statistiques')) ouvrirStats(false);
+  });
+
+  // le marchand : la pastille ouvre et referme l'étal, un clic sur une offre l'achète
+  $('marchand-pastille').addEventListener('click', () => { etalOuvert = !etalOuvert; refresh(); });
+  $('marchand-offres').addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-i]');
+    if (b) acheterMarchand(+b.dataset.i);
   });
 
   $('btn-sav').addEventListener('click', () => ouvrirSav(true));

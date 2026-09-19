@@ -20,6 +20,10 @@
     <span class="brand-version" id="version"></span>
   </div>
 
+  <!-- Le marchand de sable : très visible, doré, à droite de la marque. Il ne paraît que le
+       temps de son étal, avec le minuteur avant qu'il reparte. Un clic ouvre les offres. -->
+  <button type="button" class="marchand-pastille" id="marchand-pastille" hidden></button>
+
   <div class="purse">
     <span class="purse-value" id="coins">0</span>
     <span class="purse-label">pièces</span>
@@ -54,6 +58,16 @@
     <button type="button" id="btn-reset" class="tool tool-danger" title="Effacer la partie">⟲</button>
   </div>
 </header>
+
+<!-- L'étal du marchand : ouvert par la pastille, fermé sinon. Trois offres, deux prises possibles. -->
+<div id="marchand-etal" class="marchand-etal" hidden>
+  <div class="marchand-tete">
+    <span class="marchand-titre">🕐 Marchand de sable</span>
+    <span class="marchand-reste" id="marchand-reste-achats"></span>
+  </div>
+  <div class="marchand-offres" id="marchand-offres"></div>
+  <p class="marchand-pied">La troisième offre part avec lui.</p>
+</div>
 
 <div id="offline-note" class="offline-note" hidden></div>
 <div id="pause-note" class="pause-note" hidden></div>

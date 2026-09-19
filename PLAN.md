@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.3.5 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
+    aujourd'hui : beta 5.4.0 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
 
 ---
 
@@ -1711,13 +1711,14 @@ qui ne servent plus à rien en fin de partie. **Reste à caler :** les barèmes,
 peut monter (peut-il, en payant très cher, atteindre ce que l'or atteint, ou y a-t-il un plafond
 que seul l'or franchit ?).
 
-**LA CADENCE, TRANCHÉE.** Le marchand apparaît **à l'heure réelle**, à des moments tirés au sort,
-de l'ordre de **trois à quatre fois par jour**. C'est un vrai rendez-vous, indexé sur l'horloge et
-non sur le temps de jeu — donc il faut décider ce qu'une venue non honorée devient. **À caler :**
-combien de temps l'étal reste ouvert une fois paru ; si une venue ratée pendant qu'on ne joue pas
-est simplement manquée (un rendez-vous se manque) ou si elle attend au retour ; et comment l'étal
-se fige dans la sauvegarde pour qu'un rechargement ne rebatte pas les trois offres — le motif
-existe déjà, la pension garde sa main (`state.main`) exactement pour ça.
+**LA CADENCE, TRANCHÉE ET LIVRÉE (beta 5.4.0).** Le marchand apparaît **à l'heure réelle**, à des
+moments tirés au sort, **≈ 3,5 fois par jour** (l'écart entre deux venues varie de ±50 %). L'étal
+reste ouvert **un quart d'heure** ; une venue tombée pendant qu'on ne joue pas est **simplement
+manquée** — un rendez-vous se manque, on n'en parle plus, la suivante est reprogrammée. L'étal se
+fige dans la sauvegarde (`state.marchand` : `prochain`, `paru`, `offres`, `achats`) exactement
+comme la main de la pension, pour qu'un rechargement ne rebatte pas les offres. Tout cela tourne
+sur l'horloge dans `tickMarchand`, appelé par la boucle. Les barèmes sont dans `constantes.js`
+(`MARCHAND`, `CHANGE_OR`, `CHANGE_BLEUE`).
 
 **LES RECETTES DEVIENNENT UN CARNET — ET C'EST UN CHANTIER À PART, PRÉALABLE.** Une recette
 (`RECETTES`) est une PAIRE de parents et le **pourcentage** qu'elle donne une créature précise à
@@ -1757,17 +1758,31 @@ certaines cases sont vides.
 
 **L'ORDRE DE LIVRAISON QUE L'ANALYSE DESSINE :**
 
-1. **Le carnet des recettes** — déblocage à la naissance + vue. Autonome, et il donne du sens à
-   la pension bien avant le marchand.
-2. **Le changeur** — les deux conversions de poussière. Autonome, premier usage de l'or.
-3. **Les boosters** — la primitive « tirer une carte », qui remplit l'album.
-4. **Le marchand complet** — les cinq marchandises, le plafond de deux achats, la cadence réelle.
-   Il ne peut être entier qu'une fois 1 et 3 posés ; le changeur (2) peut y être fondu ou le
-   précéder.
+1. ~~**Le carnet des recettes**~~ — **livré en `beta 5.2.0`.**
+2. ~~**Le changeur**~~ — **livré en `beta 5.4.0`.** Le marchand paraît (pastille dorée, minuteur,
+   étal de trois offres, deux prises), et vend les deux conversions de poussière. C'est aussi son
+   ossature entière — apparition, cadence, sauvegarde, plafond d'achats — sur laquelle les
+   marchandises suivantes viendront se brancher comme offres de plus.
+3. **Les boosters** — la primitive « tirer une carte », qui remplit l'album. C'est le prochain
+   verrou : sans elle, ni cartes ni paquets ni god pack à l'étal.
+4. **Le marchand complet** — les cinq marchandises. Il ne reste qu'à ajouter au pool d'offres, une
+   fois les boosters posés, les cartes / paquets / god pack (voir les barèmes calés ci-dessous) et
+   la recette (qui attend, elle, une rareté de recette une fois le carnet élargi).
 
-**Ce qui reste à caler avant d'écrire le marchand entier** (le gros est tranché) : les barèmes
-bleu/or et l'existence d'un plafond que seul l'or franchit ; la durée d'un étal et le sort d'une
-venue manquée ; et la rareté d'une recette une fois le carnet élargi.
+**LES BARÈMES CALÉS (avec Maxime), en attente des boosters :**
+
+- **Chromatisme d'une carte achetée** : **1 %** sur une carte, **2 %** en god pack (le sauvage est
+  1/8192, trop rare pour un produit qu'on paie).
+- **Rareté dans un paquet** (5 cartes, 1 rare+ garantie) — paquet bleu : commune 70 %, rare 25 %,
+  épique 4,5 %, mythique 0,5 % ; paquet or : commune 20 %, rare 40 %, épique 30 %, mythique 9 %,
+  merveilleuse 1 %.
+- **God pack** : ≈ **1/500** paquets or, cinq cartes épique+, merveilleuse possible — la merveille
+  ne s'achète pas *en créature* (ça reste la pension), mais une **carte** merveilleuse au god pack
+  est assumée.
+- **Recettes par rareté**, prix = barème de la poussière (×1 / 3 / 10 / 30 / 90), fréquence
+  décroissante ; **aléatoire à 20** (bon marché, mais on ne choisit pas ce qu'on tire).
+- **Changeur (livré)** : bleue → or ≈ **20 000 : 1** (± variance), argent → bleue base 50 pièces
+  la bleue (± variance) ; montants tirés au sort à chaque venue, comme un marché qui bouge.
 
 #### La tour de combat — le second mode de jeu
 

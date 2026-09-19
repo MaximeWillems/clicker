@@ -78,3 +78,27 @@ const FUSION_COUT       = [0, 100, 400];
    UNE CARTE ÉQUIPÉE N'ENTRE PAS DANS LA FORGE, comme elle ne se fond pas : elle s'évaporerait
    d'un emplacement et changerait le build en silence. */
 const FUSION_N          = 3;
+
+/* ── LE MARCHAND DE SABLE ───────────────────────────────────────────────────────
+   Un rendez-vous, pas un robinet. Il paraît à l'heure RÉELLE, quelques fois par jour, à des
+   instants tirés au sort, et son étal reste ouvert un quart d'heure. Une venue ratée pendant
+   qu'on ne joue pas est simplement MANQUÉE — un rendez-vous se manque, on n'en parle plus.
+
+   Il pose `offres` marchandises et on ne peut en prendre que `achats` : le reste part avec lui,
+   ce qui force à choisir. Le tirage est FIGÉ dans la sauvegarde (comme la main de la pension),
+   pour qu'un rechargement ne rebatte pas l'étal. */
+const MARCHAND = {
+  parJour:  3.5,          // apparitions par jour, en moyenne (l'écart réel est tiré au sort)
+  ecart:    0.5,          // l'écart entre deux venues varie de ±50 % autour de la moyenne
+  fenetre:  15 * 60,      // secondes : le temps que l'étal reste ouvert une fois paru
+  offres:   3,            // ce qu'il pose à chaque venue
+  achats:   2,            // ce qu'on peut prendre (la troisième part avec lui)
+};
+
+/* LE CHANGEUR — les deux conversions, seule marchandise prête tant que les boosters n'existent
+   pas. Les montants sont tirés au sort à chaque venue (un marché qui bouge). À ÉQUILIBRER.
+   - bleue → or : l'or ne vient sinon que des chromatiques (1/8192). Le change est donc CHER,
+     ~20 000 bleues pour 1 or, pour que l'or reste précieux ; c'est du bonus, pas la source.
+   - argent → bleue : rend un usage aux pièces qui ne servent plus à rien en fin de partie. */
+const CHANGE_OR    = { ratio: 20000, orMin: 1, orMax: 5, variance: 0.35 };
+const CHANGE_BLEUE = { prix: 50, bleueMin: 500, bleueMax: 5000, variance: 0.35 };

@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.3.5** | les constantes de réglage commencent à quitter `game.js` pour un fichier à elles, `constantes.js` — chargé avant le jeu, collé en tête par le banc d’essai. Première salve : la poussière de carte et le coût de fusion. Aucun changement de jeu, c’est de la mise en place ; le reste suivra petit à petit |
+| **beta 5.4.0** | **le marchand de sable** paraît — une pastille dorée à côté de la marque, avec un minuteur : il vient à l’heure réelle, ≈ 3,5 fois par jour, et son étal reste ouvert un quart d’heure (une venue ratée pendant qu’on ne joue pas est simplement manquée). Il pose trois offres, on n’en prend que deux, la troisième part avec lui. Première marchandise : le **changeur** de poussière (bleue → or ≈ 20 000:1, argent → bleue), montants tirés au sort à chaque venue. Cartes, paquets et recettes suivront avec les boosters |
+| beta 5.3.5 | les constantes de réglage commencent à quitter `game.js` pour un fichier à elles, `constantes.js` — chargé avant le jeu, collé en tête par le banc d’essai. Première salve : la poussière de carte et le coût de fusion. Aucun changement de jeu, c’est de la mise en place ; le reste suivra petit à petit |
 | beta 5.3.4 | les deux poussières (bleue ✧ et dorée ❂) se lisent en permanence en haut, à côté des pièces, dès qu’on en a — la forge, seul endroit qui les montrait, reste cachée tant que l’album est vide |
 | beta 5.3.3 | les grands nombres s’affichent en milliers, nommés sur l’échelle longue : million, milliard, billion, billiard, trillion, trilliard… Chaque cran vaut mille fois le précédent (`Bd`, `Td`, `Qd` comblent les crans qui manquaient) |
 | beta 5.3.2 | la pastille de combo n’affiche plus le plafond « / 100 » — juste le compte et le multiplicateur (`🔥 47 · ×1,34`). Le bonus reste, lui, accordé par la seule série de la constellation |
