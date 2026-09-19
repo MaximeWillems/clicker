@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.2.1';
+const VERSION = 'beta 5.2.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7789,51 +7789,59 @@ function renderBete(s) {
 /* Ce que valent les améliorations, en clair et à l'instant : la durée de base, ce qu'elle
    devient avec ce qu'on possède, et ce qu'un clic apporte. Sans ça on achète des niveaux
    sans jamais voir ce qu'ils changent. */
+/* LA LIGNE DISAIT TROP. Elle empilait la transformation, puis le détail de CHAQUE
+   multiplicateur — couveuse, éleveur, tempérament, valeur, vitesse, album, frénésie, combo,
+   calme — une douzaine de « ×1,2 » sans contexte, que personne ne lisait. Or l'effet de tous
+   ces facteurs est DÉJÀ dans le seul nombre qui compte : le temps effectif de l'action, et ce
+   qu'un clic vaut. On ne garde donc que ces deux-là, plus la rente. Les deux états qui se
+   VISENT — le combo et le calme — sont sortis d'ici pour le coin de la scène, où ils se voient
+   d'un coup d'œil avec leur compteur. */
 function ligneBoosts(sujet) {
   const bouts = [], alb = albumVitesse(sujet);
   if (sujet.kind === 'egg') {
     if (!sujet.slot) return '';
-    const base = hatchTime(sujet.slot), brut = force('couveuse'), n = brut * alb;
+    const base = hatchTime(sujet.slot), n = force('couveuse') * alb;
     bouts.push('Couvaison ' + fmtTime(base) + ' → ' + (n ? fmtTime(base / n) : 'rien sans toi'));
-    if (brut) bouts.push('couveuse ×' + dec(brut, 2));
   } else {
     const c = sujet.c, t = temperOf(c);
     if (!estMur(c)) {
       // la durée annoncée est celle d'UN NIVEAU : c'est l'attente que le joueur vit
-      const pas = dureeNiveau(c), brut = force('eleveur') * ELEVEUR_X, n = brut * alb;
+      const pas = dureeNiveau(c), n = force('eleveur') * ELEVEUR_X * alb;
       bouts.push('Croissance ' + fmtTime(pas) + ' par niveau → ' +
                  (n ? fmtTime(pas / (n * t.grow)) : 'rien sans toi'));
-      if (t.grow !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.grow));
-      if (brut) bouts.push('éleveur ×' + dec(brut, 2));
     } else {
-      const brut = force('mangeoire'), n = brut * alb;
+      const n = force('mangeoire') * alb;
       bouts.push('Engraissement ' + (n ? '+' + dec(FATTEN_X * n * t.fat, 1) + ' s par seconde'
                                        : 'rien sans toi'));
-      if (n && t.fat !== 1) bouts.push(accord(t, c) + ' ×' + dec(t.fat));
-      if (brut) bouts.push('mangeoire ×' + dec(brut, 2));
     }
     // la rente ne dépend plus de la maturité mais de l'âge : elle se lit dans les deux cas
     const r = renteOf(c);
     if (r) bouts.push('rente +' + fmtRente(r) + ' / s' + (c.prodige ? ' (chromatique ×2)' : ''));
   }
-  /* CE QUE LES PRIMES ET LA CONSTELLATION AJOUTENT SE VOIT ENFIN. On achetait « +2 % de
-     valeur » et rien à l'écran ne bougeait — le même défaut que la bête menée au bout, qui
-     absorbait les clics sans rien dire. Un achat qui ne se sent pas est un achat qu'on
-     regrette. */
-  const cv = coef('valeur'), cvit = coef('vitesse');
-  if (cv > 1) bouts.push('valeur ×' + dec(cv, 2));
-  if (cvit > 1) bouts.push('vitesse ×' + dec(cvit, 2));
-  if (alb > 1) bouts.push('album ×' + dec(alb, 2));
-  if (enFrenesie()) bouts.push('frénésie ×' + FRENESIE_X);
-  /* LES DEUX ÉTATS SE LISENT ICI, sur la ligne qui dit déjà ce qui multiplie quoi. Un état
-     invisible n'existe pas : le joueur ne peut ni le viser, ni comprendre pourquoi sa ferme
-     vient de changer de vitesse. Le compte des clics accompagne le combo — sans lui, on voit
-     un nombre monter sans savoir ce qui le fait monter, ni ce qu'il reste avant le plafond. */
-  if (combo && plafondCombo() > 1) bouts.push('combo ×' + dec(comboMult(), 2) +
-                        ' (' + combo + (combo >= COMBO_PLEIN ? ', au max' : '/' + COMBO_PLEIN) + ')');
-  if (enIdle()) bouts.push('calme ×' + dec(IDLE_X, 2) + ' — la ferme tourne mieux sans toi');
   bouts.push('un clic vaut ' + fmt(clickGain(sujet)) + ' s');
   return bouts.join('  ·  ');
+}
+
+/* ── L'ÉTAT DE LA MAIN, DANS LE COIN DE LA SCÈNE ────────────────────────────────
+   Deux états s'excluent et se visent : le COMBO (on martèle, la frappe chauffe) et le CALME
+   (on a lâché, la ferme tourne mieux seule). Ils vivaient noyés dans la ligne des boosts ; ici
+   ils sont un pastille dans le coin du sujet, avec le compteur du combo — un nombre qui monte
+   qu'on comprend enfin. Rien à cliquer : la pastille laisse passer le doigt vers la bête. */
+function majEtatMain() {
+  const b = $('subject-etat');
+  if (!b) return;
+  if (enIdle()) {
+    b.hidden = false;
+    b.className = 'subject-etat calme';
+    setText(b, '🌙 calme ×' + dec(IDLE_X, 1));
+  } else if (combo && plafondCombo() > 1) {
+    b.hidden = false;
+    b.className = 'subject-etat combo';
+    setText(b, '🔥 ' + combo + (combo >= COMBO_PLEIN ? ' max' : '/' + COMBO_PLEIN) +
+               ' · ×' + dec(comboMult(), 2));
+  } else {
+    b.hidden = true;
+  }
 }
 
 // ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
@@ -7850,6 +7858,7 @@ function valeurAu(c, age) {
 
 function tickView() {
   $('coins').textContent = fmt(state.coins);
+  majEtatMain();          // le combo et le calme changent seconde par seconde, pas au rendu
 
   const rente = renteTotale();
   $('rente').hidden = !rente;

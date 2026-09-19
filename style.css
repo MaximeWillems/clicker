@@ -401,6 +401,21 @@ body.debut .stage { padding-top: 3.5rem; padding-bottom: 3rem; }
 }
 .subject:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
 
+/* L'ÉTAT DE LA MAIN, dans le coin haut-droit de la scène. Une pastille qui ne prend pas le clic
+   (le doigt vise la bête à travers elle) et se cache quand ni combo ni calme n'est actif. */
+.subject-etat {
+  position: absolute; top: 0.5rem; right: 0.6rem; z-index: 3;
+  pointer-events: none;
+  font-family: var(--f-num); font-size: 0.72rem; line-height: 1;
+  padding: 0.22rem 0.5rem; border-radius: 999px;
+  background: var(--sunken); border: 1px solid var(--rule-hi);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* le combo chauffe — un ton chaud, distinct de l'ambre réservé aux prodiges ; le calme est
+   dans le vert de la vie, la ferme qui tourne seule */
+.subject-etat.combo { color: var(--coin); border-color: var(--coin); }
+.subject-etat.calme { color: var(--accent); border-color: var(--jade-dim); }
+
 .subject-glow {
   position: absolute;
   width: clamp(10rem, 34vmin, 18rem);

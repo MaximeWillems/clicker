@@ -74,6 +74,9 @@
   <section class="stage" aria-labelledby="stage-name">
     <button type="button" class="subject" id="subject">
       <span class="subject-glow" aria-hidden="true"></span>
+      <!-- L'ÉTAT DE LA MAIN, dans le coin : combo (avec compteur) ou calme. Laisse passer le
+           clic vers la bête, et se cache quand ni l'un ni l'autre n'est actif. -->
+      <span class="subject-etat" id="subject-etat" aria-hidden="true" hidden></span>
       <!-- LE FOND DE LA BÊTE EN SCÈNE. Sous le halo et sous la bête, au-dessus de rien d'autre :
            il ne doit pas manger un sprite de 32 px, c'est la contrainte qui lui a donné sa
            forme. Vide et caché tant que la bête n'en a pas. -->
