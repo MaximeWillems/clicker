@@ -149,7 +149,7 @@ en est la monnaie.
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **Les boosters** — on ouvre un booster en poussière, on en tire des cartes. C'est la source de l'album depuis que le saut ne l'alimente plus. La poussière bleue et la **dorée** (des chromatiques, posée en `5.1.0`) sont là ; il leur manque cet évier. C'est aussi ici que le prix des cartes (l'ancien « prix doré », et les deux nœuds « bagage » de l'axe du sang) reviendra, sur ce que coûte une carte tirée | la refonte de l'ascension (faite), les deux poussières (faites) | de quoi est faite ma collection, si le saut ne la fait plus ? |
-| **Le marchand de sable** — un événement temporaire où l'on dépense sa poussière, bleue comme dorée : il y vend des boosters, entre autres | les boosters | la poussière a-t-elle un rendez-vous, plutôt qu'un robinet toujours ouvert ? |
+| **Le marchand de sable** — un événement temporaire, trois échanges par venue dont deux réalisables : cartes, paquet, recette, et deux conversions de poussière. Le changeur (argent → bleue → dorée) est livrable avant les cartes. Analysé [plus bas](#le-marchand-de-sable--lanalyse) | les boosters (pour les cartes) ; rien pour le changeur | la poussière a-t-elle un rendez-vous, plutôt qu'un robinet toujours ouvert ? |
 
 ### La main tenue — **livrée en `beta 4.32.0`**
 
@@ -1669,6 +1669,101 @@ La recette attend cette décision ; le dessin, lui, ne l'attend pas.
 temperament illisible. Un arbre qui ne bouge pas dans l'enclos poserait la question de
 l'animation du cinquième âge — déjà au plan — d'une façon différente : ce qui bouge chez un
 arbre, ce sont les feuilles et la lumière, pas le corps.
+
+#### Le marchand de sable — l'analyse
+
+**Ce n'est pas encore écrit — c'est le cadrage avant de l'écrire.** Le marchand est le second
+évier des deux poussières (le premier est la forge), et le premier endroit qui les fasse
+CIRCULER plutôt que s'accumuler. Il vit dans le bloc « La nouvelle source des cartes » ; ceci
+en est l'analyse.
+
+**LA FORME.** Un événement TEMPORAIRE — un rendez-vous, pas un robinet. À chaque apparition il
+pose **trois échanges**, et **deux seulement sont réalisables**. Le troisième est hors de portée,
+toujours : c'est lui qui donne une raison de mettre de côté et de revenir. Un marchand dont tout
+est à portée n'arbitre rien.
+
+**LES CINQ MARCHANDISES**, dont trois sont tirées à chaque venue :
+
+| Marchandise | Ce qu'elle donne | Payée en |
+|---|---|---|
+| **Une carte** | une carte, rareté tirée | *(à trancher — voir plus bas)* |
+| **Un paquet** | cinq cartes d'un coup | *(à trancher)* |
+| **Une recette** | une recette non encore connue, d'une rareté donnée ou tirée | *(à trancher)* |
+| **De la poussière dorée** | de l'or | contre de la poussière **bleue** |
+| **De la poussière bleue** | du bleu | contre de l'**argent** (pièces) |
+
+**L'ÉCHELLE DES MONNAIES, ET C'EST LA PROPOSITION QUI TIENT LE RESTE.** Les deux dernières lignes
+dessinent une montée : `argent → bleue → dorée`. Il est naturel de la continuer — `dorée →
+cartes / paquets / recettes` — et ce serait la première fois que l'or des chromatiques a un
+emploi. Cela donne au marchand une colonne vertébrale : on monte l'argent qui ne sert plus à
+rien en fin de partie jusqu'à des cartes, un cran de conversion à la fois, et chaque cran perd un
+peu au change pour que grimper toute l'échelle d'un coup ne soit pas gratuit. **À trancher :**
+est-ce l'or qui achète les cartes, ou le bleu, ou les deux à des prix différents ? Le choix
+décide de tout l'équilibrage.
+
+**LA CONTRAINTE « DEUX SUR TROIS », ET COMMENT LA TENIR.** « Réalisable » se lit sur ce qu'on a
+en poche, monnaie par monnaie — or une carte se paie en or, une conversion en pièces : trois
+échanges peuvent puiser dans trois bourses différentes. Garantir *exactement deux* accessibles
+ne se fait donc pas en tirant trois prix au hasard. Deux routes :
+
+- **par construction** : tirer trois marchandises, puis CALER leurs prix sur l'avoir du joueur —
+  deux en dessous de ce qu'il peut payer, un juste au-dessus. Le troisième est un quasi-manqué,
+  ce qui est exactement l'effet cherché ; le risque est qu'un prix ajusté à la bourse se lise
+  comme une punition d'avoir économisé (« il monte le prix quand j'ai de quoi »).
+- **par paliers fixes** : un prix par marchandise, indépendant de l'avoir. Plus honnête, mais
+  « exactement deux » n'y est plus garanti — selon le moment, ce sera zéro, une, ou les trois.
+
+La première tient la promesse mais demande de décider ce que « payer » veut dire quand les trois
+offres n'ont pas la même monnaie. La seconde est plus simple et plus franche, au prix de la règle
+« deux sur trois », qui devient alors « au plus deux, souvent moins ». **À trancher**, et c'est
+le cœur mécanique du marchand.
+
+**PREND-ON UN ÉCHANGE, OU LES DEUX ?** La demande dit « deux réalisables », pas « on en prend
+deux ». Si l'on peut prendre les deux accessibles, le marchand est une distribution ; si l'on
+n'en prend qu'UN, les deux accessibles deviennent eux-mêmes un arbitrage, et le troisième une
+frustration utile. Le second est plus riche. **À trancher.**
+
+**CE DONT IL DÉPEND, ET QUI N'EXISTE PAS ENCORE.**
+
+- **Les cartes et le paquet attendent les boosters.** « Tirer une carte » est la primitive que le
+  chantier des boosters doit poser : quelle rareté, tirée comment, avec quelles stats. Le
+  marchand ne peut pas la définir tout seul — il la CONSOMME. Un paquet de cinq, c'est cinq
+  tirages, ou un booster ouvert d'un coup : à décider avec les boosters, pas ici.
+- **La recette « non débloquée » suppose un concept neuf, et il heurte une règle en place.**
+  Aujourd'hui une recette (`RECETTES`) est une PAIRE qui, à la pension, donne une merveilleuse —
+  et elle est **délibérément cachée** : « on ne cache pas la récompense, on cache la question ».
+  Une merveille se rencontre avant de se chercher, et rien dans le jeu ne dit qu'une liste de
+  recettes existe. **Vendre une recette au marchand révèle cette liste** — que les recettes se
+  collectionnent, se comptent, se complètent. C'est le spoiler que le rang secret évite avec
+  soin. Deux issues : soit les « recettes » du marchand sont autre chose que les recettes de
+  merveille (des formules de carte, à définir avec les boosters), soit on assume que le marchand
+  ouvre le carnet des recettes — et alors il faut le décider franchement, pas le laisser fuir.
+  De plus, **les recettes n'ont aujourd'hui qu'une rareté** : elles ne donnent que des
+  merveilleuses. « De différentes rareté » demande donc un système de recettes plus large que les
+  deux paires actuelles. **C'est la plus grosse inconnue du marchand.**
+
+**CE QUI EXISTE DÉJÀ, ET SUR QUOI S'APPUYER.** Les deux poussières (`poussiere`, `poussiereOr`)
+et l'argent (`coins`) sont là. Le motif de tirage-posé-en-sauvegarde existe déjà : la pension
+garde sa main (`state.main`) pour qu'un rechargement ne la retire pas. Le marchand fera pareil —
+**son étal se fige dans la sauvegarde**, sinon recharger la page rebattrait les trois offres
+jusqu'à en trouver une bonne. Et la grille des primes (cinq à la fois, ce qui est pris se relit)
+donne un modèle d'écran à réutiliser.
+
+**LES DÉCISIONS OUVERTES, EN CLAIR** — aucune n'est tranchée, et la première commande le reste :
+
+1. quelle monnaie achète les cartes, le paquet, la recette (l'échelle proposée : l'or) ;
+2. « exactement deux » par construction (prix calés sur l'avoir) ou « au plus deux » à prix fixes ;
+3. un seul échange par venue, ou tous les accessibles ;
+4. ce qu'est une « recette » ici, et si le marchand a le droit d'ouvrir le carnet des merveilles ;
+5. la cadence et la durée d'une apparition — sur quel temps, combien de temps visible, et si une
+   venue manquée est perdue ;
+6. l'ordre de livraison : le marchand ne peut pas précéder les boosters pour ses trois premières
+   marchandises, mais ses deux conversions de poussière, elles, tiennent debout seules — un
+   premier marchand « changeur » (argent → bleue → dorée) est livrable **avant** les cartes.
+
+**Ce qu'il faut avoir tranché avant d'écrire une ligne : le point 1 et le point 2.** Le reste se
+règle en s'écrivant ; ces deux-là décident de l'équilibrage et ne se changent pas après coup sans
+tout reprendre.
 
 #### La tour de combat — le second mode de jeu
 
