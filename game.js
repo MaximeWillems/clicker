@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.5.1';
+const VERSION = 'beta 5.5.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7909,8 +7909,11 @@ function tickMarchand() {
   const m = state.marchand;
   const now = Date.now();
   if (!m.prochain) { m.prochain = now + delaiMarchand(); return; }
-  // l'étal ouvert se ferme au bout d'un quart d'heure
-  if (m.paru && now - m.paru >= MARCHAND.fenetre * 1000) { m.paru = 0; m.offres = []; etalOuvert = false; }
+  // l'étal ouvert se ferme au bout d'un quart d'heure ; si on était sur sa page, on repart à la ferme
+  if (m.paru && now - m.paru >= MARCHAND.fenetre * 1000) {
+    m.paru = 0; m.offres = [];
+    if (vue === 'marchand') ouvrirVue('ferme');
+  }
   if (m.paru || now < m.prochain) return;
   /* L'heure est passée : on ouvre l'étal si on est ENCORE dans le quart d'heure qui suit l'instant
      prévu — sinon la fenêtre s'est écoulée pendant qu'on ne regardait pas, et la venue est manquée.
@@ -7942,8 +7945,6 @@ function acheterMarchand(i) {
   return true;
 }
 
-let etalOuvert = false;
-
 /* Les icônes d'un échange : ce qu'on paie à gauche, ce qu'on gagne à droite. Émojis en attendant
    les dessins — la pièce 🪙, la poussière bleue ✧ et la dorée ❂. */
 const ICONE_MONNAIE = { coins: '🪙', poussiere: '✧' };
@@ -7961,16 +7962,11 @@ function coteEchange(icone, montant, classe) {
   return c;
 }
 
-/* La page des offres, ouverte par la pastille. Une signature évite de la redessiner à chaque
-   frame ; le minuteur, lui, se rafraîchit dans tickView, à part. */
+/* La page des offres (vue 'marchand'), ouverte par la pastille. Une signature évite de la
+   redessiner à chaque frame ; le minuteur, lui, se rafraîchit dans tickView, à part. */
 let marchandSig = '';
 function renderMarchand() {
-  const panneau = $('marchand-etal');
-  if (!panneau) return;
-  if (!marchandIci()) etalOuvert = false;
-  panneau.hidden = !(marchandIci() && etalOuvert);
-  if (panneau.hidden) { marchandSig = ''; return; }
-
+  if (vue !== 'marchand') { marchandSig = ''; return; }
   const m = state.marchand, plein = etalPlein();
   const sig = m.offres.map(o => o.type + o.donne + o.prix + (o.pris ? 'P' : '')
               + (offreAbordable(o) ? 'A' : '')).join('|') + '|' + (plein ? 'plein' : m.achats);
@@ -7991,12 +7987,32 @@ function renderMarchand() {
     b.disabled = o.pris || plein || !offreAbordable(o);
     b.title = 'Payer ' + fmt(o.prix) + (o.monnaie === 'coins' ? ' pièces' : ' de poussière bleue')
             + ' pour ' + fmt(o.donne) + ' de ' + nomGain(o);
-    b.appendChild(coteEchange(iconePayer(o), o.prix, 'paie'));
+
+    // le titre : ce que la marchandise donne, avec son icône
+    const titre = document.createElement('span');
+    titre.className = 'offre-titre';
+    const badge = document.createElement('span'); badge.className = 'offre-badge'; setText(badge, iconeGagner(o));
+    const nom = document.createElement('span'); setText(nom, nomGain(o));
+    titre.appendChild(badge); titre.appendChild(nom);
+    b.appendChild(titre);
+
+    // le troc : ce qu'on paie → ce qu'on gagne
+    const troc = document.createElement('span');
+    troc.className = 'offre-troc';
+    troc.appendChild(coteEchange(iconePayer(o), o.prix, 'paie'));
     const fleche = document.createElement('span');
     fleche.className = 'echange-fleche';
-    setText(fleche, o.pris ? '✓' : '→');
-    b.appendChild(fleche);
-    b.appendChild(coteEchange(iconeGagner(o), o.donne, 'gagne'));
+    setText(fleche, '→');
+    troc.appendChild(fleche);
+    troc.appendChild(coteEchange(iconeGagner(o), o.donne, 'gagne'));
+    b.appendChild(troc);
+
+    // l'état : à prendre, pris, ou hors de portée
+    const etat = document.createElement('span');
+    etat.className = 'offre-etat';
+    setText(etat, o.pris ? '✓ pris' : plein ? '—' : offreAbordable(o) ? 'Échanger' : 'trop cher');
+    b.appendChild(etat);
+
     liste.appendChild(b);
   });
 }
@@ -8017,7 +8033,7 @@ function appliquerModeDev() {
   if (document.body) document.body.classList.toggle('mode-dev', modeDev);
   const speed = $('btn-speed'); if (speed) speed.hidden = !modeDev;   // la vitesse est un outil de test
   const dev = $('btn-dev');     if (dev) dev.hidden = !modeDev;
-  if (!modeDev) { ouvrirDev(false); ouvrirEditeurSave(false); }
+  if (!modeDev) { ouvrirDev(false); if (vue === 'devsave') ouvrirVue('ferme'); }
 }
 
 // ── les gestes d'administration ──
@@ -8032,16 +8048,18 @@ function devRendreJetons() {
   state.asc.depense = 0;
   save(); refresh();
 }
+/* Le faire venir : il paraît (la pastille s'allume), mais on n'ouvre PAS sa page tout seul —
+   c'est un clic sur la pastille qui y mène. */
 function devMarchandVenir() {
   const m = state.marchand;
   m.paru = Date.now(); m.offres = tirerEtal(); m.achats = 0;
   m.prochain = Date.now() + delaiMarchand();
-  etalOuvert = true;
   save(); refresh();
 }
 function devMarchandPartir() {
   const m = state.marchand;
-  m.paru = 0; m.offres = []; m.achats = 0; etalOuvert = false;
+  m.paru = 0; m.offres = []; m.achats = 0;
+  if (vue === 'marchand') ouvrirVue('ferme');
   save(); refresh();
 }
 /* Écrit le texte tel quel dans la sauvegarde et recharge. En mode dev on n'impose pas la
@@ -8067,12 +8085,6 @@ function ouvrirDev(v) {
 /* ── L'ÉDITEUR DE SAUVEGARDE ── un écran à champs, un par clé du premier niveau. `champsSave` est
    la source de vérité ; on y recopie la saisie avant tout redessin pour ne rien perdre. */
 let champsSave = [];   // [{ cle, gros (objet/tableau → zone multi-ligne), valeur (texte), el }]
-
-function ouvrirEditeurSave(v) {
-  const p = $('dev-save-panel'); if (!p) return;
-  p.hidden = !v;
-  if (v) chargerEditeurDepuisSave();
-}
 
 // lit la sauvegarde du localStorage (à défaut, l'état vivant) et pose un champ par clé
 function chargerEditeurDepuisSave() {
@@ -8174,9 +8186,9 @@ function tickView() {
     past.hidden = !marchandIci();
     if (marchandIci()) setText(past, '🕐 Marchand de sable · ' + fmtTime(marchandReste()));
   }
-  // le minuteur de la page du marchand, quand elle est ouverte
+  // le minuteur de la page du marchand, quand on y est
   const minu = $('marchand-minuteur');
-  if (minu && marchandIci() && etalOuvert) setText(minu, fmtTime(marchandReste()));
+  if (minu && vue === 'marchand') setText(minu, 'repart dans ' + fmtTime(marchandReste()));
 
   for (const s of subjects()) {
     const t = thumbs.get(s.key);
@@ -9234,7 +9246,7 @@ function poserAuNid(id, cote) {
    page, aucune ne se sauvegarde. La forge a la même raison d'être pleine page que
    l'encyclopédie — elle montre des cartes côte à côte, six à la fois, et six cartes n'entrent
    pas dans une colonne de vingt et un rem. */
-const VUES = ['ferme', 'dex', 'forge', 'ciel', 'recettes'];
+const VUES = ['ferme', 'dex', 'forge', 'ciel', 'recettes', 'marchand', 'devsave'];
 let vue = 'ferme';
 
 function ouvrirVue(v) {
@@ -9248,10 +9260,15 @@ function ouvrirVue(v) {
   document.body.classList.toggle('vue-forge', vue === 'forge');
   document.body.classList.toggle('vue-ciel', vue === 'ciel');
   document.body.classList.toggle('vue-recettes', vue === 'recettes');
+  document.body.classList.toggle('vue-marchand', vue === 'marchand');
+  document.body.classList.toggle('vue-devsave', vue === 'devsave');
   $('vue-dex').hidden = vue !== 'dex';
   $('vue-forge').hidden = vue !== 'forge';
   $('vue-ciel').hidden = vue !== 'ciel';
   $('vue-recettes').hidden = vue !== 'recettes';
+  $('vue-marchand').hidden = vue !== 'marchand';
+  $('vue-devsave').hidden = vue !== 'devsave';
+  if (vue === 'devsave') chargerEditeurDepuisSave();
   for (const b of document.querySelectorAll('.onglet'))
     b.setAttribute('aria-pressed', String(b.dataset.vue === vue));
   refresh();
@@ -10235,15 +10252,12 @@ function bindTools() {
     if (e.target === $('statistiques')) ouvrirStats(false);
   });
 
-  // le marchand : la pastille ouvre et referme l'étal, un clic sur une offre l'achète
-  $('marchand-pastille').addEventListener('click', () => { etalOuvert = !etalOuvert; refresh(); });
+  // le marchand : la pastille ouvre sa page (seulement s'il est là), un clic sur une offre l'achète
+  $('marchand-pastille').addEventListener('click', () => { if (marchandIci()) ouvrirVue('marchand'); });
+  $('marchand-retour').addEventListener('click', () => ouvrirVue('ferme'));
   $('marchand-offres').addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-i]');
     if (b) acheterMarchand(+b.dataset.i);
-  });
-  $('marchand-close').addEventListener('click', () => { etalOuvert = false; refresh(); });
-  $('marchand-etal').addEventListener('click', e => {
-    if (e.target === $('marchand-etal')) { etalOuvert = false; refresh(); }
   });
 
   // les outils développeur (visibles seulement en ?userType=Dev)
@@ -10256,12 +10270,9 @@ function bindTools() {
   $('dev-marchand-venir').addEventListener('click', () => devMarchandVenir());
   $('dev-marchand-partir').addEventListener('click', () => devMarchandPartir());
 
-  // l'éditeur de sauvegarde, son propre écran
-  $('dev-save-ouvrir').addEventListener('click', () => { ouvrirDev(false); ouvrirEditeurSave(true); });
-  $('dev-save-close').addEventListener('click', () => ouvrirEditeurSave(false));
-  $('dev-save-panel').addEventListener('click', e => {
-    if (e.target === $('dev-save-panel')) ouvrirEditeurSave(false);
-  });
+  // l'éditeur de sauvegarde, sa propre page pleine
+  $('dev-save-ouvrir').addEventListener('click', () => { ouvrirDev(false); ouvrirVue('devsave'); });
+  $('dev-save-retour').addEventListener('click', () => ouvrirVue('ferme'));
   $('dev-champ-ajouter').addEventListener('click', () => {
     ajouterChamp($('dev-champ-cle').value); $('dev-champ-cle').value = '';
   });

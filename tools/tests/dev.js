@@ -45,16 +45,19 @@ scenario('dev — créditer des jetons d’ascension, et récupérer ceux invest
   eq('et tout revient en main', jeu.jetonsEnMain(), 100);
 });
 
-scenario('dev — faire venir et renvoyer le marchand', () => {
+scenario('dev — faire venir et renvoyer le marchand, sans ouvrir sa page tout seul', () => {
   const jeu = neuf();
   jeu.devMarchandVenir();
   ok('le marchand est là', jeu.marchandIci());
   eq('avec un étal plein', jeu.state.marchand.offres.length, jeu.MARCHAND.offres);
-  ok('et l’étal est ouvert', jeu.etalOuvert);
+  ok('mais sa page ne s’ouvre pas d’elle-même', jeu.vue !== 'marchand');
+
+  jeu.ouvrirVue('marchand');
+  eq('on y va d’un clic', jeu.vue, 'marchand');
 
   jeu.devMarchandPartir();
   ok('le marchand est reparti', !jeu.marchandIci());
-  ok('et l’étal refermé', !jeu.etalOuvert);
+  eq('et l’on est ramené à la ferme', jeu.vue, 'ferme');
 });
 
 scenario('dev — l’éditeur ouvre un champ par clé de la sauvegarde', () => {

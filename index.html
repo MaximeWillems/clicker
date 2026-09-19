@@ -62,24 +62,6 @@
   </div>
 </header>
 
-<!-- L'étal du marchand : une page complète, ouverte par la pastille. Trois échanges imagés, deux
-     prises possibles. Le marchand et les objets sont des émojis en attendant leurs dessins. -->
-<div id="marchand-etal" class="asc marchand" hidden>
-  <div class="asc-box marchand-box" role="dialog" aria-modal="true" aria-labelledby="marchand-titre">
-    <div class="asc-head">
-      <h2 id="marchand-titre"><span class="marchand-emoji" aria-hidden="true">🧞</span> Marchand de sable</h2>
-      <button type="button" class="asc-close" id="marchand-close" title="Fermer">✕</button>
-    </div>
-    <p class="marchand-sous">
-      <span id="marchand-reste-achats"></span>
-      <span class="marchand-sep">·</span>
-      repart dans <span class="marchand-minuteur" id="marchand-minuteur"></span>
-    </p>
-    <div class="marchand-offres" id="marchand-offres"></div>
-    <p class="marchand-pied">Tu ne peux en prendre que deux : la troisième part avec lui.</p>
-  </div>
-</div>
-
 <div id="offline-note" class="offline-note" hidden></div>
 <div id="pause-note" class="pause-note" hidden></div>
 
@@ -401,6 +383,41 @@
   <div class="recettes-liste" id="recettes-liste"></div>
 </section>
 
+<!-- ── LA PAGE DU MARCHAND DE SABLE ── page pleine, ouverte par la pastille. Un émoji en attendant
+     son dessin ; chaque échange est une carte imagée. -->
+<section id="vue-marchand" class="marchand" hidden aria-label="Marchand de sable">
+  <div class="marchand-tete">
+    <button type="button" class="vue-retour" id="marchand-retour">← Retour</button>
+    <span class="marchand-minuteur" id="marchand-minuteur"></span>
+  </div>
+  <div class="marchand-hero">
+    <span class="marchand-emoji" aria-hidden="true">🧞</span>
+    <h2>Marchand de sable</h2>
+    <p class="marchand-baratin">De passage, les bras chargés. <span id="marchand-reste-achats"></span></p>
+  </div>
+  <div class="marchand-offres" id="marchand-offres"></div>
+  <p class="marchand-pied">Tu ne peux en prendre que deux : la troisième repart avec lui.</p>
+</section>
+
+<!-- ── LA PAGE D'ÉDITION DE SAUVEGARDE ── page pleine (mode dev), un champ par clé du localStorage. -->
+<section id="vue-devsave" class="dev-save" hidden aria-label="Éditeur de sauvegarde">
+  <div class="dev-save-tete">
+    <button type="button" class="vue-retour" id="dev-save-retour">← Retour</button>
+    <h2>💾 Éditeur de sauvegarde</h2>
+  </div>
+  <p class="asc-warn">⚠ « Appliquer » écrit ces champs dans le localStorage et recharge la page.</p>
+  <div class="champ-ajout">
+    <input type="text" id="dev-champ-cle" class="champ-cle-saisie" placeholder="nom du champ" spellcheck="false">
+    <button type="button" class="sav-second" id="dev-champ-ajouter">Ajouter un champ</button>
+  </div>
+  <div id="dev-save-champs" class="dev-save-champs"></div>
+  <p class="sav-resume" id="dev-editeur-etat"></p>
+  <div class="sav-actes">
+    <button type="button" class="sav-second" id="dev-editeur-relire">Relire depuis le jeu</button>
+    <button type="button" class="asc-go" id="dev-editeur-appliquer">Appliquer</button>
+  </div>
+</section>
+
 <!-- L'ascension n'a plus d'écran à elle : le bouton Ascension ouvre la constellation en mode
      saut (voir #vue-ciel et son pied #ciel-asc). On n'y choisit plus de créatures — on y investit
      ses jetons, puis on valide. -->
@@ -499,30 +516,6 @@
         <button type="button" class="asc-go" id="dev-save-ouvrir">Ouvrir l’éditeur de sauvegarde</button>
       </div>
     </section>
-  </div>
-</div>
-
-<!-- ── L'ÉDITEUR DE SAUVEGARDE ── un écran à champs, ouvert depuis le panneau développeur -->
-<div id="dev-save-panel" class="asc" hidden>
-  <div class="asc-box dev-save-box" role="dialog" aria-modal="true" aria-labelledby="dev-save-title">
-    <div class="asc-head">
-      <h2 id="dev-save-title">💾 Éditeur de sauvegarde</h2>
-      <button type="button" class="asc-close" id="dev-save-close" title="Fermer">✕</button>
-    </div>
-    <p class="asc-warn">⚠ « Appliquer » écrit ces champs dans le localStorage et recharge la page.</p>
-
-    <div class="champ-ajout">
-      <input type="text" id="dev-champ-cle" class="champ-cle-saisie" placeholder="nom du champ" spellcheck="false">
-      <button type="button" class="sav-second" id="dev-champ-ajouter">Ajouter un champ</button>
-    </div>
-
-    <div id="dev-save-champs" class="dev-save-champs"></div>
-
-    <p class="sav-resume" id="dev-editeur-etat"></p>
-    <div class="sav-actes">
-      <button type="button" class="sav-second" id="dev-editeur-relire">Relire depuis le jeu</button>
-      <button type="button" class="asc-go" id="dev-editeur-appliquer">Appliquer</button>
-    </div>
   </div>
 </div>
 
