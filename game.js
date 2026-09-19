@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.3.3';
+const VERSION = 'beta 5.3.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7961,6 +7961,14 @@ function tickView() {
   const rente = renteTotale();
   $('rente').hidden = !rente;
   if (rente) setText($('rente'), '+' + fmtRente(rente) + ' / s');
+
+  /* Les deux poussières se voient en permanence dès qu'on en a : la forge, seul endroit qui les
+     montrait, reste cachée tant que l'album est vide, si bien qu'on ignorait combien on possède. */
+  const pb = state.poussiere || 0, po = state.poussiereOr || 0;
+  $('hud-poussiere').hidden = !pb;
+  if (pb) setText($('hud-poussiere'), '✧ ' + fmt(pb));
+  $('hud-poussiere-or').hidden = !po;
+  if (po) setText($('hud-poussiere-or'), '❂ ' + fmt(po));
 
   for (const s of subjects()) {
     const t = thumbs.get(s.key);
