@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.2.4** | une fois **toutes les primes prises**, le bouton du panneau devient une bascule **masquer / afficher** : trente-six cases achetées ne décident plus de rien, on peut les ranger. Le choix se retient et traverse l’ascension |
+| **beta 5.3.0** | huit créatures de plus (dessins à venir) : **Tricératops** (rare), **Spinosaure** et **Vélociraptor** (épiques), **Tyrannosaure**, **Charybde**, **Scylla**, **Dragon ancien** (mythiques), et deux merveilles, **Dragon prismatique** et **Charybde et Scylla**. Le **Béhémoth** et l’**Ouroboros passent en merveille** — plus dans l’œuf mythique, on ne les rencontre qu’en pension. Chaque merveille a sa route : deux dinos → Béhémoth, deux dragons anciens → Prismatique, serpent + dragon ancien → Ouroboros, Charybde + Scylla → leur monstre. Ouroboros reste le parent de la Kitsune — une chaîne de fin de partie |
+| beta 5.2.4 | une fois **toutes les primes prises**, le bouton du panneau devient une bascule **masquer / afficher** : trente-six cases achetées ne décident plus de rien, on peut les ranger. Le choix se retient et traverse l’ascension |
 | beta 5.2.3 | la pension **plafonnée à une heure** de temps de base. Deux mythiques montaient à seize heures, la recette de la Kitsune à douze : un mur, pas un choix. Tout ce qui dépasse une heure y est ramené, les hâtes de la constellation descendent encore, et plus aucun couple n’est refusé « trop long ». Les recettes remontent à 2 % (l’accident reste à 0,1 %) pour rester la bonne route face au joker maintenant que tous couvent aussi vite. L’équilibrage de ce que la pension rend est à reprendre |
 | beta 5.2.2 | le combo et le calme quittent la ligne des boosts pour une **pastille dans le coin de la scène** — « 🔥 47/100 · ×1,34 » ou « 🌙 calme ×1,5 », avec le compteur qu’on cherchait. Et la ligne des boosts se **dégonfle** : elle empilait une douzaine de « ×1,2 » sans contexte, dont l’effet était déjà dans le temps effectif de l’action ; il ne reste que ce temps, la rente, et ce qu’un clic vaut |
 | beta 5.2.1 | trois réglages en vrac : une bête à fond est **gardée d’office** (comme un chromatique) ; l’**album ne s’affiche plus sans carte** (le saut ne le remplit plus, seuls les boosters le feront) ; et la faveur « L’œil neuf » disparaît — **plus aucune faveur ne buffe les chromatiques**, cette voie n’existe que dans la constellation |
@@ -394,7 +395,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 30 lignées et leurs 150 formes, du têtard à la Tarasque
+- 39 lignées et leurs 195 formes, du têtard à la Tarasque
 - **Le bonheur d'une bête** : la garder en scène lui fait offrir, de loin en loin, quelques secondes de clic double
 - **Un mode histoire** : le jeu se déplie une marche à la fois, et s'explique en dix notes
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
@@ -412,7 +413,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 - **Rente** : une bête de l'âge adulte ou plus rapporte toute seule, à proportion de ce
   qu'elle vaut — la seule règle du jeu qui paie pour ne pas vendre
 - Progression hors ligne, plafonnée à 24 h — et seulement pour ce qui est automatisé
-- Collection des 150 formes découvertes
+- Collection des 195 formes découvertes
 - **L'album et l'ascension** : les bêtes gardées deviennent des cartes, le motif décide
   du bonus, et tout le reste repart de zéro
 - **La pension** : deux bêtes adultes confiées pondent un œuf dont la lignée est promise — et
@@ -1391,7 +1392,7 @@ auraient rendu plus tard. L'épithète se dégonfle d'elle-même — un *adulte 
 
 ### Raretés
 
-**La pyramide compte 30 lignées : 10 communes, 10 rares, 4 épiques, 3 mythiques et 3 merveilleuses.** L'ère rare
+**La pyramide compte 39 lignées : 10 communes, 11 rares, 6 épiques, 5 mythiques et 7 merveilleuses** (depuis l'ajout de la `5.3.0`, qui a aussi fait passer Béhémoth et Ouroboros du rang mythique au rang merveille). L'ère rare
 est passée de quatre à dix en alpha 2.3.0 — les communes avaient été étoffées au fil du temps
 pendant que les autres ères restaient à leur compte d'origine, si bien qu'on voyait la même
 bête un œuf sur quatre à l'ère rare contre une sur dix à l'ère commune, alors que la rare dure

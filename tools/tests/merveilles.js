@@ -73,6 +73,48 @@ scenario('tarasque — la seule merveille sans recette', () => {
      /2 % de merveilleuse/.test(ditPension(jeu)), ditPension(jeu));
 });
 
+scenario('roster — les créatures ajoutées, leurs rangs et leurs routes', () => {
+  const jeu = neuf();
+  const rang = k => (jeu.LINE_BY_KEY[k] || {}).rarity;
+
+  // les rangs demandés
+  eq('tricératops rare', rang('triceratops'), 'rare');
+  eq('spinosaure épique', rang('spinosaure'), 'epique');
+  eq('vélociraptor épique', rang('velociraptor'), 'epique');
+  eq('tyrannosaure mythique', rang('tyrannosaure'), 'mythique');
+  eq('charybde mythique', rang('charybde'), 'mythique');
+  eq('scylla mythique', rang('scylla'), 'mythique');
+  eq('dragon ancien mythique', rang('dragon-ancien'), 'mythique');
+  eq('béhémoth passe merveille', rang('behemoth'), 'merveilleuse');
+  eq('ouroboros passe merveille', rang('ouroboros'), 'merveilleuse');
+  eq('dragon prismatique merveille', rang('dragon-prismatique'), 'merveilleuse');
+  eq('charybde et scylla merveille', rang('charybde-scylla'), 'merveilleuse');
+
+  // chacune a ses étiquettes et ses cinq formes, sinon la pension et la scène cassent
+  for (const k of ['triceratops', 'spinosaure', 'velociraptor', 'tyrannosaure', 'charybde',
+                   'scylla', 'dragon-ancien', 'dragon-prismatique', 'charybde-scylla']) {
+    ok(k + ' a ses étiquettes', !!jeu.ETIQUETTES[k]);
+    eq(k + ' a cinq formes', jeu.LINE_BY_KEY[k].forms.length, jeu.AGES.length);
+  }
+
+  /* BÉHÉMOTH ET OUROBOROS NE SORTENT PLUS DE L'ŒUF MYTHIQUE : ils sont passés merveille, donc
+     le tirage d'un œuf mythique ne les propose plus. */
+  const mythiquesOeuf = jeu.LINES.filter(l => l.rarity === 'mythique').map(l => l.key);
+  ok('l’œuf mythique ne donne plus béhémoth', !mythiquesOeuf.includes('behemoth'));
+  ok('ni ouroboros', !mythiquesOeuf.includes('ouroboros'));
+
+  /* LES QUATRE ROUTES LOGIQUES : deux dinos → béhémoth, deux dragons anciens → prismatique,
+     serpent + dragon ancien → ouroboros, Charybde + Scylla → leur monstre à deux têtes. */
+  const donne = (a, b) => { const r = jeu.recetteDe({ line: a }, { line: b }); return r && r.donne; };
+  eq('tyrannosaure × tricératops → béhémoth', donne('tyrannosaure', 'triceratops'), 'behemoth');
+  eq('dragon ancien × dragon ancien → prismatique', donne('dragon-ancien', 'dragon-ancien'), 'dragon-prismatique');
+  eq('serpent × dragon ancien → ouroboros', donne('serpent', 'dragon-ancien'), 'ouroboros');
+  eq('charybde × scylla → charybde et scylla', donne('charybde', 'scylla'), 'charybde-scylla');
+  /* ET OUROBOROS RESTE LE PARENT DE LA KITSUNE : la chaîne de fin de partie est assumée. */
+  ok('ouroboros reste parent de la kitsune',
+     jeu.RECETTES.some(r => r.donne === 'kitsune' && (r.a === 'ouroboros' || r.b === 'ouroboros')));
+});
+
 scenario('recettes — un mythique par famille, et la chimère n’en est pas une', () => {
   const jeu = neuf();
   /* La chimère était le carrefour de la moitié des recettes, au motif qu'elle est faite
@@ -136,7 +178,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
     .filter(n => (n.className || '').includes('coll-head'));
   eq('pas de cinquième section', sections().length, 4);
   // 2 · le dénominateur
-  eq('et le compte s’arrête à 135', jeu.formesVisibles(), 135);
+  eq('et le compte s’arrête aux formes non secrètes', jeu.formesVisibles(), 160);
   // 3 · le trophée
   const t = jeu.TROPHEES.find(x => x.cle === 'merveille');
   ok('le trophée existe', !!t);
@@ -174,7 +216,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   jeu.refresh();
   eq('le rang est connu', jeu.rareteConnue('merveilleuse'), true);
   eq('la cinquième section apparaît', sections().length, 5);
-  eq('le compte monte à 150', jeu.formesVisibles(), 150);
+  eq('le compte monte avec le rang secret', jeu.formesVisibles(), 195);
   ok('le trophée est pris', !!s.trophees.merveille);
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));

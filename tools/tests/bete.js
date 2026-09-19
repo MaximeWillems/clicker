@@ -130,7 +130,7 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
   eq('une commune rembourse dès l’enfance', seuil('crapaud', 'commune'), 1);
   eq('une rare rembourse à l’âge adulte', seuil('loup', 'rare'), 3);
   eq('une épique à l’âge ancien', seuil('golem', 'epique'), 4);
-  eq('une mythique aussi', seuil('ouroboros', 'mythique'), 4);
+  eq('une mythique aussi', seuil('tyrannosaure', 'mythique'), 4);
 });
 
 scenario('clic — une bête menée au bout paie, et seulement sous ta main', () => {

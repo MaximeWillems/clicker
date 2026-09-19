@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.2.4';
+const VERSION = 'beta 5.3.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1294,10 +1294,20 @@ const ETIQUETTES = {
   sphinx:     ['terre', 'poil'],     cheval:     ['terre', 'poil'],
   chimere:    ['terre', 'poil'],     behemoth:   ['terre', 'écaille'],
   ouroboros:  ['terre', 'écaille'],
-  /* LES DEUX MERVEILLES ONT LEURS ÉTIQUETTES, comme tout le monde : une merveille peut être
-     parent. Wukong est de PIERRE — né d'un œuf de pierre, il ne se croise donc avec rien
-     d'autre que la pierre, exactement comme le golem dont il sort. La règle qui l'a fait naître
-     est celle qui l'isole ensuite, et c'est bien. */
+  /* Les dinosaures et les monstres marins de l'ajout de contenu. Le tricératops et le tyranno
+     sont écaille de terre comme le béhémoth (deux dinos font le titan) ; le spinosaure va à
+     l'eau ; le vélociraptor porte des plumes. Charybde est un gouffre nu, Scylla un écueil
+     écaillé. Le dragon ancien est du ciel écaillé, comme le prismatique qu'il devient. */
+  triceratops: ['terre', 'écaille'], spinosaure:  ['eau',   'écaille'],
+  velociraptor:['terre', 'plume'],   tyrannosaure:['terre', 'écaille'],
+  charybde:    ['eau',   'nu'],      scylla:      ['eau',   'écaille'],
+  'dragon-ancien': ['ciel', 'écaille'],
+  'dragon-prismatique': ['ciel', 'écaille'],
+  'charybde-scylla':    ['eau',  'nu'],
+  /* LES MERVEILLES ONT LEURS ÉTIQUETTES, comme tout le monde : une merveille peut être parent.
+     Wukong est de PIERRE — né d'un œuf de pierre, il ne se croise donc avec rien d'autre que la
+     pierre, exactement comme le golem dont il sort. La règle qui l'a fait naître est celle qui
+     l'isole ensuite, et c'est bien. */
   kitsune:    ['terre', 'poil'],     wukong:     ['terre', 'pierre'],
   tarasque:   ['eau',   'écaille'],
 };
@@ -1388,6 +1398,26 @@ const RECETTES = [
      laisse passer exactement un couple, et personne n'a de raison de l'essayer. Une
      interdiction devient un secret, et il n'y a pas de seconde route. */
   { a: 'golem',   b: 'golem',  donne: 'wukong',  duree: 3600, chance: 0.02 },
+
+  /* LES MERVEILLES DE L'AJOUT DE CONTENU, chacune par un couple logique — le pattern « deux
+     mythiques (ou presque) donnent une merveille » que Charybde et Scylla ont posé.
+
+     BÉHÉMOTH est un titan de dinosaures : ses formes sont déjà l'ossement, le saurien, le
+     tyran. Deux dinos le font — le tyrannosaure et le tricératops. C'est la seule route d'une
+     lignée qui sortait jadis de l'œuf mythique et qui est passée merveille.
+
+     LE DRAGON PRISMATIQUE est ce que devient un dragon ancien poussé à son terme : deux
+     anciens, comme deux pierres font Wukong.
+
+     L'OUROBOROS, la boucle du monde, naît du serpent-plume et du dragon ancien — la forme et le
+     temps qui se referment en anneau. Il reste le parent de la Kitsune : la faire demande donc
+     d'abord de faire un Ouroboros, une chaîne assumée de toute fin de partie.
+
+     CHARYBDE ET SCYLLA : les deux monstres du détroit, confiés l'un à l'autre. */
+  { a: 'tyrannosaure',  b: 'triceratops',   donne: 'behemoth',            duree: 3600, chance: 0.02 },
+  { a: 'dragon-ancien', b: 'dragon-ancien', donne: 'dragon-prismatique',  duree: 3600, chance: 0.02 },
+  { a: 'serpent',       b: 'dragon-ancien', donne: 'ouroboros',           duree: 3600, chance: 0.02 },
+  { a: 'charybde',      b: 'scylla',        donne: 'charybde-scylla',     duree: 3600, chance: 0.02 },
 ];
 
 /* CE QUI SE PASSE APRÈS LA PREMIÈRE, et c'est voulu : une merveille se reproduit comme le
@@ -2494,6 +2524,10 @@ const LINES = [
   { key: 'chat', name: 'Chat', rarity: 'rare', forms: [
     ['Chaton', '🐈'], ['Chat', '🐈'], ['Lynx', '🐈'],
     ['Panthère des brumes', '🐆', 'f'], ['Bastet, gardienne', '🐈‍⬛', 'f'] ] },
+  // dessin à venir : glyphes pour l'instant
+  { key: 'triceratops', name: 'Tricératops', rarity: 'rare', forms: [
+    ['Bébé tricératops', '🦕'], ['Tricératops', '🦕'], ['Tricératops cornu', '🦕'],
+    ['Tricératops de combat', '🦖'], ['Trois-cornes, le rempart', '🛡️'] ] },
 
   // ── épiques ─────────────────────────────────────────────────────────────
   { key: 'kraken', name: 'Kraken', rarity: 'epique', forms: [
@@ -2508,6 +2542,13 @@ const LINES = [
   { key: 'cheval', name: 'Cheval', rarity: 'epique', forms: [
     ['Poulain', '🐴'], ['Cheval', '🐎'], ['Destrier', '🐎'],
     ['Licorne', '🦄', 'f'], ['Pégase', '🌠'] ] },
+  // dessins à venir : glyphes pour l'instant
+  { key: 'spinosaure', name: 'Spinosaure', rarity: 'epique', forms: [
+    ['Spinosaure juvénile', '🦕'], ['Spinosaure', '🦖'], ['Spinosaure voilé', '🦖'],
+    ['Spinosaure des fleuves', '🐊'], ['Spinosaure, la voile du Nil', '🌊'] ] },
+  { key: 'velociraptor', name: 'Vélociraptor', rarity: 'epique', forms: [
+    ['Vélociraptor emplumé', '🦤'], ['Vélociraptor', '🦖'], ['Raptor de meute', '🦖'],
+    ['Raptor faucheur', '🦅'], ['Vélociraptor, l’ombre rapide', '🌪️'] ] },
 
   // ── mythiques ───────────────────────────────────────────────────────────
   /* LA SEULE LIGNÉE JOKER. Une chimère est faite de morceaux d'autres bêtes : deux chimères
@@ -2516,30 +2557,54 @@ const LINES = [
   { key: 'chimere', name: 'Chimère', rarity: 'mythique', joker: true, forms: [
     ['Avorton', '🐁'], ['Chimèreau', '🐐'], ['Chimère', '🦁', 'f'],
     ['Chimère royale', '🦁', 'f'], ['Chimère primordiale', '👹', 'f'] ] },
-  { key: 'behemoth', name: 'Béhémoth', rarity: 'mythique', forms: [
-    ['Ossement', '🦴'], ['Saurien', '🦕'], ['Béhémoth', '🦖'],
-    ['Béhémoth éternel', '🦖'], ['Béhémoth primordial', '☄️'] ] },
-  /* PREMIÈRE LIGNÉE DE L'ARC DE LA RÉVÉLATION. Elle ne commence pas petite : au premier âge
-     c'est déjà un serpent qui se mord la queue, anneau fermé et complet. Le nom ne change
-     jamais, seule l'épithète pousse — on ne rencontre pas cinq bêtes, on regarde le même dieu
-     se réveiller.
-
-     Elle naissait en « Anneau de mue », une dépouille, avec un glyphe de ver : le contraire de
-     ce qu'elle est. Un dieu qui commence en ver n'est plus un dieu.
-
-     L'anneau, lui, est identique du premier au dernier âge. CE QUI GRANDIT EST CE QU'IL
-     CONTIENT — rien, puis une lueur, puis un monde. C'est ce qui donne du grandiose sans
-     rien casser de la charte : la bête reste ronde et endormie, c'est le cadre qui devient
-     immense. */
-  { key: 'ouroboros', name: 'Ouroboros', rarity: 'mythique', forms: [
-    ['Ouroboros', '🐍'], ['Ouroboros éveillé', '🐍'], ['Ouroboros clos', '🐍'],
-    ['Ouroboros sans fin', '🌀'], ['Ouroboros, la boucle du monde', '♾️'] ] },
+  /* LES QUATRE MYTHIQUES DE L'AJOUT. Le béhémoth et l'ouroboros ont quitté ce rang pour la
+     merveille (plus bas) ; ceux-ci les remplacent. Le tyrannosaure et le tricératops font le
+     béhémoth ; Charybde et Scylla se croisent en leur monstre à deux têtes ; le dragon ancien
+     mène au dragon prismatique et, avec le serpent-plume, à l'ouroboros. Dessins à venir. */
+  { key: 'tyrannosaure', name: 'Tyrannosaure', rarity: 'mythique', forms: [
+    ['Tyrannosaure juvénile', '🦖'], ['Tyrannosaure', '🦖'], ['Tyrannosaure royal', '🦖'],
+    ['Tyran des tyrans', '🦖'], ['Tyrannosaure, le roi carnassier', '👑'] ] },
+  { key: 'charybde', name: 'Charybde', rarity: 'mythique', forms: [
+    ['Remous', '🌊'], ['Charybde', '🌊'], ['Charybde vorace', '🌀'],
+    ['Gouffre marin', '🕳️'], ['Charybde, la gueule des flots', '🌊'] ] },
+  { key: 'scylla', name: 'Scylla', rarity: 'mythique', forms: [
+    ['Écueil', '🪨', 'f'], ['Scylla', '🐙', 'f'], ['Scylla à six gueules', '🐙', 'f'],
+    ['Scylla du détroit', '🌊', 'f'], ['Scylla, l’écueil affamé', '🦑', 'f'] ] },
+  { key: 'dragon-ancien', name: 'Dragon ancien', rarity: 'mythique', forms: [
+    ['Dragonneau', '🐉'], ['Jeune dragon', '🐉'], ['Dragon vénérable', '🐉'],
+    ['Dragon des origines', '🐲'], ['Aïeul des cieux', '⏳'] ] },
 
   /* ── LES MERVEILLEUSES ────────────────────────────────────────────────────
-     Aucun œuf ne les donne. On ne les rencontre qu'en pension, par un couple précis, et le
-     couple ne les rend qu'une fois de temps en temps : voir RECETTES.
+     Aucun œuf ne les donne. On ne les rencontre qu'en pension, par un couple précis (voir
+     RECETTES) ou par le joker des chimères, et seulement de temps en temps.
 
-     KITSUNE reprend le traitement de l'Ouroboros — le nom ne change pas, l'épithète pousse —
+     LE BÉHÉMOTH ET L'OUROBOROS ONT REJOINT CE RANG. Ils sortaient de l'œuf mythique ; ils sont
+     maintenant des dieux qu'on ne rencontre plus qu'en pension. Le béhémoth se fait de deux
+     dinosaures, l'ouroboros du serpent et du dragon ancien — et l'ouroboros reste le parent de
+     la Kitsune, donc une chaîne de fin de partie. */
+  { key: 'behemoth', name: 'Béhémoth', rarity: 'merveilleuse', forms: [
+    ['Ossement', '🦴'], ['Saurien', '🦕'], ['Béhémoth', '🦖'],
+    ['Béhémoth éternel', '🦖'], ['Béhémoth primordial', '☄️'] ] },
+  /* L'OUROBOROS, ARC DE LA RÉVÉLATION. Elle ne commence pas petite : au premier âge c'est déjà
+     un serpent qui se mord la queue, anneau fermé et complet. Le nom ne change jamais, seule
+     l'épithète pousse — on ne rencontre pas cinq bêtes, on regarde le même dieu se réveiller.
+     L'anneau est identique du premier au dernier âge ; ce qui grandit est ce qu'il CONTIENT —
+     rien, puis une lueur, puis un monde. */
+  { key: 'ouroboros', name: 'Ouroboros', rarity: 'merveilleuse', forms: [
+    ['Ouroboros', '🐍'], ['Ouroboros éveillé', '🐍'], ['Ouroboros clos', '🐍'],
+    ['Ouroboros sans fin', '🌀'], ['Ouroboros, la boucle du monde', '♾️'] ] },
+  /* LE DRAGON PRISMATIQUE, ce que devient un dragon ancien poussé au bout — toutes les couleurs
+     d'un seul dragon. Dessin à venir. */
+  { key: 'dragon-prismatique', name: 'Dragon prismatique', rarity: 'merveilleuse', forms: [
+    ['Dragon irisé', '🐉'], ['Dragon prismatique', '🌈'], ['Dragon spectral', '🌈'],
+    ['Dragon arc-en-ciel', '🌈'], ['Dragon prismatique, le prisme vivant', '💎'] ] },
+  /* CHARYBDE ET SCYLLA, les deux monstres du détroit réunis — la seule merveille faite de deux
+     autres bêtes nommées, et c'est pour ça qu'elle porte leurs deux noms. Dessin à venir. */
+  { key: 'charybde-scylla', name: 'Charybde et Scylla', rarity: 'merveilleuse', forms: [
+    ['Le détroit maudit', '🌊'], ['Charybde et Scylla', '🌊'], ['Le double fléau', '🌀'],
+    ['Les gardiens du détroit', '🌊'], ['Charybde et Scylla, le passage sans retour', '⚓'] ] },
+
+     /* KITSUNE reprend le traitement de l'Ouroboros — le nom ne change pas, l'épithète pousse —
      mais pour une raison qui lui est propre : ELLE A NEUF QUEUES DEPUIS TOUJOURS, ET ELLE LES
      CACHE. « Une queue par siècle » devient ce qu'elle montre, pas ce qu'elle acquiert. Effet
      de bord : 1, 3, 5, 7, 9 — c'est la seule bête du jeu dont on lise l'âge sur le dessin.
