@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.1.1** | le fond des boîtes modales tient au défilement : les statistiques, plus hautes que l’écran une fois assez de compteurs, débordaient de leur fond et s’étalaient sur le voile sombre. La boîte défile désormais à l’intérieur, fond compris — même correctif pour la sauvegarde et le carrefour |
+| **beta 5.2.0** | le carnet des recettes : réussir la ponte d’un couple à recette l’apprend, et une vue à elle rassemble les recettes acquises — les parents et les chances, toujours ; la créature au bout seulement si on l’a découverte. Il ne montre que l’acquis, jamais un total ni une case vide : on apprend le chemin, pas la récompense. C’est le préalable au marchand de sable |
+| beta 5.1.1 | le fond des boîtes modales tient au défilement : les statistiques, plus hautes que l’écran une fois assez de compteurs, débordaient de leur fond et s’étalaient sur le voile sombre. La boîte défile désormais à l’intérieur, fond compris — même correctif pour la sauvegarde et le carrefour |
 | beta 5.1.0 | la poussière dorée : un chromatique (un prodige) fondu ou défait au saut ne rend plus de poussière bleue en plus grande quantité, mais une ressource à part — la poussière **dorée**, dans l’ambre réservé aux prodiges. La forge montre les deux bassins. Elle n’a pas encore d’emploi : l’évier viendra avec les boosters |
 | **beta 5.0.0** | la refonte de l’ascension : on ne choisit plus de bêtes à emporter, le saut ne fabrique plus de cartes. Son seul objet devient d’investir ses jetons dans la constellation, **et seulement à ce moment-là** — le reste du temps, elle se consulte. L’enclos entier se défait en poussière, le bouton sépare la réserve du gain du cycle (« 1 (+4) »), et l’axe du sang perd ses deux « bagage » avec le prix des cartes qu’ils adoucissaient. Les cartes viendront des boosters, à venir |
 | beta 4.32.1 | la dernière barre de chaque âge disparaît : elle affichait « 15 / 15 » en annonçant un niveau 16, ne rapportait rien et ne servait qu’à mûrir. Les âges raccourcissent d’autant — un niveau dure toujours dix secondes à l’enfance — et l’équilibrage est à reprendre |
@@ -2691,6 +2692,14 @@ partie de la récompense.
 À la première éclosion, **tout s'ouvre d'un coup** : la section apparaît avec ses deux lignées,
 le compteur passe à `/ 150`, le trophée tombe, la ligne de statistiques arrive et les trois
 consignes du marchand reviennent.
+
+**Le carnet des recettes (`5.2.0`) respecte la même règle.** Réussir la ponte d'un couple à
+recette l'APPREND, et une vue à elle rassemble les recettes acquises. Mais elle ne montre que ce
+qu'on a appris — jamais un total, jamais une case vide — et chaque entrée dit les parents et les
+chances sans nommer la créature au bout tant qu'on ne l'a pas découverte. On apprend le chemin,
+pas la récompense : c'est « on cache la question » retourné d'un cran, une fois la question déjà
+posée par le jeu. Le carnet n'a d'onglet qu'à partir de la première recette apprise — avant, rien
+ne dit qu'une liste existe.
 
 #### Ce que la phrase dit, et ce qu'elle tait
 

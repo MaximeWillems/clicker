@@ -33,6 +33,7 @@
     <button type="button" class="onglet" data-vue="dex" aria-pressed="false">Encyclopédie</button>
     <button type="button" class="onglet" data-vue="forge" aria-pressed="false" hidden>Forge</button>
     <button type="button" class="onglet" data-vue="ciel" aria-pressed="false" hidden>Constellation</button>
+    <button type="button" class="onglet" data-vue="recettes" aria-pressed="false" hidden>Recettes</button>
   </nav>
 
   <button type="button" id="btn-asc" class="asc-call" hidden>Ascension</button>
@@ -354,6 +355,18 @@
     <p class="ciel-asc-dit" id="ciel-asc-dit"></p>
     <button type="button" class="ciel-asc-go" id="ciel-asc-go">Ascensionner</button>
   </div>
+</section>
+
+<!-- LE CARNET DES RECETTES, en pleine page. Il n'apparaît qu'avec la première recette apprise,
+     et ne montre que les acquises — jamais un total ni une case vide, qui trahiraient qu'il en
+     reste. Chaque entrée dit le couple et les chances ; la créature au bout ne se montre que si
+     on l'a déjà découverte. -->
+<section id="vue-recettes" class="recettes" hidden aria-label="Carnet des recettes">
+  <div class="recettes-tete">
+    <h2>Le carnet des recettes</h2>
+    <p class="recettes-dit" id="recettes-dit"></p>
+  </div>
+  <div class="recettes-liste" id="recettes-liste"></div>
 </section>
 
 <!-- L'ascension n'a plus d'écran à elle : le bouton Ascension ouvre la constellation en mode
