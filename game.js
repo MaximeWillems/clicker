@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.5.0';
+const VERSION = 'beta 5.5.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7944,14 +7944,24 @@ function acheterMarchand(i) {
 
 let etalOuvert = false;
 
-// le texte d'une offre : ce qu'on paie, ce qu'on gagne
-function libelleOffre(o) {
-  return o.type === 'or'
-    ? fmt(o.prix) + ' ✧  →  ' + fmt(o.donne) + ' ❂'
-    : fmt(o.prix) + ' pièces  →  ' + fmt(o.donne) + ' ✧';
+/* Les icônes d'un échange : ce qu'on paie à gauche, ce qu'on gagne à droite. Émojis en attendant
+   les dessins — la pièce 🪙, la poussière bleue ✧ et la dorée ❂. */
+const ICONE_MONNAIE = { coins: '🪙', poussiere: '✧' };
+const iconePayer  = o => ICONE_MONNAIE[o.monnaie] || '?';
+const iconeGagner = o => o.type === 'or' ? '❂' : '✧';
+const nomGain     = o => o.type === 'or' ? 'poussière dorée' : 'poussière bleue';
+
+// un bloc « icône + montant », un côté de l'échange
+function coteEchange(icone, montant, classe) {
+  const c = document.createElement('span');
+  c.className = 'echange-cote ' + classe;
+  const i = document.createElement('span'); i.className = 'echange-icone'; setText(i, icone);
+  const n = document.createElement('span'); n.className = 'echange-montant'; setText(n, fmt(montant));
+  c.appendChild(i); c.appendChild(n);
+  return c;
 }
 
-/* Le panneau des offres, ouvert par la pastille. Une signature évite de le redessiner à chaque
+/* La page des offres, ouverte par la pastille. Une signature évite de la redessiner à chaque
    frame ; le minuteur, lui, se rafraîchit dans tickView, à part. */
 let marchandSig = '';
 function renderMarchand() {
@@ -7967,10 +7977,9 @@ function renderMarchand() {
   if (sig === marchandSig) return;
   marchandSig = sig;
 
+  const reste = MARCHAND.achats - m.achats;
   setText($('marchand-reste-achats'),
-    plein ? 'plus rien à prendre' : (MARCHAND.achats - m.achats) + ' achat'
-            + (MARCHAND.achats - m.achats > 1 ? 's' : '') + ' possible'
-            + (MARCHAND.achats - m.achats > 1 ? 's' : ''));
+    plein ? 'plus rien à prendre' : reste + ' achat' + (reste > 1 ? 's' : '') + ' possible' + (reste > 1 ? 's' : ''));
 
   const liste = $('marchand-offres');
   liste.innerHTML = '';
@@ -7980,7 +7989,14 @@ function renderMarchand() {
     b.className = 'marchand-offre' + (o.pris ? ' pris' : '');
     b.dataset.i = i;
     b.disabled = o.pris || plein || !offreAbordable(o);
-    setText(b, o.pris ? '✓ ' + libelleOffre(o) : libelleOffre(o));
+    b.title = 'Payer ' + fmt(o.prix) + (o.monnaie === 'coins' ? ' pièces' : ' de poussière bleue')
+            + ' pour ' + fmt(o.donne) + ' de ' + nomGain(o);
+    b.appendChild(coteEchange(iconePayer(o), o.prix, 'paie'));
+    const fleche = document.createElement('span');
+    fleche.className = 'echange-fleche';
+    setText(fleche, o.pris ? '✓' : '→');
+    b.appendChild(fleche);
+    b.appendChild(coteEchange(iconeGagner(o), o.donne, 'gagne'));
     liste.appendChild(b);
   });
 }
@@ -8001,7 +8017,7 @@ function appliquerModeDev() {
   if (document.body) document.body.classList.toggle('mode-dev', modeDev);
   const speed = $('btn-speed'); if (speed) speed.hidden = !modeDev;   // la vitesse est un outil de test
   const dev = $('btn-dev');     if (dev) dev.hidden = !modeDev;
-  if (!modeDev) ouvrirDev(false);
+  if (!modeDev) { ouvrirDev(false); ouvrirEditeurSave(false); }
 }
 
 // ── les gestes d'administration ──
@@ -8042,18 +8058,85 @@ function devAppliquerSave(texte) {
   return { ok: true, dit: 'Sauvegarde posée, rechargement…' };
 }
 
-// le panneau dev : ouvrir/fermer, et remplir le texte avec l'état vivant
+// le panneau dev : ouvrir/fermer
 function ouvrirDev(v) {
   const p = $('dev-panel'); if (!p) return;
   p.hidden = !v;
-  if (v) devRelireSave();
 }
-function devRelireSave() {
-  const t = $('dev-save'); if (!t) return;
-  try { t.value = JSON.stringify(JSON.parse(texteSauvegarde()), null, 2); }
-  catch (e) { t.value = texteSauvegarde(); }
-  const etat = $('dev-save-etat');
+
+/* ── L'ÉDITEUR DE SAUVEGARDE ── un écran à champs, un par clé du premier niveau. `champsSave` est
+   la source de vérité ; on y recopie la saisie avant tout redessin pour ne rien perdre. */
+let champsSave = [];   // [{ cle, gros (objet/tableau → zone multi-ligne), valeur (texte), el }]
+
+function ouvrirEditeurSave(v) {
+  const p = $('dev-save-panel'); if (!p) return;
+  p.hidden = !v;
+  if (v) chargerEditeurDepuisSave();
+}
+
+// lit la sauvegarde du localStorage (à défaut, l'état vivant) et pose un champ par clé
+function chargerEditeurDepuisSave() {
+  let brut = '';
+  try { brut = localStorage.getItem(SAVE_KEY) || ''; } catch (e) { /* privé */ }
+  let d;
+  try { d = JSON.parse(brut || texteSauvegarde()); } catch (e) { d = {}; }
+  if (!d || typeof d !== 'object' || Array.isArray(d)) d = {};
+  champsSave = Object.keys(d).map(cle => champDe(cle, d[cle]));
+  const etat = $('dev-editeur-etat');
   if (etat) { setText(etat, ''); etat.classList.remove('sav-non'); }
+  renderEditeurSave();
+}
+
+function champDe(cle, val) {
+  const gros = val !== null && typeof val === 'object';
+  return { cle, gros, valeur: gros ? JSON.stringify(val, null, 2) : String(val), el: null };
+}
+
+// recopie la saisie en cours dans le modèle, avant un redessin qui recrée les champs
+function syncChamps() { for (const c of champsSave) if (c.el) c.valeur = c.el.value; }
+
+function renderEditeurSave() {
+  const hote = $('dev-save-champs'); if (!hote) return;
+  hote.innerHTML = '';
+  champsSave.forEach((c, i) => {
+    const row = document.createElement('div');
+    row.className = 'champ-save' + (c.gros ? ' gros' : '');
+    const label = document.createElement('span'); label.className = 'champ-cle'; setText(label, c.cle);
+    const val = document.createElement(c.gros ? 'textarea' : 'input');
+    val.className = 'champ-val'; val.value = c.valeur; val.spellcheck = false;
+    if (c.gros) val.rows = Math.min(12, (c.valeur.match(/\n/g) || []).length + 1);
+    c.el = val;
+    const x = document.createElement('button');
+    x.type = 'button'; x.className = 'champ-retirer'; x.dataset.retirer = i; x.title = 'Retirer ce champ';
+    setText(x, '✕');
+    row.appendChild(label); row.appendChild(val); row.appendChild(x);
+    hote.appendChild(row);
+  });
+}
+
+function ajouterChamp(cle) {
+  cle = (cle || '').trim(); if (!cle) return;
+  syncChamps();
+  if (!champsSave.some(c => c.cle === cle)) champsSave.push({ cle, gros: false, valeur: '', el: null });
+  renderEditeurSave();
+}
+function retirerChamp(i) { syncChamps(); champsSave.splice(i, 1); renderEditeurSave(); }
+
+// une valeur de champ → JS : JSON si possible (nombre, booléen, null, objet, tableau), sinon la chaîne brute
+function parseValeurChamp(txt) { try { return JSON.parse(txt); } catch (e) { return txt; } }
+
+function collecterEditeur() {
+  syncChamps();
+  const d = {};
+  for (const c of champsSave) d[c.cle] = parseValeurChamp(c.valeur);
+  return d;
+}
+
+function devAppliquerEditeur() {
+  const r = devAppliquerSave(JSON.stringify(collecterEditeur()));
+  const etat = $('dev-editeur-etat');
+  if (etat && !r.ok) { setText(etat, '✕ ' + r.dit); etat.classList.add('sav-non'); }
+  return r;
 }
 
 // ce que la bête vaudra une fois mûre à tel âge, taille ordinaire
@@ -8091,6 +8174,9 @@ function tickView() {
     past.hidden = !marchandIci();
     if (marchandIci()) setText(past, '🕐 Marchand de sable · ' + fmtTime(marchandReste()));
   }
+  // le minuteur de la page du marchand, quand elle est ouverte
+  const minu = $('marchand-minuteur');
+  if (minu && marchandIci() && etalOuvert) setText(minu, fmtTime(marchandReste()));
 
   for (const s of subjects()) {
     const t = thumbs.get(s.key);
@@ -10155,6 +10241,10 @@ function bindTools() {
     const b = e.target.closest && e.target.closest('[data-i]');
     if (b) acheterMarchand(+b.dataset.i);
   });
+  $('marchand-close').addEventListener('click', () => { etalOuvert = false; refresh(); });
+  $('marchand-etal').addEventListener('click', e => {
+    if (e.target === $('marchand-etal')) { etalOuvert = false; refresh(); }
+  });
 
   // les outils développeur (visibles seulement en ?userType=Dev)
   $('btn-dev').addEventListener('click', () => ouvrirDev($('dev-panel').hidden));
@@ -10165,11 +10255,22 @@ function bindTools() {
   $('dev-jetons-rendre').addEventListener('click', () => devRendreJetons());
   $('dev-marchand-venir').addEventListener('click', () => devMarchandVenir());
   $('dev-marchand-partir').addEventListener('click', () => devMarchandPartir());
-  $('dev-save-relire').addEventListener('click', () => devRelireSave());
-  $('dev-save-appliquer').addEventListener('click', () => {
-    const r = devAppliquerSave($('dev-save').value);
-    if (!r.ok) { setText($('dev-save-etat'), '✕ ' + r.dit); $('dev-save-etat').classList.add('sav-non'); }
+
+  // l'éditeur de sauvegarde, son propre écran
+  $('dev-save-ouvrir').addEventListener('click', () => { ouvrirDev(false); ouvrirEditeurSave(true); });
+  $('dev-save-close').addEventListener('click', () => ouvrirEditeurSave(false));
+  $('dev-save-panel').addEventListener('click', e => {
+    if (e.target === $('dev-save-panel')) ouvrirEditeurSave(false);
   });
+  $('dev-champ-ajouter').addEventListener('click', () => {
+    ajouterChamp($('dev-champ-cle').value); $('dev-champ-cle').value = '';
+  });
+  $('dev-save-champs').addEventListener('click', e => {
+    const x = e.target.closest && e.target.closest('[data-retirer]');
+    if (x) retirerChamp(+x.dataset.retirer);
+  });
+  $('dev-editeur-relire').addEventListener('click', () => chargerEditeurDepuisSave());
+  $('dev-editeur-appliquer').addEventListener('click', () => devAppliquerEditeur());
 
   $('btn-sav').addEventListener('click', () => ouvrirSav(true));
   $('sav-close').addEventListener('click', () => ouvrirSav(false));

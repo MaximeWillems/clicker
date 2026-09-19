@@ -193,25 +193,57 @@ body {
   0%, 100% { box-shadow: 0 0 8px rgba(228, 166, 62, 0.4); }
   50%      { box-shadow: 0 0 16px rgba(228, 166, 62, 0.7); }
 }
-.marchand-etal {
-  position: fixed; top: 3.6rem; left: 50%; transform: translateX(-50%); z-index: 40;
-  width: min(30rem, calc(100vw - 2rem));
-  background: var(--surface); border: 1px solid var(--amber); border-radius: 6px;
-  padding: 0.8rem 1rem; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+/* La page du marchand — une modale (.asc) bordée d'ambre, avec une carte imagée par échange */
+.marchand-box { border-color: var(--amber); max-width: 34rem; }
+.marchand-emoji { font-size: 1.3rem; }
+.marchand .asc-head h2 { color: var(--amber); display: flex; align-items: center; gap: 0.5rem; }
+.marchand-sous {
+  margin: 0 0 0.4rem; font-family: var(--f-num); font-size: 0.78rem; color: var(--soft);
+  font-variant-numeric: tabular-nums;
 }
-.marchand-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
-.marchand-titre { font-family: var(--f-name); font-size: 1.05rem; color: var(--amber); }
-.marchand-reste { font-family: var(--f-num); font-size: 0.74rem; color: var(--faint); }
-.marchand-offres { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.7rem; }
+.marchand-sep { opacity: 0.5; margin: 0 0.35rem; }
+.marchand-minuteur { color: var(--amber); }
+.marchand-offres { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.4rem; }
 .marchand-offre {
-  font-family: var(--f-num); font-size: 0.92rem; color: var(--ink);
-  background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px;
-  padding: 0.5rem 0.8rem; cursor: pointer; text-align: left; font-variant-numeric: tabular-nums;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.6rem;
+  background: var(--sunken); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 0.7rem 1rem; cursor: pointer;
 }
-.marchand-offre:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); }
+.marchand-offre:hover:not(:disabled) { border-color: var(--amber); }
 .marchand-offre:disabled { opacity: 0.4; cursor: default; }
-.marchand-offre.pris { opacity: 0.5; text-decoration: line-through; }
-.marchand-pied { margin: 0.6rem 0 0; font-size: 0.72rem; color: var(--faint); font-style: italic; }
+.marchand-offre.pris { opacity: 0.5; }
+.echange-cote { display: flex; align-items: center; gap: 0.45rem; }
+.echange-cote.paie  { justify-content: flex-end; color: var(--soft); }
+.echange-cote.gagne { justify-content: flex-start; color: var(--ink); font-weight: 600; }
+.echange-icone { font-size: 1.5rem; line-height: 1; }
+.echange-montant { font-family: var(--f-num); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.echange-fleche { font-size: 1.2rem; color: var(--amber); }
+.marchand-pied { margin: 0.9rem 0 0; font-size: 0.72rem; color: var(--faint); font-style: italic; }
+
+/* L'éditeur de sauvegarde — un champ par clé : nom, valeur éditable, retrait */
+.dev-save-box { max-width: 40rem; }
+.champ-ajout { display: flex; gap: 0.5rem; margin: 0.6rem 0; }
+.champ-cle-saisie {
+  flex: 1; font-family: var(--f-num); font-size: 0.85rem; color: var(--ink);
+  background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 0.4rem 0.6rem;
+}
+.dev-save-champs { display: flex; flex-direction: column; gap: 0.4rem; max-height: 50vh; overflow-y: auto; }
+.champ-save { display: grid; grid-template-columns: 9rem 1fr auto; gap: 0.5rem; align-items: start; }
+.champ-save.gros { align-items: stretch; }
+.champ-cle {
+  font-family: var(--f-num); font-size: 0.82rem; color: var(--amber);
+  padding-top: 0.45rem; word-break: break-word;
+}
+.champ-val {
+  font-family: var(--f-num); font-size: 0.85rem; color: var(--ink);
+  background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 0.4rem 0.6rem;
+  width: 100%; box-sizing: border-box; font-variant-numeric: tabular-nums; resize: vertical;
+}
+.champ-retirer {
+  font-size: 0.8rem; color: var(--faint); background: none; border: 1px solid var(--rule);
+  border-radius: 4px; padding: 0.3rem 0.5rem; cursor: pointer;
+}
+.champ-retirer:hover { color: var(--danger, #C46); border-color: currentColor; }
 
 .tools { display: flex; gap: 0.4rem; }
 .tool {

@@ -57,22 +57,52 @@ scenario('dev — faire venir et renvoyer le marchand', () => {
   ok('et l’étal refermé', !jeu.etalOuvert);
 });
 
-scenario('dev — l’éditeur écrit le texte dans la sauvegarde et recharge', () => {
+scenario('dev — l’éditeur ouvre un champ par clé de la sauvegarde', () => {
   const jeu = neuf();
-  const avant = require('../banc.js').rechargements();
-  const bon = JSON.stringify({ v: jeu.SAVE_V, coins: 4242, pen: [], incub: [] });
-  const r = jeu.devAppliquerSave(bon);
-  ok('le JSON valide est accepté', r.ok);
-  ok('la sauvegarde porte le texte', (require('../banc.js').brut() || '').indexOf('4242') >= 0);
-  ok('et la page recharge', require('../banc.js').rechargements() > avant);
-
-  const ko = jeu.devAppliquerSave('{ pas du json');
-  ok('un JSON cassé est refusé', !ko.ok);
+  jeu.state.coins = 777; jeu.save();
+  jeu.chargerEditeurDepuisSave();
+  const coins = jeu.champsSave.find(c => c.cle === 'coins');
+  ok('la clé coins a son champ', !!coins);
+  eq('avec sa valeur', coins.valeur, '777');
+  const album = jeu.champsSave.find(c => c.cle === 'album');
+  ok('un objet/tableau passe en champ « gros »', album && album.gros);
 });
 
-scenario('dev — remplir l’éditeur depuis l’état vivant', () => {
+scenario('dev — modifier, ajouter et retirer des champs, puis appliquer', () => {
   const jeu = neuf();
-  jeu.state.coins = 777;
-  jeu.devRelireSave();
-  ok('le texte reflète l’état', g('dev-save').value.indexOf('777') >= 0);
+  jeu.save();
+  jeu.chargerEditeurDepuisSave();
+
+  // modifier coins par la saisie du champ
+  jeu.champsSave.find(c => c.cle === 'coins').el.value = '99999';
+  // ajouter un champ neuf
+  jeu.ajouterChamp('marqueTest');
+  jeu.champsSave.find(c => c.cle === 'marqueTest').el.value = '"coucou"';
+  // en retirer un
+  const iPouss = jeu.champsSave.findIndex(c => c.cle === 'poussiere');
+  jeu.retirerChamp(iPouss);
+
+  const d = jeu.collecterEditeur();
+  eq('la valeur modifiée est un nombre', d.coins, 99999);
+  eq('le champ ajouté est lu (chaîne JSON)', d.marqueTest, 'coucou');
+  ok('le champ retiré a disparu', !('poussiere' in d));
+});
+
+scenario('dev — une valeur de champ se lit en JSON, à défaut en texte', () => {
+  const jeu = neuf();
+  eq('un nombre', jeu.parseValeurChamp('42'), 42);
+  eq('un booléen', jeu.parseValeurChamp('true'), true);
+  eq('une chaîne libre reste une chaîne', jeu.parseValeurChamp('bonjour'), 'bonjour');
+});
+
+scenario('dev — appliquer l’éditeur écrit dans la sauvegarde et recharge', () => {
+  const jeu = neuf();
+  const avant = require('../banc.js').rechargements();
+  jeu.save();
+  jeu.chargerEditeurDepuisSave();
+  jeu.champsSave.find(c => c.cle === 'coins').el.value = '4242';
+  const r = jeu.devAppliquerEditeur();
+  ok('accepté', r.ok);
+  ok('la sauvegarde porte la nouvelle valeur', (require('../banc.js').brut() || '').indexOf('4242') >= 0);
+  ok('et la page recharge', require('../banc.js').rechargements() > avant);
 });
