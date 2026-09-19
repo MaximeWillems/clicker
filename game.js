@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.3.2';
+const VERSION = 'beta 5.3.3';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -4761,20 +4761,26 @@ function visualScale(c) {
   return (SCALE_MIN + (SCALE_MAX - SCALE_MIN) * r) * AGE_SCALE[c.age - 1];
 }
 
-/* L'économie court maintenant de 40 à des dizaines de milliards : au-delà du million on
-   abrège, sinon les boutons débordent et plus personne ne lit les chiffres. */
+/* L'affichage se fait en milliers : chaque cran vaut mille fois le précédent, nommé sur
+   l'échelle longue (million, milliard, billion, billiard, trillion, trilliard…). Au-delà
+   du million on abrège, sinon les boutons débordent et plus personne ne lit les chiffres. */
+const PALIERS_FMT = [
+  [1e33, 'Qid'], // quintilliard
+  [1e30, 'Qi'],  // quintillion
+  [1e27, 'Qd'],  // quadrilliard
+  [1e24, 'Qa'],  // quadrillion
+  [1e21, 'Td'],  // trilliard
+  [1e18, 'Tn'],  // trillion
+  [1e15, 'Bd'],  // billiard
+  [1e12, 'Bn'],  // billion
+  [1e9,  'Md'],  // milliard
+  [1e6,  'M'],   // million
+];
 function fmt(n) {
   n = Math.floor(n);
   const signe = n < 0 ? '-' : '', a = Math.abs(n);
   const court = (v, u) => signe + v.toFixed(v < 10 ? 2 : 1).replace('.', ',') + ' ' + u;
-  /* Les paliers de jetons montent jusqu'à 10^30 : sans ces trois crans, le panneau
-     d'ascension annoncerait « 1 000 000 000 000 000 000,0 Bn » pour le prochain. */
-  if (a >= 1e30) return court(a / 1e30, 'Qi');
-  if (a >= 1e24) return court(a / 1e24, 'Qa');
-  if (a >= 1e18) return court(a / 1e18, 'Tn');
-  if (a >= 1e12) return court(a / 1e12, 'Bn');
-  if (a >= 1e9)  return court(a / 1e9, 'Md');
-  if (a >= 1e6)  return court(a / 1e6, 'M');
+  for (const [seuil, u] of PALIERS_FMT) if (a >= seuil) return court(a / seuil, u);
   return signe + a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
