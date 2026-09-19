@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.6.0';
+const VERSION = 'beta 5.6.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -835,7 +835,11 @@ const FONDS = [
 const FOND_BY_KEY = Object.fromEntries(FONDS.map(f => [f.key, f]));
 // une bête sur huit cents en a un, et il se tire alors uniformément parmi les huit
 const FOND_ODDS = 1 / 800;
-const fondDe = c => (c && c.fond && FOND_BY_KEY[c.fond]) || null;
+/* DÉSACTIVÉ TEMPORAIREMENT — le rendu du fond ne convainc pas, on le retravaille plus tard. Tant
+   que c'est faux : aucune bête neuve n'en reçoit, et aucun fond ne s'affiche (même sur une vieille
+   sauvegarde qui en porte). Remettre à `true` réactive tout d'un coup. */
+const FONDS_ACTIFS = false;
+const fondDe = c => (FONDS_ACTIFS && c && c.fond && FOND_BY_KEY[c.fond]) || null;
 
 const PRODIGE_MULT  = 25;
 /* LE HALO DIT « CHROMATIQUE », LA ROTATION DIT LAQUELLE. Le halo ne bouge pas d'une couleur à
@@ -3969,7 +3973,7 @@ function rollVariants(achete) {
     chroma: Math.floor(Math.random() * CHROMAS.length),
     temper: Math.floor(Math.random() * TEMPERS.length),
     motif: Math.floor(Math.random() * MOTIFS.length),
-    fond: achete && Math.random() < FOND_ODDS
+    fond: FONDS_ACTIFS && achete && Math.random() < FOND_ODDS
       ? FONDS[Math.floor(Math.random() * FONDS.length)].key : null,
     // le nacré pousse la base, il ne s'y ajoute pas : ×2 au plus sur tout l'album
     prodige: Math.random() < PRODIGE_ODDS * (1 + bonusAlbum().prodige + bonusCiel().prodige
@@ -4701,6 +4705,20 @@ function visualScale(c) {
    l'échelle longue (million, milliard, billion, billiard, trillion, trilliard…). Au-delà
    du million on abrège, sinon les boutons débordent et plus personne ne lit les chiffres. */
 const PALIERS_FMT = [
+  [1e75, 'Dud'], // duodécilliard
+  [1e72, 'Du'],  // duodécillion
+  [1e69, 'Und'], // undécilliard
+  [1e66, 'Un'],  // undécillion
+  [1e63, 'Dcd'], // décilliard
+  [1e60, 'Dc'],  // décillion
+  [1e57, 'Nnd'], // nonilliard
+  [1e54, 'Nn'],  // nonillion
+  [1e51, 'Ocd'], // octilliard
+  [1e48, 'Oc'],  // octillion
+  [1e45, 'Spd'], // septilliard
+  [1e42, 'Sp'],  // septillion
+  [1e39, 'Sxd'], // sextilliard
+  [1e36, 'Sx'],  // sextillion
   [1e33, 'Qid'], // quintilliard
   [1e30, 'Qi'],  // quintillion
   [1e27, 'Qd'],  // quadrilliard

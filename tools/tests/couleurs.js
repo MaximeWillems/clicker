@@ -20,9 +20,13 @@ scenario('fonds — un sur huit cents, et seulement à la boutique', () => {
   let achetes = 0, pondus = 0;
   for (let i = 0; i < N; i++) if (jeu.rollVariants(true).fond) achetes++;
   for (let i = 0; i < N; i++) if (jeu.rollVariants(false).fond) pondus++;
-  ok('un sur huit cents à l’achat',
-     Math.abs(achetes / N - jeu.FOND_ODDS) < jeu.FOND_ODDS * 0.3,
-     (achetes / N * 800).toFixed(2) + ' fois la cible');
+  // FONDS_ACTIFS est faux tant que le fond est en veille : aucune bête n'en reçoit
+  if (jeu.FONDS_ACTIFS)
+    ok('un sur huit cents à l’achat',
+       Math.abs(achetes / N - jeu.FOND_ODDS) < jeu.FOND_ODDS * 0.3,
+       (achetes / N * 800).toFixed(2) + ' fois la cible');
+  else
+    eq('désactivés : aucun fond à l’achat', achetes, 0);
   eq('aucun à la pension', pondus, 0);
 
   /* L'ŒUF DE PENSION ET L'ŒUF ACHETÉ SONT INDISCERNABLES dans la réserve — c'était voulu.
@@ -38,6 +42,13 @@ scenario('fonds — il vaut, il se peint, il se retient, il ne se nomme pas', ()
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e15; s.pens = 20;
   const c = bete(jeu, 'loup', 3, 20000);
+
+  // le fond est en veille : il ne se peint plus, même posé à la main (voir FONDS_ACTIFS)
+  if (!jeu.FONDS_ACTIFS) {
+    c.fond = 'aurore'; s.sel = 'c:' + c.id; jeu.refresh();
+    eq('désactivé : la scène ne le montre pas', noeuds.get('stage-fond').hidden, true);
+    return;
+  }
 
   const nu = jeu.sellValue(c), nom = jeu.fullName(c);
   c.fond = 'aurore';
@@ -92,7 +103,7 @@ scenario('fonds — la carte emporte celui de la bête', () => {
   const c = bete(jeu, 'loup', 3, 20000);
   c.fond = 'givre'; c.keep = true;
 
-  // la capsule est ce qu'une carte garde d'une bête — le geste que fera le booster
+  // la capsule est ce qu'une carte garde d'une bête — le geste que fait le booster
   const neuve = Object.assign(jeu.capsuleBrute(c), { id: 1 });
   ok('la capsule existe', neuve.line === 'loup');
   eq('et elle emporte le fond', neuve.fond, 'givre');
@@ -102,6 +113,11 @@ scenario('fonds — la carte emporte celui de la bête', () => {
   const cartes = [];
   const m = e => { if (e.classList && e.classList.contains('carte')) cartes.push(e); e.children.forEach(m); };
   noeuds.get('album').children.forEach(m);
+  // en veille, la carte porte toujours le fond en donnée, mais ne l'affiche pas
+  if (!jeu.FONDS_ACTIFS) {
+    ok('désactivé : la carte ne se signale pas', !cartes[0].className.includes('a-fond'), cartes[0].className);
+    return;
+  }
   ok('la carte se signale', cartes[0].className.includes('a-fond'), cartes[0].className);
   const zone = cartes[0].children.find(x => (x.className || '').includes('carte-fond'));
   ok('le décor est dans la zone d’illustration', zone.className.includes('fond-givre'), zone.className);
