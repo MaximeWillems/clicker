@@ -59,6 +59,33 @@ scenario('primes — la grille ne montre que les cinq prochaines', () => {
      jeu.PRIMES.length + ' / ' + jeu.PRIMES.length);
 });
 
+scenario('primes — une fois tout pris, on peut les masquer', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e15;
+  const cases = () => noeuds.get('primes').children.filter(b => !b.hidden);
+  const bouton = noeuds.get('primes-voir');
+
+  for (const p of jeu.PRIMES) s.primes[p.choix ? p.choix[0].cle : p.cle] = true;
+  jeu.oublierPrimes(); jeu.refresh();
+
+  /* PAR DÉFAUT RIEN NE CHANGE : tout est montré, et le bouton propose de masquer. */
+  eq('tout est montré au départ', cases().length, jeu.PRIMES.length);
+  eq('le bouton propose de masquer', bouton.textContent, 'masquer');
+
+  // on masque : la grille se vide, le bouton propose de réafficher, une note le dit
+  jeu.state.cacherPrimes = true; jeu.refresh();
+  eq('la grille est vide', cases().length, 0);
+  ok('le bouton propose de réafficher', /afficher/.test(bouton.textContent), bouton.textContent);
+  ok('et une note dit qu’elles sont masquées',
+     /masqu/.test(noeuds.get('primes-vide').textContent), noeuds.get('primes-vide').textContent);
+  eq('la note est visible', noeuds.get('primes-vide').hidden, false);
+
+  // et le choix traverse l'ascension : c'est une préférence
+  s.pens = 20; poserJetons(jeu, 1);
+  jeu.ascensionner();
+  ok('la préférence traverse le saut', jeu.state.cacherPrimes === true);
+});
+
 scenario('primes — un négoce n’arrive jamais avant sa rareté', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;

@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.2.3';
+const VERSION = 'beta 5.2.4';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -2756,7 +2756,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 36;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 37;          // le numéro de ce que le fichier sait produire aujourd'hui
 /* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
    Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
    d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
@@ -2842,6 +2842,10 @@ function freshState() {
        par rareté pour les groupes. Du confort d'affichage, donc ça traverse l'ascension —
        comme l'ordre de la bande et la taille des lots. */
     plie: {},
+    /* Cacher les primes une fois toutes prises : un confort de fin de partie. La grille des
+       primes n'a plus rien à décider quand tout est acheté, et trente-six cases prises sont
+       alors un mur inutile. Préférence, donc elle traverse l'ascension. */
+    cacherPrimes: false,
     /* LA PENSION. `places` est le nombre de couples simultanés, `couples` la liste de ce
        qui couve — chacun `{ a, b, t, duree }`, où a et b sont les identifiants de deux bêtes
        QUI RESTENT DANS L'ENCLOS. `dus` est la file des lignées promises, par sorte d'œuf, et
@@ -7465,7 +7469,7 @@ function ascensionner() {
            jetons, sommet: 0, depense: 0 },
     seen: state.seen, dex: state.dex, recettes: state.recettes,
     tri: state.tri, triOeuf: state.triOeuf,
-    achat: state.achat, sound: state.sound,
+    achat: state.achat, sound: state.sound, cacherPrimes: state.cacherPrimes,
     poussiere: (state.poussiere || 0) + laisse,
     poussiereOr: (state.poussiereOr || 0) + laisseOr,
     tuto: state.tuto, vu: state.vu, dial: state.dial,
@@ -7945,9 +7949,15 @@ function tickView() {
      `prime('...')` sans rien savoir des carrefours. */
   const prises = PRIMES.filter(primeFaite);
   const aPrendre = PRIMES.filter(p => !primeFaite(p) && (!p.si || p.si()));
+  const toutPris = !aPrendre.length;
   // plus rien à prendre : la grille bascule d'elle-même sur ce qu'on a, sinon elle serait vide
-  const versPrises = primesPrises || !aPrendre.length;
-  const montrees = new Set((versPrises ? prises : aPrendre.slice(0, PRIMES_VUES)).map(p => p.cle));
+  const versPrises = primesPrises || toutPris;
+  /* QUAND TOUT EST PRIS, ON PEUT MASQUER LA GRILLE. Trente-six cases achetées ne décident plus
+     de rien : le bouton `primes-voir` devient une bascule masquer/afficher, et `cacherPrimes`
+     retient le choix. Tant qu'il reste des primes à prendre, rien de tout ça ne s'applique. */
+  const masque = toutPris && state.cacherPrimes;
+  const montrees = new Set((masque ? [] : versPrises ? prises : aPrendre.slice(0, PRIMES_VUES))
+                           .map(p => p.cle));
 
   $('panel-primes').hidden = state.tuto && !prises.length &&
                              state.coins < PRIMES[0].prix * SEUIL_VOIR;
@@ -7955,13 +7965,22 @@ function tickView() {
 
   const bouton = $('primes-voir');
   bouton.hidden = !prises.length;
-  bouton.setAttribute('aria-pressed', String(versPrises));
-  setText(bouton, versPrises ? 'les prochaines' : 'voir les ' + prises.length + ' prises');
-  bouton.title = versPrises ? 'Revenir aux primes qui restent à prendre'
-                            : 'Voir les primes déjà achetées';
-  setText($('primes-vide'), versPrises ? 'Rien de pris pour l’instant.'
-                                      : 'Tout est pris. La ferme n’a plus rien à t’offrir.');
-  $('primes-vide').hidden = versPrises ? !!prises.length : !!aPrendre.length;
+  if (toutPris) {
+    // tout est pris : le bouton cache ou remontre les primes achetées
+    bouton.setAttribute('aria-pressed', String(!masque));
+    setText(bouton, masque ? 'afficher les ' + prises.length + ' prises' : 'masquer');
+    bouton.title = masque ? 'Réafficher les primes déjà achetées'
+                          : 'Cacher les primes prises — la ferme n’a plus rien à en décider';
+  } else {
+    bouton.setAttribute('aria-pressed', String(versPrises));
+    setText(bouton, versPrises ? 'les prochaines' : 'voir les ' + prises.length + ' prises');
+    bouton.title = versPrises ? 'Revenir aux primes qui restent à prendre'
+                              : 'Voir les primes déjà achetées';
+  }
+  setText($('primes-vide'), masque ? prises.length + ' primes prises, masquées.'
+                          : versPrises ? 'Rien de pris pour l’instant.'
+                                       : 'Tout est pris. La ferme n’a plus rien à t’offrir.');
+  $('primes-vide').hidden = masque ? false : versPrises ? !!prises.length : !!aPrendre.length;
 
   for (const p of PRIMES) {
     const r = refs.primes[p.cle], pris = primeFaite(p);
@@ -9884,7 +9903,10 @@ function bindTools() {
   });
 
   $('primes-voir').addEventListener('click', () => {
-    primesPrises = !primesPrises;
+    // tout est pris : le bouton masque ou remontre ; sinon il bascule prochaines/prises
+    const toutPris = !PRIMES.some(p => !primeFaite(p) && (!p.si || p.si()));
+    if (toutPris) { state.cacherPrimes = !state.cacherPrimes; save(); }
+    else primesPrises = !primesPrises;
     blip(440, 0.04, 'sine', 0.03);
     refresh();
   });
