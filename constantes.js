@@ -101,7 +101,10 @@ const MARCHAND = {
      ~20 000 bleues pour 1 or, pour que l'or reste précieux ; c'est du bonus, pas la source.
    - argent → bleue : rend un usage aux pièces qui ne servent plus à rien en fin de partie. */
 const CHANGE_OR    = { ratio: 20000, orMin: 1, orMax: 5, variance: 0.35 };
-const CHANGE_BLEUE = { prix: 50, bleueMin: 500, bleueMax: 5000, variance: 0.35 };
+/* argent → bleue : le prix est une PART de la bourse du joueur au moment de la venue, pas un
+   montant fixe (qui deviendrait dérisoire dès que la fortune monte). Il doit coûter quelque chose
+   qu'on a farmé : ~un tiers du magot, avec un plancher pour qu'une bourse vide ne l'offre pas. */
+const CHANGE_BLEUE = { part: 0.35, variance: 0.35, bleueMin: 500, bleueMax: 5000, prixPlancher: 200 };
 
 /* LES CARTES, LES PAQUETS ET LES RECETTES — les marchandises qui remplissent l'album et le carnet.
    La MONNAIE décide de la QUALITÉ : payé en poussière BLEUE (abondante), le tirage est basique ;

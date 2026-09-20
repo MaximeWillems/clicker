@@ -179,6 +179,21 @@ scenario('marchand — un étal ne pose jamais deux fois la même recette', () =
   }
 });
 
+scenario('marchand — le prix de argent→bleue suit la bourse du joueur', () => {
+  const jeu = neuf();
+  const part = jeu.CHANGE_BLEUE.part, v = jeu.CHANGE_BLEUE.variance;
+
+  jeu.state.coins = 1e9;
+  let o; for (let i = 0; i < 500 && !(o && o.type === 'bleue'); i++) o = jeu.offreDuChange();
+  ok('on obtient une offre bleue', !!(o && o.type === 'bleue'));
+  ok('le prix est une part de la bourse',
+     o.prix >= 1e9 * part * (1 - v) - 1 && o.prix <= 1e9 * part * (1 + v) + 1, o.prix);
+
+  jeu.state.coins = 0;                       // bourse vide : le plancher protège du cadeau
+  let p; for (let i = 0; i < 500 && !(p && p.type === 'bleue'); i++) p = jeu.offreDuChange();
+  eq('bourse vide → le plancher', p.prix, jeu.CHANGE_BLEUE.prixPlancher);
+});
+
 scenario('marchand — l’état de l’étal traverse l’ascension', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 20;

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.6.1 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
+    aujourd'hui : beta 5.6.2 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
 
 ---
 
@@ -1786,8 +1786,10 @@ certaines cases sont vides.
   est assumée.
 - **Recettes par rareté**, prix = barème de la poussière (×1 / 3 / 10 / 30 / 90), fréquence
   décroissante ; **aléatoire à 20** (bon marché, mais on ne choisit pas ce qu'on tire).
-- **Changeur (livré)** : bleue → or ≈ **20 000 : 1** (± variance), argent → bleue base 50 pièces
-  la bleue (± variance) ; montants tirés au sort à chaque venue, comme un marché qui bouge.
+- **Changeur (livré)** : bleue → or ≈ **20 000 : 1** (± variance) ; argent → bleue coûte une **part
+  de la bourse du joueur** au moment de la venue (~un tiers, ± variance, avec un plancher) — un prix
+  fixe deviendrait dérisoire dès que la fortune monte, et le change doit coûter quelque chose qu'on
+  a farmé. Montants tirés au sort à chaque venue, comme un marché qui bouge.
 
 #### La tour de combat — le second mode de jeu
 

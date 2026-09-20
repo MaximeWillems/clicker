@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.6.1';
+const VERSION = 'beta 5.6.2';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -7917,8 +7917,10 @@ function offreDuChange() {
              prix: avecVariance(or * CHANGE_OR.ratio, CHANGE_OR.variance) };
   }
   const bleue = auHasardEntre(CHANGE_BLEUE.bleueMin, CHANGE_BLEUE.bleueMax);
-  return { type: 'bleue', donne: bleue, monnaie: 'coins',
-           prix: avecVariance(bleue * CHANGE_BLEUE.prix, CHANGE_BLEUE.variance) };
+  // le prix suit la bourse du moment : une part du magot, jamais sous le plancher
+  const prix = Math.max(CHANGE_BLEUE.prixPlancher,
+                        avecVariance((state.coins || 0) * CHANGE_BLEUE.part, CHANGE_BLEUE.variance));
+  return { type: 'bleue', donne: bleue, monnaie: 'coins', prix };
 }
 
 /* ── LE BOOSTER : « TIRER UNE CARTE » ──────────────────────────────────────────
