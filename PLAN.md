@@ -105,6 +105,9 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le carnet des recettes** | beta 5.2.0 | sait-on par quoi passe une merveille, une fois qu'on en a fait une ? | oui, et sans casser le secret. Réussir la ponte d'un couple à recette APPREND la recette ; elle entre dans un carnet — une vue à elle, sœur de l'encyclopédie — qui ne montre QUE l'acquis, jamais un total ni une case vide. Chaque entrée dit les parents et les chances ; la créature au bout ne se montre que si on l'a découverte, sinon « Encore inconnue ». On apprend le chemin, pas la récompense. C'est le préalable autonome au marchand de sable, qui vendra plus tard une recette non encore faite (parents + chances visibles, bête masquée) |
 | **La poussière dorée** | beta 5.1.0 | la couleur d'un chromatique laisse-t-elle une trace ? | oui, une ressource à elle. Un chromatique (un prodige) fondu ou défait au saut ne rend plus de poussière bleue en plus grande quantité, mais de la poussière **dorée** — un second bassin, à part, qui porte l'ambre réservé aux prodiges. La forge montre les deux. Elle n'a pas encore d'emploi : c'est la mise en place, l'évier viendra avec les boosters et le marchand de sable |
 | **La refonte de l'ascension** | beta 5.0.0 | à quoi sert le saut, une fois qu'il ne fabrique plus de cartes ? | à investir. La sélection de créatures disparaît — on ne choisit plus quelles bêtes emporter — et le saut n'a plus qu'un objet : dépenser ses jetons dans la constellation, **et seulement à ce moment-là**. Le jeton passe de deux éviers à un ; l'axe du sang perd ses deux « bagage » (le prix des cartes emportées n'existe plus) ; l'enclos entier se défait en poussière ; et le bouton sépare la réserve du gain du cycle — « 1 (+4) ». Les cartes viendront des BOOSTERS, l'album se remplit désormais par là, pas par le saut. **Renverse** tout l'arbitrage « une carte de plus ou une étoile de plus » de la `4.0.0` : il n'y a plus de carte à mettre en balance. L'équilibrage de la constellation est donc à reprendre — un axe a rétréci |
+| **Le marchand de sable** | beta 5.4.0, 5.6.0, 5.6.2 | la poussière peut-elle avoir un rendez-vous plutôt qu'un robinet ? | oui, par construction : il vient à l'heure réelle ≈ 3,5 fois par jour, pose trois offres et n'en laisse prendre que deux. Le changeur d'abord (`5.4.0`), puis cartes, paquets et recettes (`5.6.0`) — les boosters remplissent l'album que le saut ne remplit plus depuis la `5.0.0`. La `5.6.2` fait payer le change argent → bleue en part de la bourse : un prix fixe devenait dérisoire une fois riche. Les barèmes restent à juger en jouant |
+| **Le mode développeur** | beta 5.5.0 → 5.5.2 | peut-on tester le jeu sans donner les outils au joueur ? | oui — `?userType=Dev` ouvre la vitesse ×10/×100, les jetons, le marchand à la demande et l'éditeur de sauvegarde ; le joueur ordinaire perd la vitesse |
+| **Le découpage en fichiers** | beta 5.3.5 | un fichier de dix mille lignes peut-il redevenir lisible ? | commencé : `constantes.js` porte les réglages, chargé avant le jeu et collé en tête par le banc. Le reste suit zone par zone, jamais d'un bloc |
 
 ### Ce qui vient ensuite
 
@@ -119,7 +122,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **Les dix-sept dessins** | rien | — |
+| **Les vingt-six dessins** | rien | — |
 | **L'écran au doigt** — voir plus bas, six marches | la planche, pour les cinq autres | est-ce que le jeu répond quand on le touche ? |
 
 **Ce qui ne dépend que de soi** :
@@ -135,7 +138,11 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
-| **La taille des menus** — densité et ordre, sauvés | rien | la ferme peut-elle se ranger comme on la regarde ? |
+| **L'interface modulable** — densité et ordre des panneaux, sauvés, et au-delà (presque) comme on veut. Voir [plus bas](#la-taille-des-menus-et-quelle-se-retienne) | rien | la ferme peut-elle se ranger comme on la regarde ? |
+| **Fondre à la forge seulement** — le bouton ✧ et son prix quittent l'album de la ferme ; la forge, qui ne porte aucun geste sur ses cartes, prend la fonte | rien | fond-on une carte là où l'on voit celles qui pourraient la rejoindre ? |
+| **Forger les cartes équipées, sans nœud** — et la carte forgée reprend l'emplacement libéré, ce qu'elle ne fait pas aujourd'hui. Voir [plus bas](#la-forge-prend-aussi-les-cartes-équipées) | rien — mais le creuset perd son objet | peut-on améliorer son build sans le démonter ? |
+| **Le charme chroma** — les cinq âges de toutes les lignées, vus, doublent la chance de chromatique. Voir [plus bas](#compléter-une-lignée-donne-un-bonus) | rien ; le sac, pour le montrer | la collection a-t-elle un bout qui vaut d'être atteint ? |
+| **Le sac** — un onglet qui montre toutes les ressources et tous les objets spéciaux | rien | sait-on ce qu'on possède sans ouvrir cinq écrans ? |
 
 **Le second mode de jeu** — seul de sa taille, donc seul dans son bloc : le mettre parmi les
 lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il demande.
@@ -144,15 +151,163 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 |---|---|---|
 | **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | **les quatre stats sont posées depuis la `4.16.0`** ; restent les tempéraments à second effet et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
 
+**Le barème des bêtes** — comme la tour, seul dans son bloc : il touche tout ce qui se paie en
+pièces.
+
+| Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
+|---|---|---|
+| **Un seul barème pour tous les œufs** — clics, engraissement, revente et péages sur un même schéma ; l'évolution ne donne plus de niveau. Analysé [plus bas](#un-seul-barème-pour-tous-les-œufs) | ses cinq questions tranchées — barèmes épique et au-delà, multiplicateur de rareté, taille | chaque œuf se joue-t-il de la même façon, à une autre échelle ? |
+| **Des enclos plus chers** — leur nombre décide de tout : le garder au plus bas | le barème, sur lequel caler les prix, et un nombre cible d'enclos en fin de partie | chaque enclos de plus est-il une vraie décision ? |
+
 **La nouvelle source des cartes** — ouverte par la refonte de l'ascension en `5.0.0`, qui a coupé
-l'ancienne. L'album ne se remplit plus au saut ; ces deux pièces le rempliront, et la poussière
-en est la monnaie.
+l'ancienne. L'album ne se remplit plus au saut ; ces pièces le remplissent depuis la `5.6.0`, et
+la poussière en est la monnaie.
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | ~~**Le carnet des recettes**~~ — **livré en `beta 5.2.0`.** Une recette se débloque en faisant naître sa créature, et se lit dans une vue à elle ; celle d'une créature non découverte montre les parents et les chances, jamais la bête. Reste à brancher : le déblocage par ACHAT au marchand (le carnet sait déjà afficher une recette dont la bête n'est pas découverte) | rien | *(livré)* |
-| **Les boosters** — on ouvre un booster en poussière, on en tire des cartes. C'est la source de l'album depuis que le saut ne l'alimente plus. La poussière bleue et la **dorée** (des chromatiques, posée en `5.1.0`) sont là ; il leur manque cet évier. C'est aussi ici que le prix des cartes (l'ancien « prix doré », et les deux nœuds « bagage » de l'axe du sang) reviendra, sur ce que coûte une carte tirée | la refonte de l'ascension (faite), les deux poussières (faites) | de quoi est faite ma collection, si le saut ne la fait plus ? |
-| **Le marchand de sable** — un événement temporaire à l'heure réelle (3–4 fois par jour), trois échanges par venue dont on ne peut en faire que **deux** : carte, paquet, recette, et deux conversions de poussière. Bleu et or achètent tout, le bleu en basique. Le changeur (argent → bleue → or) est livrable avant les cartes et le carnet. Analysé [plus bas](#le-marchand-de-sable--lanalyse) | le carnet (pour la recette), les boosters (pour les cartes) ; rien pour le changeur | la poussière a-t-elle un rendez-vous, plutôt qu'un robinet toujours ouvert ? |
+| ~~**Les boosters**~~ — **livrés en `beta 5.6.0`**, vendus par le marchand : une carte, ou un paquet de cinq. Reste : les deux nœuds « bagage » de l'axe du sang, retirés en `5.0.0`, qui devaient revenir sur ce que coûte une carte tirée | — | *(livré)* |
+| ~~**Le marchand de sable**~~ — **livré en `beta 5.4.0` puis `5.6.0`** : les cinq marchandises sont sur l'étal. Reste : la rareté d'une recette quand le carnet s'élargira, et l'équilibrage des prix, dans `constantes.js`. Analysé [plus bas](#le-marchand-de-sable--lanalyse) | — | *(livré)* |
+
+### Un seul barème pour tous les œufs
+
+> **À trancher, puis à chiffrer — demandé le 21 septembre 2026.** Maxime veut que tous les œufs
+> suivent le même schéma d'achat, de revente et d'évolution, et il l'a chiffré sur la commune et
+> la rare. « Si ça devient ingérable, on fera des adaptations. » Ce qui suit range sa
+> proposition, en vérifie les calculs — par script : ils sont justes — et dit ce qu'elle renverse.
+
+Aujourd'hui il y a **deux échelles** : la commune a la sienne (`VALUE`, `EVOLVE`), toutes les
+autres raretés partagent `VALEURS_RANG` et `PEAGES_RANG`, multipliées par `mult`. La
+proposition n'en garde qu'une forme, déclinée par rareté.
+
+#### Les clics
+
+**Monter du niveau n au niveau n + 1 coûte (niveau max de l'âge + n) × le multiplicateur de la
+rareté.** Et **l'évolution ne fait plus monter de niveau** : une commune évoluée reste au 15, et
+son passage au 16 coûte 35 + 15 = 50 clics — là où le jeu la pose aujourd'hui directement au 16.
+Chaque âge après le premier y gagne une marche : 99 pas au lieu de 95.
+
+Un clic se compte à force de base : la Force du clic et l'éleveur le multiplient comme aujourd'hui.
+
+| âge | niveaux | clics par pas | clics de l'âge | aujourd'hui |
+|---|---|---|---|---|
+| enfant | 1 → 15 | 16 → 29 | 315 | 140 |
+| adolescent | 15 → 35 | 50 → 69 | 1 190 | 171 |
+| adulte | 35 → 65 | 100 → 129 | 3 435 | 870 |
+| ancien | 65 → 85 | 150 → 169 | 3 190 | 3 420 |
+| légende | 85 → 100 | 185 → 199 | 2 880 | 20 160 |
+| **total** | | | **11 010** | **24 761** |
+
+*(commune, multiplicateur ×1)*
+
+- **Les exemples et la formule diffèrent d'un clic sur l'enfance** : 15 clics au niveau 1 et 28
+  au 14 dans les exemples, 16 et 29 par la formule — 301 clics pour l'âge au lieu de 315. La
+  formule est retenue ici, à confirmer.
+- **Les âges s'égalisent.** Aujourd'hui chacun est bien plus long que le précédent, et la légende
+  fait 81 % du trajet. Avec la formule, l'adulte — trente niveaux — devient le plus long et la
+  légende tombe à 26 % : les trois premiers âges s'allongent de deux à sept fois, la légende
+  raccourcit de sept fois.
+
+#### L'engraissement
+
+**Même logique** : passer d'un rang de taille au suivant coûte **(niveau × (s + 1) + 10 × s) × le
+multiplicateur de la rareté**, avec s = 1 pour la taille normale, 2 pour grande, jusqu'à 5
+(titanesque → démesurée).
+
+| au niveau | → grande | → énorme | → colossale | → titanesque | → démesurée | en tout |
+|---|---|---|---|---|---|---|
+| 15 | 40 | 65 | 90 | 115 | 140 | 450 |
+| 35 | 80 | 125 | 170 | 215 | 260 | 850 |
+| 65 | 140 | 215 | 290 | 365 | 440 | 1 450 |
+| 85 | 180 | 275 | 370 | 465 | 560 | 1 850 |
+| 100 | 210 | 320 | 430 | 540 | 650 | 2 150 |
+
+La taille devient une marche, comme le niveau : l'embonpoint continu, qui rapporte de moins en
+moins (`OVER_GAIN`), disparaît. **Deux questions en découlent** : ce que vaut un rang — aujourd'hui
+×1,3 à ×4,5 sur la revente — et si la taille repart à « normale » à l'évolution. Sinon on
+engraisse au niveau 15 pour 450 clics, et on garde le ×4,5 jusqu'à la légende.
+
+#### La revente et les péages
+
+**Commune** — œuf à 18 :
+
+| au bout de l'âge | revente | ce que la bête a coûté | gain | péage suivant | ventes pour le payer |
+|---|---|---|---|---|---|
+| niveau 15 | 30 | 18 | +12 | 100 | 9 |
+| niveau 35 | 150 | 118 | +32 | 750 | 24 |
+| niveau 65 | 1 000 | 868 | +132 | 2 500 | 19 |
+| niveau 85 | 4 000 | 3 368 | +632 | 10 000 | 16 |
+| niveau 100 | 15 000 | 13 368 | +1 632 | — | — |
+
+**Rare** — œuf à 10 000 :
+
+| au bout de l'âge | revente | ce que la bête a coûté | gain | péage suivant | ventes pour le payer |
+|---|---|---|---|---|---|
+| niveau 15 | 8 000 | 10 000 | −2 000 — ou +7 982, sortie d'un œuf commun | 30 000 | — |
+| niveau 35 | 42 000 | 40 000 | +2 000 | 50 000 | 25 |
+| niveau 65 | 95 000 | 90 000 | +5 000 | 75 000 | 15 |
+| niveau 85 | 180 000 | 165 000 | +15 000 | 250 000 | 17 |
+| niveau 100 | 450 000 | 415 000 | +35 000 | — | — |
+
+**La règle qu'on en tire**, pour écrire l'épique, la mythique et la merveilleuse :
+
+- à chaque bout d'âge, une bête se revend un peu plus que ce qu'elle a coûté — l'œuf et les
+  péages payés. Seule exception : la rare achetée puis vendue enfant, qui perd 20 % ;
+- **un péage se paie en quinze à vingt-cinq ventes** de l'âge qu'on quitte — la toute première
+  évolution commune en demande neuf ;
+- la rare n'est pas la commune multipliée : ×267 à l'enfance, ×30 à la légende, et sa marge est
+  plus mince — 5 à 9 % contre 12 à 67 %.
+
+#### Ce que ça renverse
+
+Quatre décisions déjà prises, à réécrire dans la même version :
+
+- **L'échelle des rangs** (`4.8.0` → `4.12.1`) : `mult = prix de l'œuf / 2 200 000`, une bête
+  achetée pile à l'équilibre à l'âge adulte. Ici chaque âge laisse un peu de marge.
+- **Les murs de la `4.27.0`** — un péage valait ×625, ×40, ×20, ×20 la revente de l'âge qu'on
+  quitte. Ici il en vaut de 0,8 à 5 : le mur se compte en ventes, pas en multiple.
+- **L'escalier des ères** (`4.26.0`) : un œuf valait 12 375 légendes de l'ère d'avant. Ici l'œuf
+  rare coûte moins qu'une seule légende commune.
+- **L'exception commune** : deux échelles deviennent une — la même idée qu'« une porte par règle ».
+
+#### Ce qu'il entraîne
+
+**Les valeurs fondent** : une commune légende passe de 1,5 million à 15 000 (÷100), une rare
+légende de 175 milliards à 450 000 (÷390 000), l'œuf rare de 55 millions à 10 000. Or tout ce
+qui se paie en pièces est calé sur l'échelle d'aujourd'hui : les primes (de 250 à 3,6·10¹⁶), les
+automates, les enclos et les incubateurs, les places de pension, les faveurs, les paliers de
+jetons — un par fortune ×1 000 — et la rente, dont le rapport « garder contre vendre » (×2,3) se
+mesurait sur une marge de 52 % au bout. Seul le changeur du marchand suit tout seul : il prend
+une part de la bourse. `tools/rythme.js` sera à refaire.
+
+**Le barème compte en ventes, pas en temps.** Il ne dit pas combien de minutes coûte une bête :
+c'est le banc qui le dira, clics et automates compris.
+
+#### Et les enclos avec lui
+
+**Demandé le même jour : des enclos plus chers**, parce que leur nombre décide de tout. C'est
+écrit depuis que la rente est sortie du plan : le nombre d'enclos est la dernière limite de la
+fin de partie.
+
+Aujourd'hui le n-ième enclos coûte `400 × 2,1^(n−1)` : 7 779 le cinquième, 317 712 le dixième,
+27 millions le seizième, 10 milliards le vingt-quatrième. Les primes en offrent cinq de plus
+(paille, pâturage). Et `SLOT_MULT` sert aussi aux incubateurs : monter l'un monte l'autre, à
+moins de les séparer.
+
+**Les deux chantiers n'en font qu'un.** Le commentaire de `SLOT_MULT` dit pourquoi une place ne
+pouvait être chère que DANS une ère : la rente suit la rareté, ×116 667 de la commune légende à
+la rare légende, quand le prix d'une place monte de ×2,1. Le barème ramène cet écart à ×30 — et,
+les valeurs divisées par cent ou plus, les prix d'aujourd'hui pèseraient déjà bien plus lourd :
+le dixième enclos vaudrait vingt et une légendes communes. On cale donc les enclos APRÈS le
+barème, sur un nombre d'enclos visé en fin de partie, qu'il reste à fixer.
+
+#### À trancher avant d'écrire
+
+1. Le multiplicateur de rareté des clics et de l'engraissement.
+2. Les barèmes épique, mythique et merveilleuse.
+3. Ce que vaut un rang de taille, et s'il repart à zéro à l'évolution.
+4. 15 ou 16 clics au niveau 1.
+5. L'ère rare ouverte par une seule légende commune : voulu ?
 
 ### La main tenue — **livrée en `beta 4.32.0`**
 
@@ -225,7 +380,7 @@ histoire ; et une vente au niveau 1 devient impossible en mode histoire.
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
 affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**25 lignées sur 39 n'ont pas de dessin** — les neuf rares d'origine (loup, méduse, salamandre,
+**26 lignées sur 39 n'ont pas de dessin** — les neuf rares d'origine (loup, méduse, salamandre,
 serpent, cerf, ours, papillon, tortue, chat) plus le tricératops, les épiques (kraken, golem,
 sphinx, cheval, spinosaure, vélociraptor), les mythiques (chimère, tyrannosaure, charybde,
 scylla, dragon ancien), et les merveilles sans dessin (béhémoth, ouroboros, dragon prismatique,
@@ -1206,6 +1361,9 @@ courbe de progression du jeu.** Deux choses à regarder quand ce sera le moment 
 
 #### Les rares sont le prochain palier
 
+> **Remis en jeu par [le barème unique](#un-seul-barème-pour-tous-les-œufs)**, demandé le 21
+> septembre 2026 : l'œuf rare y coûte 10 000, moins qu'une légende commune.
+
 **Les communes sont jugées bien équilibrées, en jouant.** Le chantier suivant est l'ère rare, et
 il n'est pas neuf : les deux cibles déjà posées plus haut en sont le contenu.
 
@@ -1357,6 +1515,16 @@ qu'elles sont analysées ici plutôt que listées dans le tableau.
 
 #### La forge prend aussi les cartes équipées
 
+> **Livrée à moitié en `beta 4.4.0`, et comme nœud** : le creuset de la constellation lève
+> l'interdit, la règle de base ne bouge pas. Et la carte forgée ne reprend PAS l'emplacement
+> libéré — vérifié au banc : forger deux cartes équipées laisse deux identifiants morts dans
+> `state.slots`, l'album affiche 3 / 5 et refuse d'en équiper une de plus jusqu'au rechargement.
+>
+> **Demandé le 21 septembre 2026 : la règle de base, sans nœud** — forger une carte équipée, oui ;
+> la fondre, toujours non. Le creuset perd alors son objet : le retirer en remboursant ses seize
+> jetons (`braise-douce` se raccroche à `cendres`), ou lui donner un autre effet. Et **fondre
+> déménage à la forge** : l'album de la ferme ne montre plus ni le bouton ni le prix de fonte.
+
 **La règle s'inverse.** « Une carte équipée n'entre pas dans la forge, exactement comme elle ne
 se fond pas » : c'était faux par analogie. Les deux gestes ne se ressemblent pas.
 
@@ -1376,6 +1544,9 @@ corvée au lieu de la supprimer.
 jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui montre tout.
 
 #### Le prix d'une évolution — plan de prix
+
+> **Remis en jeu par [le barème unique](#un-seul-barème-pour-tous-les-œufs)**, demandé le 21
+> septembre 2026 : les murs ×625 / ×40 / ×20 / ×20 y deviennent des péages comptés en ventes.
 
 **Une seule évolution sur quatre est un mur.** Le péage, rapporté à ce que vaut la bête à l'âge
 qu'elle quitte :
@@ -1596,6 +1767,16 @@ décorative, et les lignées qu'on ne croise jamais deviennent des objectifs.
 Le point de vigilance est le seul qui compte : la collection TRAVERSE l'ascension. Le bonus est
 donc un cliquet permanent qui ne redescend jamais — il doit être petit, et se cumuler de façon
 à ce que trente lignées complètes ne rendent pas la deuxième partie triviale.
+
+**Le charme chroma en est le bout — demandé le 21 septembre 2026.** Avoir vu les cinq âges de
+TOUTES les lignées — 195 formes, merveilles comprises — double la chance de chromatique :
+1/8 192 devient 1/4 096, avant le nacré, l'œil exercé et le reste, qui se multiplient par-dessus.
+Deux choses à tenir :
+
+- **ce n'est pas un trophée**, puisqu'« un trophée ne donne jamais de puissance » : c'est un
+  objet, et le sac est l'endroit où il se voit ;
+- **une lignée ajoutée ne le reprend pas** — proposé, à confirmer : plus rien ne redescend, et la
+  collection grandit à chaque ajout de contenu.
 
 #### Les tempéraments méritent mieux qu'un seul effet
 
@@ -2064,6 +2245,12 @@ l'écraser.
 
 #### La taille des menus, et qu'elle se retienne
 
+> **La demande s'élargit le 21 septembre 2026 : moduler l'interface (presque) comme on veut.** La
+> densité et l'ordre ci-dessous en restent le cœur. Le « presque » est ce que ce fichier a déjà
+> écrit : la scène reste la plus grande chose de la page, et un ordre qui change le DOM entre
+> dans la signature. Reste à dire avec Maxime ce que « comme on veut » ajoute — masquer un
+> panneau, le changer de colonne ?
+
 Le pliage existe déjà et il se sauve — `state.plie`, un booléen par panneau. Ce qui manque, ce
 sont **les panneaux qu'on ne peut pas replier parce qu'on s'en sert, mais qui prennent trop de
 place**.
@@ -2207,7 +2394,7 @@ passage — on y choisit des bêtes, pas de la poussière.
 
 #### Les fonds, animés
 
-Les [fonds](#les-fonds--à-développer) étaient prévus comme une variante *visuelle et
+Les [fonds](#les-fonds--faits-en-beta-1130) étaient prévus comme une variante *visuelle et
 collectionnable* de plus, au même rang que les teintes. La demande les précise : **animés, de
 particules et de couleurs**, et visibles à la fois **sur la créature en scène et sur sa carte**.
 
@@ -2718,18 +2905,16 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
 - **Mettre la merveilleuse en boutique.** Elle tient toute sa valeur du fait qu'elle ne
   s'achète pas, et c'est vérifié des deux côtés depuis la 3.1.0 : aucun œuf vendu ne la cote,
   et `buyEgg` refuse ce qui n'a pas de prix.
-- **Lui donner plus de valeur qu'une mythique.** Même multiplicateur, même plafond de carte,
-  même rente. Si elle rapportait davantage, la pension redeviendrait une stratégie d'argent et
-  tout le travail de la 3.0.0 tomberait sur la première éclose. Un cran de rareté, jamais un
-  cran de puissance.
+- ~~**Lui donner plus de valeur qu'une mythique.**~~ **Renversé en `beta 4.27.0`** : elle vaut
+  un cran de plus, et ses péages montent du même cran. Sa marge reste celle d'une mythique, donc
+  la pension ne redevient pas une stratégie d'argent — c'était la seule raison du refus.
 - **Réserver la merveille à sa recette une fois qu'on en a une.** Elle se reproduit comme le
   reste — Wukong × golem rend 5 % de Wukong. La seconde est plus facile que la première, et
   c'est la bonne asymétrie : ça donne une raison de garder une merveille plutôt que de la
   vendre.
-- **De nouvelles lignées au-delà des vingt-sept.** L'ère rare a été portée à dix en 2.3.0
-  parce qu'elle se répétait ; les épiques et les mythiques, elles, se traversent trop vite
-  pour que le compte se voie. Au-delà, le contenu qui manque n'est pas le nombre de lignées,
-  c'est le nombre de dessins — dix-sept sur vingt-sept n'en ont pas.
+- ~~**De nouvelles lignées au-delà des vingt-sept.**~~ **Renversé en `beta 5.3.0`** : huit de
+  plus, trente-neuf en tout. L'argument tient toujours pour les dessins — vingt-six lignées n'en
+  ont pas.
 - **Un deuxième axe de prestige.** L'argument d'origine — le premier cycle n'a pas encore été
   rejoué après une ascension — est tombé : elle donne envie de recommencer, c'est vérifié. Il
   reste écarté pour la seule raison qui vaille encore : rien ne le demande.
@@ -2745,9 +2930,9 @@ efface, et le seul endroit qui garde la mémoire du joueur devient le seul qui l
   parce que sa signature court-circuite déjà le redessin. Il n'y a rien à gagner et une
   régression à risquer par ligne déplacée. Ce qui coûte dans ce fichier n'est pas le temps
   machine, c'est **la duplication qui dérive** : voir « Une porte par règle ».
-- **Découper `game.js` en modules.** Le fichier fait 3 800 lignes et part à la poubelle au
-  jalon 1 : le scinder coûterait une demi-journée pour un confort qui ne survivrait pas au
-  serveur. Ses dix sections commentées suffisent à s'y retrouver.
+- ~~**Découper `game.js` en modules.**~~ **Renversé le 19 septembre 2026** : le fichier dépasse
+  dix mille lignes. On découpe petit à petit, zone par zone, sans modules ni build —
+  `constantes.js` depuis la `5.3.5`.
 
 ---
 
@@ -2839,7 +3024,7 @@ on vend sa première bête pour 40 pièces, la professeure annonce qu'« il y a 
 acheter qui ne sont pas des œufs », la Force du clic en coûte 30 — et il en reste 10 pour un
 œuf qui en vaut 12. Cinq minutes de boucle plus tard, toujours 10.
 
-**Elle est bouchée depuis la 2.25.0** : c'est [la plonge](#sortir-de-limpasse--la-plonge), une
+**Elle est bouchée depuis la 2.25.0** : c'est [la plonge](README.md#la-plonge), une
 pièce par assiette, dix clics l'assiette, aucun multiplicateur. Un idle ne doit jamais pouvoir
 se rendre injouable — c'est la seule faute dont un joueur ne revient pas. La dette reste écrite
 ici parce que la règle vaut pour tout ce qu'on ajoutera : **chaque nouvelle façon de dépenser
@@ -2881,6 +3066,10 @@ joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même cour
 
 **Deux cibles sont posées, et elles ne le sont pas au hasard :**
 
+> *Tombées depuis — l'œuf rare vaut 55 millions depuis la `4.12.1`, les péages sont des murs
+> depuis la `4.27.0` — et [le barème unique](#un-seul-barème-pour-tous-les-œufs) les remet
+> toutes deux en jeu. Gardées pour le raisonnement.*
+
 - **L'œuf rare doit s'acheter vers trente millions**, et non vers ses trois cent mille. Le prix
   n'est pas la question — la question est à quelle FORTUNE le joueur franchit l'ère. Trois cent
   mille tombent trop tôt pour que le passage se sente, et l'ère commune n'a alors pas eu le
@@ -2895,9 +3084,6 @@ joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même cour
 Les deux se tiennent : si le passage à l'ère rare est reculé à trente millions, une rare
 précoce arrive encore plus tôt par rapport à la courbe, et le second point devient plus aigu.
 À traiter ensemble, jamais l'un sans l'autre.
-
-Ce qu'il ne dira jamais : rien sur le plaisir. Il mesure un débit, pas un rythme ressenti — un
-joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même courbe.
 
 **Deux lignes du tableau de puissance du README sont hors d'atteinte.** Elles décrivent ce que
 six cartes équipées rendraient, alors que l'album n'a que cinq emplacements. À retrancher.
@@ -2915,3 +3101,40 @@ les tableaux, les formules et les arbitrages que ce document résume :
 - **Album et ascension** — https://claude.ai/code/artifact/037135da-4a26-4745-b37d-fd0e8990d396
 - **Pension, album, ascension** — https://claude.ai/code/artifact/d2577c90-6db3-41e6-b82d-611a0df96e3c
 - **Ce qui manque à Éclosion** — https://claude.ai/code/artifact/5b0057d3-2083-44dc-933c-b9da51b648cd
+
+### Idées et ajustements (TODO List)
+
+Dans cette section, je me permet de te donner des informations dès que j'ai des idées. Quand c'est réalisé, tu peux les supprimer d'ici.
+
+*Rangé le 21 septembre 2026. Chaque idée a sa ligne dans [Ce qui vient ensuite](#ce-qui-vient-ensuite),
+et son analyse là où le plan en porte une. Les nouvelles s'écrivent en bas, en vrac.*
+
+**L'album et la forge**
+
+- **Fondre se fait à la forge, plus depuis la ferme** : l'album de la ferme ne montre plus le
+  bouton ✧ ni le prix de fonte (`.carte-acte.fondre`).
+- **Forger des cartes équipées** — les fusionner, pas les fondre. Aujourd'hui seul le nœud du
+  creuset le permet, et la carte forgée ne reprend pas l'emplacement libéré.
+
+**La ferme**
+
+- **Des enclos plus chers.** Leur nombre décide de tout : il faut le garder au plus bas. Se cale
+  après le barème, plus bas dans cette liste.
+
+**La collection**
+
+- **Le charme chroma** : avoir vu tous les stades de toutes les créatures double la chance de
+  chromatique.
+
+**L'interface**
+
+- **Un sac d'objets**, dans un onglet à lui : toutes les ressources et tous les objets spéciaux
+  accumulés.
+- **Une interface modulable**, (presque) comme on veut.
+
+**L'économie**
+
+- **Un seul barème pour tous les œufs** : achat, revente, évolution, clics et engraissement
+  suivent le même schéma, et l'évolution ne fait plus monter de niveau. Les chiffres sont rangés
+  et vérifiés dans [Un seul barème pour tous les œufs](#un-seul-barème-pour-tous-les-œufs) — cinq
+  questions y attendent une réponse.
