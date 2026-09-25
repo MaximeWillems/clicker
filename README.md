@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 5.7.0
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 5.8.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.7.0** | **un seul barème pour tous les œufs**. Un niveau coûte (niveau max de l'âge + n) clics — de 16 à 199, 11 010 pour une vie —, et **l'évolution ne donne plus de niveau** : une bête évoluée reste au 15 et paie 50 clics pour le 16. **La rare sert de modèle et chaque rang au-dessus vaut la rare × 25** : œufs à 18, 10 000, 250 000 et 6,25 M, chacun au prix du dernier péage de l'ère d'avant ; reventes un peu au-dessus de ce que la bête a coûté (−20 % vendue enfant, puis 5 à 9 %), péages payés en quinze à vingt-cinq ventes. **La taille devient une marche** qui repart de zéro à l'évolution et **ne se vend plus** : elle multiplie la poussière du saut, jusqu'à ×4,5 (la taille exigée du marchand disparaît). La marge mince a demandé **la rente à quatre heures**. Tout ce qui se paie en pièces est recalé — premiers prix inchangés, pentes adoucies, primes de 100 à 12,5 M, faveurs, paliers de jetons ×25 (premier saut à 15 625) —, et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. L'ouverture est deux à trois fois plus lente : à juger en jouant
+| **beta 5.8.0** | **Yggdrasil, l'arbre-monde** — la huitième merveille, et la première lignée qui n'est pas un animal : graine de frêne, pousse de frêne, frêne sacré, Yggdrasil, Yggdrasil l'arbre-monde. Aucun œuf ne le donne ; deux **chevaux** confiés à la pension, oui, une fois sur cinquante — son nom est le cheval d'Ygg, l'un des noms d'Odin, et c'est la route de Wukong, une non-recette. **Le bois ne se croise qu'avec le bois**, comme la pierre : la pension le dit. Dessin à venir, sa fiche est prête (`prompts/yggdrasil.txt`)
+| beta 5.7.0 | **un seul barème pour tous les œufs**. Un niveau coûte (niveau max de l'âge + n) clics — de 16 à 199, 11 010 pour une vie —, et **l'évolution ne donne plus de niveau** : une bête évoluée reste au 15 et paie 50 clics pour le 16. **La rare sert de modèle et chaque rang au-dessus vaut la rare × 25** : œufs à 18, 10 000, 250 000 et 6,25 M, chacun au prix du dernier péage de l'ère d'avant ; reventes un peu au-dessus de ce que la bête a coûté (−20 % vendue enfant, puis 5 à 9 %), péages payés en quinze à vingt-cinq ventes. **La taille devient une marche** qui repart de zéro à l'évolution et **ne se vend plus** : elle multiplie la poussière du saut, jusqu'à ×4,5 (la taille exigée du marchand disparaît). La marge mince a demandé **la rente à quatre heures**. Tout ce qui se paie en pièces est recalé — premiers prix inchangés, pentes adoucies, primes de 100 à 12,5 M, faveurs, paliers de jetons ×25 (premier saut à 15 625) —, et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. L'ouverture est deux à trois fois plus lente : à juger en jouant
 | beta 5.6.2 | le change **argent → poussière bleue** ne coûte plus un montant fixe (dérisoire une fois riche) mais une **part de la bourse du joueur** au moment de la venue — un prix qui reste quelque chose qu’on a dû farmer, avec un plancher pour qu’une bourse vide ne l’offre pas |
 | beta 5.6.1 | le **fond animé** des créatures est mis en veille (un interrupteur `FONDS_ACTIFS`) — il ne convainquait pas, on le retravaillera ; aucune bête neuve n’en reçoit, aucun ne s’affiche. Et l’**échelle des grands nombres** monte bien plus haut : de « Qid » (quintilliard, 10³³) jusqu’à « Dud » (duodécilliard, 10⁷⁵) |
 | beta 5.6.0 | l’étal du marchand se remplit : en plus du changeur, il vend maintenant des **cartes**, des **paquets** et des **recettes**. Une carte tirée est une capsule neuve (jeune, une étoile, motif et teinte au hasard, 1 % chromatique) qui rejoint l’album ; un paquet en donne cinq, une rare+ garantie, et un paquet doré peut être un **god pack** (≈ 1/500, cinq cartes épique+, chromatisme doublé) ; une recette apprend un couple encore inconnu. La monnaie décide de la qualité — poussière **bleue** pour le tirage basique, **dorée** pour viser plus haut. Barèmes dans `constantes.js` |
@@ -408,7 +409,7 @@ pas une protection, juste une discrétion suffisante pour un test privé.
 
 ## Ce qui est dans le jalon 0
 
-- 39 lignées et leurs 195 formes, du têtard à la Tarasque
+- 40 lignées et leurs 200 formes, du têtard à l'arbre-monde
 - **Le bonheur d'une bête** : la garder en scène lui fait offrir, de loin en loin, quelques secondes de clic double
 - **Un mode histoire** : le jeu se déplie une marche à la fois, et s'explique en dix notes
 - **Cent niveaux et cinq âges** — enfant, adolescent, adulte, ancien, légende — sur une seule
@@ -1494,7 +1495,7 @@ qu'elle avait laissé. **On ne retire rien à personne** :
 
 ### Raretés
 
-**La pyramide compte 39 lignées : 10 communes, 11 rares, 6 épiques, 5 mythiques et 7 merveilleuses** (depuis l'ajout de la `5.3.0`, qui a aussi fait passer Béhémoth et Ouroboros du rang mythique au rang merveille). L'ère rare
+**La pyramide compte 40 lignées : 10 communes, 11 rares, 6 épiques, 5 mythiques et 8 merveilleuses** (depuis l'ajout de la `5.3.0`, qui a aussi fait passer Béhémoth et Ouroboros du rang mythique au rang merveille). L'ère rare
 est passée de quatre à dix en alpha 2.3.0 — les communes avaient été étoffées au fil du temps
 pendant que les autres ères restaient à leur compte d'origine, si bien qu'on voyait la même
 bête un œuf sur quatre à l'ère rare contre une sur dix à l'ère commune, alors que la rare dure
@@ -2426,9 +2427,12 @@ oiseau et crabe aussi.
 | **poil** | rongeur, loup, cerf, ours, chat, sphinx, cheval, chimère | — | chiroptère |
 | **plume** | — | — | oiseau, papillon |
 | **pierre** | golem | — | — |
+| **bois** | yggdrasil | — | — |
 
 **La pierre ne se croise avec rien.** Le golem est seul de son corps, et c'est délibéré : une
 règle de stérilité doit se raconter en cinq mots, et « on ne croise pas la pierre » les tient.
+**Le bois non plus**, depuis Yggdrasil : un arbre ne fait pas de louveteaux, et deux arbres font
+un arbre. La pension répond « on ne croise pas le bois ».
 
 L'oiseau et le papillon partagent *plume* — un papillon n'a pas de plumes, mais il a des ailes
 couvertes d'écailles poudreuses, et le rapprochement dit quelque chose de vrai sur ce que ces

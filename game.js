@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.7.0';
+const VERSION = 'beta 5.8.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1241,6 +1241,11 @@ const ETIQUETTES = {
      l'isole ensuite, et c'est bien. */
   kitsune:    ['terre', 'poil'],     wukong:     ['terre', 'pierre'],
   tarasque:   ['eau',   'écaille'],
+  /* YGGDRASIL EST DE BOIS, ET LE BOIS NE SE CROISE QU'AVEC LE BOIS — la même règle que la pierre,
+     pour la même raison : elle se raconte en cinq mots. Un arbre et un loup ne font pas de
+     petits, et un arbre qui donnerait un louveteau serait la seule chose du jeu qu'on ne
+     pourrait pas raconter. Deux Yggdrasil, eux, font un Yggdrasil. */
+  yggdrasil:  ['terre', 'bois'],
 };
 
 /* CE QUI RALENTIT UNE COUVAISON, ET POURQUOI CE FACTEUR-LÀ.
@@ -1349,6 +1354,15 @@ const RECETTES = [
   { a: 'dragon-ancien', b: 'dragon-ancien', donne: 'dragon-prismatique',  duree: 3600, chance: 0.02 },
   { a: 'serpent',       b: 'dragon-ancien', donne: 'ouroboros',           duree: 3600, chance: 0.02 },
   { a: 'charybde',      b: 'scylla',        donne: 'charybde-scylla',     duree: 3600, chance: 0.02 },
+
+  /* YGGDRASIL. Ses parents devaient être une source, un jardin, une fontaine — des choses qui ne
+     sont pas des bêtes, et que la table n'a pas : croiser deux bêtes pour obtenir un lieu ne se
+     raconte pas. La sortie est celle de Wukong, une non-recette déguisée en recette, et c'est son
+     NOM qui la donne : « Yggdrasil », c'est le CHEVAL D'YGG, l'un des noms d'Odin — le dieu s'y
+     est pendu neuf nuits, et les poètes appelaient le gibet le cheval du pendu. Deux chevaux ne
+     font donc pas un cheval : ils font l'arbre qui en porte le nom. Personne n'a de raison de
+     l'essayer, et c'est tout le secret. */
+  { a: 'cheval',        b: 'cheval',        donne: 'yggdrasil',           duree: 3600, chance: 0.02 },
 ];
 
 /* CE QUI SE PASSE APRÈS LA PREMIÈRE, et c'est voulu : une merveille se reproduit comme le
@@ -2584,6 +2598,19 @@ const LINES = [
     ['Tarasque', '🐾', 'f'], ['Tarasque à six pattes', '🦂', 'f'],
     ['Tarasque écaillée', '🐢', 'f'], ['Tarasque du Rhône', '🌊', 'f'],
     ['Tarasque, la bête de Tarascon', '⚜️', 'f'] ] },
+
+  /* YGGDRASIL, L'ARBRE-MONDE — LA PREMIÈRE LIGNÉE QUI N'EST PAS UN ANIMAL. C'est aussi la
+     merveille la moins chère à dessiner qui reste : un arbre est le seul sujet dont les cinq âges
+     se lisent par la seule taille et la seule ramification — graine, pousse, arbrisseau, arbre,
+     monde. Un crapaud qui devient légende doit changer d'anatomie sans changer d'espèce ; un
+     arbre ne fait que grandir, et son arc de croissance EST le sujet.
+
+     C'est un frêne, comme dans l'Edda. Le dernier âge est l'arbre qui porte les neuf mondes, et
+     c'est la seule forme du jeu qui soit un lieu. Dessin à venir : la fiche est dans
+     `prompts/yggdrasil.txt`. */
+  { key: 'yggdrasil', name: 'Yggdrasil', rarity: 'merveilleuse', forms: [
+    ['Graine de frêne', '🌰', 'f'], ['Pousse de frêne', '🌱', 'f'], ['Frêne sacré', '🌿'],
+    ['Yggdrasil', '🌳'], ['Yggdrasil, l’arbre-monde', '🌍'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));
@@ -8947,11 +8974,20 @@ const enPension  = c => couples().some(k => k.a === c.id || k.b === c.id);
 
 const etiqDe = c => ETIQUETTES[lineOf(c).key] || ['terre', 'nu'];
 
+/* LES CORPS QUI NE SE CROISENT QU'AVEC EUX-MÊMES, et ce que la pension répond quand on essaie.
+   La pierre du golem était seule de son espèce, écrite en dur dans `distanceDe` ; le bois
+   d'Yggdrasil l'a rejointe, et la règle est passée dans une table plutôt que dans un second
+   `if` — un troisième corps s'ajoutera sans qu'on retouche la fonction. */
+const CORPS_SEULS = {
+  pierre: 'On ne croise pas la pierre.',
+  bois:   'On ne croise pas le bois.',
+};
 /* LA DISTANCE : deux moins ce qu'elles ont en commun. Zéro quand tout concorde, deux quand
-   rien ne concorde, et `null` quand la pierre est d'un seul côté — le golem ne se croise pas. */
+   rien ne concorde, et `null` quand un corps seul n'est que d'un côté — le golem et l'arbre ne
+   se croisent qu'avec leur semblable. */
 function distanceDe(a, b) {
   const A = etiqDe(a), B = etiqDe(b);
-  if ((A[1] === 'pierre') !== (B[1] === 'pierre')) return null;
+  for (const seul of Object.keys(CORPS_SEULS)) if ((A[1] === seul) !== (B[1] === seul)) return null;
   return 2 - (A[0] === B[0] ? 1 : 0) - (A[1] === B[1] ? 1 : 0);
 }
 
@@ -8986,7 +9022,10 @@ function refusPension(a, b) {
   if (enPension(a) || enPension(b)) return 'Une de ces deux bêtes est déjà en pension.';
   if (a.age < PENSION.ageMin || b.age < PENSION.ageMin)
     return 'Il faut deux bêtes d’au moins l’âge ' + AGES[PENSION.ageMin - 1].nom + '.';
-  if (distanceDe(a, b) === null) return 'On ne croise pas la pierre.';
+  if (distanceDe(a, b) === null) {
+    const A = etiqDe(a)[1], B = etiqDe(b)[1];
+    return CORPS_SEULS[CORPS_SEULS[A] ? A : B];
+  }
   // plus de refus « trop long » : le temps de base est plafonné à une heure, rien ne dépasse
   return null;
 }

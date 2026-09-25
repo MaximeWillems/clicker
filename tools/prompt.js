@@ -405,6 +405,17 @@ const STADES = {
     'lynx, the same rounded ears now with small soft tufts at the tips, the same three-striped tail short and thick, broader chest, calm eyes',
     'mist panther, the same tufted rounded ears, the same three stripes on a long heavy tail, a much bigger low round body, soft cloudy markings, drowsy eyes',
     'bastet, enormous cat lying down, the same tufted rounded ears, the same three-striped tail curled around the body, soft golden rings on the shoulders, tiny sleepy face on folded paws'],
+
+  /* LE FIL D'YGGDRASIL : LE FRÊNE, ET RIEN QUE LUI. Cinq masses qui ne se répètent pas — un
+     losange couché, une ligne, un Y, un champignon, un cercle — et la dernière est la seule
+     ronde, comme la neuvième queue de la kitsune. Ce qui se garde d'un stade à l'autre : l'écorce
+     pâle, la feuille composée (une tige et une rangée de lames), et rien ne se perd. */
+  yggdrasil: [
+    'a single ash SEED, a samara: one small flat winged seed lying slightly tilted, the wing a long pale blade, the seed itself a darker oval at one end. Alone and very small at the centre of the frame, no soil, no leaf yet. The MASS is a small tilted diamond',
+    'the same seed has SPROUTED: a thin pale stem rising straight up, two flat round seed-leaves at its top, the empty winged husk still lying at its foot. Short and thin. The MASS is a thin vertical line with a small head',
+    'a young ash SAPLING: a slender pale trunk that splits in a clear Y into two branches, each ending in two or three flat compound leaves — a leaf is one stem with a row of small blades. A few short roots at the base. The MASS is a Y, taller than wide',
+    'the full ASH TREE: a thick pale trunk, a WIDE flat crown made of a few large leaf masses, clearly wider than the trunk, and ROOTS spreading at the base almost as wide as the crown. The MASS is a mushroom — a broad crown on a column, standing on a broad foot',
+    'YGGDRASIL, THE WORLD TREE: the crown and the roots meet in ONE CLOSED CIRCLE around the trunk — the crown arches over the top half, the roots curl under the bottom half. Inside that circle, small and flat, three things only: a small eagle shape among the top leaves, a small coiled serpent among the roots, and between them one small flat disc of the earth held by the trunk. The MASS is a CIRCLE, the only round stage, and the widest of the five'],
 };
 
 /* ── Les exceptions, écrites ───────────────────────────────────────────────
@@ -427,6 +438,15 @@ const NOTES = {
 Keep it FLAT and bloodless: no blood, no wound, no gore, no drool. The open mouth is ONE
 flat dark shape — no rendered teeth, no tongue detail. The horror is the SHAPE — a
 distended jaw and a swelling body — never gore, and never at the cost of the 6 flat colors.`,
+
+  yggdrasil: `THIS LINE IS NOT A CREATURE — this paragraph overrides everything above about eyes,
+mouth, head, face and expression, for this line only. It is a TREE, an ash tree, and it has
+NO face, NO eyes, NO mouth, NO limbs at any stage. Never draw a face in the bark, never a
+spirit, never a dryad. What stays from the idol register: the solemnity, the deep palette with
+ONE sparing metallic accent (gold on the stage 5 disc), the few large flat shapes, and the
+rule that later stages only ADD. What replaces the changing pose is the SILHOUETTE: each stage
+has its own mass, and the growth itself is the revelation. Pale grey-green bark, deep green
+leaves, dark brown roots.`,
 };
 
 const cle = process.argv[2];

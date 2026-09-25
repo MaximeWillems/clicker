@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.7.0 · sauvegarde v38 · 13 lignées illustrées sur 39 · 5 œufs sur 5
+    aujourd'hui : beta 5.8.0 · sauvegarde v38 · 13 lignées illustrées sur 40 · 5 œufs sur 5
 
 ---
 
@@ -109,6 +109,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le mode développeur** | beta 5.5.0 → 5.5.2 | peut-on tester le jeu sans donner les outils au joueur ? | oui — `?userType=Dev` ouvre la vitesse ×10/×100, les jetons, le marchand à la demande et l'éditeur de sauvegarde ; le joueur ordinaire perd la vitesse |
 | **Le découpage en fichiers** | beta 5.3.5 | un fichier de dix mille lignes peut-il redevenir lisible ? | commencé : `constantes.js` porte les réglages, chargé avant le jeu et collé en tête par le banc. Le reste suit zone par zone, jamais d'un bloc |
 | **Le barème unique** | beta 5.7.0 | chaque œuf se joue-t-il de la même façon, à une autre échelle ? | oui, par construction. La rare sert de modèle et chaque rang au-dessus vaut la rare × 25, un pas qui sort de ses propres chiffres — son dernier péage divisé par son œuf. Chaque œuf coûte donc le dernier péage de l'ère d'avant, les marges sont les mêmes à tous les rangs payants, et un péage se paie en quinze à vingt-cinq ventes de l'âge qu'on quitte. Un niveau coûte (niveau max de l'âge + n) clics, l'évolution ne donne plus de niveau, et la taille devient une marche qui repart de zéro à l'évolution et ne se vend plus : elle multiplie la poussière du saut. La marge mince a demandé la rente à quatre heures. Tout ce qui se paie en pièces est recalé sur la correspondance des bêtes mûres, paliers de jetons compris (×25), et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. **Renverse** l'échelle des rangs, les murs de la `4.27.0` et l'escalier des ères. **Prix à juger en jouant** : la première heure est deux à trois fois plus longue, et une rare tombée d'un œuf commun décide du rythme de la partie |
+| **Yggdrasil** | beta 5.8.0 | une merveille peut-elle ne pas être un animal ? | oui — un frêne, de la graine au monde, et la première forme du jeu qui soit un lieu. Ses parents devaient être une source ou un jardin, que la table n'a pas ; il prend la route de Wukong, une non-recette : deux chevaux, parce que son nom est le cheval d'Ygg. Le bois ne se croise qu'avec le bois, et `CORPS_SEULS` remplace le `if` de la pierre. Reste le dessin — le sujet le moins cher de tous, et sa fiche est prête |
 
 ### Ce qui vient ensuite
 
@@ -131,7 +132,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
 | **Les six merveilles restantes** — cinq PNG et une recette chacune | leurs dessins | est-ce que le rang tient sur neuf bêtes ? |
-| **Yggdrasil** — l'arbre-monde, et le sujet le moins cher à dessiner | sa recette | une merveille peut-elle ne pas être un animal ? |
+| ~~**Yggdrasil**~~ — **livré en `beta 5.8.0`** : l'arbre-monde, de la graine au monde. Deux chevaux le donnent — son nom est le cheval d'Ygg — et le bois ne se croise qu'avec le bois. Reste son dessin, dont la fiche est prête (`prompts/yggdrasil.txt`). Analysé [plus bas](#yggdrasil-larbre-monde--la-quatrième-merveille--livrée-en-beta-580) | — | *(livré)* |
 | **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **Les stats se voient** — elles agissent depuis la `4.16.0` et rien ne les montre : une lecture sur la fiche, et la planche pour la vérifier | rien, les deux moitiés sont posées | peut-on préférer une bête à une autre ? |
 | **Les tempéraments à second effet** — précoce, difficile, gourmand, précieux | rien | un tempérament peut-il se choisir plutôt que se subir ? |
@@ -487,11 +488,11 @@ histoire ; et une vente au niveau 1 devient impossible en mode histoire.
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
 affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**26 lignées sur 39 n'ont pas de dessin** — les neuf rares d'origine (loup, méduse, salamandre,
+**27 lignées sur 40 n'ont pas de dessin** — les neuf rares d'origine (loup, méduse, salamandre,
 serpent, cerf, ours, papillon, tortue, chat) plus le tricératops, les épiques (kraken, golem,
 sphinx, cheval, spinosaure, vélociraptor), les mythiques (chimère, tyrannosaure, charybde,
 scylla, dragon ancien), et les merveilles sans dessin (béhémoth, ouroboros, dragon prismatique,
-Charybde et Scylla, tarasque). L'ajout de contenu de la `5.3.0` — huit lignées et deux passages
+Charybde et Scylla, tarasque, yggdrasil). L'ajout de contenu de la `5.3.0` — huit lignées et deux passages
 en merveille — a rouvert ce chantier d'autant : tout tourne en glyphes en attendant les dessins.
 
 **LA VOIE DES FORMES GÉOMÉTRIQUES A ÉTÉ ESSAYÉE ET REFUSÉE, en `4.17.0` puis retirée.** Le
@@ -1933,7 +1934,17 @@ aux teintes · le clic maintenu.
 
 ### Quatre idées de plus
 
-#### Yggdrasil, l'arbre-monde — la quatrième merveille
+#### Yggdrasil, l'arbre-monde — la quatrième merveille — **livrée en `beta 5.8.0`**
+
+> **Tranché et livré le 26 septembre 2026, sur la deuxième des trois sorties ci-dessous** : Yggdrasil
+> n'a pas de parents, comme Sun Wukong. La non-recette est **cheval × cheval**, et c'est son nom
+> qui la donne : « Yggdrasil », c'est le cheval d'Ygg, l'un des noms d'Odin — le dieu s'y est pendu
+> neuf nuits, et les poètes appelaient le gibet le cheval du pendu. Deux chevaux ne font donc pas
+> un cheval : ils font l'arbre qui en porte le nom. Deux épiques, comme les deux golems de Wukong,
+> à 2 % comme toutes les recettes. **Le bois ne se croise qu'avec le bois**, la règle de la pierre
+> étendue : un arbre ne fait pas de louveteaux. Ses cinq formes : graine de frêne, pousse de frêne,
+> frêne sacré, Yggdrasil, Yggdrasil l'arbre-monde. Le dessin reste à faire ; sa fiche, sans visage
+> ni membres, est dans `prompts/yggdrasil.txt`.
 
 Trois merveilles existent : **kitsune**, **wukong**, **tarasque**. Yggdrasil serait la quatrième,
 et elle apporte quelque chose qu'aucune des trente lignées n'a : **ce n'est pas un animal.**

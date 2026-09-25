@@ -115,6 +115,40 @@ scenario('roster — les créatures ajoutées, leurs rangs et leurs routes', () 
      jeu.RECETTES.some(r => r.donne === 'kitsune' && (r.a === 'ouroboros' || r.b === 'ouroboros')));
 });
 
+scenario('yggdrasil — l’arbre-monde, la première lignée qui n’est pas un animal', () => {
+  const jeu = neuf();
+  const y = jeu.LINE_BY_KEY.yggdrasil;
+  ok('il existe', !!y);
+  eq('merveille', y.rarity, 'merveilleuse');
+  eq('cinq formes', y.forms.length, jeu.AGES.length);
+  eq('de la graine au monde', y.forms[0][0] + ' → ' + y.forms[4][0],
+     'Graine de frêne → Yggdrasil, l’arbre-monde');
+  ok('aucun œuf ne le donne', !jeu.EGG_KINDS.some(e => e.price && e.odds && e.odds.merveilleuse));
+
+  /* SA ROUTE EST CELLE DE WUKONG : une non-recette déguisée en recette, et son nom la donne —
+     « Yggdrasil », c'est le cheval d'Ygg, l'un des noms d'Odin. Deux chevaux font l'arbre. */
+  const r = jeu.recetteDe({ line: 'cheval' }, { line: 'cheval' });
+  eq('deux chevaux donnent l’arbre', r && r.donne, 'yggdrasil');
+  eq('au même tarif que les autres recettes', r && r.chance, 0.02);
+  eq('une seule route', jeu.RECETTES.filter(x => x.donne === 'yggdrasil').length, 1);
+
+  /* LE BOIS NE SE CROISE QU'AVEC LE BOIS, comme la pierre : un arbre ne fait pas de louveteaux. */
+  eq('il est de bois', jeu.ETIQUETTES.yggdrasil[1], 'bois');
+  eq('un arbre et un loup ne se croisent pas',
+     jeu.distanceDe({ line: 'yggdrasil' }, { line: 'loup' }), null);
+  eq('ni un arbre et un golem', jeu.distanceDe({ line: 'yggdrasil' }, { line: 'golem' }), null);
+  eq('deux arbres, si', jeu.distanceDe({ line: 'yggdrasil' }, { line: 'yggdrasil' }), 0);
+  eq('et la pierre reste la pierre', jeu.distanceDe({ line: 'golem' }, { line: 'wukong' }), 0);
+
+  // la pension dit pourquoi, avec le bon mot
+  const s = jeu.state;
+  s.tuto = false; s.pens = 8; s.ciel = Object.assign(s.ciel || {}, { nid: 1 });
+  const arbre = bete(jeu, 'yggdrasil', 3, 1e6), loup = bete(jeu, 'loup', 3, 1e6);
+  const golem = bete(jeu, 'golem', 3, 1e6);
+  eq('le bois refuse', jeu.refusPension(arbre, loup), 'On ne croise pas le bois.');
+  eq('la pierre aussi', jeu.refusPension(golem, loup), 'On ne croise pas la pierre.');
+});
+
 scenario('recettes — un mythique par famille, et la chimère n’en est pas une', () => {
   const jeu = neuf();
   /* La chimère était le carrefour de la moitié des recettes, au motif qu'elle est faite
@@ -216,7 +250,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   jeu.refresh();
   eq('le rang est connu', jeu.rareteConnue('merveilleuse'), true);
   eq('la cinquième section apparaît', sections().length, 5);
-  eq('le compte monte avec le rang secret', jeu.formesVisibles(), 195);
+  eq('le compte monte avec le rang secret', jeu.formesVisibles(), 200);
   ok('le trophée est pris', !!s.trophees.merveille);
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));
