@@ -6,19 +6,18 @@ const path = require('path');
 const { scenario, ok, eq, neuf, noeuds, RACINE, bete, seule } = require('./_aides.js');
 
 scenario('œufs — aucun barreau de l’escalier n’est bien plus court que l’autre', () => {
-  /* LE DERNIER BARREAU ÉTAIT SEPT CENTS FOIS PLUS COURT QUE LE PRÉCÉDENT, et rien ne le disait.
-     Les prix se lisaient les uns sous les autres — 18, 55 M, mille milliards, vingt-cinq mille
-     milliards — et l'escalier avait l'air d'un escalier. Il ne l'était pas : ×3 055 556, puis
-     ×18 182, puis ×25.
+  /* LE DERNIER BARREAU A ÉTÉ SEPT CENTS FOIS PLUS COURT QUE LE PRÉCÉDENT, et rien ne le disait.
+     Les prix se lisaient les uns sous les autres et l'escalier avait l'air d'un escalier ; il
+     ne l'était pas.
 
      ON MESURE EN LÉGENDES, PAS EN PIÈCES. Le prix seul ne dit rien : ce qui décide de la durée
      d'une ère, c'est combien de bêtes menées au bout il faut vendre pour s'offrir l'œuf de la
-     suivante. Dit ainsi, l'œuf épique demandait DOUZE MILLE CINQ CENTS légendes rares et l'œuf
-     mythique DIX-SEPT légendes épiques — l'ère mythique s'ouvrait le lendemain de l'ère épique,
-     et elle s'atteignait avant la première ascension.
+     suivante. Depuis le barème unique, chaque ère étant la précédente × 25, les barreaux payants
+     sont égaux par construction — sept bénéfices de légende —, et ce scénario le vérifie au lieu
+     de le croire.
 
-     L'ÈRE COMMUNE EST HORS DU COMPTE, et c'est écrit sous `EGG_KINDS` : elle ne joue pas sur la
-     même échelle, elle est le moteur des dix premières minutes. On compare donc les barreaux
+     L'ÈRE COMMUNE EST HORS DU COMPTE, et c'est écrit sous `EGG_KINDS` : elle a ses propres
+     chiffres, elle est le moteur des dix premières minutes. On compare donc les barreaux
      PAYANTS entre eux. */
   const jeu = neuf();
   const payants = jeu.EGG_KINDS.filter(e => e.price);
@@ -40,13 +39,18 @@ scenario('œufs — aucun barreau de l’escalier n’est bien plus court que l�
                     ' légendes ' + b.avant).join('  |  ') +
      '  →  rapport ' + (long / court).toFixed(1));
 
-  /* ET AUCUN ŒUF NE S'ATTEINT DANS UN PREMIER CYCLE. Les paliers de jeton disent ce qu'une
-     partie franchit : le premier saut s'ouvre au million, et un cycle mené loin atteint mille
-     milliards. Un œuf mythique doit demander plus que ça, sinon l'ère la plus rare du jeu se
-     joue avant d'avoir ascensionné une seule fois. */
-  const mythique = jeu.EGG_BY_KEY.mythique;
-  ok('l’œuf mythique demande plus qu’un premier cycle',
-     mythique.price > 1e13, mythique.price.toExponential(2) + ' contre 10^13');
+  /* L'ŒUF NE FAIT PLUS LE MUR, LES PÉAGES LE FONT. L'œuf coûte moins d'une légende de l'ère
+     d'avant, mais mener sa bête au bout demande le capital d'une vingtaine : on découvre l'ère
+     tôt, on la joue plus tard. C'est cette seconde mesure qui dit la longueur d'une ère. */
+  for (const e of payants.slice(1)) {
+    const avant = payants[payants.indexOf(e) - 1].rarity;
+    const legende = jeu.valeurMure(avant, 5);
+    ok('l’œuf ' + e.rarity + ' coûte moins d’une légende ' + avant, e.price < legende,
+       e.price + ' contre ' + legende);
+    const bout = (e.price + jeu.peagesJusque(e.rarity, 5)) / legende;
+    ok('mener une ' + e.rarity + ' au bout demande vingt à trente légendes ' + avant,
+       bout >= 20 && bout <= 30, bout.toFixed(1));
+  }
 });
 
 scenario('dessins — le repli s’arrête sur un « null » écrit', () => {

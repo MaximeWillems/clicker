@@ -20,8 +20,10 @@ scenario('globales — trois axes qui ne se recouvrent pas', () => {
     eq(k + ' — quatre primes', familles[k].length, 4);
     eq(k + ' — cinquante pour cent en tout',
        Math.round(familles[k].reduce((n, p) => n + p.bonus[k], 0) * 100), 50);
+    /* ×10 et non plus ×1 000 : le barème unique a tassé les pièces, et dix fois le prix couvre
+       maintenant ce que mille couvraient — de la fin de l'ère commune au cœur de l'ère rare. */
     ok(k + ' — réparties sur toute la fin de partie',
-       Math.max(...familles[k].map(p => p.prix)) / Math.min(...familles[k].map(p => p.prix)) > 1000);
+       Math.max(...familles[k].map(p => p.prix)) / Math.min(...familles[k].map(p => p.prix)) > 10);
     for (const p of familles[k]) eq(p.nom + ' ne porte qu’un axe', Object.keys(p.bonus).length, 1);
   }
   for (const k of Object.keys(familles)) eq(k + ' — coefficient neutre au départ', jeu.coef(k), 1);
@@ -95,6 +97,8 @@ scenario('globales — une partie de v16 garde ce qu’elle avait monté', () =>
   const j0 = neuf(); const s0 = j0.state;
   s0.coins = 5e9; s0.pens = 4;
   const vieux = JSON.parse(JSON.stringify(s0));
+  // la même partie, du format d'avant le barème unique : ses pièces s'y convertissent pareil
+  const ref = neuf(Object.assign(JSON.parse(JSON.stringify(s0)), { v: 37 }));
   vieux.v = 16;
   // ce que valaient les trois améliorations à niveaux : 30 %, 15 %, 2 %
   vieux.up.renom = 30 * j0.GRAIN;
@@ -112,5 +116,5 @@ scenario('globales — une partie de v16 garde ce qu’elle avait monté', () =>
 
   for (const cle of ['renom', 'patience', 'ardeur'])
     eq(cle + ' a disparu de l’état', k.state.up[cle], undefined);
-  eq('et la ferme est intacte', k.state.coins, 5e9);
+  eq('et la ferme est intacte, au barème près', k.state.coins, ref.state.coins);
 });

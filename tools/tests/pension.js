@@ -504,7 +504,7 @@ scenario('pension — le panneau se bâtit une fois, et se repeint ensuite', () 
   /* LE RANG DE TAILLE EST DANS LA SIGNATURE depuis que la ligne de signes le dit : une bête
      qui passe de « moyenne » à « géante » au nid ne l'annoncerait qu'une fois sur deux. */
   const stable2 = nid();
-  a.over = (a.over || 0) + 1e6;
+  jeu.engraisser(a, 1e6);
   jeu.refresh();
   ok('une taille qui change rebâtit aussi', nid() !== stable2);
 });
@@ -580,6 +580,8 @@ scenario('pension — une partie de v14 se relit sans rien perdre', () => {
   const j = neuf(); const s = j.state;
   s.coins = 5e6; s.pens = 4; s.stats.eclos = 12;
   const vieux = JSON.parse(JSON.stringify(s));
+  // la même partie, du format d'avant le barème unique : ses pièces s'y convertissent pareil
+  const ref = neuf(Object.assign(JSON.parse(JSON.stringify(s)), { v: 37 }));
   vieux.v = 14;
   /* Une v14 n a jamais pu pondre : ni file de lignées, ni compteur de naissances. */
   delete vieux.pension.dus; delete vieux.pension.nes; delete vieux.stats.pension;
@@ -588,7 +590,7 @@ scenario('pension — une partie de v14 se relit sans rien perdre', () => {
   eq('le format monte', k.state.v, k.SAVE_V);
   eq('la file naît vide', JSON.stringify(k.state.pension.dus), '{}');
   eq('le compteur aussi', k.state.pension.nes, 0);
-  eq('et la ferme est intacte', k.state.coins, 5e6);
+  eq('et la ferme est intacte, au barème près', k.state.coins, ref.state.coins);
   eq('avec ses enclos', k.state.pens, 4);
 
   // et une partie plus vieille encore, sans champ pension du tout

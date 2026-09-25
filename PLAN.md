@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.6.2 · sauvegarde v37 · 13 lignées illustrées sur 39 · 5 œufs sur 5
+    aujourd'hui : beta 5.7.0 · sauvegarde v38 · 13 lignées illustrées sur 39 · 5 œufs sur 5
 
 ---
 
@@ -88,14 +88,14 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Les cases fixes** | beta 2.2, 2.5, 3.1.1 | peut-on viser une vignette pendant que le marchand vend ? | oui — l'enclos devient des cases, et le tri revient une seconde après |
 | **Le mur de l'ascension** | beta 3.0, 3.1.0 | l'ascension peut-elle se rejouer ? | oui — les jetons se regagnent, et une bête menée au bout paie encore au clic |
 | **La constellation** | beta 4.0 → 4.7 | le jeton peut-il être autre chose qu'une carte ? | oui — un arbre à six directions et vingt-cinq nœuds, une reprise à l'unité près, et les faveurs quand la liste se termine |
-| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune |
-| **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi |
+| **L'échelle des rangs** | beta 4.8, 4.9.0, 4.12.0 → 4.12.1 | une bête vaut-elle ce qu'elle coûte ? | oui, ET PAR UNE RÈGLE : `mult = prix de l'œuf / 2 200 000`, donc une bête achetée est exactement à l'équilibre une fois mûre à l'âge adulte. Plus d'exception hors de l'ère commune. **Renversée en `5.7.0`** par le barème unique : chaque rang payant est la rare × 25, et chaque âge laisse un peu de marge |
+| **Le débit de la rente** | beta 4.9.1, 4.11.5 | une décision de garde se paie-t-elle dans la séance ? | oui — 3600 s, puis 1200, puis 300. Mais c'est le DÉBIT et non la règle : le chantier de la rente perpétuelle est plus bas, et ces deux réglages l'ont agrandi. Depuis la `5.7.0`, **quatre heures** : la marge du barème unique, plus mince, faisait rapporter à la garde cinq fois la vente |
 | **Le tri des œufs** | beta 4.10 → 4.11.4 | la réserve se vide-t-elle dans l'ordre qu'on lit ? | oui — arrivée ou rareté, et la bande, la file et l'affichage sortent tous de la même fonction, merveille comprise |
 | **Le doigt et la machine** | beta 4.12.2 | l'éleveur est-il le chemin normal, ou la consolation de celui qui s'absente ? | le chemin normal — il triple, et le clic tombe au tiers sur la croissance seule, sans toucher à l'ouverture |
 | **Les stats de créature** | beta 4.16.0 | deux bêtes menées au même bout font-elles la même carte ? | non — quatre stats tirées à l'éclosion, de 0 à 25, gardées à vie. Elles sont le cinquième axe de la qualité d'une carte et prennent leur poids aux quatre autres : la moyenne ne bouge pas d'un centième, seule la variance est neuve. Invisibles pour l'instant, et ce sont celles que la tour de combat demandera |
 | **L'enclos, une place qu'on arbitre** | beta 4.20.0 | garder une bête doit-il coûter quelque chose ? | oui. L'Étable sortait les gardées du compte : garder ne coûtait rien, donc on gardait tout, donc la place cessait d'être un arbitrage. Elle est retirée et remboursée. Une bête CONFIÉE, elle, libère son enclos — le prix de la pension passe d'une place à un débit. Et l'escalier des places monte de 1,6 à 2,1 : le 24e enclos se remboursait en trois secondes de rente |
 | **L'hérédité** | beta 4.19.0, 4.19.1 | est-ce qu'on a envie de sélectionner ? | oui — un petit reçoit une DISTRIBUTION centrée sur le mélange de ses parents, pas une loterie parmi leurs traits. Intérieur et extérieur sont deux « proches » différents, et l'extérieur est le moteur de la sélection : c'est la seule branche qui dépasse les deux parents. Le nid annonce ce qu'un couple transmet, sans quoi rien de tout ça ne serait visible. Les fonds entrent à la pension du même coup, chantier en attente depuis la `1.13.0` |
-| **L’escalier des ères** | beta 4.26.0 | combien de temps une rareté doit-elle durer ? | autant que la précédente. Le dernier barreau était sept cents fois plus court : l’œuf rare demandait 64 légendes communes, l’œuf épique 12 500 légendes rares, et l’œuf mythique **dix-sept** légendes épiques — l’ère la plus rare du jeu s’ouvrait le lendemain de la précédente, et avant la première ascension. Elle en demande maintenant 12 375, comme l’ère d’avant. Le prix brut ne disait rien : il faut lire un barreau en LÉGENDES DE L’ÈRE PRÉCÉDENTE, et c’est ce que le scénario mesure. Au passage, le commentaire qui annonçait un coefficient de 0,35 décrivait une règle que la table n’a jamais suivie |
+| **L’escalier des ères** | beta 4.26.0 | combien de temps une rareté doit-elle durer ? | autant que la précédente. Le dernier barreau était sept cents fois plus court : l’œuf rare demandait 64 légendes communes, l’œuf épique 12 500 légendes rares, et l’œuf mythique **dix-sept** légendes épiques — l’ère la plus rare du jeu s’ouvrait le lendemain de la précédente, et avant la première ascension. Elle en demande maintenant 12 375, comme l’ère d’avant. Le prix brut ne disait rien : il faut lire un barreau en LÉGENDES DE L’ÈRE PRÉCÉDENTE, et c’est ce que le scénario mesure. Au passage, le commentaire qui annonçait un coefficient de 0,35 décrivait une règle que la table n’a jamais suivie. **Renversé en `5.7.0`** : l'œuf coûte moins d'une légende de l'ère d'avant, et c'est dans les péages que l'ère se paie |
 | **Une seule couleur par bête** | beta 4.18.0, 4.18.1, 4.21.0, 4.22.1, 4.23.0, 4.23.1, 4.24.0, 4.25.0, 4.25.1 | la couleur est-elle un ornement ou un trophée ? | un trophée. Il y avait DEUX systèmes de couleur qui ne se parlaient pas — les teintes sur 47 % des bêtes, le prodige sur une sur huit mille — et une ligne de rendu tranchait déjà en silence. Les teintes disparaissent ; le chromatisme devient une couleur sur une ROUE, ce que l'hérédité exigeait. Prix assumé : les premières heures n'ont plus une bête colorée. Trente-six couleurs en `4.21.0` — la roue, quatre achromatiques sur une droite à part, et seize recettes qui définissent ce que la roue ne sait pas mélanger. La `4.22.1` répare le rendu : `PRODIGE_FILTER` commençait par le `TON_FILTRE.vif` de la table, mot pour mot, et `filtreDe` collait les deux bouts — toute teinte vive partait en `saturate(5,76)`, 76 % des pixels d’une bête butaient contre du blanc ou du magenta purs, et trois bruns différents ressortaient identiques. Deux endroits pour une même vérité, encore. La `4.23.0` refait les quatre achromatiques : ils n’étaient que de la saturation et de l’exposition, donc le blanc brûlait 43 % du dessin et la perle d’un kitsune n’était pas celle d’un wukong. Ils partent maintenant de `grayscale(1)` — donc du même gris sur toute lignée — et portent une teinte franche plutôt qu’un résidu. La `4.23.1` étend le même correctif aux trente-deux teintes : le ton `clair` blanchissait 60 % d’un crapaud, si bien que ses huit recettes claires rendaient huit fois la même grenouille blanche. **Reste ouvert :** `hue-rotate` TOURNE la teinte du dessin au lieu de la remplacer, donc le nom ment de 33° en moyenne et jusqu’à 86° sur le crocodile. Mesuré : effacer la teinte d’abord rend le nom exact mais réduit la bête à une silhouette monochrome, et le recalage par lignée échoue sur deux d’entre elles. La `4.24.0` tranche : on EFFACE la teinte du dessin avant de peindre, comme les gris depuis la `4.23.0`, et l’angle est RÉSOLU pour que la teinte obtenue soit celle qu’annonce le nom. Les deux rattrapages moins coûteux ont été mesurés et écartés : tourner de `cible − teinte du dessin` laisse 27° d’écart, et résoudre l’angle par lignée tasse la roue — cinq crans dans dix-huit degrés sur le crapaud. **Prix assumé :** la bête ne garde plus ses couleurs propres, elle prend une teinte et son modelé. Le chromatisme par ZONE rendra les deux à la fois. La `4.25.0` abandonne les 22,5° comme COULEUR : une couleur n’est pas qu’un angle, c’est aussi une clarté et une vivacité — l’or est clair, le grenat est sombre — et seize teintes posées mécaniquement sortaient toutes à la même clarté, donc timides. Les trente-deux portent désormais leur hexadécimal, choisi à la main ; `tools/couleurs.js` résout les quatre leviers qui y arrivent, et un scénario vérifie qu’ils ne dérivent pas. Le champ `hue` ne décrit plus une couleur : il reste l’identité du cran, dont l’hérédité et les recettes se servent. La `4.25.1` tient la teinte sur TOUTE la bête : `sepia(1)` multiplie le rouge par 1,351, donc au-dessus de 0,74 il écrêtait, et le corps sortait bordeaux pendant que le ventre partait en kaki — 67° d’écart. On descend sous le seuil avant de teinter. Le solveur pese maintenant trois choses d’un seul coût : la justesse, la dérive de teinte là où la couleur SE VOIT, et le modelé |
 | **La pension monte dans la constellation** | beta 4.15.0 | la fin de partie peut-elle parler d'autre chose que de la pension ? | oui — ses douze primes occupaient les dix dernières marches de l'escalier ; l'axe la porte maintenant en quatre crans, chacun levant les quatre cadrans d'un coup. Le bâtiment reste une prime, donc elle s'ouvre toujours au premier cycle. **Renverse la `4.5.0`**, qui refusait qu'un pan de jeu quitte le cycle |
 | **L'écran et le doigt** | beta 4.14.0, 4.22.0, 4.22.2 | peut-on voir ce qu'on change, avant de changer quoi que ce soit ? | la première marche sur six. La planche est posée ; les cinq autres sont du CSS et se jugent dessus. Le chantier reste OUVERT — 48 `:hover` pour 2 `:active`, zéro garde `@media (hover: hover)`, 30 informations qui n'existent que dans une infobulle. La `4.22.0` ajoute l’atelier, qui montre les DONNÉES là où la planche montre le BALISAGE ; la `4.22.2` répare les deux — elles citaient `style.css` et héritaient sans le savoir de sa mise en page « application », donc se coupaient au premier écran au-dessus de 62 rem de large. Le filet est désormais dans `tools/outil.css`, en un seul endroit, et un scénario le vérifie |
@@ -108,6 +108,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le marchand de sable** | beta 5.4.0, 5.6.0, 5.6.2 | la poussière peut-elle avoir un rendez-vous plutôt qu'un robinet ? | oui, par construction : il vient à l'heure réelle ≈ 3,5 fois par jour, pose trois offres et n'en laisse prendre que deux. Le changeur d'abord (`5.4.0`), puis cartes, paquets et recettes (`5.6.0`) — les boosters remplissent l'album que le saut ne remplit plus depuis la `5.0.0`. La `5.6.2` fait payer le change argent → bleue en part de la bourse : un prix fixe devenait dérisoire une fois riche. Les barèmes restent à juger en jouant |
 | **Le mode développeur** | beta 5.5.0 → 5.5.2 | peut-on tester le jeu sans donner les outils au joueur ? | oui — `?userType=Dev` ouvre la vitesse ×10/×100, les jetons, le marchand à la demande et l'éditeur de sauvegarde ; le joueur ordinaire perd la vitesse |
 | **Le découpage en fichiers** | beta 5.3.5 | un fichier de dix mille lignes peut-il redevenir lisible ? | commencé : `constantes.js` porte les réglages, chargé avant le jeu et collé en tête par le banc. Le reste suit zone par zone, jamais d'un bloc |
+| **Le barème unique** | beta 5.7.0 | chaque œuf se joue-t-il de la même façon, à une autre échelle ? | oui, par construction. La rare sert de modèle et chaque rang au-dessus vaut la rare × 25, un pas qui sort de ses propres chiffres — son dernier péage divisé par son œuf. Chaque œuf coûte donc le dernier péage de l'ère d'avant, les marges sont les mêmes à tous les rangs payants, et un péage se paie en quinze à vingt-cinq ventes de l'âge qu'on quitte. Un niveau coûte (niveau max de l'âge + n) clics, l'évolution ne donne plus de niveau, et la taille devient une marche qui repart de zéro à l'évolution et ne se vend plus : elle multiplie la poussière du saut. La marge mince a demandé la rente à quatre heures. Tout ce qui se paie en pièces est recalé sur la correspondance des bêtes mûres, paliers de jetons compris (×25), et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. **Renverse** l'échelle des rangs, les murs de la `4.27.0` et l'escalier des ères. **Prix à juger en jouant** : la première heure est deux à trois fois plus longue, et une rare tombée d'un œuf commun décide du rythme de la partie |
 
 ### Ce qui vient ensuite
 
@@ -151,13 +152,13 @@ lignes ci-dessus, qui tiennent en une soirée chacune, mentirait sur ce qu'il de
 |---|---|---|
 | **La tour de combat** — une tour qu'on monte, un minuteur, un seul combattant, et des boosts qui n'existent que là. Analysée [plus bas](#la-tour-de-combat--le-second-mode-de-jeu) | **les quatre stats sont posées depuis la `4.16.0`** ; restent les tempéraments à second effet et un septième axe dans la constellation | peut-on jouer à autre chose qu'à sa ferme, avec la bête qu'on y a élevée ? |
 
-**Le barème des bêtes** — comme la tour, seul dans son bloc : il touche tout ce qui se paie en
-pièces.
+**Le barème des bêtes** — livré en `beta 5.7.0` ; il ne reste que les enclos, qui se calent
+dessus.
 
 | Ce qui tombe | Ce qu'il faut d'abord | La question qu'elle pose au joueur |
 |---|---|---|
-| **Un seul barème pour tous les œufs** — clics, engraissement, revente et péages sur un même schéma ; l'évolution ne donne plus de niveau. Analysé [plus bas](#un-seul-barème-pour-tous-les-œufs) | ses cinq questions tranchées — barèmes épique et au-delà, multiplicateur de rareté, taille | chaque œuf se joue-t-il de la même façon, à une autre échelle ? |
-| **Des enclos plus chers** — leur nombre décide de tout : le garder au plus bas | le barème, sur lequel caler les prix, et un nombre cible d'enclos en fin de partie | chaque enclos de plus est-il une vraie décision ? |
+| ~~**Un seul barème pour tous les œufs**~~ — **livré en `beta 5.7.0`** : la rare sert de modèle et chaque rang au-dessus vaut la rare × 25 ; l'évolution ne donne plus de niveau, la rente passe à quatre heures et la taille ne se vend plus. Reste à juger en jouant : l'ouverture deux à trois fois plus lente, la rare chanceuse qui décide du rythme, la merveille qui ne coûte rien. Analysé [plus bas](#un-seul-barème-pour-tous-les-œufs--livré-en-beta-570) | — | *(livré)* |
+| **Des enclos plus chers** — leur nombre décide de tout : le garder au plus bas. La pente est déjà recalée à 1,3 sur le barème, et le 24ᵉ enclos vaut une heure et demie de la rente d'une rare légende | un nombre cible d'enclos en fin de partie | chaque enclos de plus est-il une vraie décision ? |
 
 **La nouvelle source des cartes** — ouverte par la refonte de l'ascension en `5.0.0`, qui a coupé
 l'ancienne. L'album ne se remplit plus au saut ; ces pièces le remplissent depuis la `5.6.0`, et
@@ -169,27 +170,32 @@ la poussière en est la monnaie.
 | ~~**Les boosters**~~ — **livrés en `beta 5.6.0`**, vendus par le marchand : une carte, ou un paquet de cinq. Reste : les deux nœuds « bagage » de l'axe du sang, retirés en `5.0.0`, qui devaient revenir sur ce que coûte une carte tirée | — | *(livré)* |
 | ~~**Le marchand de sable**~~ — **livré en `beta 5.4.0` puis `5.6.0`** : les cinq marchandises sont sur l'étal. Reste : la rareté d'une recette quand le carnet s'élargira, et l'équilibrage des prix, dans `constantes.js`. Analysé [plus bas](#le-marchand-de-sable--lanalyse) | — | *(livré)* |
 
-### Un seul barème pour tous les œufs
+### Un seul barème pour tous les œufs — **livré en `beta 5.7.0`**
 
-> **À trancher, puis à chiffrer — demandé le 21 septembre 2026.** Maxime veut que tous les œufs
-> suivent le même schéma d'achat, de revente et d'évolution, et il l'a chiffré sur la commune et
-> la rare. « Si ça devient ingérable, on fera des adaptations. » Ce qui suit range sa
-> proposition, en vérifie les calculs — par script : ils sont justes — et dit ce qu'elle renverse.
+> **Demandé le 21 septembre 2026, livré le 26.** Maxime voulait que tous les œufs suivent le même
+> schéma d'achat, de revente et d'évolution, et l'avait chiffré sur la commune et la rare. « Si ça
+> devient ingérable, on fera des adaptations. » La rare est devenue le modèle des rangs du dessus,
+> les cinq questions sont tranchées plus bas, et deux réglages ont suivi — la rente et la taille —
+> parce que la marge mince du barème les rendait faux.
 
-Aujourd'hui il y a **deux échelles** : la commune a la sienne (`VALUE`, `EVOLVE`), toutes les
-autres raretés partagent `VALEURS_RANG` et `PEAGES_RANG`, multipliées par `mult`. La
-proposition n'en garde qu'une forme, déclinée par rareté.
+Il y avait **deux échelles** : la commune avait la sienne (`VALUE`, `EVOLVE`), toutes les autres
+raretés partageaient `VALEURS_RANG` et `PEAGES_RANG`, multipliées par `mult`. **Il en reste deux,
+et c'est voulu** : la commune garde ses chiffres, parce que Maxime ne l'a pas chiffrée comme la
+rare — elle est l'ère d'apprentissage, bénéficiaire dès l'enfance —, et `VALEURS_RANG` et
+`PEAGES_RANG` sont désormais les chiffres de la rare elle-même, que `mult` porte aux rangs du
+dessus. Ce qui est commun à tous, c'est le **schéma** : la même formule de clics, la même formule
+d'engraissement, des reventes un peu au-dessus de ce que la bête a coûté, et des péages qui se
+paient en ventes.
 
 #### Les clics
 
-**Monter du niveau n au niveau n + 1 coûte (niveau max de l'âge + n) × le multiplicateur de la
-rareté.** Et **l'évolution ne fait plus monter de niveau** : une commune évoluée reste au 15, et
-son passage au 16 coûte 35 + 15 = 50 clics — là où le jeu la pose aujourd'hui directement au 16.
-Chaque âge après le premier y gagne une marche : 99 pas au lieu de 95.
+**Monter du niveau n au niveau n + 1 coûte (niveau max de l'âge + n) clics**, comptés à force de
+base : la Force du clic et l'éleveur les multiplient comme avant. Et **l'évolution ne fait plus
+monter de niveau** : une commune évoluée reste au 15, et son passage au 16 coûte 35 + 15 = 50
+clics — là où le jeu la posait directement au 16. Chaque âge après le premier y gagne une marche :
+99 pas au lieu de 95.
 
-Un clic se compte à force de base : la Force du clic et l'éleveur le multiplient comme aujourd'hui.
-
-| âge | niveaux | clics par pas | clics de l'âge | aujourd'hui |
+| âge | niveaux | clics par pas | clics de l'âge | avant |
 |---|---|---|---|---|
 | enfant | 1 → 15 | 16 → 29 | 315 | 140 |
 | adolescent | 15 → 35 | 50 → 69 | 1 190 | 171 |
@@ -198,21 +204,18 @@ Un clic se compte à force de base : la Force du clic et l'éleveur le multiplie
 | légende | 85 → 100 | 185 → 199 | 2 880 | 20 160 |
 | **total** | | | **11 010** | **24 761** |
 
-*(commune, multiplicateur ×1)*
-
-- **Les exemples et la formule diffèrent d'un clic sur l'enfance** : 15 clics au niveau 1 et 28
-  au 14 dans les exemples, 16 et 29 par la formule — 301 clics pour l'âge au lieu de 315. La
-  formule est retenue ici, à confirmer.
-- **Les âges s'égalisent.** Aujourd'hui chacun est bien plus long que le précédent, et la légende
-  fait 81 % du trajet. Avec la formule, l'adulte — trente niveaux — devient le plus long et la
-  légende tombe à 26 % : les trois premiers âges s'allongent de deux à sept fois, la légende
-  raccourcit de sept fois.
+- **Seize clics au niveau 1, et non quinze.** Les exemples de Maxime en donnaient 15 au niveau 1
+  et 28 au 14 ; la formule en donne 16 et 29. La formule est retenue : une règle qui se recopie
+  sans exception vaut mieux qu'un exemple arrondi.
+- **Les âges s'égalisent.** Chacun était bien plus long que le précédent, et la légende faisait
+  81 % du trajet. L'adulte — trente niveaux — devient le plus long et la légende tombe à 26 %.
+- **La rareté ne multiplie pas les clics** — voir les questions tranchées, plus bas.
 
 #### L'engraissement
 
-**Même logique** : passer d'un rang de taille au suivant coûte **(niveau × (s + 1) + 10 × s) × le
-multiplicateur de la rareté**, avec s = 1 pour la taille normale, 2 pour grande, jusqu'à 5
-(titanesque → démesurée).
+**Même logique** : passer d'un rang de taille au suivant coûte **(niveau × (s + 1) + 10 × s)
+secondes d'engraissement**, avec s = 1 pour la taille normale → grande, jusqu'à 5 (titanesque →
+démesurée).
 
 | au niveau | → grande | → énorme | → colossale | → titanesque | → démesurée | en tout |
 |---|---|---|---|---|---|---|
@@ -222,10 +225,11 @@ multiplicateur de la rareté**, avec s = 1 pour la taille normale, 2 pour grande
 | 85 | 180 | 275 | 370 | 465 | 560 | 1 850 |
 | 100 | 210 | 320 | 430 | 540 | 650 | 2 150 |
 
-La taille devient une marche, comme le niveau : l'embonpoint continu, qui rapporte de moins en
-moins (`OVER_GAIN`), disparaît. **Deux questions en découlent** : ce que vaut un rang — aujourd'hui
-×1,3 à ×4,5 sur la revente — et si la taille repart à « normale » à l'évolution. Sinon on
-engraisse au niveau 15 pour 450 clics, et on garde le ×4,5 jusqu'à la légende.
+La taille devient une marche, comme le niveau : l'embonpoint continu, qui rapportait de moins en
+moins (`OVER_GAIN`), a disparu. Une bête ne s'engraisse que mûre — son niveau ne bouge plus, donc
+le prix d'un rang non plus — et **son rang repart de zéro à chaque évolution**. La taille à
+l'écran, elle, ne redescend jamais : deux compteurs, `c.gras` pour le rang de l'âge en cours et
+`c.over` pour tout ce que la bête a avalé en plus depuis sa naissance.
 
 #### La revente et les péages
 
@@ -249,65 +253,168 @@ engraisse au niveau 15 pour 450 clics, et on garde le ×4,5 jusqu'à la légende
 | niveau 85 | 180 000 | 165 000 | +15 000 | 250 000 | 17 |
 | niveau 100 | 450 000 | 415 000 | +35 000 | — | — |
 
-**La règle qu'on en tire**, pour écrire l'épique, la mythique et la merveilleuse :
+**La règle qu'on en tire**, et que le code tient :
 
 - à chaque bout d'âge, une bête se revend un peu plus que ce qu'elle a coûté — l'œuf et les
-  péages payés. Seule exception : la rare achetée puis vendue enfant, qui perd 20 % ;
+  péages payés. Seule exception : une bête payante vendue enfant, qui perd 20 % ;
 - **un péage se paie en quinze à vingt-cinq ventes** de l'âge qu'on quitte — la toute première
   évolution commune en demande neuf ;
 - la rare n'est pas la commune multipliée : ×267 à l'enfance, ×30 à la légende, et sa marge est
   plus mince — 5 à 9 % contre 12 à 67 %.
 
+#### Les rangs du dessus : la rare × 25
+
+**Chaque rang au-dessus de la rare vaut la rare × 25** — œuf, reventes et péages, d'un seul bloc.
+**Vingt-cinq n'est pas choisi** : c'est le dernier péage de la rare divisé par son œuf,
+250 000 / 10 000. Du coup **chaque œuf coûte exactement le dernier péage de l'ère d'avant**, et
+c'était déjà vrai de l'œuf rare, qui vaut le dernier péage commun : au moment de payer pour mener
+un ancien à la légende, on peut à la place ouvrir l'ère suivante, au même prix.
+
+Les marges restent celles de la rare, à tous les rangs payants — c'est la règle « même marge pour
+tous les rangs payants » que le code tenait déjà, et qu'un scénario garde. **Des marges plus minces
+aux rangs hauts auraient aplati la vie de la bête** : avec 15 à 25 ventes par péage, une marge
+divisée par deux fait valoir une légende quatre fois un adolescent, au lieu de onze.
+
+**Revente au bout de chaque âge** (`mult` : rare 1, épique 25, mythique 625, merveilleuse 15 625)
+
+| | œuf | enfant | ado | adulte | ancien | légende |
+|---|---|---|---|---|---|---|
+| rare | 10 000 | 8 000 | 42 000 | 95 000 | 180 000 | 450 000 |
+| épique | 250 000 | 200 000 | 1,05 M | 2,375 M | 4,5 M | 11,25 M |
+| mythique | 6,25 M | 5 M | 26,25 M | 59,375 M | 112,5 M | 281,25 M |
+| merveille | — | 125 M | 656,25 M | 1,48 Md | 2,81 Md | 7,03 Md |
+
+**Péages**
+
+| | → ado | → adulte | → ancien | → légende |
+|---|---|---|---|---|
+| rare | 30 000 | 50 000 | 75 000 | 250 000 |
+| épique | 750 000 | 1,25 M | 1,875 M | 6,25 M |
+| mythique | 18,75 M | 31,25 M | 46,875 M | 156,25 M |
+| merveille | 468,75 M | 781,25 M | 1,17 Md | 3,91 Md |
+
+#### Les cinq questions, tranchées
+
+1. **Le multiplicateur de rareté des clics et de l'engraissement vaut 1** : même nombre de clics
+   pour toutes les raretés, comme avant. Une bête plus longue à élever est une bête qu'on a plus
+   intérêt à garder qu'à vendre, puisque la rente ne dépend que de sa valeur : un doublement par
+   rang faisait rapporter à la garde trente-six fois la vente chez les mythiques.
+2. **Les barèmes épique, mythique et merveilleuse** : la rare × 25, × 625, × 15 625 — ci-dessus.
+3. **La taille est une marche, repart de zéro à l'évolution, et ne se vend plus.** Elle multiplie la
+   poussière qu'une bête laisse au saut, du ×1,3 de la grande au ×4,5 de la démesurée ; elle ne
+   touche plus ni la revente ni la rente. La raison est chiffrée juste en dessous.
+4. **Seize clics au niveau 1** : la formule, pas l'exemple.
+5. **L'ère rare s'ouvre avec une seule légende commune : oui.** L'œuf ne fait plus le mur, les
+   péages le font. L'œuf rare coûte moins qu'une légende commune ; mener la rare au bout demande
+   415 000 pièces, le prix de 27,7 légendes communes (23 légendes rares pour une épique). On
+   découvre l'ère tôt, on la joue plus tard — et une épique tombée par chance d'un œuf rare se
+   revend vingt fois cet œuf dès l'enfance : une bonne surprise ne coûte jamais plus qu'elle ne
+   rapporte.
+
+#### Les deux réglages que la marge mince demandait
+
+La marge au bout tombe de 52 % à 8–12 %, et deux réglages faits pour l'ancienne marge devenaient
+faux.
+
+- **La rente passe de deux à quatre heures.** Une bête gardée rendait sa valeur en deux heures,
+  réglage calé sur une bête finie qui rapportait 52 % de ce qu'elle avait coûté. Avec la marge du
+  barème, garder aurait rapporté cinq fois la vente au lieu de 2,3 — le joueur arrêtait de vendre,
+  le défaut même que la `4.27.0` avait réglé. Quatre heures ramènent le rapport entre 2,3 et 2,7, à
+  toutes les raretés.
+- **La taille quitte les pièces.** Avec l'ancien ×4,5 sur la revente, engraisser une légende
+  jusqu'à démesurée — 2 150 secondes d'engraissement — aurait rapporté de 165 à 230 fois plus par
+  clic qu'élever la bête entière. À égalité, les cinq rangs n'auraient valu qu'environ 2 % en tout,
+  c'est-à-dire rien. D'où la poussière au saut : on engraisse ce qu'on garde, avant de sauter. **La
+  consigne « taille exigée » du marchand est partie avec**, puisqu'attendre qu'une bête grossisse
+  avant de la vendre ne rapporte plus rien.
+
+#### Ce qui a suivi : tout ce qui se paie en pièces
+
+**Les pièces se sont tassées** — une légende merveilleuse vaut sept milliards, et non plus un
+quadrillion — et tout ce qui était calé sur l'ancienne échelle l'a été de nouveau, sur une seule
+règle : **la correspondance des bêtes mûres**. Un prix qui valait une commune adulte d'avant vaut
+une commune adulte d'aujourd'hui, un prix de rare légende un prix de rare légende, et entre deux
+bouts la conversion suit une pente régulière. Un script l'a appliquée ; les chiffres sont écrits en
+dur dans `game.js`, pas convertis à la volée.
+
+- **Les premiers prix ne bougent pas** — Force du clic 30, couveuse 120, éleveur 500, mangeoire
+  1 000, incubateur 150, enclos 400 : l'enfance se paie toujours dix-huit et se revend trente, et
+  l'ouverture se joue sur les mêmes pièces. **Les pentes sont recalées** pour qu'au bout de chaque
+  ère on puisse s'offrir à peu près autant de niveaux qu'avant : 1,2 pour le clic, 1,26 pour la
+  couveuse, 1,18 pour l'éleveur et la mangeoire, 1,3 pour les enclos et les incubateurs.
+- **Les primes** vont de 100 (Soins attentifs) à 12,5 millions (Négoce mythique). **Chaque négoce
+  vaut toujours deux œufs de sa rareté** — 20 000, 500 000 et 12,5 M —, si bien que le négoce
+  épique quitte la fin de la liste pour le milieu. Les faveurs partent de 4 400 et montent de ×1,12.
+- **Les paliers de jetons montent de ×25** et non plus de ×1 000 : le pas même qui sépare deux ères.
+  Un cycle mené au bout de chaque ère rend 3, 5, 6, 7 et 8 jetons, contre 3, 4, 6, 7 et 9 avant. Le
+  premier saut s'ouvre au quatrième palier, 15 625 pièces : à peu près la première légende commune.
+- **La sauvegarde passe en v38.** Les bêtes gardent leur niveau — relu sur les anciennes barres,
+  reposé sur les marches —, une bête mûre garde son rang de taille, et les pièces se convertissent
+  sur la même correspondance : une bourse de rare légende reste une bourse de rare légende. Le prix
+  payé pour un œuf suit son œuf. Les paliers franchis restent franchis, et la porte du saut reste
+  ouverte à qui l'avait ouverte.
+
+#### Ce qu'il reste à juger en jouant
+
+**L'ouverture ralentit nettement, et c'est le premier point à juger.** Le cycle d'enfance laisse
+toujours douze pièces, mais il demande 315 clics au lieu de 140, et une adolescente mûre se revend
+150 au lieu de 500. Mesuré au banc, joueur à quatre clics par seconde qui mène ses bêtes à l'âge
+adulte, en médiane de huit parties de trois heures en `5.6.2` et de douze en `5.7.0` :
+
+| | 5.6.2 | 5.7.0 |
+|---|---|---|
+| première vente | 45 s | 1 min 31 |
+| Force du clic | 3 min 09 | 6 min 01 |
+| Couveuse | 4 min 20 | 10 min 22 |
+| première évolution | 31 min 50 | 42 min |
+| Éleveur | 18 min 06 | 54 min |
+| Acheteur automatique | 51 min 36 | 2 h 01 |
+| au bout de trois heures | 15 bêtes, 13 enclos, 14 incubateurs | 8 bêtes, 7 enclos, 10 incubateurs |
+
+**C'est la chance qui écarte les parties** : une rare tombée d'un œuf commun se revend 8 000
+pièces dès l'enfance — 444 œufs communs —, et dix parties sur douze en ont vu une, vers une heure
+et demie en médiane. Sans elle, une partie finit ses trois heures à 5 ou 6 bêtes et 3 ou 4 enclos ;
+avec une rare précoce, jusqu'à 15 enclos. La `5.6.2` finissait à 13 enclos à chaque fois.
+
+La première heure est donc deux à trois fois plus longue, et le rythme dépend beaucoup plus du
+hasard. **Si l'ouverture traîne, le levier est le prix des premiers achats** (éleveur, primes du
+début), pas le barème ; **si la rare chanceuse pèse trop**, c'est sa revente à l'enfance.
+
+**Trois points à surveiller :**
+
+- **La merveille ne coûte rien.** Née en pension, elle se revend 125 millions dès l'enfance — près
+  d'une demi-légende mythique. Si la pension en pond souvent, c'est par là que l'argent fuira.
+- **« Vendre ou payer » devient une question de trésorerie.** Dès qu'on peut payer, mener la bête
+  à la légende rapporte de 1,7 à 7 fois plus par clic que la vendre avant : les âges du milieu sont
+  des passages, pas des arrêts.
+- **La poussière du saut** : ×4,5 pour une ferme démesurée. Le barème de la poussière n'a pas
+  bougé, et le jugement se fera avec celui du marchand.
+
 #### Ce que ça renverse
 
-Quatre décisions déjà prises, à réécrire dans la même version :
+Quatre décisions déjà prises, réécrites dans la même version :
 
 - **L'échelle des rangs** (`4.8.0` → `4.12.1`) : `mult = prix de l'œuf / 2 200 000`, une bête
-  achetée pile à l'équilibre à l'âge adulte. Ici chaque âge laisse un peu de marge.
+  achetée pile à l'équilibre à l'âge adulte. Ici chaque âge laisse un peu de marge, et `mult` vaut
+  ×25 d'un rang au suivant.
 - **Les murs de la `4.27.0`** — un péage valait ×625, ×40, ×20, ×20 la revente de l'âge qu'on
-  quitte. Ici il en vaut de 0,8 à 5 : le mur se compte en ventes, pas en multiple.
-- **L'escalier des ères** (`4.26.0`) : un œuf valait 12 375 légendes de l'ère d'avant. Ici l'œuf
-  rare coûte moins qu'une seule légende commune.
-- **L'exception commune** : deux échelles deviennent une — la même idée qu'« une porte par règle ».
-
-#### Ce qu'il entraîne
-
-**Les valeurs fondent** : une commune légende passe de 1,5 million à 15 000 (÷100), une rare
-légende de 175 milliards à 450 000 (÷390 000), l'œuf rare de 55 millions à 10 000. Or tout ce
-qui se paie en pièces est calé sur l'échelle d'aujourd'hui : les primes (de 250 à 3,6·10¹⁶), les
-automates, les enclos et les incubateurs, les places de pension, les faveurs, les paliers de
-jetons — un par fortune ×1 000 — et la rente, dont le rapport « garder contre vendre » (×2,3) se
-mesurait sur une marge de 52 % au bout. Seul le changeur du marchand suit tout seul : il prend
-une part de la bourse. `tools/rythme.js` sera à refaire.
-
-**Le barème compte en ventes, pas en temps.** Il ne dit pas combien de minutes coûte une bête :
-c'est le banc qui le dira, clics et automates compris.
+  quitte. Il en vaut de 0,8 à 5 : le mur se compte en ventes, pas en multiple.
+- **L'escalier des ères** (`4.26.0`) : un œuf valait 12 375 légendes de l'ère d'avant. L'œuf
+  coûte maintenant moins qu'une seule légende, et le mur est dans les péages.
+- **Le multiplicateur de valeur des rangs de taille** (×1,3 à ×4,5 sur la revente) : il porte
+  désormais sur la poussière du saut.
 
 #### Et les enclos avec lui
 
 **Demandé le même jour : des enclos plus chers**, parce que leur nombre décide de tout. C'est
 écrit depuis que la rente est sortie du plan : le nombre d'enclos est la dernière limite de la
-fin de partie.
-
-Aujourd'hui le n-ième enclos coûte `400 × 2,1^(n−1)` : 7 779 le cinquième, 317 712 le dixième,
-27 millions le seizième, 10 milliards le vingt-quatrième. Les primes en offrent cinq de plus
-(paille, pâturage). Et `SLOT_MULT` sert aussi aux incubateurs : monter l'un monte l'autre, à
-moins de les séparer.
-
-**Les deux chantiers n'en font qu'un.** Le commentaire de `SLOT_MULT` dit pourquoi une place ne
-pouvait être chère que DANS une ère : la rente suit la rareté, ×116 667 de la commune légende à
-la rare légende, quand le prix d'une place monte de ×2,1. Le barème ramène cet écart à ×30 — et,
-les valeurs divisées par cent ou plus, les prix d'aujourd'hui pèseraient déjà bien plus lourd :
-le dixième enclos vaudrait vingt et une légendes communes. On cale donc les enclos APRÈS le
-barème, sur un nombre d'enclos visé en fin de partie, qu'il reste à fixer.
-
-#### À trancher avant d'écrire
-
-1. Le multiplicateur de rareté des clics et de l'engraissement.
-2. Les barèmes épique, mythique et merveilleuse.
-3. Ce que vaut un rang de taille, et s'il repart à zéro à l'évolution.
-4. 15 ou 16 clics au niveau 1.
-5. L'ère rare ouverte par une seule légende commune : voulu ?
+fin de partie. **Il reste à faire, et il se cale maintenant sur le barème** : le n-ième enclos
+coûte `400 × 1,3^(n−1)`, 1 142 le cinquième, 4 242 le dixième, 20 474 le seizième, 167 016 le
+vingt-quatrième — une heure et demie de la rente d'une rare légende, contre sept minutes avant.
+Les places sont donc déjà plus chères qu'avant, parce que la rareté multiplie moins (×750 de la
+commune à l'épique, au lieu de ×450 000). Ce qu'il faut encore fixer : **un nombre d'enclos visé
+en fin de partie**, et monter la pente dessus. `SLOT_MULT` sert aussi aux incubateurs : monter l'un
+monte l'autre, à moins de les séparer.
 
 ### La main tenue — **livrée en `beta 4.32.0`**
 
@@ -624,6 +731,11 @@ mieux avec le prix des cartes, qui est déjà une décision par cycle.
 > où elle existe.
 
 ### Le robinet à jetons — à ouvrir
+
+> **Depuis [le barème unique](#un-seul-barème-pour-tous-les-œufs--livré-en-beta-570) (`beta 5.7.0`), l'échelle monte de ×25**, dans une
+> économie tassée : un palier par ère, et le compte d'un cycle mené au bout de chaque ère est celui
+> d'avant à un jeton près (3, 5, 6, 7, 8 contre 3, 4, 6, 7, 9). Le constat ci-dessous tient donc
+> toujours ; les tableaux se relisent en ×25, et resserrer voudrait dire descendre sous ×25.
 
 **Le constat tient en une phrase :** le jeton n'a qu'une source, indexée sur une échelle qui ne
 coule que trois fois par cycle, et deux éviers puisent dedans.
@@ -1193,6 +1305,10 @@ collectionne, rien ne se vise.
 
 #### Au niveau max, le clic devrait payer — **fait en `beta 3.1.0`**
 
+> *L'embonpoint logarithmique décrit ici n'existe plus depuis la `5.7.0` : la taille est une
+> marche, elle repart de zéro à l'évolution, et elle ne se vend plus — elle multiplie la
+> poussière du saut. Le clic sur une bête finie, lui, paie toujours.*
+
 L'idée : **une bête arrivée au bout rend des pièces à chaque clic**, pour qu'on ait encore une
 raison de cliquer sur un rentier en fin de partie.
 
@@ -1361,8 +1477,9 @@ courbe de progression du jeu.** Deux choses à regarder quand ce sera le moment 
 
 #### Les rares sont le prochain palier
 
-> **Remis en jeu par [le barème unique](#un-seul-barème-pour-tous-les-œufs)**, demandé le 21
-> septembre 2026 : l'œuf rare y coûte 10 000, moins qu'une légende commune.
+> **Renversé par [le barème unique](#un-seul-barème-pour-tous-les-œufs--livré-en-beta-570)**, livré en `beta 5.7.0` : l'œuf
+> rare coûte 10 000, moins qu'une légende commune, et le mur de l'ère rare est dans ses péages —
+> mener une rare au bout demande 27,7 légendes communes. Gardé pour le raisonnement.
 
 **Les communes sont jugées bien équilibrées, en jouant.** Le chantier suivant est l'ère rare, et
 il n'est pas neuf : les deux cibles déjà posées plus haut en sont le contenu.
@@ -1545,8 +1662,9 @@ jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui
 
 #### Le prix d'une évolution — plan de prix
 
-> **Remis en jeu par [le barème unique](#un-seul-barème-pour-tous-les-œufs)**, demandé le 21
-> septembre 2026 : les murs ×625 / ×40 / ×20 / ×20 y deviennent des péages comptés en ventes.
+> **Renversé par [le barème unique](#un-seul-barème-pour-tous-les-œufs--livré-en-beta-570)**, livré en `beta 5.7.0` : les murs
+> ×625 / ×40 / ×20 / ×20 sont devenus des péages qui se paient en quinze à vingt-cinq ventes de
+> l'âge qu'on quitte. Gardé pour le raisonnement.
 
 **Une seule évolution sur quatre est un mur.** Le péage, rapporté à ce que vaut la bête à l'âge
 qu'elle quitte :
@@ -1663,6 +1781,9 @@ vendre**, par case d'enclos et par seconde :
 **Les péages ont fait les trois quarts du travail à eux seuls.** Ce n'était pas la rente qui était
 trop forte, c'était la vente qui ne rapportait rien — 3 % de marge. À 52 %, élever pour vendre
 redevient un métier, et il ne restait qu'un nombre à tourner.
+
+> **Quatre heures depuis la `5.7.0`** : [le barème unique](#un-seul-barème-pour-tous-les-œufs--livré-en-beta-570) ramène la marge au
+> bout à 8–12 %, et `RENTE_H = 14 400` rend le même rapport, entre 2,3 et 2,7.
 
 `RENTE_H` passe donc de 300 s à 7 200 s. Une garde se rembourse en deux heures, une nuit de huit
 heures rend quatre fois la valeur de la bête gardée. **L'absence reste nettement le meilleur
@@ -3066,9 +3187,10 @@ joueur qui s'ennuie et un joueur qui s'amuse produisent exactement la même cour
 
 **Deux cibles sont posées, et elles ne le sont pas au hasard :**
 
-> *Tombées depuis — l'œuf rare vaut 55 millions depuis la `4.12.1`, les péages sont des murs
-> depuis la `4.27.0` — et [le barème unique](#un-seul-barème-pour-tous-les-œufs) les remet
-> toutes deux en jeu. Gardées pour le raisonnement.*
+> *Tombées depuis — l'œuf rare a valu 55 millions de la `4.12.1` à la `5.6.2`, les péages ont été
+> des murs depuis la `4.27.0` — et [le barème unique](#un-seul-barème-pour-tous-les-œufs--livré-en-beta-570) les a
+> remplacées en `beta 5.7.0` : l'œuf rare vaut 10 000, et le mur est dans ses péages. Gardées pour
+> le raisonnement.*
 
 - **L'œuf rare doit s'acheter vers trente millions**, et non vers ses trois cent mille. Le prix
   n'est pas la question — la question est à quelle FORTUNE le joueur franchit l'ère. Trois cent
@@ -3118,8 +3240,8 @@ et son analyse là où le plan en porte une. Les nouvelles s'écrivent en bas, e
 
 **La ferme**
 
-- **Des enclos plus chers.** Leur nombre décide de tout : il faut le garder au plus bas. Se cale
-  après le barème, plus bas dans cette liste.
+- **Des enclos plus chers.** Leur nombre décide de tout : il faut le garder au plus bas. Le barème
+  est posé (`beta 5.7.0`) ; reste à fixer un nombre d'enclos visé en fin de partie.
 
 **La collection**
 
@@ -3132,9 +3254,3 @@ et son analyse là où le plan en porte une. Les nouvelles s'écrivent en bas, e
   accumulés.
 - **Une interface modulable**, (presque) comme on veut.
 
-**L'économie**
-
-- **Un seul barème pour tous les œufs** : achat, revente, évolution, clics et engraissement
-  suivent le même schéma, et l'évolution ne fait plus monter de niveau. Les chiffres sont rangés
-  et vérifiés dans [Un seul barème pour tous les œufs](#un-seul-barème-pour-tous-les-œufs) — cinq
-  questions y attendent une réponse.

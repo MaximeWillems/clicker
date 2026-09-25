@@ -200,20 +200,23 @@ scenario('ciel — la série est une branche, et une branche se voit', () => {
    plus. Le scénario qui vérifiait l'escalade φ (1, 2, 3, 5, 7, 12) tombe avec eux ; il reviendra,
    réécrit, quand le booster fixera ce que coûte une carte tirée. */
 
-scenario('jetons — un palier de fortune tous les ×1000, à partir du premier million', () => {
+scenario('jetons — un palier de fortune tous les ×25, à partir de la première légende commune', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
+  /* LE PAS DU BARÈME : ×25 d'une ère à la suivante, donc ×25 d'un palier au suivant. Il était de
+     mille quand une ère multipliait les pièces par dix-huit mille. */
+  eq('un palier tous les ×25', jeu.JETON_PALIERS[2] / jeu.JETON_PALIERS[1], 25);
   const premier = jeu.JETON_PALIERS[jeu.RANG_PREMIER - 1];
-  eq('la première ascension se mérite au million', premier, 1e6);
+  eq('la première ascension se mérite au quatrième palier', premier, 15625);
 
   s.coins = premier - 1; jeu.crediterJetons();
   const avant = jeu.jetonsDus();
-  ok('sous le million on a déjà des jetons', avant > 0, avant);
+  ok('sous ce palier on a déjà des jetons', avant > 0, avant);
   ok('mais on ne peut pas encore ascensionner', !jeu.peutAscensionner());
 
   s.coins = premier; jeu.crediterJetons();
-  eq('le million en donne un de plus', jeu.jetonsDus(), avant + 1);
-  eq('et c’est le troisième', jeu.jetonsDus(), 3);
+  eq('le palier en donne un de plus', jeu.jetonsDus(), avant + 1);
+  eq('et c’est le quatrième', jeu.jetonsDus(), 4);
   ok('l’ascension s’ouvre alors', jeu.peutAscensionner());
 
   /* LE COMPTE SE LIT, IL NE S'ACCUMULE PAS : il vient du sommet de fortune du cycle, donc
@@ -364,7 +367,7 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
 scenario('constellation — acheter coûte, et la boucle ne rend rien', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
-  s.coins = 1e9;
+  s.coins = jeu.JETON_PALIERS[3];
   jeu.crediterJetons();
 
   /* LE BUG QUE CE SCÉNARIO TIENT. `acheterEtoile` remettait `asc.sommet` à zéro en croyant
@@ -376,7 +379,7 @@ scenario('constellation — acheter coûte, et la boucle ne rend rien', () => {
      `sommet` N'EST PAS UNE RÉSERVE, C'EST UNE MESURE — le plus haut que la bourse ait atteint.
      Une mesure que la boucle refait ne peut pas servir de compteur. */
   const avant = jeu.jetonsEnMain();
-  eq('un milliard crédite quatre jetons', avant, 4);
+  eq('le quatrième palier crédite quatre jetons', avant, 4);
 
   /* LE MOYEU NE S'ACHÈTE PLUS : le nid, à trois jetons, sert d’étalon. */
   ok('le nid s’achète', jeu.acheterEtoile('nid'));
@@ -616,8 +619,8 @@ scenario('constellation — le sang touche l’ascension elle-même', () => {
   /* L'AXE DU SANG NE GARDE QUE LES DEUX « SOMMET ». Les « bagage », qui adoucissaient le prix
      des cartes emportées, sont partis avec ce prix — les cartes viendront des boosters.
      LE SOMMET COMPTE PLUS : un jeton de plus par cycle, pour toujours. */
-  s.coins = 1e9; jeu.crediterJetons();
-  eq('un milliard vaut quatre paliers', jeu.jetonsDus(), 4);
+  s.coins = jeu.JETON_PALIERS[3]; jeu.crediterJetons();
+  eq('le quatrième palier vaut quatre jetons', jeu.jetonsDus(), 4);
   s.ciel.sommet = true;
   eq('avec le nœud, cinq', jeu.jetonsDus(), 5);
   s.ciel['sommet-2'] = true;

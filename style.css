@@ -1064,10 +1064,9 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
    Seize menus déroulants sont devenus seize rangées de pastilles, comme le tri de l'enclos.
    Un menu cache ses options ; un segment les montre toutes, et le choix avec.
 
-   LE PRIX PASSE SOUS LE SEGMENT. « Mûres à l'âge adulte — 6 000 » ne tient pas sur une
+   LE PRIX PASSE SOUS LE SEGMENT. « Mûres à l'âge adulte — 1 000 » ne tient pas sur une
    pastille : le chiffre s'écrit dessous, pour le seul choix actif. */
 .cond { display: flex; flex-direction: column; gap: 0.55rem; }
-.cond-bloc { margin-top: 0.7rem; }
 .cond-ligne { display: flex; flex-direction: column; gap: 0.2rem; }
 .cond-mot {
   font-family: var(--f-num); font-size: 0.68rem; letter-spacing: 0.09em;

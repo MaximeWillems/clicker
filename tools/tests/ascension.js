@@ -116,7 +116,7 @@ scenario('ascension — la porte, le nombre et la phrase disent réserve et gain
   eq('le bouton est là', bouton().hidden, false);
 
   /* LE NOMBRE SÉPARE LA RÉSERVE DU GAIN DU CYCLE : « 1 (+4) ». */
-  n.asc.jetons = 1; n.coins = 1e9; jeu.crediterJetons();
+  n.asc.jetons = 1; n.coins = jeu.JETON_PALIERS[3]; jeu.crediterJetons();
   jeu.refresh();
   eq('le gain du cycle est bien de quatre', jeu.jetonsDus(), 4);
   ok('le bouton montre la réserve et le gain à part',
@@ -128,8 +128,8 @@ scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
   s.tuto = false; s.pens = 20;
   for (let i = 0; i < 4; i++) bete(jeu, 'crapaud', 3, 3000);
 
-  s.coins = 1e9; jeu.crediterJetons();
-  eq('un milliard vaut quatre paliers', jeu.jetonsDus(), 4);
+  s.coins = jeu.JETON_PALIERS[3]; jeu.crediterJetons();
+  eq('le quatrième palier vaut quatre jetons', jeu.jetonsDus(), 4);
   ok('l’ascension est ouverte', jeu.peutAscensionner());
 
   jeu.ascensionner();
@@ -140,8 +140,8 @@ scenario('ascension — les jetons se regagnent, et le mur tombe', () => {
   eq('le sommet est reparti à zéro', n.asc.sommet, 0);
   ok('la porte reste ouverte', jeu.peutAscensionner());
 
-  n.coins = 1e9; jeu.crediterJetons();
-  eq('refaire le milliard recrédite quatre jetons', jeu.jetonsDus(), 4);
+  n.coins = jeu.JETON_PALIERS[3]; jeu.crediterJetons();
+  eq('refaire ce palier recrédite quatre jetons', jeu.jetonsDus(), 4);
   /* L'ÉCHELLE NE SE REFRANCHIT PAS : `paliers` compte la partie entière et sert au déblocage. */
   eq('sans refranchir l’échelle', n.asc.paliers, 4);
 

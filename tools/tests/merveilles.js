@@ -192,8 +192,8 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   const rencontres = jeu.STATS.find(g => g[0] === 'Les rencontres')[1]();
   ok('aucune ligne ne les compte', !rencontres.some(l => /erveille/.test(l[0])),
      JSON.stringify(rencontres));
-  // 5 · les trois consignes du marchand — la rangée entière, intitulé et phrase compris
-  for (const quoi of ['vente', 'taille', 'evolution'])
+  // 5 · les consignes du marchand — la rangée entière, intitulé et phrase compris
+  for (const quoi of jeu.REGLAGES.map(r => r.cle))
     eq(quoi + ' — la rangée est cachée', noeuds.get(quoi + '-merveilleuse-r').hidden, true);
 
   /* CE QUI RESTE VISIBLE, ET QUI SUFFIT : la phrase du nid promet quelque chose sans rien
@@ -306,18 +306,18 @@ scenario('merveilles — un cran de puissance, mais jamais un raccourci', () => 
      première éclose.
 
      ELLE EST MAINTENANT UN CRAN DE PUISSANCE, et la raison d'avant est désarmée autrement :
-     ses PÉAGES montent du même cran que sa valeur. Elle coûte dix-huit mille fois plus à mener
-     au bout, et elle vaut dix-huit mille fois plus — donc sa MARGE est exactement celle d'une
-     mythique. La pension n'est pas un raccourci vers l'argent : c'est la seule porte vers un
-     barreau de plus, et il faut déjà une fortune de ce barreau-là pour l'emprunter.
+     ses PÉAGES montent du même cran que sa valeur. Elle coûte vingt-cinq fois plus à mener au
+     bout, et elle vaut vingt-cinq fois plus — le même cran qu'entre deux rangs payants, depuis
+     le barème unique — donc sa MARGE est exactement celle d'une mythique. La pension n'est pas
+     un raccourci vers l'argent : c'est la seule porte vers un barreau de plus, et il faut déjà
+     une fortune de ce barreau-là pour l'emprunter.
 
      C'EST CETTE ÉGALITÉ DE MARGE QUE LE SCÉNARIO GARDE. Le multiplicateur a le droit de
      bouger ; ce qui n'a pas le droit de bouger, c'est qu'un rang rapporte plus PAR PIÈCE
      INVESTIE qu'un autre — ça, ce serait un raccourci. */
   const m = jeu.RARITY.merveilleuse.mult, y = jeu.RARITY.mythique.mult;
   ok('la merveilleuse vaut plus qu’une mythique', m > y, m + ' contre ' + y);
-  ok('et d’un cran comparable à celui d’avant', m / y > 1000 && m / y < 100000,
-     '×' + Math.round(m / y));
+  eq('et du même cran de ×25 que les autres', m / y, 25);
   eq('mais sa carte ne plafonne pas plus haut',
      jeu.RARITY.merveilleuse.plafond, jeu.RARITY.mythique.plafond);
 
@@ -337,10 +337,9 @@ scenario('merveilles — un cran de puissance, mais jamais un raccourci', () => 
   ok('tous les rangs ont la même pente',
      Math.max.apply(null, marges) - Math.min.apply(null, marges) < 0.001, marges.join(' · '));
 
-  // et les trois consignes du marchand ont bien leur clef, sinon elles seraient muettes
+  // et les deux consignes du marchand ont bien leur clef, sinon elles seraient muettes
   for (const cle of Object.keys(jeu.RARITY)) {
     eq('vente ' + cle, typeof s.sellAt[cle], 'number');
-    eq('taille ' + cle, typeof s.sellRank[cle], 'number');
     eq('évolution ' + cle, typeof s.evolveUpTo[cle], 'number');
   }
 });
@@ -353,15 +352,16 @@ scenario('merveilles — une partie de v15 reçoit ses clés sans rien perdre', 
   // une v15 ne connaît ni la cinquième rareté ni sa sorte d'œuf
   delete vieux.eggs.merveille;
   delete vieux.sellAt.merveilleuse;
-  delete vieux.sellRank.merveilleuse;
   delete vieux.evolveUpTo.merveilleuse;
+  // la même partie, du format d'avant le barème unique : ses pièces s'y convertissent pareil
+  const ref = neuf(Object.assign(JSON.parse(JSON.stringify(s0)), { v: 37 }));
 
   const k = neuf(vieux);
   eq('le format monte', k.state.v, k.SAVE_V);
   eq('la sorte d’œuf naît à zéro', k.state.eggs.merveille, 0);
   eq('la consigne de vente aussi', k.state.sellAt.merveilleuse, 0);
-  eq('la taille exigée aussi', k.state.sellRank.merveilleuse, 0);
+  ok('la taille exigée n’existe plus', k.state.sellRank === undefined);
   eq('l’évolution aussi', k.state.evolveUpTo.merveilleuse, 0);
-  eq('et la ferme est intacte', k.state.coins, 5e6);
+  eq('et la ferme est intacte, au barème près', k.state.coins, ref.state.coins);
   eq('avec ses enclos', k.state.pens, 4);
 });

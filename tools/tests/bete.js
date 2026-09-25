@@ -26,7 +26,7 @@ scenario('trois axes — âge, niveau et taille tiennent chacun leur colonne', (
   ok('en croissance, la barre vise le NIVEAU', T('timer-axe') === 'niveau', T('timer-axe'));
   ok('la colonne niveau est active', noeuds.get('axe-niv').classList.contains('actif'));
   eq('le niveau s’écrit sur son plafond', T('axe-niv-val'),
-     jeu.niveau(c) + ' / ' + (jeu.nivBase(1) + jeu.nivDansAge(1)));
+     jeu.niveau(c) + ' / ' + jeu.nivFin(1));
 
   c.p = jeu.bandTo(c); jeu.refresh();
   ok('mûre, la barre vise la TAILLE', T('timer-axe') === 'taille', T('timer-axe'));
@@ -39,27 +39,67 @@ scenario('trois axes — âge, niveau et taille tiennent chacun leur colonne', (
   ok('un œuf n’a pas de colonnes', noeuds.get('stage-axes').hidden);
 });
 
-scenario('échelle des rangs — une bête achetée est à l’équilibre à l’âge adulte', () => {
+scenario('barème — la rare sert de modèle, et chaque rang au-dessus vaut la rare × 25', () => {
   const jeu = neuf(); const s = jeu.state;
   const ligne = {};
   for (const l of jeu.LINES) if (!ligne[l.rarity]) ligne[l.rarity] = l.key;
 
-  /* LA RÈGLE : l'œuf plus les deux premiers péages valent exactement ce que la bête se vend
-     une fois mûre à l'âge adulte. C'est `mult` qui la tient — il porte la revente ET le péage,
-     donc un seul nombre par rareté suffit. La commune joue sur l'autre échelle et la rare
-     garde son prix de la 4.8.0 : toutes deux sont bénéficiaires, et c'est écrit dans game.js. */
-  for (const rar of ['epique', 'mythique']) {
-    const oeuf = jeu.EGG_KINDS.find(e => e.rarity === rar);
-    const c = { id: 1, line: ligne[rar], age: 1, p: 0, over: 0, cost: 0 };
-    let peages = 0;
-    s.pen = [c];
-    for (let a = 1; a <= 2; a++) { c.age = a; peages += jeu.evoCost(c); }
-    c.age = 3; c.p = jeu.bandTo(c);
-    const cout = oeuf.price + peages, vaut = jeu.sellValue(c);
-    ok(rar + ' est à l’équilibre à l’âge adulte mûr',
-       Math.abs(vaut - cout) / cout < 0.001, ((vaut - cout) / cout * 100).toFixed(3) + ' %');
+  /* LA RÈGLE : reventes et péages d'un rang payant sont ceux de la rare, multipliés par `mult`,
+     et `mult` monte de ×25 d'un rang au suivant. Vingt-cinq n'est pas choisi : c'est le dernier
+     péage de la rare divisé par son œuf. */
+  const pas = jeu.peageDe('rare', 4) / jeu.EGG_BY_KEY.rare.price;
+  eq('le pas vaut le dernier péage rare sur l’œuf rare', pas, 25);
+  ['rare', 'epique', 'mythique', 'merveilleuse'].forEach((cle, i) => {
+    const fois = Math.pow(pas, i);
+    eq(cle + ' : ×25 par rang', jeu.RARITY[cle].mult, fois);
+    for (let a = 1; a <= jeu.AGES.length; a++) {
+      eq(cle + ' : revente à l’âge ' + a, jeu.valeurMure(cle, a), jeu.valeurMure('rare', a) * fois);
+      if (a < jeu.AGES.length)
+        eq(cle + ' : péage de l’âge ' + a, jeu.peageDe(cle, a), jeu.peageDe('rare', a) * fois);
+    }
+  });
+
+  /* CHAQUE ŒUF COÛTE LE DERNIER PÉAGE DE L'ÈRE D'AVANT, et c'était déjà vrai de l'œuf rare, qui
+     vaut le dernier péage commun : mener un ancien à la légende ou ouvrir l'ère suivante coûtent
+     la même chose, et il faut choisir. */
+  const ordre = ['commune', 'rare', 'epique', 'mythique'];
+  for (let i = 1; i < ordre.length; i++) {
+    const oeuf = jeu.EGG_KINDS.find(e => e.rarity === ordre[i]);
+    eq('l’œuf ' + ordre[i] + ' vaut le dernier péage ' + ordre[i - 1],
+       oeuf.price, jeu.peageDe(ordre[i - 1], jeu.AGES.length - 1));
   }
-  eq('l’œuf épique vaut un billion', jeu.EGG_BY_KEY.epique.price, 1e12);
+
+  /* LES MARGES SONT CELLES DE LA RARE, À TOUS LES RANGS PAYANTS : −20 % vendue enfant, puis de
+     5 à 9 % au bout de chaque âge, œuf et péages compris — et un péage se paie en quinze à
+     vingt-cinq ventes de l'âge qu'on quitte. La commune a les siennes, plus larges, et neuf
+     ventes seulement pour sa toute première évolution. */
+  const vie = (cle, oeuf) => {
+    let cout = oeuf;
+    return jeu.AGES.map((a, i) => {
+      const v = jeu.valeurMure(cle, i + 1), gain = v - cout;
+      const p = i + 1 < jeu.AGES.length ? jeu.peageDe(cle, i + 1) : 0;
+      const r = { marge: gain / cout, ventes: p && gain > 0 ? Math.ceil(p / gain) : null };
+      cout += p;
+      return r;
+    });
+  };
+  for (const cle of ['rare', 'epique', 'mythique']) {
+    const v = vie(cle, jeu.EGG_KINDS.find(e => e.rarity === cle).price);
+    ok(cle + ' vendue enfant perd un cinquième', Math.abs(v[0].marge + 0.2) < 1e-9, v[0].marge);
+    for (let a = 1; a < v.length; a++)
+      ok(cle + ' : de 5 à 9 % au bout de l’âge ' + (a + 1), v[a].marge >= 0.05 && v[a].marge < 0.095,
+         (v[a].marge * 100).toFixed(1) + ' %');
+    for (let a = 1; a < v.length - 1; a++)
+      ok(cle + ' : le péage ' + (a + 1) + '→' + (a + 2) + ' se paie en 15 à 25 ventes',
+         v[a].ventes >= 15 && v[a].ventes <= 25, v[a].ventes);
+  }
+  const com = vie('commune', jeu.EGG_BY_KEY.commun.price);
+  ok('la commune gagne plus de 10 % à chaque âge', com.every(x => x.marge > 0.1),
+     com.map(x => x.marge.toFixed(2)).join(' '));
+  eq('sa toute première évolution demande neuf ventes', com[0].ventes, 9);
+  for (let a = 1; a < com.length - 1; a++)
+    ok('commune : le péage ' + (a + 1) + '→' + (a + 2) + ' se paie en 15 à 25 ventes',
+       com[a].ventes >= 15 && com[a].ventes <= 25, com[a].ventes);
 
   // l'escalier ne se retourne pas : ni les multiplicateurs, ni les prix
   let m = 0;
@@ -86,9 +126,8 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
 
   /* LE SEUIL DE REMBOURSEMENT LIT LA MÊME ÉCHELLE — c'était le quatrième site de la faute, et
      le pire : il rendait `null` pour les quatre raretés payantes, c'est-à-dire « elle ne
-     rembourse jamais », sur une bête qu'on vient de payer un billion. Le seuil d'une rare est
-     l'âge adulte, et ce n'est pas un réglage : c'est la règle du multiplicateur qui retombe
-     sur ses pieds — l'œuf et ses deux premiers péages valent la bête mûre à cet âge-là. */
+     rembourse jamais », sur une bête qu'on vient de payer. Depuis le barème unique le seuil est
+     le même à tous les rangs payants, puisque la marge l'est : le bout de l'adolescence. */
   const s2 = jeu.state; s2.tuto = false; s2.pens = 8;
   const seuil = (ligne, rar) => {
     const oeuf = jeu.EGG_KINDS.find(e => e.rarity === rar);
@@ -128,9 +167,9 @@ scenario('échelle des rangs — une bête achetée est à l’équilibre à l�
      fautes.length === 0, fautes.join('  |  '));
 
   eq('une commune rembourse dès l’enfance', seuil('crapaud', 'commune'), 1);
-  eq('une rare rembourse à l’âge adulte', seuil('loup', 'rare'), 3);
-  eq('une épique à l’âge ancien', seuil('golem', 'epique'), 4);
-  eq('une mythique aussi', seuil('tyrannosaure', 'mythique'), 4);
+  eq('une rare rembourse au bout de l’adolescence', seuil('loup', 'rare'), 2);
+  eq('une épique aussi', seuil('golem', 'epique'), 2);
+  eq('et une mythique', seuil('tyrannosaure', 'mythique'), 2);
 });
 
 scenario('clic — une bête menée au bout paie, et seulement sous ta main', () => {
@@ -143,30 +182,33 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
      max de sa tranche », et si elle comptait, c'est toute la ferme qui compterait. */
   eq('au niveau cent mais pas au dernier rang', jeu.estFinie(c), false);
   ok('et le clic la fait encore grossir',
-     (jeu.select('c:' + c.id), jeu.tapStage(), (c.over || 0) > 0));
+     (jeu.select('c:' + c.id), jeu.tapStage(), (c.gras || 0) > 0));
 
-  c.over = jeu.ageGrow(c) * 580;
+  // les cinq rangs au niveau cent : 210 + 320 + 430 + 540 + 650
+  const bout = [1, 2, 3, 4, 5].reduce((n, r) => n + jeu.coutRang(jeu.NIV_MAX, r), 0);
+  eq('les cinq rangs coûtent deux mille cent cinquante au niveau cent', bout, 2150);
+  c.gras = bout;
   eq('au dernier rang, elle est finie', jeu.estFinie(c), true);
-  ok('rankOf le dit déjà', jeu.rankOf(jeu.sizeFactor(c)).next === null);
+  ok('rangDe le dit déjà', jeu.rangDe(c).next === null);
 
   // un âge plus bas ne compte pas, quel que soit l'embonpoint
   const jeune = bete(jeu, 'golem', 4, 0);
   jeune.p = jeu.bandTo(jeune);
-  jeune.over = jeu.ageGrow(jeune) * 580;
+  jeune.gras = 1e6;
   eq('un âge en dessous n’est jamais fini', jeu.estFinie(jeune), false);
 
   /* CE QU'UN CLIC REND ALORS : de la monnaie, et plus de l'embonpoint. */
   jeu.select('c:' + c.id);
   saturerCombo(jeu);
-  const avant = s.coins, gras = c.over;
+  const avant = s.coins, gras = c.gras;
   jeu.tapStage();
   ok('le clic paie', s.coins > avant, s.coins - avant);
-  eq('et n’engraisse plus', c.over, gras);
+  eq('et n’engraisse plus', c.gras, gras);
   eq('c’est bien le montant annoncé', s.coins - avant,
      jeu.gainClicFini(c, { kind: 'creature', c }));
 
-  /* IL RESTE UNE RÉCOMPENSE DE PRÉSENCE : de l'ordre de mille cinq cents clics pour égaler
-     une vente. S'il en fallait dix, vendre n'aurait plus de sens. */
+  /* IL RESTE UNE RÉCOMPENSE DE PRÉSENCE, loin d'une vente : s'il suffisait de dix clics pour en
+     égaler une, vendre n'aurait plus de sens. */
   ok('mille clics ne valent pas une vente',
      (s.coins - avant) * 1000 < jeu.sellValue(c),
      Math.round(jeu.sellValue(c) / (s.coins - avant)) + ' clics par vente');
@@ -174,15 +216,15 @@ scenario('clic — une bête menée au bout paie, et seulement sous ta main', ()
   /* ET SEULEMENT SOUS LA MAIN DU JOUEUR. La carte ocellée clique à ta place : si elle
      encaissait, elle deviendrait une machine à monnaie automatique, et la mécanique
      produirait l'inverse de son intention. */
-  const avant2 = s.coins, gras2 = c.over;
+  const avant2 = s.coins, gras2 = c.gras;
   jeu.mainDeCarte = true;
   jeu.tapStage();
   jeu.mainDeCarte = false;
   eq('l’ocellée n’encaisse rien', s.coins, avant2);
-  ok('elle retombe sur l’embonpoint', c.over > gras2);
+  ok('elle retombe sur l’embonpoint', c.gras > gras2);
 });
 
-scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge adulte', () => {
+scenario('échelle — une bête vaut plus que son œuf et ses péages, dès l’adolescence', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
   const bete1 = l => { s.pens = 20; s.pen = []; s.incub[0] = { line: l, p: 9999, kind: 'commun' };
@@ -205,41 +247,35 @@ scenario('échelle — une bête vaut plus que son œuf, à partir de l’âge a
   };
 
   const rare = solde('loup', jeu.EGG_BY_KEY.rare.price);
-  ok('l’enfant est un investissement', rare[0] < 0, rare[0]);
-  ok('l’adolescent aussi', rare[1] < 0, rare[1]);
-  /* L'ADULTE EST EXACTEMENT À L'ÉQUILIBRE, ET C'EST LA RÈGLE ELLE-MÊME depuis la `4.12.1` :
-     `mult = prix de l'œuf / 2 200 000`. Il était bénéficiaire de 7 % tant que l'œuf rare
-     valait 50 M au lieu des 55 M que la règle demande — un reste de la `4.8.0`, où le prix
-     était encore posé à la main. Zéro n'est pas un relâchement de l'exigence d'origine, c'est
-     l'endroit où la décision d'aller plus loin se prend : sur une bête qui ne doit plus rien. */
-  eq('l’adulte est exactement à l’équilibre', rare[2], 0);
-  ok('et tout ce qui suit est bénéficiaire', rare[3] > rare[2] && rare[4] > rare[3], rare.join(' '));
+  /* LA RARE VENDUE ENFANT PERD UN CINQUIÈME DE SON ŒUF, et c'est la seule perte du barème : au
+     bout de chaque âge suivant, elle se revend un peu plus que ce qu'elle a coûté. */
+  eq('l’enfant perd deux mille pièces', rare[0], -2000);
+  ok('tout ce qui suit est bénéficiaire, et de plus en plus',
+     rare.slice(1).every((x, i) => x > 0 && (i === 0 || x > rare[i])), rare.join(' '));
+  eq('au bout, trente-cinq mille', rare[4], 35000);
 
-  /* LES COMMUNES SONT LE MODÈLE : bénéficiaires à CHAQUE âge, œuf compris. Elles ne changent
-     pas — l'ouverture du jeu est le dernier endroit où l'on touche. */
+  /* LES COMMUNES SONT L'ÈRE D'APPRENTISSAGE : bénéficiaires à CHAQUE âge, œuf compris. */
   const commune = solde('crapaud', jeu.EGG_BY_KEY.commun.price);
   ok('la commune gagne dès l’enfant', commune.every(x => x > 0), commune.join(' '));
   const c0 = bete1('crapaud');
-  eq('et son péage n’a pas bougé', peage(c0, 1), 200);
-  eq('ni le dernier', peage(c0, 4), 600000);
+  eq('son premier péage', peage(c0, 1), 100);
+  eq('et le dernier', peage(c0, 4), 10000);
 
-  /* CHAQUE ÉVOLUTION COÛTE PLUSIEURS FOIS CE QUE LA BÊTE VAUT À CET INSTANT : c'est un
-     investissement, jamais quelque chose qu'on finance en la revendant. Et la première est un
-     mur — c'est elle qui verrouille la rare tombée par chance. */
+  /* LE PREMIER PÉAGE D'UNE RARE VAUT TROIS ŒUFS : c'est lui qui verrouille la rare tombée par
+     chance. Mais elle se revend quand même plus de quatre cents fois l'œuf commun dont elle
+     sort — une bonne surprise ne coûte jamais plus qu'elle ne rapporte. */
   const r = bete1('loup');
-  for (let a = 1; a <= 4; a++) {
-    ok('le péage ' + a + '→' + (a + 1) + ' dépasse la valeur du moment',
-       peage(r, a) > vente(r, a), peage(r, a) + ' vs ' + vente(r, a));
-  }
-  ok('la rare trouvée se vend pour peu', vente(r, 1) < 5000, vente(r, 1));
-  ok('mais la garder coûte une fortune', peage(r, 1) > 1e6, peage(r, 1));
+  eq('le premier péage rare vaut trois œufs rares', peage(r, 1), 3 * jeu.EGG_BY_KEY.rare.price);
+  ok('la rare trouvée se vend quatre cents fois son œuf commun',
+     vente(r, 1) >= 400 * jeu.EGG_BY_KEY.commun.price, vente(r, 1));
 
   /* L'ÉCHELLE SE PROPAGE PAR `mult`, donc elle ne peut plus se retourner : ce qui vaut plus
      cher à l'œuf vaut plus cher sur pied, à tous les rangs. */
   const val = l => vente(bete1(l), 5);
   ok('la rare dépasse la commune', val('loup') > val('crapaud'));
   ok('l’épique dépasse la rare', val('kraken') > val('loup'));
-  ok('la mythique dépasse l’épique', val('behemoth') > val('kraken'));
+  ok('la mythique dépasse l’épique', val('tyrannosaure') > val('kraken'));
+  ok('la merveilleuse dépasse la mythique', val('behemoth') > val('tyrannosaure'));
 });
 
 scenario('enclos — une vente laisse un trou à sa place', () => {
@@ -332,41 +368,38 @@ scenario('vente — regarder une bête la protège trois secondes', () => {
   ok('seule la dernière désignée l’est', s.pen.some(x => x.id === e.id));
 });
 
-scenario('enclos — une place de plus coûte enfin quelque chose', () => {
+scenario('enclos — une place de plus coûte quelque chose', () => {
   const jeu = neuf(); const s = jeu.state;
 
-  /* 1,6 RENDAIT LES PLACES GRATUITES, ET C'ÉTAIT MESURABLE : le vingt-quatrième enclos coûtait
-     19,8 millions quand une rare légende en rapporte douze milliards l'heure — trois secondes
-     de rente. À 2,1, le premier ne bouge pas, le cinquième coûte trois fois plus, et le
-     vingt-quatrième cinq cents fois plus. Ce n'est pas le début qui était trop bon marché,
-     c'est la suite qui ne montait pas. */
+  /* UNE PLACE SE PAIE EN RENTE, PAS EN SECONDES. À 1,6 le vingt-quatrième enclos se remboursait
+     en trois secondes de la rente d'une rare légende, et 2,1 l'avait porté à sept minutes. Le
+     barème unique a tassé les pièces et la pente est recalée à 1,3 ; mais la rareté multiplie
+     moins qu'avant, si bien que la place est plus chère : le vingt-quatrième enclos vaut plus
+     d'une heure de la rente d'une rare légende. */
   eq('le premier enclos ne bouge pas', (s.pens = 1, jeu.penCost()), jeu.PEN_BASE);
   eq('ni le premier incubateur', (s.incubators = 1, jeu.incubCost()), jeu.INCUB_BASE);
-
-  const avant = m => Math.round(jeu.PEN_BASE * Math.pow(1.6, m - 1));
-  /* 2,97 et non 3,00 au cinquième : le rapport entre deux géométriques ne tombe pas rond, et
-     arrondir le seuil à trois ferait échouer un scénario pour un centième. On mesure ce qui
-     est vrai, pas ce qui est joli. */
-  for (const [n, fois] of [[5, 2.9], [12, 19], [20, 100]]) {
-    s.pens = n;
-    const r = jeu.penCost() / avant(n);
-    ok('le ' + n + 'e enclos coûte au moins ' + fois + ' fois plus qu’avant',
-       r >= fois, r.toFixed(1) + ' fois');
-  }
+  s.pens = 24;
+  const rente = jeu.valeurMure('rare', jeu.AGES.length) / jeu.RENTE_H;
+  ok('le 24e enclos vaut plus d’une heure de rente d’une rare légende', jeu.penCost() > rente * 3600,
+     (jeu.penCost() / rente / 3600).toFixed(2) + ' h');
 
   /* LES DEUX ESCALIERS PARTAGENT LE MÊME MULTIPLICATEUR : une place est une place, qu'elle
-     tienne une bête ou un œuf. Deux courbes différentes demanderaient d'expliquer pourquoi. */
+     tienne une bête ou un œuf. Deux courbes différentes demanderaient d'expliquer pourquoi. Au
+     millième près : chaque prix s'arrondit à la pièce. */
   s.pens = 10; s.incubators = 10;
-  eq('les incubateurs suivent la même pente',
-     Math.round(jeu.penCost() / jeu.PEN_BASE * 1000),
-     Math.round(jeu.incubCost() / jeu.INCUB_BASE * 1000));
+  ok('les incubateurs suivent la même pente',
+     Math.abs(jeu.penCost() / jeu.PEN_BASE - jeu.incubCost() / jeu.INCUB_BASE) < 1e-3 * jeu.penCost() / jeu.PEN_BASE,
+     (jeu.penCost() / jeu.PEN_BASE).toFixed(4) + ' contre ' + (jeu.incubCost() / jeu.INCUB_BASE).toFixed(4));
 });
 
 scenario('enclos — l’Étable retirée est remboursée, pas confisquée', () => {
   /* Une prime achetée qui cesse d'exister est une dépense confisquée. Cent cinquante mille
-     pièces sont dérisoires au moment où on les récupère ; le principe ne l'est pas. */
+     pièces sont dérisoires au moment où on les récupère ; le principe ne l'est pas. Elles sont
+     rendues dans l'échelle d'alors, puis converties au barème unique avec le reste de la
+     bourse : on compare donc à la même partie, sans l'Étable. */
   const v = neuf({ coins: 1000, primes: { etable: true, marchand: true } });
-  eq('le prix est rendu', v.state.coins, 1000 + 150000);
+  const sans = neuf({ coins: 1000, primes: { marchand: true } });
+  ok('le prix est rendu', v.state.coins > sans.state.coins, v.state.coins + ' contre ' + sans.state.coins);
   ok('et la prime a disparu', !v.state.primes.etable);
   ok('les autres restent', v.state.primes.marchand);
   ok('elle n’est plus dans la table', !v.PRIME_BY_CLE.etable);
@@ -396,27 +429,46 @@ scenario('enclos — une bête gardée compte, une bête confiée non', () => {
   ok('la place se rouvre', !jeu.penFull());
 });
 
-scenario('niveau — le dernier niveau d’un âge tombe à la maturité, pas une barre avant', () => {
-  /* LA BARRE MORTE. Une tranche de quinze niveaux se découpait en quinze barres, et la dernière
-     affichait « 15 / 15 » en annonçant un niveau 16 : elle ne rapportait rien et ne servait qu'à
-     mûrir. Quinze niveaux, c'est quatorze barres. */
+scenario('niveau — chaque marche coûte un peu plus, et l’évolution garde le niveau', () => {
+  /* LE PRIX D'UNE MARCHE : passer du niveau n au niveau n + 1 coûte (niveau max de l'âge + n)
+     clics, comptés à force de base. De 16 à 29 à l'enfance, onze mille dix pour la vie entière. */
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.pens = 5;
+  eq('le premier niveau coûte seize clics', jeu.coutPas(1, 1), 16);
+  eq('le dernier de l’enfance vingt-neuf', jeu.coutPas(1, 14), 29);
+  eq('l’enfance entière trois cent quinze', jeu.GROW[0], 315);
+  eq('les âges', jeu.GROW.join(' '), '315 1190 3435 3190 2880');
+  eq('une vie entière onze mille dix', jeu.CUM[jeu.CUM.length - 1], 11010);
+
   const c = bete(jeu, 'crapaud', 1, 0);
   for (let age = 1; age <= jeu.AGES.length; age++) {
     c.age = age;
-    const nom = jeu.AGES[age - 1].nom, dernier = jeu.nivBase(age) + jeu.nivDansAge(age);
-    const debut = jeu.bandFrom(c), fin = jeu.bandTo(c), pas = jeu.dureeNiveau(c);
+    const nom = jeu.AGES[age - 1].nom, dernier = jeu.nivFin(age);
+    const debut = jeu.bandFrom(c), fin = jeu.bandTo(c);
     c.p = debut;
-    eq(nom + ' : on entre à son premier niveau', jeu.niveau(c), jeu.nivBase(age) + 1);
-    eq(nom + ' : chaque barre fait gagner un niveau', (fin - debut) / pas, jeu.nivDansAge(age) - 1);
-    c.p = fin - pas / 10;
+    eq(nom + ' : on entre au dernier niveau de l’âge d’avant', jeu.niveau(c), jeu.nivDebut(age));
+    eq(nom + ' : la première marche coûte niveau max + niveau', jeu.dureeNiveau(c), dernier + jeu.nivDebut(age));
+    c.p = fin - 0.5;
     eq(nom + ' : juste avant la maturité, l’avant-dernier niveau', jeu.niveau(c), dernier - 1);
     ok(nom + ' : pas encore mûre', !jeu.estMur(c));
     c.p = fin;
     eq(nom + ' : le dernier niveau arrive avec la maturité', jeu.niveau(c), dernier);
     ok(nom + ' : mûre', jeu.estMur(c));
   }
+
+  /* L'ÉVOLUTION NE DONNE PLUS DE NIVEAU : une commune évoluée reste au 15, et son passage au 16
+     coûte 35 + 15 = 50 clics. SA TAILLE REPART DE ZÉRO, et pas sa taille à l'écran. */
+  c.age = 1; c.p = jeu.bandTo(c); c.gras = 0;
+  jeu.engraisser(c, 500);
+  s.coins = 1e6; jeu.select('c:' + c.id);
+  const echelle = jeu.visualScale(c);
+  jeu.evolve(c);
+  eq('évoluée, elle a changé d’âge', c.age, 2);
+  eq('et reste au niveau 15', jeu.niveau(c), 15);
+  eq('son passage au 16 coûte cinquante clics', jeu.dureeNiveau(c), 50);
+  eq('sa taille repart de zéro', c.gras, 0);
+  ok('mais elle ne rétrécit pas à l’écran', jeu.visualScale(c) >= echelle,
+     jeu.visualScale(c) + ' contre ' + echelle);
   c.age = 1; c.p = jeu.bandTo(c) - jeu.dureeNiveau(c) / 2; jeu.refresh();
   const t = noeuds.get('stage-timer').textContent || '';
   ok('la minuterie annonce le niveau 15 avec la maturité, jamais un niveau 16', /niv\. 15 · mûre/.test(t), t);

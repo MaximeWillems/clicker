@@ -293,7 +293,7 @@ scenario('réglages — des segments plutôt que des menus', () => {
   /* UN MENU CACHE SES OPTIONS : il faut l'ouvrir pour savoir ce qu'on peut choisir, et le
      refermer pour voir ce qu'on a choisi. Un segment montre les deux d'un coup. */
   eq('un segment par rareté et par consigne',
-     jeu.REGLAGES.length * Object.keys(jeu.RARITY).length, 15);
+     jeu.REGLAGES.length * Object.keys(jeu.RARITY).length, 10);
   for (const r of jeu.REGLAGES)
     for (const cle of Object.keys(jeu.RARITY)) {
       const id = r.cle + '-' + cle;
@@ -306,13 +306,17 @@ scenario('réglages — des segments plutôt que des menus', () => {
   /* LA TABLE DÉCIDE DE TOUT : les libellés par rareté étaient écrits en dur quinze fois dans
      index.html, et ajouter la cinquième rareté avait demandé d'y revenir à la main. */
   ok('la merveilleuse a ses rangées sans qu’on les ait écrites',
-     !!seg('vente-merveilleuse') && !!seg('taille-merveilleuse') && !!seg('evolution-merveilleuse'));
+     !!seg('vente-merveilleuse') && !!seg('evolution-merveilleuse'));
+  /* LA TAILLE EXIGÉE EST PARTIE AVEC LE BARÈME UNIQUE : la taille ne se vend plus, elle se défait
+     en poussière au saut, et attendre qu'une bête grossisse avant de la vendre ne ferait que
+     bloquer l'enclos. */
+  ok('plus de consigne de taille', !jeu.REGLAGES.some(r => r.cle === 'taille') && !seg('taille-commune'));
 
   // choisir se fait à l'état, et l'écran suit
   s.sellAt.commune = 3;
   jeu.refresh();
   eq('la pastille suit l’état', choisi('vente-commune').v, '3');
-  ok('et la phrase dit le prix', /adulte/.test(dit('vente-commune')) && /6 000/.test(dit('vente-commune')),
+  ok('et la phrase dit le prix', /adulte/.test(dit('vente-commune')) && /1 000/.test(dit('vente-commune')),
      dit('vente-commune'));
 
   /* LE PRIX EST CELUI D'AUJOURD'HUI, primes comprises. Le menu annonçait la valeur de base et
@@ -320,7 +324,7 @@ scenario('réglages — des segments plutôt que des menus', () => {
   s.primes['negoce-commune'] = true; s.primes['valeur-4'] = true;
   jeu.oublierPrimes();
   jeu.refresh();
-  ok('le négoce et le renom entrent dans le chiffre', /9 000/.test(dit('vente-commune')),
+  ok('le négoce et le renom entrent dans le chiffre', /1 500/.test(dit('vente-commune')),
      dit('vente-commune'));
 
   s.evolveUpTo.rare = 5;

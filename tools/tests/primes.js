@@ -452,8 +452,8 @@ scenario('primes — chacune fait ce qu’elle dit, et une seule fois', () => {
   prendre('grossiste');
   ok('le grossiste baisse le prix des œufs', jeu.prixOeuf(jeu.EGG_BY_KEY.commun) < oeufNu);
 
-  // le négoce ne vaut que pour SA rareté
-  const commune = bete(jeu, 'crapaud', 3, 3000);
+  // le négoce ne vaut que pour SA rareté — sur une bête mûre, dont le prix tombe rond
+  const commune = bete(jeu, 'crapaud', 3, 20000);
   const avant = jeu.sellValue(commune);
   prendre('negoce-rare');
   eq('le négoce rare ne touche pas une commune', jeu.sellValue(commune), avant);

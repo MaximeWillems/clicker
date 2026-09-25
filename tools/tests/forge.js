@@ -325,3 +325,23 @@ scenario('poussière — l’ascension défait tout l’enclos', () => {
   ok('la poussière traverse le saut',
      jeu.state.poussiere > 0 && jeu.state.coins === 0);
 });
+
+scenario('poussière — une bête engraissée en laisse davantage au saut', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 5e6; s.pens = 20;
+  /* LA TAILLE NE SE VEND PLUS, ELLE SE DÉFAIT. Depuis le barème unique, un rang de taille ne
+     touche ni au prix de vente ni à la rente : il multiplie la poussière que la bête laisse au
+     saut — ×4,5 pour une démesurée. On engraisse ce qu'on garde, avant de sauter. */
+  const c = beteNeutre(jeu, 'crapaud', 5, 1e6);            // une légende mûre
+  const valeur = jeu.sellValue(c), rente = jeu.renteOf(c);
+  jeu.engraisser(c, 1e6);                                  // bien au-delà du dernier rang
+  eq('elle est démesurée', jeu.rangDe(c).i, jeu.RANKS.length - 1);
+  eq('sa valeur ne bouge pas', jeu.sellValue(c), valeur);
+  eq('sa rente non plus', jeu.renteOf(c), rente);
+
+  for (let i = 0; i < 9; i++) beteNeutre(jeu, 'crapaud', 5, 1e6);
+  poserJetons(jeu, 1);
+  jeu.ascensionner();
+  // neuf bêtes de taille normale à une poussière chacune, et la démesurée à quatre et demie
+  eq('la démesurée laisse quatre fois et demie la sienne', jeu.state.poussiere, 9 + Math.round(4.5));
+});

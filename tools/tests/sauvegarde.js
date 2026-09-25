@@ -248,7 +248,50 @@ scenario('sauvegarde — la barre retirée ne change ni le niveau ni la taille d
   eq('une adolescente aussi', vieux.niveau(lu(b.id)), niveauAvant(2, b.p));
   ok('celle qui était dans la barre retirée devient mûre', vieux.estMur(lu(m.id)));
   eq('au même niveau', vieux.niveau(lu(m.id)), niveauAvant(1, 145));
-  const tailleAvant = 1 + vieux.OVER_GAIN * Math.log(1 + 90 / AVANT[1]);
-  ok('et personne ne change de taille', Math.abs(vieux.sizeFactor(lu(b.id)) - tailleAvant) < 1e-9,
-     vieux.sizeFactor(lu(b.id)) + ' contre ' + tailleAvant);
+  /* LA TAILLE NE SURVIT PLUS À L'ÉVOLUTION depuis le barème unique, et une bête qui n'est pas
+     mûre n'a pas de rang : celle-ci, à peine engraissée, était de taille normale et le reste. */
+  eq('et personne ne change de taille', vieux.rangDe(lu(b.id)).i, 0);
+});
+
+scenario('sauvegarde — le barème unique garde les niveaux, et tasse les pièces', () => {
+  /* v37 → v38. Les niveaux se relisent sur les barres d'avant — les tables de la v37, recopiées
+     ICI pour la même raison que plus haut — et se reposent sur les marches du barème. */
+  const GROW37 = [140, 171, 870, 3420, 20160], NIV37 = [15, 20, 30, 20, 15];
+  const debut37 = age => GROW37.slice(0, age - 1).reduce((a, g) => a + g, 0);
+  const niveau37 = (age, p) => NIV37.slice(0, age - 1).reduce((a, n) => a + n, 0) + 1 +
+    Math.floor(Math.min(1, (p - debut37(age)) / GROW37[age - 1]) * (NIV37[age - 1] - 1));
+
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.pens = 5;
+  bete(jeu, 'crapaud', 1, 0); bete(jeu, 'loup', 1, 0); bete(jeu, 'loup', 1, 0);
+  const brut = JSON.parse(JSON.stringify(s));
+  brut.v = 37;
+  const [a, b, m] = brut.pen;
+  a.age = 2; a.p = debut37(2) + 100;                       // une adolescente en pleine tranche
+  b.age = 3; b.p = debut37(3) + GROW37[2];                 // une adulte mûre…
+  b.over = GROW37[2] * 50;                                 // …et colossale : ×3,16 sur l'ancienne échelle
+  b.cost = 55e6;                                           // un œuf rare d'avant
+  m.age = 3; m.p = debut37(3) + 10; m.over = GROW37[2] * 50;   // engraissée, mais pas mûre
+  brut.coins = 1.75e11;                                    // une rare légende d'avant
+  brut.stats.record = 1.5e6;                               // une commune légende d'avant
+  brut.asc = Object.assign({}, brut.asc, { paliers: 4, sommet: 1e9 });
+
+  const k = neuf(brut);
+  const lu = id => k.state.pen.find(x => x.id === id);
+  eq('le format monte', k.state.v, k.SAVE_V);
+  eq('l’adolescente garde son niveau', k.niveau(lu(a.id)), niveau37(2, a.p));
+  ok('l’adulte mûre reste mûre', k.estMur(lu(b.id)));
+  eq('au même niveau', k.niveau(lu(b.id)), 65);
+  eq('et garde son rang de taille', k.rangDe(lu(b.id)).i, 3);
+  eq('celle qui n’était pas mûre repart de la taille normale', k.rangDe(lu(m.id)).i, 0);
+  eq('son œuf rare vaut maintenant ce que vaut un œuf rare', lu(b.id).cost, 10000);
+
+  /* LES PIÈCES SE CONVERTISSENT SUR CE QUE VALENT LES BÊTES MÛRES : une bourse de rare légende
+     reste une bourse de rare légende, un record de commune légende un record de commune légende. */
+  ok('une bourse de rare légende', Math.abs(k.state.coins - 450000) < 1, k.state.coins);
+  ok('un record de commune légende', Math.abs(k.state.stats.record - 15000) < 1, k.state.stats.record);
+
+  // ON NE RETIRE RIEN À PERSONNE : le sommet rend ses jetons, et la porte reste ouverte
+  eq('le sommet du cycle rend ses quatre jetons', k.jetonsDus(), 4);
+  ok('et l’ascension reste ouverte', k.peutAscensionner());
 });
