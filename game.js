@@ -34,10 +34,12 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.9.1';
+const VERSION = 'beta 5.9.2';
 
 /* ─────────────────────────────────────────────
-   Données — tout ce qui s'équilibre est ici.
+   Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
+   places, les faveurs, les jetons, l'absence, la poussière et le marchand — sont dans
+   constantes.js, chargé avant ce fichier : c'est là qu'on rééquilibre.
    ───────────────────────────────────────────── */
 
 /* ── Les cinq âges ────────────────────────────────────────────────────────────
@@ -95,11 +97,11 @@ const VERSION = 'beta 5.9.1';
    trente-six fois la vente chez les mythiques. Même nombre de clics partout, et la rareté se
    joue sur les pièces. */
 const AGES = [
-  { nom: 'enfant',     niv: 15,  value: 30 },
-  { nom: 'adolescent', niv: 35,  value: 150 },
-  { nom: 'adulte',     niv: 65,  value: 1000 },
-  { nom: 'ancien',     niv: 85,  value: 4000 },
-  { nom: 'légende',    niv: 100, value: 15000, fem: true },
+  { nom: 'enfant',     niv: 15 },
+  { nom: 'adolescent', niv: 35 },
+  { nom: 'adulte',     niv: 65 },
+  { nom: 'ancien',     niv: 85 },
+  { nom: 'légende',    niv: 100, fem: true },
 ];
 const NIV_MAX = AGES[AGES.length - 1].niv;
 
@@ -116,46 +118,11 @@ const SEUILS = AGES.map((a, i) => {
 });
 
 const GROW       = SEUILS.map(s => s[s.length - 1]);         // 315, 1 190, 3 435, 3 190, 2 880
-const VALUE      = AGES.map(a => a.value);                    // ce que vaut une bête mûre de cet âge
-const EVOLVE     = [100, 750, 2500, 10000, null];             // le péage vers l'âge suivant
 
 // Croissance cumulée au bout de chaque âge : c'est la borne où le niveau se bloque.
 const CUM = GROW.reduce((a, g) => a.concat([(a[a.length - 1] || 0) + g]), []);
 
-/* Le nouveau-né vaut 15 % d'une bête mûre à l'enfance. Aux âges suivants, le premier niveau
-   vaut ce que valait la bête mûre de l'âge d'avant : l'évolution ne lui fait rien perdre, le
-   péage ne se reprend qu'en grandissant. Entre les deux bouts, la valeur monte
-   géométriquement d'une marche à la suivante ; aucune n'est morte. */
-const NIV_MIN_MULT = 0.15;
 
-const INCUB_BASE = 150;
-const PEN_BASE   = 400;
-/* ── CE QUE COÛTE UNE PLACE DE PLUS ────────────────────────────────────────────
-   1,6 RENDAIT LES PLACES GRATUITES, ET C'ÉTAIT MESURABLE : un enclos se remboursait en une
-   FRACTION DE SECONDE à tous les paliers. Le vingt-quatrième coûtait 19,8 millions quand une
-   rare légende en rapporte douze milliards l'heure — trois secondes de rente. Une ressource
-   qu'on rachète plus vite qu'on ne clique n'est pas une ressource, c'est une formalité.
-
-   À 2,1, le premier enclos ne bougeait pas d'une pièce, le cinquième coûtait trois fois plus,
-   et le vingt-quatrième cinq cents fois plus. C'est la forme que demandait le défaut : ce n'est
-   pas le début qui était trop bon marché, c'est la suite qui ne montait pas.
-
-   1,3 DEPUIS LE BARÈME UNIQUE, et ce n'est pas un rabais. Les pièces se sont tassées — une
-   légende merveilleuse vaut sept milliards, et non plus un quadrillion — si bien que 2,1 aurait
-   mis le vingt-quatrième enclos à dix milliards, hors de portée de la partie entière. La pente
-   est recalée pour qu'au bout de chaque ère on puisse s'offrir à peu près autant de places
-   qu'avant. Le premier enclos coûte toujours 400, le vingt-quatrième 167 000 : une heure et
-   demie de la rente d'une rare légende, contre sept minutes avant. Les places sont donc PLUS
-   chères qu'avant, parce que la rareté multiplie moins : ×750 de la commune à l'épique, au
-   lieu de ×450 000.
-
-   CE QUE ÇA NE RÈGLE PAS, et il faut l'écrire ici pour ne pas y revenir en croyant à un
-   oubli : la rente suit la RARETÉ, quand le prix d'une place suit une géométrique. Aucun
-   multiplicateur ne rattrape ça — au mieux on rend la place chère DANS UNE ÈRE. Le vrai
-   correctif serait de borner la rente, et il a été refusé au plan le 5 septembre 2026, en
-   connaissance de cause. Les enclos plus chers, demandés le 21 septembre, se calent sur ce
-   barème-ci. */
-const SLOT_MULT  = 1.3;
 
 /* Deux axes indépendants, à ne pas confondre :
    l'ÂGE est la progression d'une bête au fil de sa vie (têtard → crapaud → …),
@@ -198,10 +165,10 @@ const SLOT_MULT  = 1.3;
    donner au mieux. Il monte bien plus doucement que `mult` — une carte mythique doit valoir
    mieux qu'une commune, pas quinze mille fois mieux. */
 const RARITY = {
-  commune:  { name: 'commune',  plur: 'communes',  mult: 1,     rank: 0, plafond: 1 },
-  rare:     { name: 'rare',     plur: 'rares',     mult: 1,     rank: 1, plafond: 1.6 },
-  epique:   { name: 'épique',   plur: 'épiques',   mult: 25,    rank: 2, plafond: 2.5 },
-  mythique: { name: 'mythique', plur: 'mythiques', mult: 625,   rank: 3, plafond: 4 },
+  commune:  { name: 'commune',  plur: 'communes',  mult: MULT_RARETE.commune,  rank: 0, plafond: 1 },
+  rare:     { name: 'rare',     plur: 'rares',     mult: MULT_RARETE.rare,     rank: 1, plafond: 1.6 },
+  epique:   { name: 'épique',   plur: 'épiques',   mult: MULT_RARETE.epique,   rank: 2, plafond: 2.5 },
+  mythique: { name: 'mythique', plur: 'mythiques', mult: MULT_RARETE.mythique, rank: 3, plafond: 4 },
   /* LA MERVEILLEUSE EST UN CRAN DE PUISSANCE AU-DESSUS DE LA MYTHIQUE, le même ×25 que les
      autres. La règle d'avant disait « un cran de RARETÉ, pas un cran de PUISSANCE » : elle
      partageait le multiplicateur de la mythique, au motif que si une merveille valait plus, la
@@ -219,7 +186,7 @@ const RARITY = {
      ELLE NE S'ACHÈTE TOUJOURS PAS, et c'est ce qui la distingue : aucun œuf ne la donne. Son
      multiplicateur suit quand même l'escalier des ×25 ; l'œuf à 156 millions qui la
      précéderait n'existe que dans ce calcul. */
-  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: 15625, rank: 4, plafond: 4,
+  merveilleuse: { name: 'merveilleuse', plur: 'merveilleuses', mult: MULT_RARETE.merveilleuse, rank: 4, plafond: 4,
                   secret: true },
 };
 
@@ -313,18 +280,18 @@ const EGG_KINDS = [
      C'EST LE SEUL ŒUF DU JEU DONT LE PRIX SE PAIE À LA MAIN : le rare couve trois minutes et
      le mythique quarante-cinq, personne ne les clique. Le nombre est gardé par un scénario qui
      joue l'œuf et compte, pas par cette ligne. */
-  { key: 'commun', name: 'Œuf commun', price: 18, glyph: '🥚', rarity: 'commune',
+  { key: 'commun', name: 'Œuf commun', price: PRIX_OEUFS.commun, glyph: '🥚', rarity: 'commune',
     hatch: 50, odds: { commune: 0.999, rare: 0.001 },
     dit: 'C’est par là que tout le monde commence.' },
   /* DIX MILLE, LE DERNIER PÉAGE COMMUN. L'œuf rare a valu 300 000, puis cinquante-cinq
      millions — quinze heures d'une ferme commune mûre —, parce que l'ancien escalier mettait le
      mur dans l'œuf. Le barème unique le met dans les péages : l'œuf s'achète avec moins d'une
      légende commune, et c'est la rare qu'il faut ensuite payer, péage après péage. */
-  { key: 'rare', name: 'Œuf rare', price: 10000, glyph: '🥚', rarity: 'rare',
+  { key: 'rare', name: 'Œuf rare', price: PRIX_OEUFS.rare, glyph: '🥚', rarity: 'rare',
     hatch: 180, odds: { rare: 0.999, epique: 0.001 },
     dit: 'Le premier qui se réfléchit avant de l’acheter.' },
   // 250 000, le dernier péage rare : la rare × 25, comme tout le reste de l'ère.
-  { key: 'epique', name: 'Œuf épique', price: 250000, glyph: '🥚', rarity: 'epique',
+  { key: 'epique', name: 'Œuf épique', price: PRIX_OEUFS.epique, glyph: '🥚', rarity: 'epique',
     hatch: 720, odds: { epique: 0.999, mythique: 0.001 },
     dit: 'On n’en achète pas par distraction.' },
   /* 6 250 000, LE DERNIER PÉAGE ÉPIQUE. L'ancien escalier avait un barreau sept cents fois plus
@@ -333,7 +300,7 @@ const EGG_KINDS = [
 
      LA LOTERIE N'EST PLUS UN CHEMIN : un œuf épique donne une mythique une fois sur mille, et
      mille œufs épiques coûtent quarante fois l'œuf mythique. */
-  { key: 'mythique', name: 'Œuf mythique', price: 6250000, glyph: '🥚', rarity: 'mythique',
+  { key: 'mythique', name: 'Œuf mythique', price: PRIX_OEUFS.mythique, glyph: '🥚', rarity: 'mythique',
     hatch: 2700, odds: { mythique: 1 },
     dit: 'Il en sort des dieux. Prends ton après-midi.' },
   /* CELUI-CI NE S'ACHÈTE PAS, et c'est toute la définition du rang. Il n'a pas de prix, donc il
@@ -364,8 +331,8 @@ const OEUFS_HAUT_EN_BAS = EGG_KINDS.slice()
 /* Plus l'œuf est rare, plus il couve longtemps : 50 s pour un commun, 45 minutes pour un
    mythique. Une bête précieuse doit se faire attendre, sinon la rareté n'a pas de poids.
 
-   Sur une bête commune la couvaison ne pèse rien : 50 s de coquille contre sept heures de
-   croissance jusqu'à l'âge légende, soit un millième du cycle. C'est ce qui avait fait
+   Sur une bête commune la couvaison ne pèse rien : 50 s de coquille contre trois heures de
+   croissance jusqu'à la légende, soit un deux-centième du cycle. C'est ce qui avait fait
    plafonner la couveuse à 5 — au-delà, on achetait des niveaux pour ne jamais les voir.
 
    LE PLAFOND EST LEVÉ, parce que l'argument ne vaut que pour l'œuf commun. Un œuf mythique
@@ -373,9 +340,10 @@ const OEUFS_HAUT_EN_BAS = EGG_KINDS.slice()
    seule file du jeu qui reste manuelle quand tout le reste est automatisé. Un plafond qui
    n'était juste qu'à la première ère n'avait rien à faire dans la table.
 
-   Les incubateurs restent le bon levier tant qu'on couve du commun — ils montent en 1,6 par
-   cran au lieu de 1,9, donc ils distancent la couveuse en prix. La couveuse redevient
-   intéressante quand ce qu'on couve est cher, pas quand on en couve beaucoup. */
+   Les deux pentes se touchent depuis le barème unique — ×1,3 par incubateur, ×1,26 par palier
+   de couveuse — et le prix ne les départage plus : c'est ce qu'on couve qui décide. Sur du
+   commun, un incubateur de plus couve un œuf de plus ; sur un œuf cher, la couveuse raccourcit
+   l'attente de tous. */
 const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
 
 /* Une bête ne se nourrit jamais contre des pièces : elle grandit au clic et au temps.
@@ -399,17 +367,7 @@ const hatchTime = slot => (EGG_BY_KEY[slot.kind] || EGG_BY_KEY.commun).hatch;
    l'élevage. À égalité, les cinq rangs n'auraient valu qu'environ 2 % en tout, c'est-à-dire
    rien. La taille multiplie donc la POUSSIÈRE qu'une bête laisse au saut : ×4,5 pour une
    démesurée. On engraisse ce qu'on garde, avant de sauter. */
-const FATTEN_X  = 6;        // secondes d'engraissement par seconde et par niveau de mangeoire
-/* ── CE QU'UNE UNITÉ D'ÉLEVEUR POUSSE, ET POURQUOI CE N'EST PLUS UN ──────────────
-   La montée en niveau venait trop du doigt et pas assez de la machine. Un âge se traverse en
-   quelques minutes de clic acharné là où l'éleveur, lui, met des heures : on ne l'achetait
-   pas pour aller plus vite, on l'achetait pour ne pas avoir à rester. Un automate qu'on paie
-   doit être le chemin normal, pas la consolation de celui qui s'absente.
-
-   L'éleveur triple donc, et le clic tombe au tiers de ce qu'il valait — deux gestes, pas un :
-   monter la machine sans baisser la main aurait monté les deux ensemble, puisqu'un clic vaut
-   des SECONDES D'AUTOMATE (voir `clickGain`) et suit tout ce que l'automate gagne. */
-const ELEVEUR_X = 3;        // multiplicateur de croissance par unité d'éleveur
+// Le débit de la mangeoire, `FATTEN_X`, est dans constantes.js avec les autres réglages.
 
 /* La taille à l'écran ne redescend JAMAIS. Elle ne se lit donc pas sur l'âge et l'embonpoint
    séparément — l'un monte au moment où l'autre se dégonfle — mais sur le total de croissance
@@ -420,68 +378,7 @@ const SCALE_MAX  = 1.75;    // taille d'une légende mûre, avant le bonus d'âg
 const SCALE_GRAS = 1.10;    // ce que l'engraissement peut ajouter au-delà de la légende mûre
 const AGE_SCALE  = [1, 1.06, 1.12, 1.18, 1.25];   // le bond visible à chaque évolution
 
-/* ── La rente ─────────────────────────────────────────────────────────────────
-   Tout le reste du jeu pousse à vendre : l'enclos est la ressource rare, et une bête qu'on
-   garde est un enclos qui ne tourne pas. La rente est la seule règle qui paie pour NE PAS
-   vendre — sans elle, garder une mythique chromatique était un pur sacrifice sentimental.
-
-   Elle s'ouvre à L'ÂGE ADULTE et vaut la valeur de la bête étalée sur quatre heures. Elle
-   était auparavant branchée sur l'embonpoint (« énorme »), c'est-à-dire sur la mauvaise
-   échelle : un seuil que personne ne devine, et qui obligeait à comprendre la mangeoire avant
-   de toucher le premier revenu passif. L'âge ouvre la rente ; la taille n'y entre plus depuis
-   qu'elle ne se vend plus.
-
-   CE PARAGRAPHE DISAIT « C'EST PEU », ET CE N'EST PLUS VRAI DEPUIS LONGTEMPS. Il datait de
-   l'heure, où un enclos qui enchaînait les cycles rapportait deux à trois fois plus que la
-   même case gardée. Mesuré aujourd'hui, à cinq minutes : garder rapporte QUATRE-VINGT-DIX
-   FOIS le débit d'un cycle élevage-et-vente, à toutes les raretés — et l'écart se creuse
-   encore si l'on déduit du cycle le prix de l'œuf et les péages. La rente ne récompense donc
-   plus « la poignée de bêtes qu'on avait décidé de ne pas vendre » : elle EST la ferme, et
-   l'élevage n'est plus qu'un moyen de la peupler.
-
-   Ses facteurs sont déjà ceux du prix de vente — niveau, âge, rareté et couleur — si bien
-   qu'une bête rapporte à proportion exacte de ce qu'elle vaut. Le chromatique est le seul à
-   recevoir un bonus par-dessus : c'est LA bête qu'un joueur garde. */
-const AGE_RENTE     = 3;      // âge minimal : adulte. En deçà, rien du tout.
-/* UNE BÊTE RAPPORTE SA PROPRE VALEUR EN QUATRE HEURES. C'était une heure, puis vingt minutes,
-   puis cinq, puis deux heures — et cinq était devenu intenable, non pas à cause du chiffre mais
-   à cause de ce qu'il y avait en face.
-
-   LE RAPPORT QUI COMMANDE N'EST PAS LE DÉLAI, C'EST « GARDER CONTRE VENDRE ». Une case
-   d'enclos ne fait qu'une chose à la fois : porter une bête gardée, qui rend sa valeur
-   indéfiniment, ou servir à élever puis vendre, encore et encore. Mesuré par case et par
-   seconde, garder valait SEPT CENT QUARANTE FOIS vendre. La fin de partie n'avait donc qu'une
-   forme : remplir les enclos, ne plus jamais rien vendre, et regarder.
-
-   LES PÉAGES ONT FAIT LES TROIS QUARTS DU TRAVAIL. En rendant chaque évolution coûteuse, ils
-   ont rendu la vente rentable : la marge au bout passe de 3 % à 52 %, et le rapport tombe de
-   740 à 54 sans qu'on ait touché à la rente. Ce n'était pas la rente qui était trop forte,
-   c'était la vente qui ne rapportait rien.
-
-   DEUX HEURES RAMÈNE LE RAPPORT À 2,3, et c'est le réglage voulu : garder reste le meilleur
-   emploi d'une case — l'absence doit payer, c'est une demande explicite — mais vendre cesse
-   d'être une perte de temps. Une nuit de huit heures rend quatre fois la valeur d'une bête
-   gardée, ce qui est un vrai revenu d'absence et non un doublement du jeu.
-
-   LE CHOIX DE LA `4.11.5` EST DONC RÉVISÉ, et il faut dire pourquoi. Il posait qu'une décision
-   de garde doit se payer DANS LA SÉANCE, et cinq minutes le garantissaient. Deux heures ne le
-   garantissent plus au même sens ; en échange, la décision existe vraiment — à 740 contre 1,
-   il n'y avait pas de décision, il y avait une évidence. Un pari qu'on ne peut pas perdre
-   n'est pas un pari.
-
-   CE QUE ÇA NE RÈGLE TOUJOURS PAS : la rente reste PERPÉTUELLE ET GRATUITE. On règle ici le
-   DÉBIT, pas la NATURE. Mais le chantier change de taille : il ne s'agit plus de sauver le
-   jeu d'un optimum unique, seulement de décider si l'on veut, un jour, que garder coûte
-   quelque chose. Voir PLAN.md, « La garde illimitée est trop forte ».
-
-   QUATRE HEURES DEPUIS LE BARÈME UNIQUE, et c'est la même règle qui le demande. Deux heures
-   étaient calées sur une bête finie qui rapportait 52 % de ce qu'elle avait coûté ; le barème
-   n'en laisse que 8 à 12 %, et à deux heures garder aurait rapporté cinq fois la vente au lieu
-   de 2,3. Quatre heures ramènent l'écart entre 2,3 et 2,7, à toutes les raretés — c'est aussi
-   pourquoi la rareté ne multiplie pas les clics : une bête deux fois plus longue à élever
-   aurait doublé l'avantage de la garder. */
-const RENTE_H       = 14400;
-const RENTE_PRODIGE = 2;      // un chromatique double la sienne
+// La rente — son âge, son débit, le bonus du chromatique — est dans constantes.js.
 
 /* ── Variantes ────────────────────────────────────────────────────────────────
    Tirées à l'éclosion et gardées À VIE, contrairement à la taille qu'une évolution
@@ -756,17 +653,19 @@ const recetteCouleur = (hue, ton) => {
 /* Le prodige ignore la lignée : on peut avoir un têtard chromatique. C'est la seule
    raison de regarder encore chaque éclosion quand on enchaîne les œufs mythiques.
 
-   Il vaut exactement UN CRAN DE RARETÉ : une commune chromatique vaut une rare ordinaire,
-   une rare chromatique vaut une épique, et ainsi de suite jusqu'en haut. La règle se lit en
-   une phrase et se propage d'elle-même.
+   Il vaut exactement UN CRAN DE RARETÉ : une rare chromatique vaut une épique ordinaire, une
+   épique chromatique une mythique, et ainsi de suite jusqu'en haut — exactement, depuis le
+   barème unique, puisque chaque rang est le précédent × 25. La commune, qui a ses propres
+   chiffres, fait exception : chromatique, elle vaut 750 pièces mûre à l'enfance et 375 000 à la
+   légende, soit d'un dixième d'une rare enfant aux quatre cinquièmes d'une rare légende.
 
    À ×5 il ne pesait rien : la plus belle bête du jeu restait cinq fois sous le moindre
    tirage rare, et le seul coup de chance qui se voit à l'écran ne se sentait pas dans la
    bourse. Mais à ×125 il cassait la partie, et pour une raison qui n'est pas le chiffre
-   lui-même : LE COÛT D'ÉVOLUTION NE SUIT QUE LA LIGNÉE. Mener n'importe quelle bête au bout
-   rend 2,3 fois ses péages ; un chromatique rend 2,3 × son multiplicateur, puisqu'il paie
-   les péages de sa lignée pour la valeur d'une autre. À ×125, une commune chromatique
-   rapportait donc 291 fois sa mise quand tout le reste du jeu en rapporte 2,3.
+   lui-même : LE COÛT D'ÉVOLUTION NE SUIT QUE LA LIGNÉE. Mener une bête au bout rendait 2,3
+   fois ses péages, et un chromatique 2,3 × son multiplicateur, puisqu'il paie les péages de sa
+   lignée pour la valeur d'une autre : à ×125, 291 fois sa mise. Depuis le barème unique, une
+   bête menée au bout rend 1,1 fois ses péages, et un chromatique vingt-huit fois.
 
    À ×25 l'affaire reste excellente — c'est bien ce qu'on veut d'un coup de chance — sans être
    la meilleure ligne de jeu à elle seule. Si ça pèse encore trop à l'essai, le levier suivant
@@ -1125,8 +1024,7 @@ LE PREMIER SAUT TOMBE EN MILIEU DE PARTIE, pas avant. Un million de pièces supp
    C'EST UN ÉTAT DU JEU, PAS UN SUJET DE LA SCÈNE. `subjects()` liste toujours les incubateurs,
    même vides, donc il y a toujours quelque chose en scène et `current()` ne rend jamais null.
    `renderStage` et `tapStage` regardent donc la plonge AVANT de regarder le sujet. */
-const ASSIETTE = 1;              // ce que rapporte une assiette lavée
-const ASSIETTE_CLICS = 10;       // et ce qu'elle coûte : dix clics, quoi qu'on possède
+// Ce que rapporte une assiette et ce qu'elle coûte, `ASSIETTE` et `ASSIETTE_CLICS` : dans constantes.js.
 
 // Le prix plancher du jeu : l'œuf le moins cher, quoi qu'on ait réglé ailleurs.
 const oeufPlancher = () => prixOeuf(EGG_BY_KEY.commun);
@@ -1673,15 +1571,7 @@ const FAVEURS = [
 const FAVEUR_BY_KEY = Object.fromEntries(FAVEURS.map(f => [f.cle, f]));
 const FAVEUR_MAIN = 3;
 
-/* LE PRIX MONTE, SINON LA QUEUE DEVIENT LE JEU. À ×1,12 la faveur suit à peu près l'échelle des
-   primes : la première coûte 4 400, la vingtième 38 000, la cinquantième un peu plus d'un
-   million — le double du dernier carrefour. Au-delà, elle monte plus vite que la ferme, ce qui
-   est exactement ce qu'on veut d'une chose infinie.
-
-   1,12 ET NON PLUS 1,4 DEPUIS LE BARÈME UNIQUE : les pièces se sont tassées, et la pente est
-   recalée pour qu'au bout de chaque ère on puisse s'offrir à peu près autant de faveurs
-   qu'avant. */
-const FAVEUR_BASE = 4400, FAVEUR_MULT = 1.12;
+// Le prix des faveurs, `FAVEUR_BASE` × `FAVEUR_MULT` ^ n : dans constantes.js.
 const faveurEtat  = () => (state.faveurs = state.faveurs || { pris: 0, acquis: {}, main: [] });
 const faveursPris = () => faveurEtat().pris || 0;
 const prixFaveur  = () => Math.round(FAVEUR_BASE * Math.pow(FAVEUR_MULT, faveursPris()));
@@ -1970,13 +1860,7 @@ const NOTES = [
   ] },
 ];
 
-/* UN PALIER DE JETON TOUS LES ×25, LE PAS MÊME DU BARÈME. Il était de mille quand une ère
-   multipliait les pièces par dix-huit mille ; le barème unique ne les multiplie plus que par
-   vingt-cinq d'une ère à la suivante, et un pas de mille n'aurait plus laissé que quatre
-   jetons à une partie entière. À ×25, chaque ère franchit un palier, et le compte d'un cycle
-   mené au bout de chaque ère est à un jeton près celui d'avant : 3, 5, 6, 7 et 8, contre 3,
-   4, 6, 7 et 9. */
-const JETON_PAS = 25;
+// Le pas des paliers, `JETON_PAS` : dans constantes.js.
 const JETON_PALIERS = Array.from({ length: 11 }, (v, n) => Math.pow(JETON_PAS, n));
 
 /* LE PREMIER SAUT NE S'OUVRE QU'À 15 625 PIÈCES, quatrième palier de l'échelle : à peu près la
@@ -2817,24 +2701,7 @@ function setCreature(el, fichier, emoji) {
 
 const SAVE_KEY = 'eclosion.jalon0';
 const SAVE_V = 38;          // le numéro de ce que le fichier sait produire aujourd'hui
-/* ── CE QUE VAUT UNE ABSENCE ───────────────────────────────────────────────────
-   Elle valait la présence, à la seconde près — mesuré : une heure d'absence rendait ×1,000
-   d'une heure passée devant l'écran, et huit heures en rendaient DOUZE, parce que la ferme
-   grossit pendant qu'on dort et que le tout compose. Le plafond de vingt-quatre heures valait
-   donc une trentaine d'heures de jeu. Sur un joueur qui joue une demi-heure par jour, l'absence
-   faisait quatre-vingt-dix-huit pour cent du revenu, et son clic un pour cent d'une nuit.
-
-   Ce n'est pas un bonus, c'est le jeu — et un jeu qui se joue mieux fermé n'en est pas un.
-
-   DEUX BORNES ET UNE SEULE FORMULE : on raccourcit l'absence au lieu de bricoler le rendement
-   de ce qui la rejoue. Tout ce qui est en aval — éclosions, ventes, rente, pension, et la
-   composition des trois — reste exact sans qu'une ligne de `runAutomations` ne change.
-
-       rejoué = min(réel, OFFLINE_CAP) × OFFLINE_PART       soit trente minutes au plus
-
-   Une nuit rend donc une demi-heure, un week-end aussi. Revenir ne vaut plus qu'être resté. */
-const OFFLINE_CAP  = 2 * 3600;
-const OFFLINE_PART = 0.25;
+// Ce que vaut une absence, `OFFLINE_CAP` et `OFFLINE_PART` : dans constantes.js.
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
 /* Le saut est un geste engagé, pas un état de partie : ces deux-là vivent hors du fichier.
@@ -3639,8 +3506,8 @@ const dureeNiveau = c => coutPas(c.age, niveau(c));
 // Ce qu'elle a déjà avalé de la marche en cours.
 const dansLaMarche = c => (c.p - bandFrom(c)) - SEUILS[c.age - 1][nivDansTranche(c)];
 
-// Le tempérament ne touche QUE la vitesse de croissance. La durée de référence des rangs de
-// taille reste la valeur brute de l'âge, sinon un tempérament vif cumulerait deux bonus.
+// Le tempérament change deux vitesses : `grow` divise la durée de croissance, `fat` multiplie
+// celle de l'engraissement. Le prix d'un rang de taille, lui, ne dépend que du niveau.
 const growRate = c => temperOf(c).grow;
 
 /* ── L'album, côté calcul ─────────────────────────────────────────────────────
@@ -4315,41 +4182,7 @@ const bestStocked = () => {
 // une évolution ne devient donc jamais gratuite, quel que soit le nombre de niveaux achetés.
 const evoRemise = () => (prime('intendance') ? 0.75 : 1) * (prime('intendance2') ? 0.75 : 1);
 
-/* ── OÙ SE TIENT LE MUR, ET DANS QUELLE UNITÉ ON LE MESURE ────────────────────
-   CE COMMENTAIRE A CHANGÉ D'AVIS DEUX FOIS, et il faut garder les trois raisonnements parce
-   que chacun ne s'entend qu'avec le précédent.
-
-   LA PREMIÈRE VERSION MESURAIT EN PART DU PÉAGE TOTAL, et déplaçait le poids vers l'entrée.
-   Mauvaise unité : « quelle part du total ? » ne dit pas si une marche est franchissable.
-
-   LA DEUXIÈME MESURAIT EN MULTIPLE DE LA REVENTE : ×625, ×40, ×20 et ×20 la valeur de l'âge
-   qu'on quitte. Quatre murs, et la vente redevenait un métier — la marge au bout passait de
-   3 % à 52 %. Mais un multiple ne dit pas ce que le joueur fait pour payer.
-
-   LE BARÈME UNIQUE MESURE EN VENTES : CE PÉAGE, COMBIEN DE VENTES DE L'ÂGE QU'ON QUITTE ? De
-   quinze à vingt-cinq, à toutes les raretés — la toute première évolution commune en demande
-   neuf. Le péage ne vaut plus que de 0,8 à 5 fois la revente, et c'est la marge qui tient le
-   mur : de 5 à 9 %, une bête se revend toujours un peu plus que ce qu'elle a coûté, et il faut
-   en vendre beaucoup pour payer la marche suivante.
-
-   LE TABLEAU D'UNE RARE, en pièces, œuf à 10 000 compris :
-
-       âge          se vend     a coûté      gain    péage suivant   ventes pour le payer
-       enfant          8 000     10 000    −2 000         30 000         —
-       adolescent     42 000     40 000    +2 000         50 000        25
-       adulte         95 000     90 000    +5 000         75 000        15
-       ancien        180 000    165 000   +15 000        250 000        17
-       légende       450 000    415 000   +35 000             —          —
-
-   CES CHIFFRES SONT CEUX DE LA RARE, et `mult` les porte aux rangs du dessus : ×25 pour
-   l'épique, ×625 pour la mythique, ×15 625 pour la merveilleuse. L'escalier ne peut pas se
-   retourner, et la marge est la même à tous les rangs.
-
-   LES COMMUNES ONT LES LEURS (`VALUE`/`EVOLVE`) : 30, 150, 1 000, 4 000 et 15 000 à la
-   revente, 100, 750, 2 500 et 10 000 de péages. Plus bénéficiaires — de 12 à 67 % —, parce que
-   l'ouverture du jeu est le dernier endroit où l'on veut poser un mur. */
-const VALEURS_RANG = [8000, 42000, 95000, 180000, 450000];
-const PEAGES_RANG  = [30000, 50000, 75000, 250000];
+// Les tables du barème, `VALUE`, `EVOLVE`, `VALEURS_RANG` et `PEAGES_RANG` : dans constantes.js.
 const echelleHaute = c => rarityOf(c).rank > 0;
 
 /* CES DEUX-LÀ PRENNENT UNE CLÉ DE RARETÉ, ET NON UNE BÊTE, parce que les menus du marchand
@@ -4725,7 +4558,7 @@ const estFinie = c => c.age === AGES.length && niveau(c) === NIV_MAX &&
    IL PASSE PAR `clickGain`, donc la force du clic, le martelé et la frénésie le nourrissent
    tous les trois — c'est précisément ce qui leur manquait en fin de partie, où le clic cessait
    de peser. Et par `renteOf`, donc le tigré et les primes de rente aussi. */
-const RENTE_CLIC = 1 / 500;
+// Le taux, `RENTE_CLIC` : dans constantes.js.
 const gainClicFini = (c, s) => Math.max(1, Math.round(renteOf(c) * clickGain(s) * RENTE_CLIC));
 
 // nivMult est défini plus bas : sellValue n'est appelée qu'une fois le fichier chargé.
@@ -6637,11 +6470,12 @@ function essaiNote(n) {
 }
 
 /* La seule porte de l'ascension. Un jeton en poche, et — pour le tout premier saut — le
-   million déjà franchi. Tout ce qui montre ou ouvre l'écran passe par ici. */
+   quatrième palier déjà franchi. Tout ce qui montre ou ouvre l'écran passe par ici. */
 /* LA PORTE EST UN DÉBLOCAGE, PLUS UNE MONNAIE. Elle demandait un jeton NON DÉPENSÉ, si bien
    qu'un joueur qui venait de sauter ne pouvait plus jamais sauter avant d'avoir multiplié sa
-   fortune par mille. Elle ne demande plus que d'avoir atteint le million une fois dans la
-   partie : après quoi l'ascension est toujours possible, et c'est le SOMMET du cycle qui
+   fortune par mille. Elle ne demande plus que d'avoir atteint le quatrième palier une fois dans
+   la partie — 15 625 pièces depuis le barème unique, le million avant : après quoi l'ascension
+   est toujours possible, et c'est le SOMMET du cycle qui
    décide de ce qu'on emporte. Sauter tôt reste permis, et rend peu. */
 const peutAscensionner = () => (state.asc.n || 0) > 0 ||
   (state.asc.paliers || 0) >= RANG_PREMIER;
