@@ -21,7 +21,7 @@ scenario('encyclopédie — une carte par lignée, et deux vues qui se réponden
   eq('une carte par lignée connue', cartes().length,
      jeu.LINES.filter(l => jeu.rareteConnue(l.rarity)).length);
   eq('un intertitre par rareté', sections().length, jeu.raretesConnues().length);
-  ok('le compteur compte les formes', /4 \/ 160 formes/.test(noeuds.get('coll-meta').textContent),
+  ok('le compteur compte les formes', /4 \/ 165 formes/.test(noeuds.get('coll-meta').textContent),
      noeuds.get('coll-meta').textContent);
 
   const crapaud = cartes().find(c => c.dataset.lignee === 'crapaud');

@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.8.0 · sauvegarde v38 · 13 lignées illustrées sur 40 · 5 œufs sur 5
+    aujourd'hui : beta 5.9.0 · sauvegarde v38 · 13 lignées illustrées sur 42 · 5 œufs sur 5
 
 ---
 
@@ -110,6 +110,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le découpage en fichiers** | beta 5.3.5 | un fichier de dix mille lignes peut-il redevenir lisible ? | commencé : `constantes.js` porte les réglages, chargé avant le jeu et collé en tête par le banc. Le reste suit zone par zone, jamais d'un bloc |
 | **Le barème unique** | beta 5.7.0 | chaque œuf se joue-t-il de la même façon, à une autre échelle ? | oui, par construction. La rare sert de modèle et chaque rang au-dessus vaut la rare × 25, un pas qui sort de ses propres chiffres — son dernier péage divisé par son œuf. Chaque œuf coûte donc le dernier péage de l'ère d'avant, les marges sont les mêmes à tous les rangs payants, et un péage se paie en quinze à vingt-cinq ventes de l'âge qu'on quitte. Un niveau coûte (niveau max de l'âge + n) clics, l'évolution ne donne plus de niveau, et la taille devient une marche qui repart de zéro à l'évolution et ne se vend plus : elle multiplie la poussière du saut. La marge mince a demandé la rente à quatre heures. Tout ce qui se paie en pièces est recalé sur la correspondance des bêtes mûres, paliers de jetons compris (×25), et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. **Renverse** l'échelle des rangs, les murs de la `4.27.0` et l'escalier des ères. **Prix à juger en jouant** : la première heure est deux à trois fois plus longue, et une rare tombée d'un œuf commun décide du rythme de la partie |
 | **Yggdrasil** | beta 5.8.0 | une merveille peut-elle ne pas être un animal ? | oui — un frêne, de la graine au monde, et la première forme du jeu qui soit un lieu. Ses parents devaient être une source ou un jardin, que la table n'a pas ; il prend la route de Wukong, une non-recette : deux chevaux, parce que son nom est le cheval d'Ygg. Le bois ne se croise qu'avec le bois, et `CORPS_SEULS` remplace le `if` de la pierre. Reste le dessin — le sujet le moins cher de tous, et sa fiche est prête |
+| **Le tréant et Cthulhu** | beta 5.9.0 | le bestiaire peut-il grandir à la demande, sans casser une règle ? | oui — deux lignées de plus, demandées le 26 septembre. **Le tréant**, rare, l'arbre qui marche : de la brindille au berger des forêts, et de bois comme Yggdrasil, si bien qu'il ne se croise qu'avec un autre tréant ou avec l'arbre-monde. **Cthulhu**, merveille, le seul dieu du lot qui dort : de l'idole de pierre à l'éveil, par le kraken et le dragon ancien — la pieuvre et l'aile de Lovecraft. Leurs fiches de dessin sont prêtes ; le dragon ancien devient parent de trois merveilles, à surveiller |
 
 ### Ce qui vient ensuite
 
@@ -488,11 +489,11 @@ histoire ; et une vente au niveau 1 devient impossible en mode histoire.
 C'est redevenu une voie de fond : la pension a ouvert sans attendre le bestiaire, et le jeu
 affiche un glyphe pour toute lignée sans dessin. Rien n'en dépend, tout en bénéficie.
 
-**27 lignées sur 40 n'ont pas de dessin** — les neuf rares d'origine (loup, méduse, salamandre,
+**29 lignées sur 42 n'ont pas de dessin** — les neuf rares d'origine (loup, méduse, salamandre,
 serpent, cerf, ours, papillon, tortue, chat) plus le tricératops, les épiques (kraken, golem,
 sphinx, cheval, spinosaure, vélociraptor), les mythiques (chimère, tyrannosaure, charybde,
 scylla, dragon ancien), et les merveilles sans dessin (béhémoth, ouroboros, dragon prismatique,
-Charybde et Scylla, tarasque, yggdrasil). L'ajout de contenu de la `5.3.0` — huit lignées et deux passages
+Charybde et Scylla, tarasque, yggdrasil, cthulhu), et le tréant, rare ajouté en `5.9.0`. L'ajout de contenu de la `5.3.0` — huit lignées et deux passages
 en merveille — a rouvert ce chantier d'autant : tout tourne en glyphes en attendant les dessins.
 
 **LA VOIE DES FORMES GÉOMÉTRIQUES A ÉTÉ ESSAYÉE ET REFUSÉE, en `4.17.0` puis retirée.** Le

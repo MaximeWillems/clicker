@@ -1,0 +1,49 @@
+Sprite sheet of 5 evolution stages of the same creature, left to right on one row,
+evenly spaced.
+
+TRUE 32x32 pixel art, upscaled with nearest-neighbor only. Readable at 24 pixels tall.
+
+CUTE MASCOT STYLE — this is the most important instruction:
+- baby proportions: the head is at least half the whole creature
+- huge round eyes, set low and wide apart, each about one third of the face width,
+  with one single white highlight dot
+- tiny simple smiling mouth, never a wide slit, never fangs
+- small pink blush oval on each cheek
+- everything rounded and soft, no sharp angles, no spikes, no horns, no talons
+- chubby bean-shaped or egg-shaped bodies, tiny stubby feet
+- friendly, sleepy, harmless expression on every stage
+
+CONTINUITY — the five stages are ONE animal growing up, not five animals:
+- same palette, same outline color, same eye shape from stage 1 to stage 5
+- every feature a stage gains, all LATER stages keep and grow: ears stay big,
+  a marking stays in the same place, a shell keeps the same spiral
+- later stages only ADD. Nothing is ever dropped from one stage to the next
+- stage 5 must still contain stage 1 — one should be able to point at what it kept
+
+STRICT: maximum 6 flat colors per creature including the outline.
+No texture, no dithering, no noise, no gradients. Simple geometric shapes.
+
+Front-facing, centered, full body. Transparent background. No shadow, no ground line,
+no background, no text, no frame.
+
+The 5 stages, in order:
+1. a tiny TWIG creature: one thin brown stick standing upright on two tiny root feet, two small round leaves at the top like ears, two dot eyes and a small smile on the stick. Silly and fragile. The MASS is a thin vertical stick
+2. a walking STUMP: a short wide log with a flat cut top showing two rings, two stubby root legs, two small branch arms, the same two leaves sprouting from the top, the same dot eyes now in a round face in the bark. The MASS is a squat barrel
+3. a young TREANT: a standing tree-person, a trunk body with two branch arms and two root legs, a small round crown of leaves on the head, the same round face in the bark, a first patch of moss on the brow. The MASS is a tall figure with a small round crown
+4. a MOSSY treant, heavier and hunched: a thick trunk, long branch arms reaching down to the ground, moss hanging from the arms in a few flat strips, a larger leafy crown, the same face now with a long mossy beard. The MASS is wide and heavy, arms to the ground
+5. the SHEPHERD OF THE FORESTS: a huge treant standing tall and calm, a vast leafy crown much wider than the body with a small bird nest in it, one branch arm raised holding a small lantern of glowing sap, the same face and the same mossy beard, kind half-closed eyes. The MASS is a mushroom — a giant crown on a standing trunk
+
+
+--- une fois la planche enregistrée dans art/source-treant.png ---
+
+python tools/decouper.py art/source-treant.png treant brindille,souche,treant,treant-moussu,berger-des-forets
+
+--- puis dans la table ART, en haut de game.js ---
+
+  treant: {
+    1: 'treant-1-brindille.png',   // Brindille
+    2: 'treant-2-souche.png',   // Souche
+    3: 'treant-3-treant.png',   // Tréant
+    4: 'treant-4-treant-moussu.png',   // Tréant moussu
+    5: 'treant-5-berger-des-forets.png',   // Tréant, berger des forêts
+  },

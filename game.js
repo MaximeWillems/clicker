@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.8.0';
+const VERSION = 'beta 5.9.0';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.
@@ -1246,6 +1246,10 @@ const ETIQUETTES = {
      petits, et un arbre qui donnerait un louveteau serait la seule chose du jeu qu'on ne
      pourrait pas raconter. Deux Yggdrasil, eux, font un Yggdrasil. */
   yggdrasil:  ['terre', 'bois'],
+  /* LE TRÉANT EST DE BOIS LUI AUSSI, donc il ne se croise qu'avec le bois : avec un autre tréant,
+     ou avec Yggdrasil — l'arbre qui marche et l'arbre-monde. Cthulhu est une bête des abysses,
+     nue et visqueuse comme le kraken dont il sort. */
+  treant:     ['terre', 'bois'],     cthulhu:    ['eau',   'nu'],
 };
 
 /* CE QUI RALENTIT UNE COUVAISON, ET POURQUOI CE FACTEUR-LÀ.
@@ -1363,6 +1367,12 @@ const RECETTES = [
      font donc pas un cheval : ils font l'arbre qui en porte le nom. Personne n'a de raison de
      l'essayer, et c'est tout le secret. */
   { a: 'cheval',        b: 'cheval',        donne: 'yggdrasil',           duree: 3600, chance: 0.02 },
+
+  /* CTHULHU, tel que Lovecraft le décrit : une tête de pieuvre dont la face est une barbe de
+     tentacules, un corps écailleux, et de longues ailes étroites dans le dos. La pieuvre et
+     l'aile — le kraken et le dragon ancien —, le pattern des deux dinos du béhémoth : les parents
+     disent de quoi la merveille est faite. */
+  { a: 'kraken',        b: 'dragon-ancien', donne: 'cthulhu',             duree: 3600, chance: 0.02 },
 ];
 
 /* CE QUI SE PASSE APRÈS LA PREMIÈRE, et c'est voulu : une merveille se reproduit comme le
@@ -2485,6 +2495,12 @@ const LINES = [
   { key: 'triceratops', name: 'Tricératops', rarity: 'rare', forms: [
     ['Bébé tricératops', '🦕'], ['Tricératops', '🦕'], ['Tricératops cornu', '🦕'],
     ['Tricératops de combat', '🦖'], ['Trois-cornes, le rempart', '🛡️'] ] },
+  /* LE TRÉANT, l'arbre qui marche. Mascotte comme les autres rares : il part brindille, il finit
+     berger des forêts. C'est la bête de la même matière qu'Yggdrasil — le bois ne se croise
+     qu'avec le bois —, et la seule à pouvoir s'accoupler avec lui. Dessin à venir. */
+  { key: 'treant', name: 'Tréant', rarity: 'rare', forms: [
+    ['Brindille', '🌱', 'f'], ['Souche', '🪵', 'f'], ['Tréant', '🌳'],
+    ['Tréant moussu', '🌲'], ['Tréant, berger des forêts', '🏞️'] ] },
 
   // ── épiques ─────────────────────────────────────────────────────────────
   { key: 'kraken', name: 'Kraken', rarity: 'epique', forms: [
@@ -2611,6 +2627,15 @@ const LINES = [
   { key: 'yggdrasil', name: 'Yggdrasil', rarity: 'merveilleuse', forms: [
     ['Graine de frêne', '🌰', 'f'], ['Pousse de frêne', '🌱', 'f'], ['Frêne sacré', '🌿'],
     ['Yggdrasil', '🌳'], ['Yggdrasil, l’arbre-monde', '🌍'] ] },
+
+  /* CTHULHU — LE SEUL DIEU DU LOT QUI DORT. La charte de l'idole veut un être qui S'ÉVEILLE, et
+     aucune merveille ne l'est aussi littéralement : « dans sa demeure de R'lyeh, le mort Cthulhu
+     attend en rêvant ». Son arc commence par ce que les hommes trouvent d'abord — une idole de
+     pierre verte —, passe par ses rejetons, le dieu lui-même, son sommeil sous la mer, et finit
+     quand les étoiles sont propices. Dessin à venir. */
+  { key: 'cthulhu', name: 'Cthulhu', rarity: 'merveilleuse', forms: [
+    ['Idole de Cthulhu', '🗿', 'f'], ['Rejeton des étoiles', '🦑'], ['Cthulhu', '🐙'],
+    ['Le dormeur de R’lyeh', '🏛️'], ['Cthulhu, qui ne dort plus', '🌌'] ] },
 ];
 
 const LINE_BY_KEY = Object.fromEntries(LINES.map(l => [l.key, l]));

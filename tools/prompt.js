@@ -406,6 +406,16 @@ const STADES = {
     'mist panther, the same tufted rounded ears, the same three stripes on a long heavy tail, a much bigger low round body, soft cloudy markings, drowsy eyes',
     'bastet, enormous cat lying down, the same tufted rounded ears, the same three-striped tail curled around the body, soft golden rings on the shoulders, tiny sleepy face on folded paws'],
 
+  /* LE FIL DU TRÉANT : le visage dans l'écorce et les deux feuilles du sommet, présents dès la
+     brindille. Mascotte : il part minable et finit glorieux, et chaque stade a sa masse — un
+     bâton, un tonneau, une silhouette, une masse voûtée, un champignon géant. */
+  treant: [
+    'a tiny TWIG creature: one thin brown stick standing upright on two tiny root feet, two small round leaves at the top like ears, two dot eyes and a small smile on the stick. Silly and fragile. The MASS is a thin vertical stick',
+    'a walking STUMP: a short wide log with a flat cut top showing two rings, two stubby root legs, two small branch arms, the same two leaves sprouting from the top, the same dot eyes now in a round face in the bark. The MASS is a squat barrel',
+    'a young TREANT: a standing tree-person, a trunk body with two branch arms and two root legs, a small round crown of leaves on the head, the same round face in the bark, a first patch of moss on the brow. The MASS is a tall figure with a small round crown',
+    'a MOSSY treant, heavier and hunched: a thick trunk, long branch arms reaching down to the ground, moss hanging from the arms in a few flat strips, a larger leafy crown, the same face now with a long mossy beard. The MASS is wide and heavy, arms to the ground',
+    'the SHEPHERD OF THE FORESTS: a huge treant standing tall and calm, a vast leafy crown much wider than the body with a small bird nest in it, one branch arm raised holding a small lantern of glowing sap, the same face and the same mossy beard, kind half-closed eyes. The MASS is a mushroom — a giant crown on a standing trunk'],
+
   /* LE FIL D'YGGDRASIL : LE FRÊNE, ET RIEN QUE LUI. Cinq masses qui ne se répètent pas — un
      losange couché, une ligne, un Y, un champignon, un cercle — et la dernière est la seule
      ronde, comme la neuvième queue de la kitsune. Ce qui se garde d'un stade à l'autre : l'écorce
@@ -416,6 +426,16 @@ const STADES = {
     'a young ash SAPLING: a slender pale trunk that splits in a clear Y into two branches, each ending in two or three flat compound leaves — a leaf is one stem with a row of small blades. A few short roots at the base. The MASS is a Y, taller than wide',
     'the full ASH TREE: a thick pale trunk, a WIDE flat crown made of a few large leaf masses, clearly wider than the trunk, and ROOTS spreading at the base almost as wide as the crown. The MASS is a mushroom — a broad crown on a column, standing on a broad foot',
     'YGGDRASIL, THE WORLD TREE: the crown and the roots meet in ONE CLOSED CIRCLE around the trunk — the crown arches over the top half, the roots curl under the bottom half. Inside that circle, small and flat, three things only: a small eagle shape among the top leaves, a small coiled serpent among the roots, and between them one small flat disc of the earth held by the trunk. The MASS is a CIRCLE, the only round stage, and the widest of the five'],
+
+  /* LE FIL DE CTHULHU : la tête de pieuvre à la barbe de tentacules, et les ailes étroites —
+     les deux signes de Lovecraft, présents dès l'idole de pierre. Le seul dieu du lot qui dort :
+     l'arc est un éveil au pied de la lettre, et la terreur vient de l'échelle, jamais des crocs. */
+  cthulhu: [
+    'the IDOL: a small squat statuette of the god in green-grey stone, seated on a low block — an octopus head with a beard of short feelers, two tiny folded wings, clawed hands resting on its knees. One small gold glint in each eye. The MASS is a small compact block',
+    'a STAR-SPAWN: the same being now alive and small, floating in the air, the same octopus head and beard of feelers, two small narrow wings spread, the body curled up. The MASS is a floating diamond',
+    'CTHULHU standing upright: a tall humanoid body with scaly skin, the same octopus head with a long beard of feelers, long narrow wings folded behind the back, clawed hands and feet. Calm and immense. The MASS is a tall figure with a wide head',
+    'THE SLEEPER OF RLYEH: the same god seated, eyes closed, wings wrapped around the body, the feelers resting on the chest, one tilted pillar of a sunken temple leaning beside him, and water up to his waist drawn as ONE flat band. The MASS is a triangle',
+    'CTHULHU AWAKE, rising: wings spread WIDE, wider than anything else in the sheet, the beard of feelers spread, the eyes open and glowing, three small stars above his head. No menace and no attack — the awe comes from the scale. The MASS is a wide V'],
 };
 
 /* ── Les exceptions, écrites ───────────────────────────────────────────────

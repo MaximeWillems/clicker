@@ -149,6 +149,34 @@ scenario('yggdrasil — l’arbre-monde, la première lignée qui n’est pas un
   eq('la pierre aussi', jeu.refusPension(golem, loup), 'On ne croise pas la pierre.');
 });
 
+scenario('roster — le tréant, l’arbre qui marche, et Cthulhu, le dieu qui dort', () => {
+  const jeu = neuf();
+  const t = jeu.LINE_BY_KEY.treant, c = jeu.LINE_BY_KEY.cthulhu;
+  eq('le tréant est rare', t && t.rarity, 'rare');
+  eq('Cthulhu est une merveille', c && c.rarity, 'merveilleuse');
+  for (const l of [t, c]) {
+    eq(l.name + ' a cinq formes', l.forms.length, jeu.AGES.length);
+    ok(l.name + ' a ses étiquettes', !!jeu.ETIQUETTES[l.key]);
+  }
+  eq('de la brindille au berger', t.forms[0][0] + ' → ' + t.forms[4][0],
+     'Brindille → Tréant, berger des forêts');
+  eq('de l’idole à l’éveil', c.forms[0][0] + ' → ' + c.forms[4][0],
+     'Idole de Cthulhu → Cthulhu, qui ne dort plus');
+
+  /* LE TRÉANT EST DE BOIS : il ne se croise qu'avec le bois — un autre tréant, ou Yggdrasil. */
+  eq('il est de bois', jeu.ETIQUETTES.treant[1], 'bois');
+  eq('il se croise avec Yggdrasil', jeu.distanceDe({ line: 'treant' }, { line: 'yggdrasil' }), 0);
+  eq('pas avec un loup', jeu.distanceDe({ line: 'treant' }, { line: 'loup' }), null);
+  ok('un œuf rare peut le donner', jeu.LINES.filter(l => l.rarity === 'rare').some(l => l.key === 'treant'));
+
+  /* CTHULHU, LA PIEUVRE ET L'AILE : le kraken et le dragon ancien, comme Lovecraft le décrit. */
+  const r = jeu.recetteDe({ line: 'kraken' }, { line: 'dragon-ancien' });
+  eq('kraken × dragon ancien → Cthulhu', r && r.donne, 'cthulhu');
+  eq('au tarif des recettes', r && r.chance, 0.02);
+  ok('le couple n’est pas stérile', jeu.distanceDe({ line: 'kraken' }, { line: 'dragon-ancien' }) !== null);
+  ok('aucun œuf payant ne le donne', !jeu.EGG_KINDS.some(e => e.price && e.odds && e.odds.merveilleuse));
+});
+
 scenario('recettes — un mythique par famille, et la chimère n’en est pas une', () => {
   const jeu = neuf();
   /* La chimère était le carrefour de la moitié des recettes, au motif qu'elle est faite
@@ -212,7 +240,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
     .filter(n => (n.className || '').includes('coll-head'));
   eq('pas de cinquième section', sections().length, 4);
   // 2 · le dénominateur
-  eq('et le compte s’arrête aux formes non secrètes', jeu.formesVisibles(), 160);
+  eq('et le compte s’arrête aux formes non secrètes', jeu.formesVisibles(), 165);
   // 3 · le trophée
   const t = jeu.TROPHEES.find(x => x.cle === 'merveille');
   ok('le trophée existe', !!t);
@@ -250,7 +278,7 @@ scenario('merveilles — le rang n’existe pas tant qu’on n’en a pas vu une
   jeu.refresh();
   eq('le rang est connu', jeu.rareteConnue('merveilleuse'), true);
   eq('la cinquième section apparaît', sections().length, 5);
-  eq('le compte monte avec le rang secret', jeu.formesVisibles(), 200);
+  eq('le compte monte avec le rang secret', jeu.formesVisibles(), 210);
   ok('le trophée est pris', !!s.trophees.merveille);
   ok('les statistiques les comptent',
      jeu.STATS.find(g => g[0] === 'Les rencontres')[1]().some(l => /erveille/.test(l[0])));
