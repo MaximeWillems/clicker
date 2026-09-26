@@ -1,7 +1,7 @@
 /* ── L’ENCYCLOPÉDIE — ce qu’elle apprend, et quand */
 
 'use strict';
-const { scenario, ok, eq, neuf, noeuds, poserJetons, bete, seule, couple, fiche } = require('./_aides.js');
+const { scenario, ok, eq, neuf, noeuds, pageRecettes, poserJetons, bete, seule, couple, fiche } = require('./_aides.js');
 
 scenario('encyclopédie — une carte par lignée, et deux vues qui se répondent', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -125,13 +125,13 @@ scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
   s.tuto = false; s.coins = 1e15;
   const [a, b] = couple(jeu, 'loup', 'ours');
 
-  const avant = fiche(jeu, 'loup', 'recettes');
-  ok('aucun couple connu au départ', /0 couple connu/.test(avant.tout), avant.tout);
-  ok('et la fiche dit quoi faire', /Confie-en deux/.test(avant.tout), avant.tout);
+  const avant = pageRecettes(jeu);
+  ok('aucun couple connu au départ', /0 couple connu/.test(avant), avant);
+  ok('et la fiche dit quoi faire', /Confie-en deux/.test(avant), avant);
 
   jeu.accoupler(a, b);
   jeu.avancePension(jeu.dureePension(a, b) * 3);
-  const apres = fiche(jeu, 'loup', 'recettes');
+  const apres = pageRecettes(jeu);
 
   /* ON N'APPREND QUE CE QUI EST VRAIMENT SORTI. Le carnet ne déduit rien d'une table de
      règles : un couple qui n'a jamais donné cette lignée n'y figure pas. */
@@ -142,11 +142,11 @@ scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
      !dLoup.couples['ours×loup'] && !dOurs.couples['ours×loup']);
 
   const qui = dLoup.couples['loup×ours'] ? 'loup' : 'ours';
-  const vue = fiche(jeu, qui, 'recettes');
-  ok('le couple apparaît', /Loup × Ours/.test(vue.tout), vue.tout);
-  ok('avec son pourcentage', /50 %/.test(vue.tout), vue.tout);
-  ok('sa durée', /1 h/.test(vue.tout), vue.tout);
-  ok('et le nombre de fois', /sorti \d+ fois/.test(vue.tout), vue.tout);
+  const vue = pageRecettes(jeu);
+  ok('le couple apparaît', /Loup × Ours/.test(vue), vue);
+  ok('avec son pourcentage', /50 %/.test(vue), vue);
+  ok('sa durée', /1 h/.test(vue), vue);
+  ok('et le nombre de fois', /sorti \d+ fois/.test(vue), vue);
 
   /* LE POURCENTAGE SE CALCULE, IL NE SE STOCKE PAS : un nœud pris après coup ne doit pas
      laisser dans le carnet un nombre qui n'est plus vrai. Le sang dominant est monté dans la
@@ -154,7 +154,7 @@ scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
   const cr = bete(jeu, 'crapaud', 4, 20000), ou = bete(jeu, 'ouroboros', 4, 20000);
   jeu.dexDe('crapaud').couples['crapaud×ouroboros'] = 1;
   ok('sans le sang, la commune sort presque toujours',
-     /99 %/.test(fiche(jeu, 'crapaud', 'recettes').tout), fiche(jeu, 'crapaud', 'recettes').tout);
+     /99 %/.test(pageRecettes(jeu)), pageRecettes(jeu));
   /* LE SANG DOMINANT TIENT À UN NŒUD DU TRONC, et non plus au troisième cran d'une
      échelle : c'est une chose, pas un degré. */
   s.ciel = { nid: true, 'sang-epais': true };
@@ -162,7 +162,7 @@ scenario('encyclopédie — la pension s’apprend ponte par ponte', () => {
   ok('le sang épais est pris', jeu.etoilePrise('sang-epais'));
   eq('et le sang double la chance', jeu.chancePension(3), 0.02);
   ok('avec, le chiffre a bougé tout seul',
-     /98 %/.test(fiche(jeu, 'crapaud', 'recettes').tout), fiche(jeu, 'crapaud', 'recettes').tout);
+     /98 %/.test(pageRecettes(jeu)), pageRecettes(jeu));
 });
 
 scenario('encyclopédie — la chance annoncée est celle du tirage', () => {
@@ -217,39 +217,34 @@ scenario('encyclopédie — elle traverse l’ascension, et une partie d’avant
   eq('et se remplit dès la première éclosion', k.dexVu('crapaud').nes, 1);
 });
 
-scenario('encyclopédie — les recettes d’une créature ont leur onglet', () => {
+scenario('encyclopédie — les recettes ont leur onglet, sur toute la page, avec la pension', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e15;
-  couple(jeu, 'loup', 'ours');
-  const onglets = () => noeuds.get('ency-onglets');
+  bete(jeu, 'loup', 4, 20000);
+  jeu.refresh();
+  ok('sans pension, pas d’onglet des recettes', noeuds.get('dex-onglets').hidden);
+  jeu.dexOnglet = 'recettes';
+  jeu.refresh();
+  eq('et on ne peut pas y rester', jeu.dexOnglet, 'creatures');
 
-  // une silhouette n'a pas d'onglet : il n'y aurait rien à y lire
-  fiche(jeu, 'kraken');
-  ok('pas d’onglet sans rencontre', onglets().hidden);
-  fiche(jeu, 'loup');
-  ok('une lignée vue a ses deux onglets', !onglets().hidden);
-
-  // la fiche garde la créature ; les couples sont passés dans l'onglet des recettes
-  ok('la fiche garde ses rangées', /Chromatismes/.test(fiche(jeu, 'loup').tout));
-  ok('et ne liste plus les couples', !/couple connu/.test(fiche(jeu, 'loup').tout));
+  couple(jeu, 'loup', 'ours');                 // le nid
+  jeu.refresh();
+  ok('avec la pension, l’onglet paraît', !noeuds.get('dex-onglets').hidden);
 
   jeu.dexDe('loup').couples['loup×ours'] = 3;
   jeu.dexDe('ours').couples['loup×ours'] = 2;
-  const r = fiche(jeu, 'loup', 'recettes');
-  ok('pour la faire naître', /Pour la faire naître — 1 couple connu/.test(r.tout), r.tout);
-  ok('le couple, et combien de fois', /Loup × Ours/.test(r.tout) && /sorti 3 fois/.test(r.tout), r.tout);
-  ok('ce qu’elle fait naître', /Ce qu’elle fait naître — 1 couple connu/.test(r.tout), r.tout);
-  ok('l’ours, par le même couple', /Loup × Ours → Ours/.test(r.tout), r.tout);
-  ok('et plus rien de la fiche', !/Chromatismes/.test(r.tout), r.tout);
+  const t = pageRecettes(jeu);
+  ok('la page prend la place de la liste',
+     noeuds.get('collection').hidden && !noeuds.get('dex-recettes').hidden);
+  ok('et celle de la fiche', noeuds.get('vue-dex').classList.contains('mode-recettes'));
+  ok('un bloc par créature', /Loup · /.test(t) && /Ours · /.test(t), t);
+  ok('le couple sous chacune, avec son compte', /sorti 3 fois/.test(t) && /sorti 2 fois/.test(t), t);
+  ok('et le compte de la page', /2 couples connus/.test(t), t);
 
-  /* UNE RECETTE APPRISE SANS AVOIR ÉTÉ FAITE montre le chemin chez ses parents, jamais la bête :
-     c'est la règle du carnet. */
-  bete(jeu, 'kraken', 4, 20000);
-  bete(jeu, 'dragon-ancien', 4, 20000);
-  jeu.apprendreRecette(jeu.RECETTES.find(x => x.donne === 'cthulhu'));
-  const k = fiche(jeu, 'kraken', 'recettes');
-  ok('la recette paraît chez le parent', /Kraken.*→ Encore inconnue/.test(k.tout), k.tout);
-  ok('marquée comme recette', /recette/.test(k.tout), k.tout);
-  ok('avec sa chance', /2,0 %/.test(k.tout), k.tout);
-  ok('et Cthulhu n’est pas nommé', !/Cthulhu/.test(k.tout), k.tout);
+  // la fiche ne liste plus les couples : ils ont leur page
+  jeu.dexOnglet = 'creatures';
+  jeu.refresh();
+  ok('retour aux créatures', !noeuds.get('collection').hidden && noeuds.get('dex-recettes').hidden);
+  ok('la fiche garde ses rangées', /Chromatismes/.test(fiche(jeu, 'loup').tout));
+  ok('sans les couples', !/couple connu/.test(fiche(jeu, 'loup').tout));
 });

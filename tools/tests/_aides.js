@@ -165,9 +165,8 @@ function casesNid(jeu) {
 }
 
 // ce que la fiche affiche, à plat : un texte par bloc
-function fiche(jeu, cle, onglet) {
+function fiche(jeu, cle) {
   jeu.encyLignee = cle;
-  jeu.encyOnglet = onglet || 'fiche';
   jeu.renderEncyclopedie();
   const plat = el => (el.textContent || '') +
     el.children.map(c => ' ' + (c.textContent || '') + c.children.map(x => ' ' + x.textContent).join('')).join('');
@@ -177,6 +176,15 @@ function fiche(jeu, cle, onglet) {
     blocs: noeuds.get('ency').children.map(plat),
     tout: noeuds.get('ency').children.map(plat).join(' | '),
   };
+}
+
+/* La page des recettes de l'encyclopédie, mise à plat. Elle n'existe qu'avec la pension. */
+function pageRecettes(jeu) {
+  jeu.dexOnglet = 'recettes';
+  jeu.recettesSig = '';
+  jeu.refresh();
+  const plat = el => (el.textContent || '') + el.children.map(c => ' ' + plat(c)).join('');
+  return plat(noeuds.get('dex-recettes'));
 }
 
 /* Une capsule d'album minimale : ce que `qualiteDe` et `poussiereDe` lisent, et rien d'autre. */
@@ -208,6 +216,6 @@ function equiper(jeu, motif, n) {
 module.exports = {
   compte, scenario, ok, eq,
   poserJetons, emporter, bete, beteNeutre, saturerCombo, seule, ditDial, dialOuvert, impasse,
-  couple, sousArbre, ditPension, casesNid, fiche, pave, parfaite, equiper,
+  couple, sousArbre, ditPension, casesNid, fiche, pageRecettes, pave, parfaite, equiper,
   neuf, noeuds, inconnus, RACINE, lire, brut, rechargements,
 };

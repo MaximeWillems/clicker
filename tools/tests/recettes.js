@@ -1,7 +1,7 @@
 /* ── LES RECETTES — apprendre une recette, la lire dans l'encyclopédie, garder le secret */
 
 'use strict';
-const { scenario, ok, eq, neuf, noeuds, poserJetons, couple, fiche } = require('./_aides.js');
+const { scenario, ok, eq, neuf, poserJetons, couple, pageRecettes } = require('./_aides.js');
 
 scenario('recettes — réussir une ponte apprend la recette, jamais avant', () => {
   const jeu = neuf(); const s = jeu.state;
@@ -28,30 +28,29 @@ scenario('recettes — réussir une ponte apprend la recette, jamais avant', () 
      jeu.recetteConnue(jeu.RECETTES.find(r => r.donne === 'wukong')));
 });
 
-scenario('recettes — l’encyclopédie ne montre que l’acquis, et masque la créature non découverte', () => {
+scenario('recettes — la page ne montre que l’acquis, et masque la créature non découverte', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false;
+  s.ciel = Object.assign(s.ciel || {}, { nid: 1 });   // les recettes se lisent avec la pension
   // la recette du Wukong, apprise à la main : ni la bête ni ses parents n'ont été vus
   s.recettes = { 'golem×golem': true };
   const nom = jeu.LINE_BY_KEY.wukong.name;      // « Sun Wukong »
 
-  /* LE CHEMIN SE LIT CHEZ LE PARENT, MÊME JAMAIS RENCONTRÉ : le marchand vend la recette sans
-     la rencontre, et le carnet qui la montrait s'est fondu dans l'encyclopédie (5.12.1). */
-  const g = fiche(jeu, 'golem', 'recettes');
-  ok('l’onglet s’ouvre chez le parent', !noeuds.get('ency-onglets').hidden);
-  ok('les parents se nomment', /Golem × Golem → Encore inconnue/.test(g.tout), g.tout);
-  ok('la chance et la durée se lisent', /2,0 %/.test(g.tout) && /1 h/.test(g.tout), g.tout);
-  ok('le nom de la créature ne fuit pas', g.tout.indexOf(nom) < 0, g.tout);
+  /* LE CHEMIN SE LIT, LA RÉCOMPENSE SE TAIT : la recette se range sous « Encore inconnues »,
+     avec ses parents et ses chances, sans rien dire de ce qu'elle donne. */
+  const t = pageRecettes(jeu);
+  ok('la recette se range parmi les inconnues', /Encore inconnues/.test(t) && /Golem × Golem/.test(t), t);
+  ok('la chance et la durée se lisent', /2,0 %/.test(t) && /1 h/.test(t), t);
+  ok('le nom de la créature ne fuit pas', t.indexOf(nom) < 0, t);
   // UN COMPTE « x / y » TRAHIRAIT QU'IL EN RESTE : on compte l'acquis, jamais le total
-  ok('aucun total', g.tout.indexOf('/') < 0, g.tout);
+  ok('aucun total', t.indexOf('/') < 0, t);
 
-  // une fois vue, elle se nomme — chez le parent, et sur sa propre fiche
+  // une fois vue, elle a son bloc et quitte les inconnues
   s.seen['wukong:1'] = 1;
-  const g2 = fiche(jeu, 'golem', 'recettes');
-  ok('découverte, elle se nomme', g2.tout.indexOf(nom) >= 0, g2.tout);
-  const w = fiche(jeu, 'wukong', 'recettes');
-  ok('sa fiche dit comment la faire naître', /Golem × Golem/.test(w.tout), w.tout);
-  ok('et que c’est une recette', /recette/.test(w.tout), w.tout);
+  const t2 = pageRecettes(jeu);
+  ok('découverte, elle se nomme', t2.indexOf(nom) >= 0, t2);
+  ok('et quitte les inconnues', !/Encore inconnues/.test(t2), t2);
+  ok('marquée comme recette', /recette/.test(t2), t2);
 });
 
 scenario('recettes — ce qu’on a appris traverse l’ascension', () => {

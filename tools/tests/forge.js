@@ -212,10 +212,11 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
   };
 
   // L'ONGLET N'EXISTE PAS AVANT LA PREMIÈRE CARTE : on ne montre pas la porte d'une pièce vide
-  s.album = [];
+  s.album = []; s.poussiere = 0;
   jeu.refresh();
   const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
-  eq('pas de forge sans album', onglet('forge').hidden, true);
+  eq('pas de forge sans poussière ni carte', onglet('forge').hidden, true);
+  s.poussiere = 1e9;
 
   /* PREMIER TEMPS : L'ALBUM ENTIER. On ne peut pas choisir dans ce qu'on ne voit pas, et une
      grille pré-filtrée cacherait justement les cartes qu'il faut apprendre à garder. */
@@ -294,12 +295,13 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
   jeu.refresh();
   eq('la carte fondue quitte le plan', jeu.trioForge().join(','), '1');
 
-  // et l'onglet se referme si l'album se vide
+  // un atelier ouvert le reste, même quand l'album se vide
   jeu.ouvrirVue('forge');
   eq('on y est', jeu.vue, 'forge');
   s.album = [];
   jeu.refresh();
-  eq('un album vide ramène à la ferme', jeu.vue, 'ferme');
+  eq('un album vidé ne chasse personne', jeu.vue, 'forge');
+  eq('et l’onglet reste', onglet('forge').hidden, false);
 });
 
 scenario('poussière — l’ascension défait tout l’enclos', () => {
@@ -375,4 +377,23 @@ scenario('forge — l’album de la ferme ne fond plus', () => {
   const m = e => { if ((e.className || '').includes('fondre')) boutons.push(e); e.children.forEach(m); };
   noeuds.get('album').children.forEach(m);
   eq('aucun bouton de fonte à la ferme', boutons.length, 0);
+});
+
+scenario('forge — la première poussière ouvre l’atelier, et il reste ouvert', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const onglet = v => [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === v);
+  jeu.refresh();
+  ok('sans poussière ni carte, pas de forge', onglet('forge').hidden);
+  s.poussiere = 5;
+  jeu.refresh();
+  ok('la première poussière l’ouvre', !onglet('forge').hidden);
+  s.poussiere = 0;
+  jeu.refresh();
+  ok('la dépenser ne la referme pas', !onglet('forge').hidden);
+
+  const autre = neuf();
+  autre.state.tuto = false; autre.state.poussiereOr = 1;
+  autre.refresh();
+  ok('la dorée l’ouvre aussi', !onglet('forge').hidden);
 });

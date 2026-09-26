@@ -1722,6 +1722,25 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-variant-numeric: tabular-nums;
 }
 .dex-filtres { display: flex; flex-wrap: wrap; gap: 3px; margin-left: auto; }
+.dex-onglets { display: flex; gap: 3px; }
+
+/* ── LES RECETTES, EN PLEINE PAGE ── la fiche s'efface et la liste prend toute la largeur ;
+   un bloc par créature, en colonnes qui se remplissent selon la place. */
+.dex.mode-recettes { grid-template-columns: minmax(0, 1fr); }
+.dex.mode-recettes .dex-fiche { display: none; }
+.dex-recettes {
+  overflow-y: auto; min-height: 0; padding-top: 0.5rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: 0.7rem 1rem; align-content: start;
+}
+.recettes-large { grid-column: 1 / -1; }
+.recettes-bloc { border-top: 2px solid var(--rar, var(--rule)); padding-top: 0.35rem; }
+.recettes-nom {
+  display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.35rem;
+  font-family: var(--f-name); font-size: 0.9rem; color: var(--ink);
+}
+.recettes-nom b { font-weight: 400; }
+.recettes-glyphe { font-size: 1.2rem; line-height: 1; }
 .dex-filtre {
   font-family: var(--f-num); font-size: 0.66rem; letter-spacing: 0.04em;
   background: none; color: var(--faint);
@@ -1834,7 +1853,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   font-family: var(--f-num); font-size: 0.58rem; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--coin); margin-left: 0.4rem;
 }
-.ency-onglets { display: flex; gap: 3px; margin: 0.3rem 0 0.25rem; }
 
 /* ── LA PENSION ──────────────────────────────────────────────────
    Elle emprunte tout à l'album, et délibérément : les deux écrans font le même geste — prendre

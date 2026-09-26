@@ -282,19 +282,20 @@
 <section id="vue-dex" class="dex" hidden aria-label="Encyclopédie">
   <div class="dex-liste">
     <div class="dex-tete">
+      <!-- DEUX ONGLETS SECONDAIRES : les créatures, et les recettes, en pleine page. Le second
+           n'existe qu'avec la pension : avant le nid, aucun couple ne pond. -->
+      <div class="dex-onglets" id="dex-onglets" role="group" aria-label="Ce que montre l'encyclopédie" hidden>
+        <button type="button" class="dex-filtre dex-onglet actif" data-dex="creatures" aria-pressed="true">créatures</button>
+        <button type="button" class="dex-filtre dex-onglet" data-dex="recettes" aria-pressed="false">recettes</button>
+      </div>
       <span class="dex-meta" id="coll-meta"></span>
       <div class="dex-filtres" id="dex-filtres"></div>
     </div>
     <div class="collection" id="collection"></div>
+    <div class="dex-recettes" id="dex-recettes" hidden></div>
   </div>
   <div class="dex-fiche">
     <h2 id="ency-title"></h2>
-    <!-- LA FICHE A DEUX ONGLETS : la créature, et ses recettes. Ils n'existent que pour une
-         lignée rencontrée — une silhouette n'a rien de plus à dire. -->
-    <div class="ency-onglets" id="ency-onglets" role="group" aria-label="Ce que montre la fiche" hidden>
-      <button type="button" class="dex-filtre ency-onglet actif" data-ency="fiche" aria-pressed="true">fiche</button>
-      <button type="button" class="dex-filtre ency-onglet" data-ency="recettes" aria-pressed="false">recettes</button>
-    </div>
     <p class="sav-dit" id="ency-dit"></p>
     <div class="ency" id="ency"></div>
   </div>

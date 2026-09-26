@@ -2730,8 +2730,8 @@ le compteur passe à `/ 150`, le trophée tombe, la ligne de statistiques arrive
 consignes du marchand reviennent.
 
 **Les recettes (`5.2.0`) respectent la même règle.** Réussir la ponte d'un couple à recette
-l'APPREND ; elles se lisent dans l'encyclopédie, sur l'onglet *recettes* de chaque fiche
-(`5.12.0`). On n'y voit que ce qu'on a appris — jamais un total, jamais une case vide — et chaque
+l'APPREND ; elles se lisent dans l'encyclopédie, sur son onglet *recettes*, en pleine page
+(`5.12.2`). On n'y voit que ce qu'on a appris — jamais un total, jamais une case vide — et chaque
 entrée dit les parents et les chances sans nommer la créature au bout tant qu'on ne l'a pas
 découverte. On apprend le chemin, pas la récompense : c'est « on cache la question » retourné
 d'un cran, une fois la question déjà posée par le jeu.
@@ -2863,12 +2863,10 @@ ligne se remplit en rencontrant la chose.
     Motifs — 8 / 10
       tacheté ×4 · rayé ×4 · zébré ×3 · ocellé ×3 · uni ×2 · marbré ×2 · martelé ×2 · tigré ×1
 
-    [ fiche | recettes ]            l'onglet « recettes », depuis la 5.12.0 :
+    [ créatures | recettes ]        l'onglet « recettes », en pleine page depuis la 5.12.2 :
 
-    Pour la faire naître — 1 couple connu
+    🐺 LOUP · rare
       Loup × Ours    50 % · 1 h 00 m · sorti 62 fois
-    Ce qu'elle fait naître — 1 couple connu
-      Loup × Ours → Ours    50 %
 
 #### Trois vues, un onglet
 
@@ -2889,9 +2887,10 @@ une colonne de vingt et un rem.
 sur une page de collection serait revenir à côté de sa partie.
 
 **Aucune des deux n'apparaît avant d'avoir quelque chose à montrer** : l'encyclopédie après
-trois formes rencontrées, la forge à la première carte — on ne montre pas la porte d'une pièce
-vide. Et si l'une disparaît sous les pieds du joueur, on le ramène à sa ferme plutôt que de le
-laisser sur une page qui n'existe plus.
+trois formes rencontrées, la forge à la première poussière (`5.12.2` ; c'était la première
+carte) — on ne montre pas la porte d'une pièce vide. La forge, une fois ouverte, le reste :
+dépenser toute sa poussière ne referme pas l'atelier. Et si une page disparaît sous les pieds
+du joueur, on le ramène à sa ferme plutôt que de le laisser sur une page qui n'existe plus.
 
 #### Une carte par lignée, et non plus une case par forme
 
@@ -2956,23 +2955,22 @@ fiche annonce.
 
 #### Les recettes ont leur onglet
 
-Depuis la `beta 5.12.0`, la fiche d'une lignée rencontrée a **deux onglets** : *fiche* — les
-formes, les chromatismes, les caractères, les motifs, les fonds — et *recettes*. L'onglet reste
-ouvert quand on passe d'une lignée à l'autre : on parcourt les recettes créature par créature.
+L'encyclopédie a **deux onglets secondaires** : *créatures* — la liste et la fiche — et
+*recettes*, qui prend **toute la page** (`5.12.2`). Il n'existe qu'avec la pension : avant le
+nid, aucun couple ne pond, et le marchand ne vend pas de recette.
 
-*Recettes* répond à deux questions. **Pour la faire naître** : les couples qui l'ont déjà donnée,
-et ses recettes apprises même si on ne les a pas encore réussies. **Ce qu'elle fait naître** :
-les couples connus dont elle est l'un des parents, et ce qu'ils ont donné d'autre qu'elle. Une
-recette — le couple exact d'une merveille — est marquée d'or.
+La page range les recettes **par créature** : un bloc par lignée rencontrée, avec les couples
+qui l'ont déjà donnée et ses recettes apprises, même pas encore réussies — la chance, la durée,
+et combien de fois le couple l'a donnée. Une recette — le couple exact d'une merveille — est
+marquée d'or.
 
 La règle est celle du carnet : seulement ce qu'on a appris. Les parents se nomment toujours ;
-le résultat, seulement s'il est découvert — sinon « Encore inconnue ». On apprend le chemin, pas
-la récompense.
+une recette apprise dont la créature n'a pas encore été rencontrée se range sous « Encore
+inconnues », sans rien dire de ce qu'elle donne. On apprend le chemin, pas la récompense.
 
-**Le carnet des recettes a disparu en `5.12.1`** : il listait les mêmes recettes dans un onglet
-à lui. Le seul cas qu'il couvrait seul — une recette achetée au marchand dont on n'a jamais vu
-les parents — passe à l'encyclopédie : un parent jamais rencontré a son onglet *recettes* dès
-qu'il entre dans une recette apprise.
+**Le chemin a bougé trois fois en trois versions.** La `5.12.0` mettait les recettes dans un
+onglet de chaque fiche ; la `5.12.1` y a fondu le carnet des recettes, qui faisait doublon ; la
+`5.12.2` les sort de la fiche pour la page entière, et la fiche ne liste plus de couples.
 
 ### Tout se replie
 
