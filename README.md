@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 5.10.1
+    MOT MAJEUR.MINEUR.CORRECTIF           par exemple : beta 5.10.1
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -65,201 +65,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 ### Ce qui est sorti
 
-| Version | Ce qu'elle apporte |
-|---|---|
-| **beta 5.10.1** | l'onglet de la pension cache les enclos : on compose les couples depuis la ferme. L'écran ne dit plus que la main fait la moitié d'une ponte — un clic de trop affiche « +0 s », et c'est tout |
-| beta 5.10.0 | la **pension se clique** : elle prend son onglet, où un couple remplace la bête en scène et les couples remplacent les incubateurs. Un clic avance la ponte de la force du clic, sans jamais faire plus de la moitié d'une ponte — le temps fait le reste, et rester devant le nid va au mieux deux fois plus vite. La carte ocellée clique l'onglet ouvert |
-| beta 5.9.2 | rien ne change en jeu : les **réglages de l'économie** quittent `game.js` pour `constantes.js`, rangés par thème — le barème des bêtes (valeurs, péages, multiplicateur de chaque rang, prix des œufs), la rente, la croissance, les places, les faveurs, les jetons, l'absence et la plonge. Les tables gardent leur forme dans `game.js` et lisent leurs nombres dans `constantes.js` ; quatre commentaires périmés par le barème unique sont corrigés au passage
-| beta 5.9.1 | le marchand pose **plus de recettes et moins de change** : le poids de la recette dans le tirage d'une offre passe de 2 à 3, celui du change de 3 à 2 (cartes et paquets ne bougent pas)
-| beta 5.9.0 | deux lignées de plus. **Le tréant**, rare, l'arbre qui marche — brindille, souche, tréant, tréant moussu, berger des forêts — : de bois comme Yggdrasil, il ne se croise qu'avec un autre tréant ou avec l'arbre-monde. **Cthulhu**, merveille, le dieu qui dort — idole de Cthulhu, rejeton des étoiles, Cthulhu, le dormeur de R'lyeh, Cthulhu qui ne dort plus — : un **kraken** et un **dragon ancien** confiés à la pension le donnent une fois sur cinquante, la tête de pieuvre et les ailes de Lovecraft. Dessins à venir, fiches prêtes (`prompts/treant.txt`, `prompts/cthulhu.txt`)
-| beta 5.8.0 | **Yggdrasil, l'arbre-monde** — la huitième merveille, et la première lignée qui n'est pas un animal : graine de frêne, pousse de frêne, frêne sacré, Yggdrasil, Yggdrasil l'arbre-monde. Aucun œuf ne le donne ; deux **chevaux** confiés à la pension, oui, une fois sur cinquante — son nom est le cheval d'Ygg, l'un des noms d'Odin, et c'est la route de Wukong, une non-recette. **Le bois ne se croise qu'avec le bois**, comme la pierre : la pension le dit. Dessin à venir, sa fiche est prête (`prompts/yggdrasil.txt`)
-| beta 5.7.0 | **un seul barème pour tous les œufs**. Un niveau coûte (niveau max de l'âge + n) clics — de 16 à 199, 11 010 pour une vie —, et **l'évolution ne donne plus de niveau** : une bête évoluée reste au 15 et paie 50 clics pour le 16. **La rare sert de modèle et chaque rang au-dessus vaut la rare × 25** : œufs à 18, 10 000, 250 000 et 6,25 M, chacun au prix du dernier péage de l'ère d'avant ; reventes un peu au-dessus de ce que la bête a coûté (−20 % vendue enfant, puis 5 à 9 %), péages payés en quinze à vingt-cinq ventes. **La taille devient une marche** qui repart de zéro à l'évolution et **ne se vend plus** : elle multiplie la poussière du saut, jusqu'à ×4,5 (la taille exigée du marchand disparaît). La marge mince a demandé **la rente à quatre heures**. Tout ce qui se paie en pièces est recalé — premiers prix inchangés, pentes adoucies, primes de 100 à 12,5 M, faveurs, paliers de jetons ×25 (premier saut à 15 625) —, et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. L'ouverture est deux à trois fois plus lente : à juger en jouant
-| beta 5.6.2 | le change **argent → poussière bleue** ne coûte plus un montant fixe (dérisoire une fois riche) mais une **part de la bourse du joueur** au moment de la venue — un prix qui reste quelque chose qu’on a dû farmer, avec un plancher pour qu’une bourse vide ne l’offre pas |
-| beta 5.6.1 | le **fond animé** des créatures est mis en veille (un interrupteur `FONDS_ACTIFS`) — il ne convainquait pas, on le retravaillera ; aucune bête neuve n’en reçoit, aucun ne s’affiche. Et l’**échelle des grands nombres** monte bien plus haut : de « Qid » (quintilliard, 10³³) jusqu’à « Dud » (duodécilliard, 10⁷⁵) |
-| beta 5.6.0 | l’étal du marchand se remplit : en plus du changeur, il vend maintenant des **cartes**, des **paquets** et des **recettes**. Une carte tirée est une capsule neuve (jeune, une étoile, motif et teinte au hasard, 1 % chromatique) qui rejoint l’album ; un paquet en donne cinq, une rare+ garantie, et un paquet doré peut être un **god pack** (≈ 1/500, cinq cartes épique+, chromatisme doublé) ; une recette apprend un couple encore inconnu. La monnaie décide de la qualité — poussière **bleue** pour le tirage basique, **dorée** pour viser plus haut. Barèmes dans `constantes.js` |
-| beta 5.5.2 | le marchand et l’éditeur de sauvegarde deviennent de **vraies pages pleines** (plus des popups) : la ferme s’efface, on ne regarde qu’elles. Le marchand a droit à une vraie mise en scène — héros doré 🧞 qui flotte, nappe ambrée, cartes d’échange soignées avec icônes. Et il **ne s’ouvre plus tout seul** : sa pastille clignote, on y va d’un clic. *(au passage : la vue Recettes, oubliée des règles plein écran, s’affiche enfin comme les autres)* |
-| beta 5.5.1 | deux écrans du mode dev refaits : l’**étal du marchand** devient une page pleine, chaque échange une carte imagée (émojis 🧞 🪙 ✧ ❂, ce qu’on paie → ce qu’on gagne) ; l’**éditeur de sauvegarde** devient un écran à part, un champ par clé du `localStorage`, qu’on modifie, ajoute ou retire à la main |
-| beta 5.5.0 | un **mode développeur**, ouvert par `?userType=Dev` dans l’URL : outils d’administration réservés, et droits retirés au joueur ordinaire. La vitesse ×10/×100 devient un outil de test (le joueur ne l’a plus) ; un bouton 🛠 ouvre un panneau pour créditer/récupérer des jetons d’ascension, faire venir ou renvoyer le marchand, et éditer à la main la sauvegarde du `localStorage` |
-| beta 5.4.0 | **le marchand de sable** paraît — une pastille dorée à côté de la marque, avec un minuteur : il vient à l’heure réelle, ≈ 3,5 fois par jour, et son étal reste ouvert un quart d’heure (une venue ratée pendant qu’on ne joue pas est simplement manquée). Il pose trois offres, on n’en prend que deux, la troisième part avec lui. Première marchandise : le **changeur** de poussière (bleue → or ≈ 20 000:1, argent → bleue), montants tirés au sort à chaque venue. Cartes, paquets et recettes suivront avec les boosters |
-| beta 5.3.5 | les constantes de réglage commencent à quitter `game.js` pour un fichier à elles, `constantes.js` — chargé avant le jeu, collé en tête par le banc d’essai. Première salve : la poussière de carte et le coût de fusion. Aucun changement de jeu, c’est de la mise en place ; le reste suivra petit à petit |
-| beta 5.3.4 | les deux poussières (bleue ✧ et dorée ❂) se lisent en permanence en haut, à côté des pièces, dès qu’on en a — la forge, seul endroit qui les montrait, reste cachée tant que l’album est vide |
-| beta 5.3.3 | les grands nombres s’affichent en milliers, nommés sur l’échelle longue : million, milliard, billion, billiard, trillion, trilliard… Chaque cran vaut mille fois le précédent (`Bd`, `Td`, `Qd` comblent les crans qui manquaient) |
-| beta 5.3.2 | la pastille de combo n’affiche plus le plafond « / 100 » — juste le compte et le multiplicateur (`🔥 47 · ×1,34`). Le bonus reste, lui, accordé par la seule série de la constellation |
-| beta 5.3.1 | la pastille de combo se voit **dès qu’on cliote**, comme le calme — avec son compteur et son multiplicateur. Elle ne paraissait qu’une fois la série de la constellation prise (sans elle le plafond vaut 1), si bien qu’on voyait le calme au repos mais jamais le combo à l’effort. Quand la série n’est pas prise, il affiche ×1 et l’infobulle dit où il se muscle |
-| beta 5.3.0 | huit créatures de plus (dessins à venir) : **Tricératops** (rare), **Spinosaure** et **Vélociraptor** (épiques), **Tyrannosaure**, **Charybde**, **Scylla**, **Dragon ancien** (mythiques), et deux merveilles, **Dragon prismatique** et **Charybde et Scylla**. Le **Béhémoth** et l’**Ouroboros passent en merveille** — plus dans l’œuf mythique, on ne les rencontre qu’en pension. Chaque merveille a sa route : deux dinos → Béhémoth, deux dragons anciens → Prismatique, serpent + dragon ancien → Ouroboros, Charybde + Scylla → leur monstre. Ouroboros reste le parent de la Kitsune — une chaîne de fin de partie |
-| beta 5.2.4 | une fois **toutes les primes prises**, le bouton du panneau devient une bascule **masquer / afficher** : trente-six cases achetées ne décident plus de rien, on peut les ranger. Le choix se retient et traverse l’ascension |
-| beta 5.2.3 | la pension **plafonnée à une heure** de temps de base. Deux mythiques montaient à seize heures, la recette de la Kitsune à douze : un mur, pas un choix. Tout ce qui dépasse une heure y est ramené, les hâtes de la constellation descendent encore, et plus aucun couple n’est refusé « trop long ». Les recettes remontent à 2 % (l’accident reste à 0,1 %) pour rester la bonne route face au joker maintenant que tous couvent aussi vite. L’équilibrage de ce que la pension rend est à reprendre |
-| beta 5.2.2 | le combo et le calme quittent la ligne des boosts pour une **pastille dans le coin de la scène** — « 🔥 47/100 · ×1,34 » ou « 🌙 calme ×1,5 », avec le compteur qu’on cherchait. Et la ligne des boosts se **dégonfle** : elle empilait une douzaine de « ×1,2 » sans contexte, dont l’effet était déjà dans le temps effectif de l’action ; il ne reste que ce temps, la rente, et ce qu’un clic vaut |
-| beta 5.2.1 | trois réglages en vrac : une bête à fond est **gardée d’office** (comme un chromatique) ; l’**album ne s’affiche plus sans carte** (le saut ne le remplit plus, seuls les boosters le feront) ; et la faveur « L’œil neuf » disparaît — **plus aucune faveur ne buffe les chromatiques**, cette voie n’existe que dans la constellation |
-| beta 5.2.0 | le carnet des recettes : réussir la ponte d’un couple à recette l’apprend, et une vue à elle rassemble les recettes acquises — les parents et les chances, toujours ; la créature au bout seulement si on l’a découverte. Il ne montre que l’acquis, jamais un total ni une case vide : on apprend le chemin, pas la récompense. C’est le préalable au marchand de sable |
-| beta 5.1.1 | le fond des boîtes modales tient au défilement : les statistiques, plus hautes que l’écran une fois assez de compteurs, débordaient de leur fond et s’étalaient sur le voile sombre. La boîte défile désormais à l’intérieur, fond compris — même correctif pour la sauvegarde et le carrefour |
-| beta 5.1.0 | la poussière dorée : un chromatique (un prodige) fondu ou défait au saut ne rend plus de poussière bleue en plus grande quantité, mais une ressource à part — la poussière **dorée**, dans l’ambre réservé aux prodiges. La forge montre les deux bassins. Elle n’a pas encore d’emploi : l’évier viendra avec les boosters |
-| **beta 5.0.0** | la refonte de l’ascension : on ne choisit plus de bêtes à emporter, le saut ne fabrique plus de cartes. Son seul objet devient d’investir ses jetons dans la constellation, **et seulement à ce moment-là** — le reste du temps, elle se consulte. L’enclos entier se défait en poussière, le bouton sépare la réserve du gain du cycle (« 1 (+4) »), et l’axe du sang perd ses deux « bagage » avec le prix des cartes qu’ils adoucissaient. Les cartes viendront des boosters, à venir |
-| beta 4.32.1 | la dernière barre de chaque âge disparaît : elle affichait « 15 / 15 » en annonçant un niveau 16, ne rapportait rien et ne servait qu’à mûrir. Les âges raccourcissent d’autant — un niveau dure toujours dix secondes à l’enfance — et l’équilibrage est à reprendre |
-| beta 4.32.0 | la main tenue : chaque geste s’ouvre le jour où il sert — vendre quand la bête paie un œuf, la taille à la maturité, le bonheur après le premier rachat, évoluer quand le péage est payable, garder avec le premier automate. Et le voile ne cache plus le bouton qu’elle demande |
-| beta 4.31.3 | les descriptions ne disent plus que ce qu’un achat fait — ni jugement, ni calcul, ni règle à lire. Le moyeu se tait, deux nœuds du sang changent de nom, et seul le tutoriel reste bavard |
-| beta 4.31.2 | la chasse aux doublons : cent cinquante-deux lignes de test recopiées mot pour mot, une classe de carte déclarée deux fois avec des valeurs qui se contredisaient, la racine du dépôt calculée de quatre façons, et le nom d’un fichier de dessin fabriqué par deux chemins différents |
-| beta 4.31.1 | la carte de détail flotte au-dessus du ciel au lieu de le rétrécir de dix-neuf rems — et la feuille de style, que rien ne relisait, perd une accolade orpheline qui dormait depuis la 2.0.0 |
-| beta 4.31.0 | la constellation se découvre : une étoile dont le parent n’est pas pris ne montre que sa place et son lien. Et un clic ne l’achète plus — il ouvre une carte, à côté, qui dit ce qu’elle fait |
-| beta 4.30.0 | le combo quitte le socle pour devenir une branche de la main : une première partie se joue à main nue, où une seconde de couvaison vaut un clic. Et la fourche se voit enfin dans le ciel |
-| beta 4.29.0 | l’œuf commun coûte enfin les cinquante clics qu’il annonce : sa couvaison était écrite en secondes, vécue en clics, et le combo mangeait la différence |
-| beta 4.28.4 | le compteur annonçait 45 clics pour un œuf qui en demandait 27, et baissait de deux par clic : il compte maintenant la série, terme à terme, et tombe d’exactement un par clic |
-| beta 4.28.3 | le compteur « il reste n clics » tombait de 45 à 37 au premier clic : il comptait le combo que ce clic venait d’ouvrir |
-| beta 4.28.2 | « effacer la partie » pose un état neuf AVANT d’effacer, et remet ce qui ne vit pas dans la sauvegarde — le geste devient une fonction, donc il se vérifie |
-| beta 4.28.1 | un scénario compare l’état d’après-saut à une partie neuve, clé par clé : un champ oublié dans la recopie ressemble à du progrès |
-| beta 4.28.0 | la pension quitte les primes et entre dans la constellation, dont l’axe s’ouvre en fourche : un tronc et deux branches, chacune son cadran |
-| beta 4.27.0 | chaque évolution devient un mur, la merveille prend un cran de puissance au-dessus de la mythique, et garder ne vaut plus 740 fois vendre mais 2,3 |
-| beta 4.26.0 | l’œuf mythique demandait dix-sept légendes épiques quand l’œuf épique en demandait douze mille cinq cents : l’ère la plus rare s’ouvrait avant la première ascension |
-| beta 4.25.1 | la teinte tient sur toute la bête : le corps sortait bordeaux et le ventre kaki, parce que `sepia` écrêtait avant même la rotation |
-| beta 4.25.0 | trente-deux couleurs choisies à la main : les 22,5° n’étaient qu’un quadrillage, et un écarlate qui n’est pas rouge n’est pas un écarlate |
-| beta 4.24.1 | l’atelier redessine : un bloc retiré avait emporté la constante voisine, et la page ne posait plus une image. Un scénario exécute désormais le script de la page contre un DOM de fortune |
-| beta 4.24.0 | le nom décrit enfin le pixel : `hue-rotate` TOURNAIT la couleur du dessin au lieu de la remplacer, donc l’écarlate d’un crapaud était verte. On efface avant de peindre, et l’angle est résolu pour tomber sur la teinte annoncée |
-| beta 4.23.1 | les tons cessent de blanchir : le `clair` aplatissait 60 % d’un crapaud sur du blanc pur, et ses huit recettes rendaient huit fois la même bête |
-| beta 4.23.0 | les quatre achromatiques cessent d’être de l’exposition : le blanc ne brûle plus la moitié du dessin, et blanc, perle, ardoise et onyx portent chacun sa teinte, la même sur toute lignée |
-| beta 4.22.2 | les pages d’outil reprennent leur défilement — elles héritaient du cadre « application » de `style.css` et se coupaient au premier écran ; l’atelier gagne la bande des trente-six, une taille réglable et un fond au choix |
-| beta 4.22.1 | la couleur des chromatiques n’est plus appliquée deux fois : le ton se dit dans la table, le halo dans le halo |
-| beta 4.22.0 | l’atelier : une lignée dans toutes ses variantes, pour juger à l’œil ce qu’aucun scénario ne peut poser |
-| beta 4.21.0 | trente-six couleurs : quatre gris hors de la roue, et seize recettes pour ce que la roue ne sait pas mélanger |
-| beta 4.20.0 | l’enclos redevient une place qu’on arbitre : une gardée compte, une confiée non, et une place de plus coûte enfin quelque chose |
-| beta 4.19.1 | le nid dit ce qu’un couple transmet — sans ça l’hérédité était invisible et personne ne composait un couple exprès |
-| beta 4.19.0 | l’hérédité : un petit reçoit une distribution centrée sur le mélange de ses parents — couleur, caractère, motif, fond et statistiques |
-| beta 4.18.1 | seize couleurs au lieu de huit : l’hérédité a besoin de place entre deux parents |
-| beta 4.18.0 | une bête est grise ou chromatique : les teintes disparaissent, la couleur devient un événement et se place sur une roue |
-| beta 4.17.2 | l’Araignée entre en jeu, cinq stades dessinés — la treizième lignée illustrée |
-| beta 4.17.1 | le Béhémoth et l’Arachné ressortent : décrits en formes plutôt que dessinés, ils ne tenaient pas au regard |
-| beta 4.16.0 | les stats de créature : quatre nombres tirés à l’éclosion, invisibles, qui décident de la qualité d’une carte |
-| beta 4.15.0 | la pension monte dans la constellation : douze primes deviennent quatre crans, et la liste des primes cesse de finir en monoculture |
-| beta 4.14.0 | la planche : chaque composant dans chaque état, contre le vrai `style.css` — la première des six marches de l’écran |
-| beta 4.13.2 | une porte par règle : les quatre tables d’échelle ne se lisent plus qu’à deux endroits, et un scénario refuse la cinquième recopie |
-| beta 4.13.1 | « elle ne rembourse jamais » était faux pour les quatre raretés payantes |
-| beta 4.13.0 | l’idle et le combo : une minute sans clic met la ferme au calme, une série de clics monte en racine et tombe à quinze secondes |
-| beta 4.12.3 | l’absence devient un petit bonus : bornée à deux heures, rendue au quart, et un onglet caché compte comme une absence |
-| beta 4.12.2 | la montée en niveau passe du doigt à la machine : l’éleveur triple, le clic tombe au tiers sur la croissance seule |
-| beta 4.12.1 | l’œuf rare passe à 55 M : la règle du multiplicateur n’a plus d’exception hors de l’ère commune |
-| beta 4.12.0 | l’œuf épique vaut un billion : le multiplicateur d’une rareté se déduit de son prix, et une bête achetée est à l’équilibre à l’âge adulte |
-| beta 4.11.5 | la rente passe à cinq minutes : une décision de garde se paie dans la séance |
-| beta 4.11.4 | l’œuf de merveille entre dans la réserve comme les autres, et passe devant tout le reste |
-| beta 4.11.3 | la réserve s’affiche dans l’ordre où elle se vide |
-| beta 4.11.0 → 4.11.2 | le tri des œufs prend les options de l’enclos, range la bande et la file — arrivée ou rareté — et la réserve garde sa file |
-| beta 4.10.0 · 4.10.1 | un tri pour la file des œufs, sur la bande de couvaison |
-| beta 4.9.1 | la rente triple : une bête rapporte sa valeur en vingt minutes, et les deux ères s’égalisent |
-| beta 4.9.0 | une bête vaut plus que son œuf : l’échelle des raretés refaite, rentable dès l’âge adulte |
-| beta 4.8.1 · 4.8.2 | le mur passe à la première évolution, et le péage remonte ensuite avec la valeur |
-| beta 4.8.0 | l’escalier des œufs remonte d’un cran : l’œuf rare passe de 300 000 à 50 M |
-| beta 4.7.2 | les négoces de rareté arrivent avec leur rareté, et non trois marches avant |
-| beta 4.7.1 | l’écran d’ascension : le bouton cesse de fuir, et les meilleures se prennent d’un geste |
-| beta 4.7.0 | la reprise : on défait sa constellation et on retrouve ses jetons, à l’unité près |
-| beta 4.6.2 | audit de la constellation : trois textes mentaient sur les jetons, deux fautes au glisser |
-| beta 4.6.1 | la bourse cessait d’imprimer : chaque achat de nœud rendait tout le crédit du cycle |
-| beta 4.6.0 | les faveurs : un tirage de trois, repris sans fin, sur dix leviers distincts |
-| beta 4.5.0 | l’automatisation redevient du jeu de base : elle sort de la constellation, la pension y entre |
-| beta 4.4.0 | la constellation part du centre : six directions, vingt-cinq nœuds, aucun remplissage |
-| beta 4.3.0 | la constellation devient un arbre — la géométrie porte la règle |
-| beta 4.2.0 | la fin de partie cesse d'être monothématique, la forge migre dans la constellation |
-| beta 4.1.0 | les carrefours : deux primes à choix, trois routes chacune, et les deux autres se ferment |
-| beta 4.0.0 | la constellation : le jeton devient une monnaie à deux éviers, et chaque carte emportée coûte plus que la précédente |
-| beta 3.1.2 | le motif `constellé` devient `nacré` — le mot est rendu à la constellation |
-| beta 3.1.1 | l'enclos se retasse au bout d'une seconde — le tri était perdu, pas seulement figé |
-| beta 3.1.0 | une bête menée au bout paie au clic — le geste du joueur survit à la fin de partie |
-| beta 3.0.0 | les jetons d'ascension se regagnent à chaque cycle — le mur de fin de partie tombe |
-| beta 2.5.0 | l'enclos devient des cases fixes : une vente ne fait plus glisser la bande sous le curseur |
-| beta 2.4.1 | le Kitsune entre en jeu — quatre âges dessinés, le neuvième queue garde son emoji |
-| beta 2.4.0 | second passage de rabot : les réglages n'ont plus que leurs titres, la pension ne compte plus |
-| beta 2.3.0 | la colonne se calme : moins de texte, et plus rien qui saute tout seul |
-| beta 2.2.0 | la pension dit qui elle garde, et une bête posée au nid quitte la bande aussitôt |
-| beta 2.1.0 | l'atelier se choisit : tout l'album, une carte désignée, et la grille se réduit à ses semblables |
-| beta 2.0.0 | l'atelier de forge : trois cartes semblables n'en font qu'une, et les trois disparaissent |
-| beta 1.14.0 | les cinq œufs cessent d'être le même emoji : une coquille dessinée par sorte |
-| beta 1.13.0 | les fonds : huit décors animés, un sur huit cents, derrière la bête et sur sa carte |
-| beta 1.12.0 | une carte ressemble enfin à une carte : cadre, illustration, signature de rareté |
-| beta 1.11.0 | les seize menus des réglages deviennent des segments de boutons |
-| beta 1.10.0 | deux vues et un onglet : l'encyclopédie quitte la colonne et prend toute la page |
-| beta 1.9.0 | la collection devient une encyclopédie : une fiche par lignée, qui ne sait que ce qu'on a rencontré |
-| beta 1.8.2 | le nid ne se rebâtit plus sous le curseur — le glisser-déposer et le clic redeviennent fiables |
-| beta 1.8.1 | un couple bloqué ne tire plus sa recette — une réserve pleine était une machine à merveilles |
-| beta 1.8.0 | une bête confiée quitte la bande : la pension ne demande plus de mettre la ferme en pause |
-| beta 1.7.1 | l'acheteur automatique peut se taire — le seul des trois qui dépensait n'avait pas de « jamais » |
-| beta 1.7.0 | la pension devient une ligne de production : le couple ne se défait plus, et douze primes la portent |
-| beta 1.6.0 | les trois globales deviennent douze primes, et la grille ne montre que les cinq prochaines |
-| beta 1.5.0 | `tools/pixel.js` : une planche de sprites devient une grille de caractères, corrigeable à la main |
-| beta 1.4.0 | la Tarasque : une merveille sans recette, que seules deux chimères peuvent donner |
-| beta 1.3.0 | trois améliorations globales : le Renom, la Patience et l'Ardeur |
-| beta 1.2.0 | trois primes pour la pension : un nid plus chaud, un sang plus fort, un second nid |
-| beta 1.1.0 | la Chimère devient un joker : deux chimères donnent n'importe quoi, et les recettes changent de famille |
-| beta 1.0.2 | un nid sans place ne se laisse plus remplir |
-| beta 1.0.1 | la cinquième rareté redevient un secret : rien ne l'annonce avant la première éclosion |
-| beta 1.0.0 | la pension devient un bâtiment qu'on achète et qu'on remplit au glisser-déposer, et la ferme peut s'arrêter |
-| alpha 3.1.0 | la cinquième rareté : Kitsune et Sun Wukong, et les recettes qui les font naître |
-| 3.0.0 | la pension ouvre : deux bêtes, une attente, un œuf dont la lignée est promise |
-| 2.32.0 | la fusion et la poussière de carte — et quatre trophées pour les accompagner |
-| 2.31.0 | le martelé remplace le perlé : la force du clic au lieu d'enclos gratuits |
-| 2.30.2 | les cartes portent des étoiles, une à trois — le quatrième cran disparaît |
-| 2.30.1 | le jeton borne l'album, pas les cartes actives — quatre cartes cessent d'être jetées |
-| 2.30.0 | un jeton vaut une carte, et sauter les dépense tous |
-| 2.29.1 | un œuf ne récite plus ses statistiques, il dit une phrase |
-| 2.29.0 | l'ouverture est trois fois plus longue : on gagne moins, on clique plus |
-| 2.28.0 | trois passages obligés : l'écran s'éteint jusqu'à ce que tu fasses le geste |
-| 2.27.0 | la plonge se raconte avant de s'ouvrir, et coûte dix clics l'assiette |
-| 2.26.0 | la professeure suit ce que tu fais : six actions de plus, et des scènes qui se périment |
-| 2.25.0 | la plonge — le jeu ne peut plus se rendre injouable — et douze trophées |
-| 2.24.1 | la pension se scelle : plus rien ne peut l'ouvrir, pas même le banc |
-| 2.24.0 | l'écran tient sur un portable : tout se replie, et deux ruptures en hauteur |
-| 2.23.0 | le squelette de la pension, porte fermée — rien ne change pour le joueur |
-| 2.22.0 | la collection se replie, section par section |
-| 2.21.0 | vingt primes en petites cases, et quatre améliorations qui les rejoignent |
-| 2.20.0 | l'album gagne l'auto-clic et la place, et dit enfin ce que ses cartes font |
-| 2.19.0 | une page de statistiques, et des compteurs qui traversent l'ascension |
-| 2.18.0 | un achat de clic vaut une seconde entière, et l'âge enfant ne tombe plus en 45 clics |
-| 2.17.0 | la partie se télécharge, se copie et se restaure |
-| 2.16.1 | le banc d'essai entre dans le dépôt, la scène se découpe en trois |
-| 2.16.0 | le bonheur d'une bête, et la frénésie de clic qu'elle offre |
-| 2.15.0 | aucun nom de bête ne reprend un mot d'âge ni de taille |
-| 2.14.0 | la réserve d'œufs se vide toute seule, gratuitement |
-| 2.13.0 | l'âge, le niveau et la taille prennent chacun leur colonne |
-| 2.12.0 | faire ce qu'elle dit fait avancer le dialogue ; l'interface se déplie au rythme du joueur |
-| 2.11.0 | une professeure accueille le joueur et l'accompagne, en dialogues |
-| 2.10.0 | les bêtes non retenues sont perdues avec la ferme, elles ne vont plus en réserve |
-| 2.9.0 | les paliers de jetons passent au pas de mille — trois jetons au premier million |
-| 2.8.2 | l'écran d'ascension ne propose que les bêtes de l'enclos, dans l'ordre de la bande |
-| 2.8.1 | l'escalier du dévoilement se range par prix, et les deux bandeaux cessent de se recouvrir |
-| 2.8.0 | le mode histoire — le jeu se déplie une marche à la fois |
-| 2.7.4 | l'écran d'ascension n'a plus qu'une liste, et ne ment plus sur ce qu'on perd |
-| 2.7.3 | maintenir la barre espace ne vaut qu'un seul clic |
-| 2.7.2 | la barre espace ne fait plus jamais défiler, et plus rien ne se surligne en bleu |
-| 2.7.1 | les mythiques passent en charte « idole » — même style, plus mignon du tout |
-| 2.7.0 | la réserve revient, et les cartes se déplacent au glisser-déposer |
-| 2.6.0 | l'Ouroboros renaît en dieu — première lignée de l'arc de la révélation |
-| 2.5.0 | cinq emplacements fixes, et plus aucune réserve — chez personne |
-| 2.4.1 | on garde bien la carte qu'on a choisie, et la ferme s'arrête pendant qu'on décide |
-| 2.4.0 | l'album ne garde que les cartes retenues — les autres sont détruites au saut |
-| 2.3.5 | les consignes de la ferme ne traversent plus l'ascension |
-| 2.3.4 | l'ascension rend la vitesse à ×1 et ne traîne plus le temps figé par la confirmation |
-| 2.3.3 | l'album passe sous les enclos, et « réserve » ne désigne plus deux choses à la fois |
-| 2.3.2 | un brief de séance, pour générer plusieurs planches d'affilée sans dérive de style |
-| 2.3.1 | les prompts d'illustration des six nouvelles rares |
-| 2.3.0 | six lignées rares de plus — l'ère rare passe de 4 à 10 lignées |
-| 2.2.3 | un jeton dépensé = un emplacement de carte — il en offrait trois avant le premier saut |
-| 2.2.2 | la montée d'un cran passe à **1 sur 1 000**, la même à toutes les raretés |
-| 2.2.1 | le marchand automatique garde la case, comme une vente à la main |
-| 2.2.0 | l'ascension se paie en **jetons**, gagnés à chaque palier de fortune ×1 000 000 |
-| 2.1.1 | la couveuse n'a plus de plafond — l'œuf mythique couve quarante-cinq minutes |
-| 2.1.0 | les améliorations s'achètent par lots — ×1, ×10, ×100 ou *max* |
-| 2.0.6 | le chromatique passe de 1 sur 500 à **1 sur 8 192** — un coup de chance, plus une variante fréquente |
-| 2.0.5 | le marchand n'a plus d'exception : il vend aussi la bête en scène, ☆ *Garder* restant la seule protection |
-| 2.0.4 | le crabe entre en jeu — ses cinq dessins attendaient depuis août d'être branchés |
-| 2.0.3 | le marchand ne vend plus la bête qu'on regarde — la présence se lit sur l'onglet, plus sur les clics |
-| 2.0.2 | l'écran d'ascension ne s'affiche plus par-dessus le jeu, et le premier jalon passe au milieu de partie |
-| 2.0.1 | les deux derniers âges renommés — *géant* devient *ancien*, *titan* devient *légende* |
-| 2.0.0 | **l'album et l'ascension** — les bêtes gardées deviennent des cartes, tout le reste repart |
-| 1.5.0 | les œufs payants divisés par deux — chaque ère s'ouvre deux fois plus tôt |
-| 1.4.0 | une taille minimale de vente par rareté — engraisser une commune ne rapporte rien, une mythique rapporte des milliards |
-| 1.3.0 | un plafond d'évolution par rareté — le péage ne coûte pas la même chose selon la lignée |
-| 1.2.0 | le seuil de rentabilité cantonné au début de la vie, le chromatique redescendu à un cran de rareté |
-| 1.1.2 | la bête en scène n’est plus protégée pour toujours, seulement dix secondes (retiré en 2.0.5) |
-| 1.1.1 | le marchand dit pourquoi il ne vend pas |
-| 1.1.0 | les améliorations se montent en tiers de palier |
-| 1.0.1 | la jauge ne se laisse plus écraser par la scène |
-| **1.0.0** | une seule vie de cent niveaux et cinq âges — le numéro commence ici |
+Le détail version par version est dans le [changelog](CHANGELOG.md#les-versions),
+avec les chantiers livrés et leur analyse.
 
 ## Lancer en local
 
@@ -3563,7 +3370,7 @@ est *combien j'investis maintenant, combien je garde en réserve pour la fois d'
 ce qu'on ne garde pas. Une carte porte des **étoiles** — elle naît à une, monte à deux, puis à
 trois, et ça s'arrête là : `ETOILES = [1, 1.8, 3]` est déjà écrite et `puissanceDe` la lit
 déjà, si bien que la fusion sera purement additive. Le détail est dans
-[le plan](PLAN.md#la-fusion-et-la-poussière-de-carte).
+[le plan](CHANGELOG.md#la-fusion-et-la-poussière-de-carte).
 
 Le mot **étoiles** a remplacé « palier » en 2.30.2, et pas seulement pour l'écran : « palier »
 désignait déjà les paliers de fortune qui donnent les jetons et les paliers d'améliorations qui
