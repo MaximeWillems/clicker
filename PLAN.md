@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.10.0 · sauvegarde v38 · 13 lignées illustrées sur 42 · 5 œufs sur 5
+    aujourd'hui : beta 5.10.1 · sauvegarde v38 · 13 lignées illustrées sur 42 · 5 œufs sur 5
 
 ---
 
@@ -1225,7 +1225,8 @@ quatrième onglet après la ferme, l'encyclopédie et la forge — lui donnerait
 
 - **Un onglet, qui garde la structure de la ferme.** La pension prend l'onglet qui suit la
   ferme : la scène montre un couple à la place d'une bête, la bande montre les couples à la
-  place des incubateurs. On compose toujours les couples au nid.
+  place des incubateurs, et les enclos se cachent (`5.10.1`) : on compose les couples au nid
+  depuis la ferme.
 - **La main fait au plus la moitié d'une ponte** (`CLIC_PENSION`, dans `constantes.js`). Un
   clic vaut la force du clic, combo et frénésie comprises, comme sur un œuf ; sans plafond, un
   clic de fin de partie (400 s) bouclait une ponte d'une heure en neuf coups — une merveille

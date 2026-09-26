@@ -846,6 +846,7 @@ scenario('pension cliquable — l’onglet s’ouvre avec le nid, et reprend la 
   eq('on y est', jeu.vue, 'pension');
   ok('la bande des couples remplace celle des incubateurs',
      !noeuds.get('strip-couples').hidden && noeuds.get('strip-incub').hidden);
+  ok('les enclos se cachent', noeuds.get('groupe-pen').hidden);
   eq('et le titre suit', noeuds.get('titre-incub').textContent, 'Pension');
   eq('une case libre, aucun couple', noeuds.get('compte-incub').textContent, '0 / 1');
   eq('la scène dit le nid vide', noeuds.get('stage-name').textContent, 'Le nid est vide');
@@ -861,6 +862,7 @@ scenario('pension cliquable — l’onglet s’ouvre avec le nid, et reprend la 
   ok('revenir à la ferme rend la bande des œufs',
      noeuds.get('strip-couples').hidden && !noeuds.get('strip-incub').hidden);
   eq('et son titre', noeuds.get('titre-incub').textContent, 'Couvaison');
+  ok('et les enclos', !noeuds.get('groupe-pen').hidden);
 });
 
 scenario('pension cliquable — un clic avance la ponte, jamais plus de la moitié', () => {

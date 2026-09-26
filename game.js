@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.10.0';
+const VERSION = 'beta 5.10.1';
 
 /* ─────────────────────────────────────────────
    Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
@@ -9022,7 +9022,7 @@ function taperCouple() {
      explication est la première chose qu'on prend pour un bug. */
   if (k.t >= k.duree) { floatText(jitter(), pt.y - 20, 'réserve pleine'); flash(el, 'shake'); return; }
   const place = resteACliquer(k);
-  if (place <= 0) { floatText(jitter(), pt.y - 20, 'le reste vient du temps'); flash(el, 'shake'); return; }
+  if (place <= 0) { floatText(jitter(), pt.y - 20, '+0 s'); flash(el, 'shake'); return; }
   const gain = Math.min(clickGain(sujetCouple(k)), place);
   k.t += gain;
   k.clic = (k.clic || 0) + gain;
@@ -9047,8 +9047,7 @@ function renderCouple() {
     setText($('stage-meta'), '');
     setWidth($('stage-fill'), '0%');
     setText($('stage-timer'), '');
-    setText($('stage-hint'), 'Compose un couple au nid, dans la colonne de droite : deux bêtes ' +
-      'adultes, et une attente.');
+    setText($('stage-hint'), 'Compose un couple au nid depuis la ferme.');
     return;
   }
   const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
@@ -9061,13 +9060,11 @@ function renderCouple() {
   setWidth($('stage-fill'), Math.min(100, k.t / k.duree * 100).toFixed(1) + '%');
   setText($('stage-timer'), plein ? 'réserve pleine'
     : remaining(k.duree - k.t, coefIdle(), s) + ' → ' + (portee > 1 ? portee + ' œufs' : 'un œuf'));
-  setText($('stage-boost'), 'un clic vaut ' + fmt(clickGain(s)) + ' s · la main fait au plus ' +
-    (CLIC_PENSION === 0.5 ? 'la moitié' : Math.round(CLIC_PENSION * 100) + ' %') + ' d’une ponte');
+  const aider = !plein && resteACliquer(k) > 0;
+  setText($('stage-boost'), aider ? 'un clic vaut ' + fmt(clickGain(s)) + ' s' : '');
   setText($('stage-hint'), plein
     ? 'La réserve de cette sorte d’œuf est pleine : le couple attend qu’une place se libère.'
-    : resteACliquer(k) > 0
-    ? 'Clique pour hâter la ponte. Ta main peut en faire la moitié ; l’autre vient du temps.'
-    : 'Ta part de cette ponte est faite. Le reste viendra en attendant, même absent.');
+    : aider ? 'Clique pour hâter la ponte.' : '');
 }
 
 /* LA BANDE DES COUPLES remplace celle des incubateurs quand l'onglet de la pension est ouvert :
@@ -9080,6 +9077,7 @@ function renderBandeCouples() {
   $('strip-incub').hidden = ici;
   $('strip-couples').hidden = !ici;
   $('strip-tri-oeuf').hidden = ici;
+  $('groupe-pen').hidden = ici;
   setText($('titre-incub'), ici ? 'Pension' : 'Couvaison');
   if (!ici) return;
   const ks = couples(), places = placesPension();
@@ -10480,7 +10478,8 @@ function bindTools() {
       refresh();
       return;
     }
-    const s = current();
+    // dans l'onglet de la pension, la scène montre un couple : aucune bête n'y est en scène
+    const s = vue === 'pension' ? null : current();
     if (!s || s.kind !== 'creature' || !poserAuNid(s.c.id, cote)) {
       blip(300, 0.05, 'sine', 0.03);
       return;
