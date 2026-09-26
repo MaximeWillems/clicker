@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.11.0';
+const VERSION = 'beta 5.12.0';
 
 /* ─────────────────────────────────────────────
    Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
@@ -9819,6 +9819,10 @@ function renderPension() {
    comprises. Un joueur qui achète le Sang dominant voit ses fiches se mettre à jour, ce qui
    est vrai — et il ne voit rien pour un couple qu'il n'a jamais essayé, ce qui l'est aussi. */
 let encyLignee = null, encySig = '';
+/* L'ONGLET DE LA FICHE : la créature, ou ses recettes. Il ne se sauvegarde pas — c'est un coup
+   d'œil, pas un réglage — et il RESTE quand on change de lignée : on parcourt les recettes
+   d'une créature à l'autre sans le rouvrir. */
+let encyOnglet = 'fiche';
 
 // Une rangée de pastilles : ce qu'on a croisé, et combien de fois. Rien d'autre.
 function encyRangee(hote, titre, table, noms, vus) {
@@ -9939,7 +9943,8 @@ function renderEncyclopedie() {
      ce qu'elle SIGNE. */
   const sig = cle + '|' + seenCount() + '|' + Object.keys(state.primes || {}).length +
               '|' + Object.keys(state.ciel || {}).length +
-              '|' + JSON.stringify(dexVu(cle) || 0);
+              '|' + JSON.stringify(dexVu(cle) || 0) + '|' + encyOnglet +
+              '|' + recettesConnues() + '|' + couplesConnus();
   if (sig === encySig) return;
   encySig = sig;
   const ligne = LINE_BY_KEY[cle];
@@ -9956,6 +9961,14 @@ function renderEncyclopedie() {
 
   const hote = $('ency');
   hote.textContent = '';
+
+  const onglets = $('ency-onglets');
+  onglets.hidden = !vus;
+  for (const b of onglets.querySelectorAll('.ency-onglet')) {
+    b.classList.toggle('actif', b.dataset.ency === encyOnglet);
+    b.setAttribute('aria-pressed', String(b.dataset.ency === encyOnglet));
+  }
+  if (vus && encyOnglet === 'recettes') return encyRecettes(hote, cle, d);
 
   /* ── LES CINQ ÂGES ──
      Ceux qu'on n'a pas vus restent des silhouettes SANS NOM : le nom d'une forme est la
@@ -10002,38 +10015,97 @@ function renderEncyclopedie() {
     hote.appendChild(p);
   }
 
-  /* ── LA PENSION, APPRISE PONTE PAR PONTE ──
-     On ne liste pas ce qui POURRAIT la donner : on liste ce qui l'a DÉJÀ donnée. La table se
-     découvre en élevant, et le pourcentage à côté est celui d'aujourd'hui. */
-  const h = document.createElement('p');
-  h.className = 'ency-titre';
-  const appris = Object.entries((d && d.couples) || {}).sort((x, y) => y[1] - x[1]);
-  h.textContent = 'À la pension — ' + appris.length +
-                  (appris.length > 1 ? ' couples connus' : ' couple connu');
-  hote.appendChild(h);
+}
 
-  if (!appris.length) {
-    const v = document.createElement('p');
-    v.className = 'ency-vide';
-    v.textContent = etoilePrise('nid')
-      ? 'Aucun couple ne t’a encore donné cette lignée. Confie-en deux pour voir.'
-      : 'Tu n’as pas encore de pension.';
-    hote.appendChild(v);
-  }
-  for (const [paire, combien] of appris) {
+// Tous les couples que le carnet a vus pondre, toutes lignées confondues : la signature de la fiche.
+const couplesConnus = () => Object.values(state.dex || {})
+  .reduce((n, d) => n + Object.keys(d.couples || {}).length, 0);
+
+/* ── LES RECETTES D'UNE CRÉATURE ──
+   Deux questions, et seulement ce qu'on a appris : comment la faire naître, et ce qu'elle fait
+   naître. On ne liste pas ce qui POURRAIT la donner — la table se découvre en élevant, comme
+   le carnet : un couple y entre quand sa ponte l'a donnée, ou quand sa recette est apprise. Le
+   pourcentage est celui d'aujourd'hui, calculé et non stocké.
+
+   LES PARENTS SE NOMMENT TOUJOURS, LE RÉSULTAT SEULEMENT S'IL EST DÉCOUVERT : c'est la règle du
+   carnet, on apprend le chemin, pas la récompense. */
+function encyRecettes(hote, cle, d) {
+  const titre = t => {
+    const p = document.createElement('p');
+    p.className = 'ency-titre';
+    p.textContent = t;
+    hote.appendChild(p);
+  };
+  const vide = t => {
+    const p = document.createElement('p');
+    p.className = 'ency-vide';
+    p.textContent = t;
+    hote.appendChild(p);
+  };
+  const connus = n => n + (n > 1 ? ' couples connus' : ' couple connu');
+  const nom = k => LINE_BY_KEY[k].name;
+  const pourcent = (x, y, donne) => {
+    const pc = chanceDe(x, y, donne) * 100;
+    return dec(pc, pc < 1 ? 2 : pc < 10 ? 1 : 0) + ' %';
+  };
+  const ligne = (paire, donne, fleche, dit) => {
     const [x, y] = paire.split('×');
+    const recette = RECETTES.some(r => r.donne === donne && cleRecette(r) === paire);
     const el = document.createElement('div');
-    el.className = 'ency-couple';
+    el.className = 'ency-couple' + (recette ? ' recette' : '');
     const qui = document.createElement('b');
-    qui.textContent = LINE_BY_KEY[x].name + ' × ' + LINE_BY_KEY[y].name;
-    const dit = document.createElement('i');
-    const pc = chanceDe(x, y, cle) * 100;
-    const t = dureePension(stubLignee(x), stubLignee(y));
-    dit.textContent = dec(pc, pc < 1 ? 2 : pc < 10 ? 1 : 0) + ' %' +
-                      (t === null ? '' : ' · ' + fmtTime(t)) +
-                      ' · sorti ' + fmt(combien) + (combien > 1 ? ' fois' : ' fois');
-    el.append(qui, dit);
+    qui.textContent = nom(x) + ' × ' + nom(y) +
+      (fleche ? ' → ' + (formesVues(donne) ? nom(donne) : 'Encore inconnue') : '');
+    if (recette) {
+      const m = document.createElement('span');
+      m.className = 'ency-marque';
+      m.textContent = 'recette';
+      qui.appendChild(m);
+    }
+    const i = document.createElement('i');
+    i.textContent = dit;
+    el.append(qui, i);
     hote.appendChild(el);
+  };
+
+  // ── pour la faire naître : les couples qui l'ont donnée, et ses recettes apprises
+  const pour = Object.assign({}, (d && d.couples) || {});
+  for (const r of RECETTES) {
+    if (r.donne === cle && recetteConnue(r) && !(cleRecette(r) in pour)) pour[cleRecette(r)] = 0;
+  }
+  const entrees = Object.entries(pour).sort((p, q) => q[1] - p[1]);
+  titre('Pour la faire naître — ' + connus(entrees.length));
+  if (!entrees.length) {
+    vide(etoilePrise('nid') ? 'Aucun couple ne t’a encore donné cette lignée. Confie-en deux pour voir.'
+                            : 'Tu n’as pas encore de pension.');
+  }
+  for (const [paire, combien] of entrees) {
+    const [x, y] = paire.split('×');
+    const t = dureePension(stubLignee(x), stubLignee(y));
+    ligne(paire, cle, false, pourcent(x, y, cle) + (t === null ? '' : ' · ' + fmtTime(t)) +
+                             (combien ? ' · sorti ' + fmt(combien) + ' fois' : ''));
+  }
+
+  // ── ce qu'elle fait naître : les couples connus dont elle est l'un des parents
+  const sorties = {};
+  for (const [donne, dd] of Object.entries(state.dex || {})) {
+    if (donne === cle || !LINE_BY_KEY[donne]) continue;   // elle-même : c'est la section du dessus
+    for (const paire of Object.keys(dd.couples || {})) {
+      if (paire.split('×').indexOf(cle) !== -1) sorties[paire + '→' + donne] = [paire, donne];
+    }
+  }
+  for (const r of RECETTES) {
+    if ((r.a === cle || r.b === cle) && r.donne !== cle && recetteConnue(r))
+      sorties[cleRecette(r) + '→' + r.donne] = [cleRecette(r), r.donne];
+  }
+  const rang = k => RARITY[LINE_BY_KEY[k].rarity].rank;
+  const liste = Object.values(sorties).sort((p, q) => rang(q[1]) - rang(p[1]) ||
+    chanceDe(...q[0].split('×'), q[1]) - chanceDe(...p[0].split('×'), p[1]));
+  titre('Ce qu’elle fait naître — ' + connus(liste.length));
+  if (!liste.length) vide('Aucun couple connu avec elle.');
+  for (const [paire, donne] of liste) {
+    const [x, y] = paire.split('×');
+    ligne(paire, donne, true, pourcent(x, y, donne));
   }
 }
 
@@ -10518,6 +10590,13 @@ function bindTools() {
   $('collection').addEventListener('click', e => {
     const c = e.target.closest && e.target.closest('.dex-carte');
     if (c && c.dataset.lignee) choisirLignee(c.dataset.lignee);
+  });
+  $('ency-onglets').addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.ency-onglet');
+    if (!b || b.dataset.ency === encyOnglet) return;
+    encyOnglet = b.dataset.ency === 'recettes' ? 'recettes' : 'fiche';
+    blip(440, 0.04, 'sine', 0.03);
+    refresh();
   });
   $('dex-filtres').addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('.dex-filtre');

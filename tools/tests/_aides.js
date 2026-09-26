@@ -165,8 +165,9 @@ function casesNid(jeu) {
 }
 
 // ce que la fiche affiche, à plat : un texte par bloc
-function fiche(jeu, cle) {
+function fiche(jeu, cle, onglet) {
   jeu.encyLignee = cle;
+  jeu.encyOnglet = onglet || 'fiche';
   jeu.renderEncyclopedie();
   const plat = el => (el.textContent || '') +
     el.children.map(c => ' ' + (c.textContent || '') + c.children.map(x => ' ' + x.textContent).join('')).join('');

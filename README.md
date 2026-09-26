@@ -2864,8 +2864,12 @@ ligne se remplit en rencontrant la chose.
     Motifs — 8 / 10
       tacheté ×4 · rayé ×4 · zébré ×3 · ocellé ×3 · uni ×2 · marbré ×2 · martelé ×2 · tigré ×1
 
-    À la pension — 1 couple connu
+    [ fiche | recettes ]            l'onglet « recettes », depuis la 5.12.0 :
+
+    Pour la faire naître — 1 couple connu
       Loup × Ours    50 % · 1 h 00 m · sorti 62 fois
+    Ce qu'elle fait naître — 1 couple connu
+      Loup × Ours → Ours    50 %
 
 #### Trois vues, un onglet
 
@@ -2950,6 +2954,21 @@ toujours rien pour un couple qu'il n'a jamais essayé, ce qui l'est aussi.
 copies peuvent diverger en silence. Un scénario du banc tire donc soixante mille pontes par
 forme de couple — ordinaire, recette, joker — et compare la fréquence observée à ce que la
 fiche annonce.
+
+#### Les recettes ont leur onglet
+
+Depuis la `beta 5.12.0`, la fiche d'une lignée rencontrée a **deux onglets** : *fiche* — les
+formes, les chromatismes, les caractères, les motifs, les fonds — et *recettes*. L'onglet reste
+ouvert quand on passe d'une lignée à l'autre : on parcourt les recettes créature par créature.
+
+*Recettes* répond à deux questions. **Pour la faire naître** : les couples qui l'ont déjà donnée,
+et ses recettes apprises même si on ne les a pas encore réussies. **Ce qu'elle fait naître** :
+les couples connus dont elle est l'un des parents, et ce qu'ils ont donné d'autre qu'elle. Une
+recette — le couple exact d'une merveille — est marquée d'or.
+
+La règle est celle du carnet : seulement ce qu'on a appris. Les parents se nomment toujours ;
+le résultat, seulement s'il est découvert — sinon « Encore inconnue ». On apprend le chemin, pas
+la récompense.
 
 ### Tout se replie
 

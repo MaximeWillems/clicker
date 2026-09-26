@@ -1305,13 +1305,10 @@ rapporte plus mais refuse quelque chose, précieux vaut plus et pousse lentement
 C'est aussi ce qui donnerait aux tempéraments une place dans la pension, où ils n'en ont
 aucune aujourd'hui.
 
-#### Trois autres, sans discussion
+#### Deux autres, sans discussion
 
 - **Les raccourcis clavier** — suivante, précédente, vendre, faire monter. C'est un clicker et
   il n'y en a aucun. Attention à la zone de collage de la sauvegarde, qui ne doit pas les voir.
-- **Les recettes découvertes, dans l'encyclopédie** — on croyait que ça existait, ce qui est le
-  meilleur argument possible. Même règle que le reste du carnet : seulement ce qu'on a
-  découvert.
 - **Un marché qui fluctue** — un multiplicateur du jour par rareté, qui récompense de vendre au
   bon moment. Une seule contrainte, et elle est absolue : ça ne doit pas punir l'absent. Un
   jeu d'attente où il faut être là à la bonne heure est un piège, pas une mécanique.
