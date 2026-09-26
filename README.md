@@ -2729,13 +2729,12 @@ partie de la récompense.
 le compteur passe à `/ 150`, le trophée tombe, la ligne de statistiques arrive et les trois
 consignes du marchand reviennent.
 
-**Le carnet des recettes (`5.2.0`) respecte la même règle.** Réussir la ponte d'un couple à
-recette l'APPREND, et une vue à elle rassemble les recettes acquises. Mais elle ne montre que ce
-qu'on a appris — jamais un total, jamais une case vide — et chaque entrée dit les parents et les
-chances sans nommer la créature au bout tant qu'on ne l'a pas découverte. On apprend le chemin,
-pas la récompense : c'est « on cache la question » retourné d'un cran, une fois la question déjà
-posée par le jeu. Le carnet n'a d'onglet qu'à partir de la première recette apprise — avant, rien
-ne dit qu'une liste existe.
+**Les recettes (`5.2.0`) respectent la même règle.** Réussir la ponte d'un couple à recette
+l'APPREND ; elles se lisent dans l'encyclopédie, sur l'onglet *recettes* de chaque fiche
+(`5.12.0`). On n'y voit que ce qu'on a appris — jamais un total, jamais une case vide — et chaque
+entrée dit les parents et les chances sans nommer la créature au bout tant qu'on ne l'a pas
+découverte. On apprend le chemin, pas la récompense : c'est « on cache la question » retourné
+d'un cran, une fois la question déjà posée par le jeu.
 
 #### Ce que la phrase dit, et ce qu'elle tait
 
@@ -2969,6 +2968,11 @@ recette — le couple exact d'une merveille — est marquée d'or.
 La règle est celle du carnet : seulement ce qu'on a appris. Les parents se nomment toujours ;
 le résultat, seulement s'il est découvert — sinon « Encore inconnue ». On apprend le chemin, pas
 la récompense.
+
+**Le carnet des recettes a disparu en `5.12.1`** : il listait les mêmes recettes dans un onglet
+à lui. Le seul cas qu'il couvrait seul — une recette achetée au marchand dont on n'a jamais vu
+les parents — passe à l'encyclopédie : un parent jamais rencontré a son onglet *recettes* dès
+qu'il entre dans une recette apprise.
 
 ### Tout se replie
 

@@ -4,7 +4,7 @@ Ce qui est sorti, version par version, et les chantiers livrés avec le raisonne
 portés. Le [plan](PLAN.md) ne dit que ce qui vient ; le [README](README.md) décrit le jeu tel
 qu'il est.
 
-    aujourd'hui : beta 5.12.0 · sauvegarde v39 · 13 lignées illustrées sur 42 · 5 œufs sur 5
+    aujourd'hui : beta 5.12.1 · sauvegarde v39 · 13 lignées illustrées sur 42 · 5 œufs sur 5
 
 **À chaque version**, une ligne en tête de la table des versions — en gras, et la précédente
 perd le sien — et la ligne « aujourd'hui » ci-dessus. **À chaque chantier livré**, sa ligne
@@ -15,7 +15,8 @@ analyse le suit.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.12.0** | l'encyclopédie a **un onglet de recettes par créature** : la fiche d'une lignée rencontrée se partage entre *fiche* et *recettes*. *Recettes* dit comment la faire naître — les couples qui l'ont donnée, ses recettes apprises — et ce qu'elle fait naître comme parent. Seulement ce qu'on a appris, comme le carnet ; une recette est marquée d'or |
+| **beta 5.12.1** | le **carnet des recettes disparaît** : il faisait doublon avec l'onglet de l'encyclopédie. Le seul cas qu'il couvrait seul — une recette achetée dont on n'a jamais vu les parents — s'y lit maintenant : un parent jamais rencontré a son onglet *recettes* dès qu'il entre dans une recette apprise. La phrase du nid d'un couple à recette perd le cadre que le style du carnet lui prêtait par erreur |
+| beta 5.12.0 | l'encyclopédie a **un onglet de recettes par créature** : la fiche d'une lignée rencontrée se partage entre *fiche* et *recettes*. *Recettes* dit comment la faire naître — les couples qui l'ont donnée, ses recettes apprises — et ce qu'elle fait naître comme parent. Seulement ce qu'on a appris, comme le carnet ; une recette est marquée d'or |
 | beta 5.11.0 | **la forge prend la fonte** : le bouton ✧ quitte l'album de la ferme et se montre sur chaque carte de la forge, quand elle présente tout l'album. **Une carte équipée se forge** comme les autres, et la carte forgée reprend son emplacement. Le creuset, le nœud qui l'autorisait, disparaît : ses seize jetons sont rendus (sauvegarde `v39`), et la braise douce se raccroche aux cendres |
 | beta 5.10.2 | la pension ne plafonne plus la main : un clic sur un couple vaut **un vingtième** d'un clic sur un œuf, et chaque clic compte. À quatre clics par seconde, le couple va ×5 à ×21 en milieu de partie et ×81 en fin de partie |
 | beta 5.10.1 | l'onglet de la pension cache les enclos : on compose les couples depuis la ferme. L'écran ne dit plus que la main fait la moitié d'une ponte — un clic de trop affiche « +0 s », et c'est tout |
@@ -295,7 +296,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le tréant et Cthulhu** | beta 5.9.0 | le bestiaire peut-il grandir à la demande, sans casser une règle ? | oui — deux lignées de plus, demandées le 26 septembre. **Le tréant**, rare, l'arbre qui marche : de la brindille au berger des forêts, et de bois comme Yggdrasil, si bien qu'il ne se croise qu'avec un autre tréant ou avec l'arbre-monde. **Cthulhu**, merveille, le seul dieu du lot qui dort : de l'idole de pierre à l'éveil, par le kraken et le dragon ancien — la pieuvre et l'aile de Lovecraft. Leurs fiches de dessin sont prêtes ; le dragon ancien devient parent de trois merveilles, à surveiller |
 | **Cliquer pour aider la pension** | beta 5.10.0, 5.10.2 | la présence peut-elle servir là où elle ne sert à rien ? | oui. La pension prend son onglet : un couple en scène à la place d'une bête, les couples dans la bande à la place des incubateurs. Un clic avance la ponte d'un vingtième de la force du clic, sans plafond : la `5.10.0` arrêtait la main à la moitié d'une ponte, et la `5.10.2` préfère un clic plus faible à un clic qui s'arrête. La carte ocellée clique l'onglet ouvert |
 | **La forge prend la fonte et les cartes équipées** | beta 5.11.0 | fond-on une carte là où l'on voit celles qui pourraient la rejoindre, et peut-on améliorer son build sans le démonter ? | oui — la fonte quitte la ferme pour la forge, où l'atelier montre tout l'album ; une carte équipée se forge, et la forgée reprend sa place dans le build. Fondre une équipée reste refusé : c'est un clic, sans aperçu. Le creuset n'a plus d'objet, il disparaît et ses seize jetons reviennent |
-| **Les recettes dans l'encyclopédie** | beta 5.12.0 | sait-on comment faire naître une créature sans chercher dans deux écrans ? | oui — chaque fiche a son onglet *recettes* : les couples qui la donnent, ses recettes apprises, et ce qu'elle fait naître comme parent. Les couples connus quittent l'onglet *fiche*. On croyait que ça existait, ce qui était le meilleur argument ; le carnet des recettes reste, en liste |
+| **Les recettes dans l'encyclopédie** | beta 5.12.0, 5.12.1 | sait-on comment faire naître une créature sans chercher dans deux écrans ? | oui — chaque fiche a son onglet *recettes* : les couples qui la donnent, ses recettes apprises, et ce qu'elle fait naître comme parent. Les couples connus quittent l'onglet *fiche*. On croyait que ça existait, ce qui était le meilleur argument. Le carnet des recettes, qui faisait doublon, s'y fond en `5.12.1` |
 
 ## Les analyses des chantiers livrés
 

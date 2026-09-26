@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.12.0';
+const VERSION = 'beta 5.12.1';
 
 /* ─────────────────────────────────────────────
    Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
@@ -1293,10 +1293,10 @@ function recetteDe(a, b) {
   return RECETTES.find(r => (r.a === x && r.b === y) || (r.a === y && r.b === x)) || null;
 }
 
-/* ── LE CARNET DES RECETTES ─────────────────────────────────────────────────────
+/* ── LES RECETTES APPRISES ──────────────────────────────────────────────────────
    Une recette est cachée jusqu'à ce qu'on l'APPRENNE : soit en faisant naître sa créature du
-   bon couple, soit — plus tard — en l'achetant au marchand de sable. Le carnet ne montre que
-   les recettes apprises ; tant qu'aucune ne l'est, il n'existe pas, et rien ne dit que la liste
+   bon couple, soit en l'achetant au marchand de sable. L'encyclopédie ne montre que les
+   recettes apprises, dans les fiches de leurs créatures, et rien ne dit combien il en
    existe. C'est le même secret que le rang caché : on ne montre pas la question.
 
    LA CLÉ EST LE COUPLE, pas la créature : la Kitsune a deux routes (ouroboros × sphinx et
@@ -1307,16 +1307,15 @@ const recetteConnue = r => !!(state.recettes && state.recettes[cleRecette(r)]);
 const recettesConnues = () => (state.recettes ? Object.keys(state.recettes).length : 0);
 
 /* On apprend une recette en réussissant sa ponte. Appelée au moment où le tirage rare tombe,
-   donc la créature vient de naître : elle sera découverte du même coup, et le carnet la montrera
-   en entier. La voie « apprise sans l'avoir faite » — parents et pourcentages visibles, créature
-   masquée — attend le marchand ; le carnet sait déjà l'afficher (voir `renderRecettes`). */
+   donc la créature vient de naître : elle sera découverte du même coup, et l'encyclopédie la
+   montrera en entier. La voie « apprise sans l'avoir faite » — parents et pourcentages visibles,
+   créature masquée — est celle du marchand ; elle se lit chez les parents (voir `encyRecettes`). */
 function apprendreRecette(r) {
   if (!r) return false;
   state.recettes = state.recettes || {};
   const cle = cleRecette(r);
   if (state.recettes[cle]) return false;
   state.recettes[cle] = true;
-  recettesSig = '';
   return true;
 }
 
@@ -7010,7 +7009,6 @@ function cielFinTire() {
 }
 
 let forgeSig = '';
-let recettesSig = '';
 
 /* L'ATELIER, EN DEUX TEMPS. D'abord l'album entier : on choisit LA CARTE À FAIRE MONTER.
    Ensuite la grille ne montre plus que celles qui peuvent la rejoindre — c'est ce qui rend la
@@ -8705,9 +8703,6 @@ function renderTuto() {
      gagne des jetons AVANT de sauter, et c'est justement en les voyant qu'on comprend qu'il y
      a deux façons de les dépenser. */
   const cielPret = jetonsEnMain() > 0 || Object.keys(state.ciel || {}).length > 0;
-  /* LE CARNET N'EXISTE PAS AVANT LA PREMIÈRE RECETTE APPRISE. Une liste vide dirait qu'il y a
-     des recettes à trouver — le spoiler qu'on évite. Il paraît avec la première, jamais avant. */
-  const recettesPret = recettesConnues() > 0;
   /* L'ONGLET DE LA PENSION S'OUVRE AVEC LE NID : pas de pièce à montrer tant que le bâtiment
      n'existe pas. */
   const pensionPret = etoilePrise('nid');
@@ -8716,14 +8711,12 @@ function renderTuto() {
     if (b.dataset.vue === 'dex') b.hidden = !dexPret;
     if (b.dataset.vue === 'forge') b.hidden = !forgePret;
     if (b.dataset.vue === 'ciel') b.hidden = !cielPret;
-    if (b.dataset.vue === 'recettes') b.hidden = !recettesPret;
   }
   if (!pensionPret && vue === 'pension') ouvrirVue('ferme');
   if (!dexPret && vue === 'dex') ouvrirVue('ferme');
   if (!forgePret && vue === 'forge') ouvrirVue('ferme');
   // pendant le saut, le ciel reste ouvert même sans jeton en réserve : c'est là qu'on valide
   if (!cielPret && vue === 'ciel' && !enAscension) ouvrirVue('ferme');
-  if (!recettesPret && vue === 'recettes') ouvrirVue('ferme');
 
   // le pied de page parle du prototype, pas du jeu : il attend qu'on ait de quoi acheter
   $('foot').hidden = jeune && !estDevoile('egg-commun');
@@ -8737,7 +8730,6 @@ function refresh() {
   renderAlbum();
   renderForge();
   renderCiel();
-  renderRecettes();
   renderMarchand();
   renderStage();
   syncReglages();
@@ -9549,7 +9541,7 @@ function poserAuNid(id, cote) {
    page, aucune ne se sauvegarde. La forge a la même raison d'être pleine page que
    l'encyclopédie — elle montre des cartes côte à côte, six à la fois, et six cartes n'entrent
    pas dans une colonne de vingt et un rem. */
-const VUES = ['ferme', 'pension', 'dex', 'forge', 'ciel', 'recettes', 'marchand', 'devsave'];
+const VUES = ['ferme', 'pension', 'dex', 'forge', 'ciel', 'marchand', 'devsave'];
 let vue = 'ferme';
 
 function ouvrirVue(v) {
@@ -9563,13 +9555,11 @@ function ouvrirVue(v) {
   document.body.classList.toggle('vue-dex', vue === 'dex');
   document.body.classList.toggle('vue-forge', vue === 'forge');
   document.body.classList.toggle('vue-ciel', vue === 'ciel');
-  document.body.classList.toggle('vue-recettes', vue === 'recettes');
   document.body.classList.toggle('vue-marchand', vue === 'marchand');
   document.body.classList.toggle('vue-devsave', vue === 'devsave');
   $('vue-dex').hidden = vue !== 'dex';
   $('vue-forge').hidden = vue !== 'forge';
   $('vue-ciel').hidden = vue !== 'ciel';
-  $('vue-recettes').hidden = vue !== 'recettes';
   $('vue-marchand').hidden = vue !== 'marchand';
   $('vue-devsave').hidden = vue !== 'devsave';
   if (vue === 'devsave') chargerEditeurDepuisSave();
@@ -9853,78 +9843,6 @@ function encyRangee(hote, titre, table, noms, vus) {
   hote.appendChild(z);
 }
 
-/* ── LE CARNET DES RECETTES ─────────────────────────────────────────────────────
-   Il ne liste QUE les recettes apprises, jamais un total ni une case vide : dire « 1 / 3 »
-   trahirait qu'il en reste deux, et c'est exactement ce que le secret des merveilles interdit.
-
-   CE QU'UNE ENTRÉE MONTRE : les deux parents et les chances, TOUJOURS — c'est le chemin, et le
-   chemin n'est pas secret. La créature au bout ne se montre que si on l'a DÉCOUVERTE (une forme
-   vue). Apprise par la ponte, elle l'est du même coup ; apprise autrement — le marchand, plus
-   tard — elle reste masquée jusqu'à ce qu'on la fasse. On apprend le chemin, pas la récompense. */
-const glypheLignee = k => {
-  const f = (LINE_BY_KEY[k] || {}).forms;
-  return f ? (f[1] || f[0])[1] : '❓';
-};
-function renderRecettes() {
-  if (vue !== 'recettes') return;
-  const connues = RECETTES.filter(recetteConnue);
-  const sig = connues.map(cleRecette).join(',') + '|' +
-              connues.map(r => formesVues(r.donne) > 0 ? '1' : '0').join('');
-  if (sig === recettesSig) return;
-  recettesSig = sig;
-
-  setText($('recettes-dit'), connues.length +
-    (connues.length > 1 ? ' recettes apprises' : ' recette apprise') +
-    '. Un couple, et la chance qu’il fasse naître autre chose que sa lignée. On apprend une ' +
-    'recette en réussissant sa ponte.');
-
-  const span = (cls, txt, dans) => {
-    const e = document.createElement('span');
-    e.className = cls; e.textContent = txt;
-    if (dans) dans.appendChild(e);
-    return e;
-  };
-  // un bloc « glyphe + nom » — un parent, ou ce que la recette donne
-  const bloc = (cls, glyphe, nom, dans) => {
-    const b = document.createElement('span');
-    b.className = cls;
-    span('recette-glyphe', glyphe, b);
-    span('recette-nom', nom, b);
-    dans.appendChild(b);
-    return b;
-  };
-
-  const hote = $('recettes-liste');
-  hote.textContent = '';
-  for (const r of connues) {
-    const carte = document.createElement('div');
-    carte.className = 'recette';
-
-    const couple = document.createElement('div');
-    couple.className = 'recette-couple';
-    bloc('recette-parent', glypheLignee(r.a), (LINE_BY_KEY[r.a] || {}).name || r.a, couple);
-    span('recette-x', '×', couple);
-    bloc('recette-parent', glypheLignee(r.b), (LINE_BY_KEY[r.b] || {}).name || r.b, couple);
-    carte.appendChild(couple);
-
-    span('recette-fleche', '→', carte);
-
-    const vu = formesVues(r.donne) > 0;
-    bloc('recette-parent recette-donne' + (vu ? '' : ' inconnue'),
-         vu ? glypheLignee(r.donne) : '?',
-         vu ? (LINE_BY_KEY[r.donne] || {}).name : 'Encore inconnue', carte);
-
-    const pct = r.chance * 100;
-    const chances = document.createElement('div');
-    chances.className = 'recette-chances';
-    span('', (pct % 1 === 0 ? pct : dec(pct, 1)) + ' %', chances);
-    span('', Math.round(r.duree / 3600) + ' h', chances);
-    carte.appendChild(chances);
-
-    hote.appendChild(carte);
-  }
-}
-
 function renderEncyclopedie() {
   const cle = encyLignee;
   if (!cle || !LINE_BY_KEY[cle]) { setText($('ency-title'), ''); setText($('ency-dit'), ''); return; }
@@ -9962,13 +9880,17 @@ function renderEncyclopedie() {
   const hote = $('ency');
   hote.textContent = '';
 
+  /* UNE LIGNÉE JAMAIS VUE A SON ONGLET DE RECETTES quand elle est le parent d'une recette
+     apprise : le marchand vend le chemin sans la rencontre, et c'est ici qu'il se lit depuis que
+     le carnet s'est fondu dans l'encyclopédie (`5.12.1`). Les parents se nomment toujours. */
+  const parent = RECETTES.some(r => (r.a === cle || r.b === cle) && recetteConnue(r));
   const onglets = $('ency-onglets');
-  onglets.hidden = !vus;
+  onglets.hidden = !vus && !parent;
   for (const b of onglets.querySelectorAll('.ency-onglet')) {
     b.classList.toggle('actif', b.dataset.ency === encyOnglet);
     b.setAttribute('aria-pressed', String(b.dataset.ency === encyOnglet));
   }
-  if (vus && encyOnglet === 'recettes') return encyRecettes(hote, cle, d);
+  if ((vus || parent) && encyOnglet === 'recettes') return encyRecettes(hote, cle, d, vus);
 
   /* ── LES CINQ ÂGES ──
      Ceux qu'on n'a pas vus restent des silhouettes SANS NOM : le nom d'une forme est la
@@ -10029,7 +9951,7 @@ const couplesConnus = () => Object.values(state.dex || {})
 
    LES PARENTS SE NOMMENT TOUJOURS, LE RÉSULTAT SEULEMENT S'IL EST DÉCOUVERT : c'est la règle du
    carnet, on apprend le chemin, pas la récompense. */
-function encyRecettes(hote, cle, d) {
+function encyRecettes(hote, cle, d, rencontree) {
   const titre = t => {
     const p = document.createElement('p');
     p.className = 'ency-titre';
@@ -10068,22 +9990,25 @@ function encyRecettes(hote, cle, d) {
     hote.appendChild(el);
   };
 
-  // ── pour la faire naître : les couples qui l'ont donnée, et ses recettes apprises
-  const pour = Object.assign({}, (d && d.couples) || {});
-  for (const r of RECETTES) {
-    if (r.donne === cle && recetteConnue(r) && !(cleRecette(r) in pour)) pour[cleRecette(r)] = 0;
-  }
-  const entrees = Object.entries(pour).sort((p, q) => q[1] - p[1]);
-  titre('Pour la faire naître — ' + connus(entrees.length));
-  if (!entrees.length) {
-    vide(etoilePrise('nid') ? 'Aucun couple ne t’a encore donné cette lignée. Confie-en deux pour voir.'
-                            : 'Tu n’as pas encore de pension.');
-  }
-  for (const [paire, combien] of entrees) {
-    const [x, y] = paire.split('×');
-    const t = dureePension(stubLignee(x), stubLignee(y));
-    ligne(paire, cle, false, pourcent(x, y, cle) + (t === null ? '' : ' · ' + fmtTime(t)) +
-                             (combien ? ' · sorti ' + fmt(combien) + ' fois' : ''));
+  /* ── pour la faire naître : les couples qui l'ont donnée, et ses recettes apprises. Une lignée
+     jamais vue n'a que des recettes de parent : la question ne se pose pas encore. */
+  if (rencontree) {
+    const pour = Object.assign({}, (d && d.couples) || {});
+    for (const r of RECETTES) {
+      if (r.donne === cle && recetteConnue(r) && !(cleRecette(r) in pour)) pour[cleRecette(r)] = 0;
+    }
+    const entrees = Object.entries(pour).sort((p, q) => q[1] - p[1]);
+    titre('Pour la faire naître — ' + connus(entrees.length));
+    if (!entrees.length) {
+      vide(etoilePrise('nid') ? 'Aucun couple ne t’a encore donné cette lignée. Confie-en deux pour voir.'
+                              : 'Tu n’as pas encore de pension.');
+    }
+    for (const [paire, combien] of entrees) {
+      const [x, y] = paire.split('×');
+      const t = dureePension(stubLignee(x), stubLignee(y));
+      ligne(paire, cle, false, pourcent(x, y, cle) + (t === null ? '' : ' · ' + fmtTime(t)) +
+                               (combien ? ' · sorti ' + fmt(combien) + ' fois' : ''));
+    }
   }
 
   // ── ce qu'elle fait naître : les couples connus dont elle est l'un des parents
@@ -10105,7 +10030,8 @@ function encyRecettes(hote, cle, d) {
   if (!liste.length) vide('Aucun couple connu avec elle.');
   for (const [paire, donne] of liste) {
     const [x, y] = paire.split('×');
-    ligne(paire, donne, true, pourcent(x, y, donne));
+    const t = dureePension(stubLignee(x), stubLignee(y));
+    ligne(paire, donne, true, pourcent(x, y, donne) + (t === null ? '' : ' · ' + fmtTime(t)));
   }
 }
 

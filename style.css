@@ -443,7 +443,7 @@ body.debut { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "
    L'encyclopédie prend toute la largeur : elle n'a jamais eu sa place dans une colonne de
    vingt et un rem. La ferme disparaît alors entièrement — pas de demi-écran partagé, on
    regarde une chose à la fois. */
-body.vue-dex, body.vue-forge, body.vue-ciel, body.vue-recettes,
+body.vue-dex, body.vue-forge, body.vue-ciel,
 body.vue-marchand, body.vue-devsave {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "top" "note" "main";
@@ -451,10 +451,9 @@ body.vue-marchand, body.vue-devsave {
 body.vue-dex .stage-col, body.vue-dex .side, body.vue-dex .dial,
 body.vue-forge .stage-col, body.vue-forge .side, body.vue-forge .dial,
 body.vue-ciel .stage-col, body.vue-ciel .side, body.vue-ciel .dial,
-body.vue-recettes .stage-col, body.vue-recettes .side, body.vue-recettes .dial,
 body.vue-marchand .stage-col, body.vue-marchand .side, body.vue-marchand .dial,
 body.vue-devsave .stage-col, body.vue-devsave .side, body.vue-devsave .dial { display: none; }
-#vue-dex, #vue-forge, #vue-ciel, #vue-recettes, #vue-marchand, #vue-devsave { grid-area: main; }
+#vue-dex, #vue-forge, #vue-ciel, #vue-marchand, #vue-devsave { grid-area: main; }
 
 .onglets { display: flex; gap: 3px; }
 .onglet {
@@ -1496,40 +1495,6 @@ button.act.perte:not(:disabled) { border-color: var(--red); color: var(--red); }
   .forge-plan { gap: 0.5rem; }
   .forge-boutons { margin-left: 0; width: 100%; }
   .forge-in .carte, .forge-out .carte { width: 5.5rem; }
-}
-
-/* ── LE CARNET DES RECETTES ────────────────────────────────────────────────────
-   Une liste d'entrées, chacune : le couple à gauche, la flèche, ce qu'il donne, et les chances.
-   L'entrée d'une créature non découverte garde sa place mais tait son nom et son glyphe. */
-.recettes { display: flex; flex-direction: column; gap: 0.8rem; min-height: 0; }
-.recettes-tete h2 {
-  font-family: var(--f-name); font-weight: 400; font-size: 1.15rem; color: var(--ink); margin: 0;
-}
-.recettes-dit { margin: 0.2rem 0 0; max-width: 46rem; color: var(--soft); font-size: 0.82rem; line-height: 1.5; }
-.recettes-liste { display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
-.recette {
-  display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
-  background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
-  padding: 0.6rem 0.9rem;
-}
-.recette-couple { display: flex; align-items: center; gap: 0.5rem; }
-.recette-parent { display: flex; align-items: center; gap: 0.35rem; }
-.recette-glyphe { font-size: 1.3rem; line-height: 1; }
-.recette-nom { font-family: var(--f-ui); font-size: 0.85rem; color: var(--ink); }
-.recette-x { color: var(--faint); }
-.recette-fleche { color: var(--soft); font-size: 1.2rem; }
-/* ce qu'il donne : mis en avant d'un liseré discret, pour que l'œil aille au bout de la recette */
-.recette-donne .recette-nom { color: var(--accent); }
-/* non découverte : le glyphe et le nom se taisent, la place reste */
-.recette-donne.inconnue .recette-glyphe { color: var(--faint); }
-.recette-donne.inconnue .recette-nom { color: var(--faint); font-style: italic; }
-.recette-chances {
-  margin-left: auto; display: flex; gap: 0.9rem;
-  font-family: var(--f-num); font-size: 0.8rem; color: var(--soft);
-  font-variant-numeric: tabular-nums;
-}
-@media (max-width: 40rem) {
-  .recette-chances { margin-left: 0; width: 100%; }
 }
 
 /* ── UNE CARTE RESSEMBLE À UNE CARTE ──────────────────────────────────────────
