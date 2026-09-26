@@ -59,7 +59,7 @@ Deux merveilles sur huit sont écloses, les six autres attendent leurs dessins
 ([MERVEILLES.md](MERVEILLES.md)). La définition demandait « les premières merveilleuses », elle
 ne disait pas combien.
 
-À ne pas confondre avec le `v` de la sauvegarde (`v: 38` aujourd'hui), qui numérote le *format*
+À ne pas confondre avec le `v` de la sauvegarde (`v: 39` aujourd'hui), qui numérote le *format*
 des données rangées dans le navigateur et ne bouge que lorsque ce format change. Les deux
 avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
@@ -609,11 +609,14 @@ même motif, même rang d'étoiles » — on voit quarante cartes devenir deux. 
 plan de travail la reprend, et cliquer la carte de base annule tout : un joueur qui vient de
 poser une carte par erreur la reprend **là où il l'a posée**.
 
-**Ce qu'on ne peut pas forger reste montré**, éteint et avec sa raison — « elle est au bout »,
-« elle est équipée ». Les cacher ferait chercher une carte qu'on possède.
+**Ce qu'on ne peut pas forger reste montré**, éteint et avec sa raison — « elle est au bout ».
+Le cacher ferait chercher une carte qu'on possède.
 
-Une carte **équipée** n'entre pas dans la forge, exactement comme elle ne se fond pas : elle
-s'évaporerait d'un emplacement et changerait le build en silence.
+**Une carte équipée se forge comme les autres** (`5.11.0`), et la carte forgée **reprend son
+emplacement** : forger doit laisser le build complet. Elle a longtemps été refusée, par analogie
+avec la fonte — mais la forge désigne ses trois cartes et montre le résultat, rien n'y est
+silencieux. Le creuset, le nœud qui levait l'interdit, est parti avec lui : ses jetons sont
+rendus.
 
 #### Ce que la carte hérite
 
@@ -689,11 +692,14 @@ la taille rapporte.
 
 #### Il ne reste qu'un geste sur la carte
 
-Chaque carte affiche `✧ 10` : ce qu'elle rend si on la fond. Le bouton `★ 100` a disparu —
+Chaque carte de la forge affiche `✧ 10` : ce qu'elle rend si on la fond. Le bouton `★ 100` a disparu —
 il montait une étoile contre de la monnaie sans rien consommer, et **la vraie fusion demande
 trois cartes, donc elle ne peut pas tenir sur une seule**. Elle a son atelier.
 
-Fondre reste sur la carte, parce que fondre est bien une décision qui ne regarde qu'une carte.
+Fondre reste sur la carte, parce que fondre est bien une décision qui ne regarde qu'une carte —
+**mais seulement à la forge** (`5.11.0`), quand l'atelier montre tout l'album : c'est là que va
+la poussière, et là qu'on voit les cartes qui pourraient la rejoindre. L'album de la ferme ne
+sert plus qu'à équiper.
 
 Deux défauts ont été trouvés en câblant tout ça, à deux versions d'écart. La signature de
 `renderAlbum` lisait encore `k.palier`, laissé derrière par le renommage de la 2.30.2 : elle

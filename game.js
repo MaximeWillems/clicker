@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.10.2';
+const VERSION = 'beta 5.11.0';
 
 /* ─────────────────────────────────────────────
    Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
@@ -2074,9 +2074,7 @@ const CIEL = [
      avant. Ce qui reste ici est ce qui le DÉPASSE. */
   { cle: 'cendres', axe: 'album', parent: 'etincelle', prix: 5, glyphe: '✧',
     nom: 'Les cendres', dit: 'Fondre une carte rend deux fois plus de poussière.' },
-  { cle: 'creuset', axe: 'album', parent: 'cendres', prix: 16, glyphe: '⚒',
-    nom: 'Le creuset', dit: 'La forge accepte les cartes équipées.' },
-  { cle: 'braise-douce', axe: 'album', parent: 'creuset', prix: 22, glyphe: '⚖',
+  { cle: 'braise-douce', axe: 'album', parent: 'cendres', prix: 22, glyphe: '⚖',
     nom: 'La braise douce',
     dit: 'Forger coûte moitié moins de poussière.' },
   { cle: 'prisme', axe: 'album', parent: 'braise-douce', prix: 30, glyphe: '🌈',
@@ -2700,7 +2698,7 @@ function setCreature(el, fichier, emoji) {
    ───────────────────────────────────────────── */
 
 const SAVE_KEY = 'eclosion.jalon0';
-const SAVE_V = 38;          // le numéro de ce que le fichier sait produire aujourd'hui
+const SAVE_V = 39;          // le numéro de ce que le fichier sait produire aujourd'hui
 // Ce que vaut une absence, `OFFLINE_CAP` et `OFFLINE_PART` : dans constantes.js.
 
 let state, nextId = 1, nextCard = 1, lastFrame = Date.now(), isNewGame = false, stopSaving = false;
@@ -3414,6 +3412,16 @@ function load() {
       const haut = a.paliers ? PALIERS_V37[a.paliers - 1] : 0;
       a.paliers = Math.max(compte(versBareme(haut), JETON_PALIERS), compte(a.sommet, JETON_PALIERS),
                            a.paliers >= 3 ? RANG_PREMIER : 0);
+    }
+
+    /* v38 → v39 : LE CREUSET S'EN VA. La forge prend d'elle-même les cartes équipées, et le
+       nœud qui levait l'interdit n'a plus d'objet. ON NE DÉPOSSÈDE PERSONNE : ses seize jetons
+       reviennent en bourse, comme ceux des « bagage » en `v34`. La braise douce, qui en
+       descendait, a repris les cendres pour parent dans la table, et `etoileOuverte` la
+       rouvre seule. */
+    if ((s.v || 0) < 39 && merged.ciel && merged.ciel.creuset) {
+      delete merged.ciel.creuset;
+      if (merged.asc) merged.asc.jetons = (merged.asc.jetons || 0) + 16;
     }
 
     merged.v = SAVE_V;
@@ -6622,9 +6630,10 @@ function effetCarte(k) {
      d'illustration : c'est là que les particules viendront, DERRIÈRE la bête et au-dessus de
      rien d'autre. Le texte vit en dehors, donc rien de ce qui bougera ne peut le rendre
      illisible — c'est la contrainte qui a dessiné ce découpage, et non l'inverse. */
-/* `actes` : la forge montre des cartes qu'on ne peut ni fondre ni déplacer — celles qui vont
-   entrer, et celle qui va sortir et n'existe pas encore. Des boutons y seraient des mensonges
-   cliquables. */
+/* `actes` : le bouton de fonte, qui ne se montre que sur demande. Depuis la `5.11.0`, seule la
+   forge le demande, quand elle présente tout l'album — ni l'album de la ferme, ni le plan de
+   travail, dont les cartes vont entrer ou n'existent pas encore : des boutons y seraient des
+   mensonges cliquables. */
 function carteEl(k, actes) {
   const rarete = LINE_BY_KEY[k.line].rarity;
   const el = document.createElement('div');
@@ -6642,7 +6651,7 @@ function carteEl(k, actes) {
       '<i class="carte-eff"></i>' +
       '<i class="carte-rar"></i>' +
     '</span>' +
-    (actes === false ? '' :
+    (!actes ? '' :
     '<span class="carte-actes">' +
       '<button type="button" class="carte-acte fondre"></button>' +
     '</span>');
@@ -6667,9 +6676,11 @@ function carteEl(k, actes) {
 
   /* IL NE RESTE QU'UN GESTE SUR LA CARTE. « Fusionner » y était un bouton qui montait une
      étoile contre de la monnaie, sans rien consommer ; la vraie fusion demande trois cartes et
-     ne peut donc pas tenir sur une seule — elle a son atelier. Fondre reste ici, parce que
-     fondre est bien une décision qui ne regarde qu'une carte. */
-  if (actes !== false) {
+     ne peut donc pas tenir sur une seule — elle a son atelier. Fondre reste un bouton de la
+     carte, parce que fondre est bien une décision qui ne regarde qu'une carte ; mais il ne se
+     montre plus qu'à la forge, là où va la poussière et où l'on voit les cartes qui pourraient
+     la rejoindre. */
+  if (actes) {
     const fondre = el.querySelector('.fondre');
     const equipee = state.slots.indexOf(k.id) !== -1;
     // un chromatique rend de la poussière DORÉE : le glyphe et la couleur le disent
@@ -7118,7 +7129,8 @@ function renderForge() {
   }
 
   for (const k of liste) {
-    const el = carteEl(k, false);
+    // au premier temps, tout l'album est là : c'est ici qu'on fond, et nulle part ailleurs
+    const el = carteEl(k, !base);
     const hs = !forgeable(k);
     if (hs) { el.classList.add('forge-hs'); el.title = refusForge(k); }
     if (forgeAmies.indexOf(k.id) !== -1) el.classList.add('choisie');
@@ -7269,20 +7281,18 @@ function fusionDe(cartes) {
   };
 }
 
-/* CE QU'UNE CARTE PEUT FAIRE À LA FORGE. Deux refus, et ils ne se disent pas pareil : une
-   carte au bout n'a plus d'étoile à gagner, une carte équipée en aurait mais on ne la touche
-   pas. L'atelier montre les deux, éteintes, avec leur raison — les cacher ferait chercher une
-   carte qu'on possède. */
-/* LE CREUSET LÈVE L'INTERDIT SUR LES CARTES ÉQUIPÉES. Il tenait à ce qu'une carte qui
-   s'évapore d'un emplacement change le build en silence — mais la forge DÉSIGNE ses trois
+/* CE QU'UNE CARTE PEUT FAIRE À LA FORGE : monter, tant qu'il lui reste une étoile. L'atelier
+   montre les cartes au bout, éteintes, avec leur raison — les cacher ferait chercher une carte
+   qu'on possède.
+
+   UNE CARTE ÉQUIPÉE SE FORGE COMME LES AUTRES (`5.11.0`). L'interdit tenait à ce qu'une carte
+   qui s'évapore d'un emplacement change le build en silence — mais la forge DÉSIGNE ses trois
    cartes et montre le résultat : rien n'y est silencieux, et l'interdit n'obligeait qu'à un
-   aller-retour sans décision. Il reste par défaut, et se lève par un nœud. */
-const forgeable = k => (k.etoiles || 1) < ETOILES.length &&
-                       (etoilePrise('creuset') || state.slots.indexOf(k.id) === -1);
-const refusForge = k => (k.etoiles || 1) >= ETOILES.length
-  ? 'Elle est au bout : trois étoiles.'
-  : state.slots.indexOf(k.id) !== -1
-    ? 'Elle est équipée. Retire-la de tes cartes actives pour la forger.' : '';
+   aller-retour sans décision. Un nœud le levait depuis la `4.4.0`, le creuset ; c'est
+   maintenant la règle de base. Fondre, lui, reste refusé à une carte équipée : c'est un clic,
+   sans aperçu. */
+const forgeable = k => (k.etoiles || 1) < ETOILES.length;
+const refusForge = k => forgeable(k) ? '' : 'Elle est au bout : trois étoiles.';
 
 // Celles qui peuvent rejoindre une base : même lignée, même motif, même rang d'étoiles.
 const compagnes = base => state.album.filter(k =>
@@ -7341,8 +7351,15 @@ function forger(ids) {
   if (cout === null || (state.poussiere || 0) < cout) return false;
 
   state.poussiere -= cout;
+  const neuve = Object.assign(fusionDe(cartes), { id: nextCard++ });
   state.album = state.album.filter(k => ids.indexOf(k.id) === -1);
-  state.album.push(Object.assign(fusionDe(cartes), { id: nextCard++ }));
+  state.album.push(neuve);
+  /* LA CARTE FORGÉE REPREND L'EMPLACEMENT LIBÉRÉ — le premier, si plusieurs des trois étaient
+     équipées. Forger doit laisser le build complet, sinon on a déplacé la corvée au lieu de la
+     supprimer ; les autres emplacements se libèrent, sans laisser d'identifiant mort. */
+  const place = state.slots.findIndex(id => ids.indexOf(id) !== -1);
+  state.slots = state.slots.filter((id, i) => i === place || ids.indexOf(id) === -1);
+  if (place !== -1) state.slots[place] = neuve.id;
   state.stats.fusions = (state.stats.fusions || 0) + 1;
 
   oublierAlbum();
@@ -10661,6 +10678,12 @@ function bindTools() {
       if (!forger(trioForge())) blip(300, 0.05, 'sine', 0.03);
       return;
     }
+    // le bouton de fonte est DANS la carte : il passe avant la désignation
+    const fonte = e.target.closest('.carte-acte');
+    if (fonte) {
+      if (!desintegrer(parseInt(fonte.closest('.carte').dataset.id, 10))) blip(300, 0.05, 'sine', 0.03);
+      return;
+    }
     const carte = e.target.closest('.carte');
     if (!carte || !carte.dataset.id) return;
     if (!choisirForge(parseInt(carte.dataset.id, 10))) blip(300, 0.05, 'sine', 0.03);
@@ -10765,15 +10788,6 @@ function bindTools() {
 
   // le clic bascule la carte vers l'autre bloc — même effet, sans le geste
   albumHote.addEventListener('click', e => {
-    /* Les deux boutons d'une carte passent AVANT le basculement : ils sont dans la carte, donc
-       sans cette sortie un clic sur « fondre » déplacerait aussi la carte. */
-    const acte = e.target.closest && e.target.closest('.carte-acte');
-    if (acte) {
-      const carte = acte.closest('.carte');
-      const quoi = parseInt(carte.dataset.id, 10);
-      if (!desintegrer(quoi)) blip(300, 0.05, 'sine', 0.03);
-      return;
-    }
     const c = e.target.closest && e.target.closest('.carte');
     if (!c) return;
     const id = parseInt(c.dataset.id, 10);

@@ -104,7 +104,7 @@ scenario('forge — trois entrent, une sort, et les trois disparaissent', () => 
   eq('et le choix en cours est oublié', jeu.forgeBase, null);
 });
 
-scenario('forge — même lignée, même motif, même rang, et rien d’équipé', () => {
+scenario('forge — même lignée, même motif, même rang', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.poussiere = 1e9; s.slots = [];
 
@@ -130,18 +130,8 @@ scenario('forge — même lignée, même motif, même rang, et rien d’équipé
              pave(jeu, 3)];
   ok('trois âges différents se marient', jeu.forger([1, 2, 3]));
 
-  /* UNE CARTE ÉQUIPÉE N'ENTRE PAS DANS LA FORGE, comme elle ne se fond pas : elle
-     s'évaporerait d'un emplacement et changerait le build en silence. */
-  s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3)];
-  s.slots = [2];
-  ok('une équipée : refusé', !jeu.forger([1, 2, 3]));
-  eq('l’album est intact', s.album.length, 3);
-  ok('et elle n’est pas proposée',
-     jeu.compagnes(s.album[0]).every(k => k.id !== 2),
-     jeu.compagnes(s.album[0]).map(k => k.id).join(' '));
-
   // la même carte trois fois ne fait pas trois cartes
-  s.slots = [];
+  s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3)];
   ok('un trio de doublons : refusé', !jeu.forger([1, 1, 1]));
   ok('deux cartes ne suffisent pas', !jeu.forger([1, 2]));
 
@@ -240,12 +230,15 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
   eq('des cartes suffisent', onglet('forge').hidden, false);
   eq('la grille montre tout l’album', grille().length, 6);
   eq('et le plan de travail attend', plan().hidden, true);
+  // C'EST ICI QU'ON FOND, depuis la 5.11.0 : chaque carte de l'album porte son bouton
+  ok('chaque carte porte sa fonte', grille().every(c => dans(c, 'fondre').length === 1));
 
   /* SECOND TEMPS : LA GRILLE SE RÉDUIT. C'est la réduction elle-même qui enseigne la règle du
      mariage — on ne lit pas « même lignée, même motif », on voit cinq cartes devenir deux. */
   ok('on désigne une carte', jeu.choisirForge(1));
   eq('elle passe au plan de travail', plan().hidden, false);
   eq('il ne reste que ses semblables', grille().length, 3);
+  ok('et plus aucune fonte : on forge', grille().every(c => !dans(c, 'fondre').length));
   ok('ni le loup ni l’autre motif',
      grille().every(c => ['2', '3', '6'].indexOf(String(c.dataset.id)) !== -1),
      grille().map(c => c.dataset.id).join(' '));
@@ -283,12 +276,13 @@ scenario('forge — on désigne une carte, et la grille se réduit à ses sembla
 
   /* CE QU'ON NE PEUT PAS FORGER RESTE MONTRÉ, éteint et avec sa raison : cacher une carte
      qu'on possède ferait chercher ce qu'on a déjà. */
-  s.slots = [4];
+  s.album.find(k => k.id === 4).etoiles = 3;
   jeu.forgeSig = '';
   jeu.refresh();
   const eteinte = grille().find(c => String(c.dataset.id) === '4');
-  ok('l’équipée est éteinte', eteinte.className.includes('forge-hs'), eteinte.className);
-  ok('et dit pourquoi', /équipée/.test(eteinte.title), eteinte.title);
+  ok('la carte au bout est éteinte', eteinte.className.includes('forge-hs'), eteinte.className);
+  ok('et dit pourquoi', /bout/.test(eteinte.title), eteinte.title);
+  ok('mais elle se fond encore', dans(eteinte, 'fondre').length === 1);
   ok('la désigner ne fait rien', !jeu.choisirForge(4));
 
   eq('la poussière est annoncée', noeuds.get('forge-poussiere').textContent.slice(0, 1), '✧');
@@ -344,4 +338,41 @@ scenario('poussière — une bête engraissée en laisse davantage au saut', () 
   jeu.ascensionner();
   // neuf bêtes de taille normale à une poussière chacune, et la démesurée à quatre et demie
   eq('la démesurée laisse quatre fois et demie la sienne', jeu.state.poussiere, 9 + Math.round(4.5));
+});
+
+scenario('forge — une carte équipée se forge, et la forgée reprend sa place', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.poussiere = 1e9;
+
+  /* L'INTERDIT EST TOMBÉ (5.11.0) : la forge désigne ses trois cartes et montre le résultat,
+     rien n'y est silencieux. Il ne se levait qu'avec le creuset, un nœud qui n'existe plus. */
+  s.album = [pave(jeu, 1), pave(jeu, 2), pave(jeu, 3), pave(jeu, 4, 'loup')];
+  s.slots = [4, 2];
+  ok('une équipée entre dans la forge', jeu.forgeable(s.album[1]));
+  ok('et elle est proposée', jeu.compagnes(s.album[0]).some(k => k.id === 2));
+  ok('le trio se forge', jeu.forger([1, 2, 3]));
+  const neuve = s.album[s.album.length - 1];
+  eq('la forgée reprend l’emplacement libéré', s.slots.join(','), '4,' + neuve.id);
+
+  // deux équipées : la forgée prend la première place, la seconde se libère
+  s.album = [pave(jeu, 11), pave(jeu, 12), pave(jeu, 13)];
+  s.slots = [12, 13];
+  ok('deux équipées se forgent', jeu.forger([11, 12, 13]));
+  eq('une place reprise, l’autre libérée, aucun identifiant mort',
+     s.slots.join(','), String(s.album[s.album.length - 1].id));
+
+  // fondre, lui, reste refusé : c'est un clic, sans aperçu
+  s.album.push(pave(jeu, 20)); s.slots.push(20);
+  ok('une équipée ne se fond toujours pas', !jeu.desintegrer(20));
+});
+
+scenario('forge — l’album de la ferme ne fond plus', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  s.album = [pave(jeu, 1), pave(jeu, 2)]; s.slots = [1];
+  jeu.oublierAlbum(); jeu.refresh();
+  const boutons = [];
+  const m = e => { if ((e.className || '').includes('fondre')) boutons.push(e); e.children.forEach(m); };
+  noeuds.get('album').children.forEach(m);
+  eq('aucun bouton de fonte à la ferme', boutons.length, 0);
 });

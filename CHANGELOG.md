@@ -4,7 +4,7 @@ Ce qui est sorti, version par version, et les chantiers livrés avec le raisonne
 portés. Le [plan](PLAN.md) ne dit que ce qui vient ; le [README](README.md) décrit le jeu tel
 qu'il est.
 
-    aujourd'hui : beta 5.10.2 · sauvegarde v38 · 13 lignées illustrées sur 42 · 5 œufs sur 5
+    aujourd'hui : beta 5.11.0 · sauvegarde v39 · 13 lignées illustrées sur 42 · 5 œufs sur 5
 
 **À chaque version**, une ligne en tête de la table des versions — en gras, et la précédente
 perd le sien — et la ligne « aujourd'hui » ci-dessus. **À chaque chantier livré**, sa ligne
@@ -15,7 +15,8 @@ analyse le suit.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.10.2** | la pension ne plafonne plus la main : un clic sur un couple vaut **un vingtième** d'un clic sur un œuf, et chaque clic compte. À quatre clics par seconde, le couple va ×5 à ×21 en milieu de partie et ×81 en fin de partie |
+| **beta 5.11.0** | **la forge prend la fonte** : le bouton ✧ quitte l'album de la ferme et se montre sur chaque carte de la forge, quand elle présente tout l'album. **Une carte équipée se forge** comme les autres, et la carte forgée reprend son emplacement. Le creuset, le nœud qui l'autorisait, disparaît : ses seize jetons sont rendus (sauvegarde `v39`), et la braise douce se raccroche aux cendres |
+| beta 5.10.2 | la pension ne plafonne plus la main : un clic sur un couple vaut **un vingtième** d'un clic sur un œuf, et chaque clic compte. À quatre clics par seconde, le couple va ×5 à ×21 en milieu de partie et ×81 en fin de partie |
 | beta 5.10.1 | l'onglet de la pension cache les enclos : on compose les couples depuis la ferme. L'écran ne dit plus que la main fait la moitié d'une ponte — un clic de trop affiche « +0 s », et c'est tout |
 | beta 5.10.0 | la **pension se clique** : elle prend son onglet, où un couple remplace la bête en scène et les couples remplacent les incubateurs. Un clic avance la ponte de la force du clic, sans jamais faire plus de la moitié d'une ponte — le temps fait le reste, et rester devant le nid va au mieux deux fois plus vite. La carte ocellée clique l'onglet ouvert |
 | beta 5.9.2 | rien ne change en jeu : les **réglages de l'économie** quittent `game.js` pour `constantes.js`, rangés par thème — le barème des bêtes (valeurs, péages, multiplicateur de chaque rang, prix des œufs), la rente, la croissance, les places, les faveurs, les jetons, l'absence et la plonge. Les tables gardent leur forme dans `game.js` et lisent leurs nombres dans `constantes.js` ; quatre commentaires périmés par le barème unique sont corrigés au passage
@@ -292,11 +293,50 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Yggdrasil** | beta 5.8.0 | une merveille peut-elle ne pas être un animal ? | oui — un frêne, de la graine au monde, et la première forme du jeu qui soit un lieu. Ses parents devaient être une source ou un jardin, que la table n'a pas ; il prend la route de Wukong, une non-recette : deux chevaux, parce que son nom est le cheval d'Ygg. Le bois ne se croise qu'avec le bois, et `CORPS_SEULS` remplace le `if` de la pierre. Reste le dessin — le sujet le moins cher de tous, et sa fiche est prête |
 | **Le tréant et Cthulhu** | beta 5.9.0 | le bestiaire peut-il grandir à la demande, sans casser une règle ? | oui — deux lignées de plus, demandées le 26 septembre. **Le tréant**, rare, l'arbre qui marche : de la brindille au berger des forêts, et de bois comme Yggdrasil, si bien qu'il ne se croise qu'avec un autre tréant ou avec l'arbre-monde. **Cthulhu**, merveille, le seul dieu du lot qui dort : de l'idole de pierre à l'éveil, par le kraken et le dragon ancien — la pieuvre et l'aile de Lovecraft. Leurs fiches de dessin sont prêtes ; le dragon ancien devient parent de trois merveilles, à surveiller |
 | **Cliquer pour aider la pension** | beta 5.10.0, 5.10.2 | la présence peut-elle servir là où elle ne sert à rien ? | oui. La pension prend son onglet : un couple en scène à la place d'une bête, les couples dans la bande à la place des incubateurs. Un clic avance la ponte d'un vingtième de la force du clic, sans plafond : la `5.10.0` arrêtait la main à la moitié d'une ponte, et la `5.10.2` préfère un clic plus faible à un clic qui s'arrête. La carte ocellée clique l'onglet ouvert |
+| **La forge prend la fonte et les cartes équipées** | beta 5.11.0 | fond-on une carte là où l'on voit celles qui pourraient la rejoindre, et peut-on améliorer son build sans le démonter ? | oui — la fonte quitte la ferme pour la forge, où l'atelier montre tout l'album ; une carte équipée se forge, et la forgée reprend sa place dans le build. Fondre une équipée reste refusé : c'est un clic, sans aperçu. Le creuset n'a plus d'objet, il disparaît et ses seize jetons reviennent |
 
 ## Les analyses des chantiers livrés
 
 Elles restent parce qu'elles portent le raisonnement, et parce que plusieurs décisions ont été
 renversées depuis : on ne comprend une règle du jeu qu'en sachant ce qu'elle a remplacé.
+
+### La forge prend aussi les cartes équipées — **livré en `beta 5.11.0`**
+
+> **Livré en `beta 5.11.0`, comme demandé le 21 septembre** : une carte équipée se forge sans
+> nœud, et la forgée reprend l'emplacement du premier des trois qui était équipé ; les autres
+> se libèrent, sans identifiant mort. Fondre une équipée reste refusé. **Le creuset est retiré**
+> plutôt que doté d'un autre effet : ses seize jetons reviennent en bourse (`v39`), et la
+> braise douce se raccroche aux cendres. **Fondre a déménagé à la forge** : chaque carte y porte
+> son bouton ✧ tant que l'atelier montre tout l'album, et l'album de la ferme n'en a plus.
+>
+
+> **Livrée à moitié en `beta 4.4.0`, et comme nœud** : le creuset de la constellation lève
+> l'interdit, la règle de base ne bouge pas. Et la carte forgée ne reprend PAS l'emplacement
+> libéré — vérifié au banc : forger deux cartes équipées laisse deux identifiants morts dans
+> `state.slots`, l'album affiche 3 / 5 et refuse d'en équiper une de plus jusqu'au rechargement.
+>
+> **Demandé le 21 septembre 2026 : la règle de base, sans nœud** — forger une carte équipée, oui ;
+> la fondre, toujours non. Le creuset perd alors son objet : le retirer en remboursant ses seize
+> jetons (`braise-douce` se raccroche à `cendres`), ou lui donner un autre effet. Et **fondre
+> déménage à la forge** : l'album de la ferme ne montre plus ni le bouton ni le prix de fonte.
+
+**La règle s'inverse.** « Une carte équipée n'entre pas dans la forge, exactement comme elle ne
+se fond pas » : c'était faux par analogie. Les deux gestes ne se ressemblent pas.
+
+*Fondre* est un bouton sur une carte : un clic, et elle disparaît. Une carte équipée qui
+s'évapore ainsi change le build en silence, et le joueur découvre la perte à l'effet. D'où
+l'interdiction, qui est bonne.
+
+*Forger* est un geste en deux temps où l'on DÉSIGNE les trois cartes et où l'on voit le
+résultat avant de le fabriquer. Rien n'y est silencieux. Interdire les cartes équipées n'y
+protège de rien — ça oblige seulement à les déséquiper d'abord, un aller-retour sans décision.
+
+Ce qu'il faut prévoir : la carte qui sort **reprend l'emplacement libéré**. Forger trois cartes
+dont une était équipée doit rendre le build immédiatement complet, sinon on a déplacé la
+corvée au lieu de la supprimer.
+
+**Le verrou reste, mais il ne sert qu'à fondre.** Un cran sur une carte pour dire « celle-là,
+jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui montre tout.
 
 ### Cliquer pour aider la pension — livré en beta 5.10.0
 

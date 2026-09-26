@@ -57,8 +57,6 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
 | **L'interface modulable** — densité et ordre des panneaux, sauvés, et au-delà (presque) comme on veut. Voir [plus bas](#la-taille-des-menus-et-quelle-se-retienne) | rien | la ferme peut-elle se ranger comme on la regarde ? |
-| **Fondre à la forge seulement** — le bouton ✧ et son prix quittent l'album de la ferme ; la forge, qui ne porte aucun geste sur ses cartes, prend la fonte | rien | fond-on une carte là où l'on voit celles qui pourraient la rejoindre ? |
-| **Forger les cartes équipées, sans nœud** — et la carte forgée reprend l'emplacement libéré, ce qu'elle ne fait pas aujourd'hui. Voir [plus bas](#la-forge-prend-aussi-les-cartes-équipées) | rien — mais le creuset perd son objet | peut-on améliorer son build sans le démonter ? |
 | **Le charme chroma** — les cinq âges de toutes les lignées, vus, doublent la chance de chromatique. Voir [plus bas](#compléter-une-lignée-donne-un-bonus) | rien ; le sac, pour le montrer | la collection a-t-elle un bout qui vaut d'être atteint ? |
 | **Le sac** — un onglet qui montre toutes les ressources et tous les objets spéciaux | rien | sait-on ce qu'on possède sans ouvrir cinq écrans ? |
 
@@ -1053,36 +1051,6 @@ vraies, et deux d'entre elles expliquent pourquoi le péage n'a pas été touch�
 Ce qui suit vient d'une passe où vingt propositions hors plan ont été mises sur la table. Huit
 ont été retenues, et deux d'entre elles RENVERSENT une règle déjà écrite — c'est pour ça
 qu'elles sont analysées ici plutôt que listées dans le tableau.
-
-#### La forge prend aussi les cartes équipées
-
-> **Livrée à moitié en `beta 4.4.0`, et comme nœud** : le creuset de la constellation lève
-> l'interdit, la règle de base ne bouge pas. Et la carte forgée ne reprend PAS l'emplacement
-> libéré — vérifié au banc : forger deux cartes équipées laisse deux identifiants morts dans
-> `state.slots`, l'album affiche 3 / 5 et refuse d'en équiper une de plus jusqu'au rechargement.
->
-> **Demandé le 21 septembre 2026 : la règle de base, sans nœud** — forger une carte équipée, oui ;
-> la fondre, toujours non. Le creuset perd alors son objet : le retirer en remboursant ses seize
-> jetons (`braise-douce` se raccroche à `cendres`), ou lui donner un autre effet. Et **fondre
-> déménage à la forge** : l'album de la ferme ne montre plus ni le bouton ni le prix de fonte.
-
-**La règle s'inverse.** « Une carte équipée n'entre pas dans la forge, exactement comme elle ne
-se fond pas » : c'était faux par analogie. Les deux gestes ne se ressemblent pas.
-
-*Fondre* est un bouton sur une carte : un clic, et elle disparaît. Une carte équipée qui
-s'évapore ainsi change le build en silence, et le joueur découvre la perte à l'effet. D'où
-l'interdiction, qui est bonne.
-
-*Forger* est un geste en deux temps où l'on DÉSIGNE les trois cartes et où l'on voit le
-résultat avant de le fabriquer. Rien n'y est silencieux. Interdire les cartes équipées n'y
-protège de rien — ça oblige seulement à les déséquiper d'abord, un aller-retour sans décision.
-
-Ce qu'il faut prévoir : la carte qui sort **reprend l'emplacement libéré**. Forger trois cartes
-dont une était équipée doit rendre le build immédiatement complet, sinon on a déplacé la
-corvée au lieu de la supprimer.
-
-**Le verrou reste, mais il ne sert qu'à fondre.** Un cran sur une carte pour dire « celle-là,
-jamais » — contre le geste irréversible d'un clic, pas contre un atelier qui montre tout.
 
 #### Le prix d'une évolution — plan de prix
 
@@ -2122,13 +2090,6 @@ Dans cette section, je me permet de te donner des informations dès que j'ai des
 
 *Rangé le 21 septembre 2026. Chaque idée a sa ligne dans [Ce qui vient ensuite](#ce-qui-vient-ensuite),
 et son analyse là où le plan en porte une. Les nouvelles s'écrivent en bas, en vrac.*
-
-**L'album et la forge**
-
-- **Fondre se fait à la forge, plus depuis la ferme** : l'album de la ferme ne montre plus le
-  bouton ✧ ni le prix de fonte (`.carte-acte.fondre`).
-- **Forger des cartes équipées** — les fusionner, pas les fondre. Aujourd'hui seul le nœud du
-  creuset le permet, et la carte forgée ne reprend pas l'emplacement libéré.
 
 **La ferme**
 

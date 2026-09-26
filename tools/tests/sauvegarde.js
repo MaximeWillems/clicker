@@ -295,3 +295,25 @@ scenario('sauvegarde — le barème unique garde les niveaux, et tasse les pièc
   eq('le sommet du cycle rend ses quatre jetons', k.jetonsDus(), 4);
   ok('et l’ascension reste ouverte', k.peutAscensionner());
 });
+
+scenario('sauvegarde — le creuset s’en va, et ses jetons reviennent', () => {
+  /* v38 → v39. La forge prend d'elle-même les cartes équipées : le nœud qui levait l'interdit
+     n'a plus d'objet. Qui l'avait payé retrouve ses seize jetons ; la braise douce reste. */
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false;
+  const brut = JSON.parse(JSON.stringify(s));
+  brut.v = 38;
+  brut.ciel = Object.assign({}, brut.ciel, { cendres: true, creuset: true, 'braise-douce': true });
+  brut.asc = Object.assign({}, brut.asc, { jetons: 3 });
+
+  const k = neuf(brut);
+  eq('le format monte', k.state.v, k.SAVE_V);
+  ok('le creuset a disparu', !k.state.ciel.creuset);
+  eq('ses seize jetons sont rendus', k.state.asc.jetons, 19);
+  ok('la braise douce reste prise', k.etoilePrise('braise-douce'));
+
+  const sans = JSON.parse(JSON.stringify(s));
+  sans.v = 38;
+  sans.asc = Object.assign({}, sans.asc, { jetons: 3 });
+  eq('sans creuset, rien ne bouge', neuf(sans).state.asc.jetons, 3);
+});

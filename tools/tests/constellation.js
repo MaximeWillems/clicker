@@ -352,13 +352,7 @@ scenario('constellation — elle paie en jetons, et chaque nœud agit', () => {
   jeu.acheterEtoile('cendres');
   eq('les cendres doublent la poussière', jeu.poussiereDe(pave(jeu, 1)), d0 * 2);
 
-  /* LE CREUSET LÈVE L'INTERDIT SUR LES CARTES ÉQUIPÉES : la forge DÉSIGNE ses trois cartes et
-     montre le résultat, donc rien n'y est silencieux. */
   s.album = [pave(jeu, 1)]; s.slots = [1];
-  ok('une équipée reste hors forge', !jeu.forgeable(s.album[0]));
-  jeu.acheterEtoile('creuset');
-  ok('le creuset l’y fait entrer', jeu.forgeable(s.album[0]));
-
   const f0 = jeu.coutFusion(s.album[0]);
   jeu.acheterEtoile('braise-douce');
   eq('la braise douce halve le coût', jeu.coutFusion(s.album[0]), Math.round(f0 / 2));

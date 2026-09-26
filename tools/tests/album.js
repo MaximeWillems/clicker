@@ -306,7 +306,8 @@ scenario('album — une carte ressemble à une carte', () => {
   noeuds.get('album').children.forEach(m2);
   const p = cls => d[0].children.find(x => (x.className || '').includes(cls));
   eq('deux étoiles sur trois', p('carte-etoiles').textContent, '★★☆');
-  ok('fondre annonce sa poussière', /✧/.test(p('fondre').textContent), p('fondre').textContent);
+  // la fonte a déménagé à la forge (5.11.0) : la carte de la ferme ne porte plus aucun bouton
+  ok('fondre a quitté la ferme', p('fondre') === undefined && p('carte-actes') === undefined);
   /* IL N'Y A PLUS QU'UN GESTE SUR LA CARTE. « Fusionner » y montait une étoile contre de la
      monnaie sans rien consommer ; la vraie fusion demande trois cartes et ne peut pas tenir
      sur une seule — elle a son atelier. */
