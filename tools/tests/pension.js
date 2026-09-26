@@ -865,35 +865,27 @@ scenario('pension cliquable — l’onglet s’ouvre avec le nid, et reprend la 
   ok('et les enclos', !noeuds.get('groupe-pen').hidden);
 });
 
-scenario('pension cliquable — un clic avance la ponte, jamais plus de la moitié', () => {
+scenario('pension cliquable — un clic vaut un vingtième, et la main peut tout faire', () => {
   const jeu = neuf(); const s = jeu.state;
   s.tuto = false; s.coins = 1e9;
   const [a, b] = couple(jeu, 'loup', 'ours');
   jeu.accoupler(a, b);
   jeu.ouvrirVue('pension');
   const k = jeu.couples()[0];
-  const force = jeu.clickGain(jeu.sujetCouple(k));
-  ok('un clic vaut la force du clic, comme sur un œuf', force === jeu.clickPower(), force);
+  const gain = jeu.clicCouple(k);
+  eq('un clic vaut un vingtième de la force du clic', gain, jeu.clickPower() * jeu.CLIC_PENSION);
 
   jeu.tapStage();
-  eq('le clic avance la ponte', k.t, force);
-  eq('et se compte', k.clic, force);
+  eq('le clic avance la ponte', k.t, gain);
 
-  /* LA MAIN FAIT AU PLUS LA MOITIÉ D'UNE PONTE : sans ce plafond, un clic de fin de partie
-     bouclait une ponte d'une heure en neuf coups. */
-  let garde = 0;
-  while (jeu.resteACliquer(k) > 0 && garde++ < 100000) jeu.tapStage();
-  eq('la main s’arrête à la moitié', k.clic, k.duree * jeu.CLIC_PENSION);
-  const t = k.t;
-  jeu.tapStage();
-  eq('un clic de plus ne fait plus rien', k.t, t);
-
-  // le temps fait l'autre moitié, et la main repart de zéro à la ponte suivante
+  /* PAS DE PLAFOND : la main seule boucle une ponte entière. La 5.10.0 l'arrêtait à la moitié,
+     et les clics d'après ne servaient à rien. */
+  s.up.clic = 1000 * jeu.grainDe('clic');
   const avant = s.stats.pension || 0;
-  eq('le reste vient du temps', jeu.avancePension(k.duree - k.t), 1);
-  eq('l’œuf est tombé', s.stats.pension, avant + 1);
-  eq('et la main repart de zéro', k.clic, 0);
-  ok('elle peut recliquer', jeu.resteACliquer(k) > 0);
+  let n = 0;
+  while ((s.stats.pension || 0) === avant && n++ < 5000) jeu.tapStage();
+  eq('la main seule fait tomber l’œuf', s.stats.pension, avant + 1);
+  ok('et la ponte suivante repart', k.t < k.duree);
 });
 
 scenario('pension cliquable — la ponte qui tombe sous le doigt tombe tout de suite', () => {
@@ -903,7 +895,7 @@ scenario('pension cliquable — la ponte qui tombe sous le doigt tombe tout de s
   jeu.accoupler(a, b);
   jeu.ouvrirVue('pension');
   const k = jeu.couples()[0];
-  k.t = k.duree - 1;                      // le temps a presque tout fait
+  k.t = k.duree - jeu.clicCouple(k) / 2;  // le temps a presque tout fait
   const avant = s.stats.pension || 0;
   jeu.tapStage();
   eq('l’œuf tombe au clic', s.stats.pension, avant + 1);

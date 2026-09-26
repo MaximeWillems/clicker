@@ -243,14 +243,15 @@ const ASSIETTE_CLICS = 10;
    LA PENSION
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* LA PART D'UNE PONTE QUE LA MAIN PEUT FAIRE. Un clic sur un couple avance sa ponte comme un clic
-   sur un œuf avance son éclosion — mais jamais au-delà de cette part : le reste vient du temps.
-   À la moitié, la pension va au mieux deux fois plus vite tant qu'on clique, merveilles
-   comprises. Sans plafond, un clic de fin de partie — quatre cents secondes — bouclait une ponte
-   d'une heure en neuf coups : une merveille toutes les deux minutes de clic au lieu d'une toutes
-   les cinquante heures, et un œuf mythique, cinq millions à l'enfance, toutes les trois
-   secondes. */
-const CLIC_PENSION = 0.5;
+/* CE QUE VAUT UN CLIC SUR LA PENSION, en part d'un clic sur un œuf : un vingtième, sans plafond.
+   Un clic entier en aurait fait la meilleure affaire du jeu — en fin de partie, quatre cents
+   secondes par clic bouclaient une ponte d'une heure en neuf coups : une merveille toutes les
+   deux minutes de clic au lieu d'une toutes les cinquante heures. Au vingtième, à quatre clics
+   par seconde, le couple en scène va ×5 à ×21 en milieu de partie (clic de 20 à 100 s) et ×81
+   en fin de partie (400 s) ; la carte ocellée seule, au plus ×31. La `5.10.0` plafonnait
+   plutôt la main à la moitié d'une ponte : les clics d'après ne servaient à rien, et Maxime a
+   préféré un clic plus faible à un clic qui s'arrête. */
+const CLIC_PENSION = 0.05;
 
 /* ── LA POUSSIÈRE DE CARTE ─────────────────────────────────────────────────────
    Une monnaie qui n'existe que pour l'album. On l'obtient en DÉSINTÉGRANT une carte, un peu à

@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.10.1';
+const VERSION = 'beta 5.10.2';
 
 /* ─────────────────────────────────────────────
    Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
@@ -8993,11 +8993,11 @@ function issuesDe(a, b) {
    scène montre le couple qu'on regarde au lieu d'une bête, la bande des couples remplace celle
    des incubateurs, et tout le reste ne bouge pas.
 
-   UN CLIC SUR UN COUPLE AVANCE SA PONTE COMME UN CLIC SUR UN ŒUF AVANCE SON ÉCLOSION : la force
-   du clic, série et frénésie comprises. Mais la main ne fait jamais plus de `CLIC_PENSION` d'une
-   ponte — la moitié ; l'autre vient du temps. La chance de merveille se tire à chaque ponte, et
-   un œuf mythique pondu se revend cinq millions dès l'enfance : sans plafond, cliquer la pension
-   aurait été la meilleure affaire du jeu, et de loin.
+   UN CLIC SUR UN COUPLE AVANCE SA PONTE COMME UN CLIC SUR UN ŒUF AVANCE SON ÉCLOSION, série et
+   frénésie comprises — mais il n'en vaut que `CLIC_PENSION`, un vingtième. La chance de merveille
+   se tire à chaque ponte, et un œuf mythique pondu se revend cinq millions dès l'enfance : un
+   clic entier aurait fait de la pension la meilleure affaire du jeu, et de loin. Pas de
+   plafond : chaque clic compte, il pèse seulement moins.
 
    LA CARTE OCELLÉE CLIQUE L'ONGLET OUVERT, la pension quand on la regarde et la ferme sinon.
    Elle passe par `tapStage`, qui s'aiguille sur l'onglet : il n'y a rien à écrire pour elle. */
@@ -9009,8 +9009,9 @@ function coupleEnScene() {
   return ks[coupleVu];
 }
 const sujetCouple = k => ({ kind: 'couple', key: 'k:' + k.a + '×' + k.b, k });
-// ce que la main peut encore faire de la ponte en cours
-const resteACliquer = k => Math.max(0, k.duree * CLIC_PENSION - (k.clic || 0));
+const clicCouple = k => clickGain(sujetCouple(k)) * CLIC_PENSION;
+// un clic de pension descend sous la seconde : fmt l'arrondirait à zéro
+const fmtClic = n => n < 1 ? dec(n) : n < 10 ? dec(n, 1) : fmt(n);
 
 function taperCouple() {
   const k = coupleEnScene();
@@ -9021,14 +9022,11 @@ function taperCouple() {
      qu'aucun clic ne crée. Le dire plutôt que ne rien faire — un clic sans effet et sans
      explication est la première chose qu'on prend pour un bug. */
   if (k.t >= k.duree) { floatText(jitter(), pt.y - 20, 'réserve pleine'); flash(el, 'shake'); return; }
-  const place = resteACliquer(k);
-  if (place <= 0) { floatText(jitter(), pt.y - 20, '+0 s'); flash(el, 'shake'); return; }
-  const gain = Math.min(clickGain(sujetCouple(k)), place);
+  const gain = clicCouple(k);
   k.t += gain;
-  k.clic = (k.clic || 0) + gain;
   if (!mainDeCarte) { state.stats.clics++; noterClic(); }
   flash(el, 'shake');
-  floatText(jitter(), pt.y - 20, '+' + fmt(gain) + ' s');
+  floatText(jitter(), pt.y - 20, '+' + fmtClic(gain) + ' s');
   blip(200 + Math.random() * 60, 0.035, 'square', 0.02);
   // la ponte qui tombe sous le doigt tombe tout de suite, pas au prochain tour de boucle
   if (k.t >= k.duree) avancePension(0);
@@ -9060,11 +9058,10 @@ function renderCouple() {
   setWidth($('stage-fill'), Math.min(100, k.t / k.duree * 100).toFixed(1) + '%');
   setText($('stage-timer'), plein ? 'réserve pleine'
     : remaining(k.duree - k.t, coefIdle(), s) + ' → ' + (portee > 1 ? portee + ' œufs' : 'un œuf'));
-  const aider = !plein && resteACliquer(k) > 0;
-  setText($('stage-boost'), aider ? 'un clic vaut ' + fmt(clickGain(s)) + ' s' : '');
+  setText($('stage-boost'), plein ? '' : 'un clic vaut ' + fmtClic(clicCouple(k)) + ' s');
   setText($('stage-hint'), plein
     ? 'La réserve de cette sorte d’œuf est pleine : le couple attend qu’une place se libère.'
-    : aider ? 'Clique pour hâter la ponte.' : '');
+    : 'Clique pour hâter la ponte.');
 }
 
 /* LA BANDE DES COUPLES remplace celle des incubateurs quand l'onglet de la pension est ouvert :
@@ -9250,7 +9247,6 @@ function avancePension(dt) {
         noterPonte(a, b, ligne);
       }
       k.t -= k.duree;
-      k.clic = 0;               // la main repart de zéro à chaque ponte — voir `taperCouple`
     }
     return true;
   });

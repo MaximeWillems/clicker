@@ -780,8 +780,8 @@ au hasard comme les teintes et par hérédité.
 en sortirait un toutes les cinq minutes » — mille à un sur huit cents font 1,25 par heure, soit
 un toutes les quarante-huit minutes. Le vrai plafond de la pension est de 1 920 œufs l'heure,
 donc un fond toutes les vingt-cinq minutes, au sommet d'une partie parfaitement optimisée.
-Depuis que la pension se clique (`beta 5.10.0`), ce plafond double pour qui clique chaque
-couple à chaque ponte : 3 840 œufs l'heure.
+Depuis que la pension se clique (`beta 5.10.0`), le couple qu'on clique va plus vite — jusqu'à
+×81 en fin de partie, à quatre clics par seconde : un fond à la pension devra en tenir compte.
 Beaucoup pour un objet dit prestigieux, mais cinq à dix fois moins que ce qui était annoncé.
 
 C'est aussi la frontière qui donne sa place à chacune des deux voies : **on achète pour tomber
@@ -2366,14 +2366,12 @@ nid. Il garde la structure de la ferme : **la scène montre un couple à la plac
 la bande montre les couples à la place des incubateurs** — une vignette par couple, une case
 vide par place libre. Les enclos s'y cachent : on compose les couples au nid depuis la ferme.
 
-**Un clic sur le couple avance sa ponte**, comme un clic sur un œuf avance son éclosion : de la
-force du clic, combo et frénésie comprises. Mais **la main ne fait jamais plus de la moitié
-d'une ponte** (`CLIC_PENSION`, dans `constantes.js`), et elle repart de zéro à chaque ponte : le
-temps fait l'autre moitié. Sans ce plafond, un clic de fin de partie bouclait une ponte d'une
-heure en neuf coups — une merveille toutes les deux minutes de clic au lieu d'une toutes les
-cinquante heures. Avec lui, rester devant le nid va au mieux deux fois plus vite. L'écran ne
-l'explique pas : quand la part de la main est faite, la force du clic disparaît de la scène et
-un clic affiche « +0 s ».
+**Un clic sur le couple avance sa ponte d'un vingtième de la force du clic** (`CLIC_PENSION`,
+dans `constantes.js`), combo et frénésie comprises, et sans plafond : chaque clic compte, il
+pèse seulement moins qu'un clic sur un œuf. Un clic entier aurait fait de la pension la meilleure
+affaire du jeu : en fin de partie, une ponte d'une heure tombait en neuf coups, et une merveille
+toutes les deux minutes de clic au lieu d'une toutes les cinquante heures. Au vingtième, à quatre
+clics par seconde, le couple va ×5 à ×21 en milieu de partie et ×81 en fin de partie.
 
 **La carte ocellée clique l'onglet ouvert** : le couple sur la pension, la ferme partout
 ailleurs. Le **bonheur**, lui, ne monte pas dans cet onglet : il récompense une bête qu'on
