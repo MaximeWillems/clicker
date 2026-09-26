@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.9.0';
+const VERSION = 'beta 5.9.1';
 
 /* ─────────────────────────────────────────────
    Données — tout ce qui s'équilibre est ici.

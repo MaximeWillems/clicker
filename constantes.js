@@ -133,4 +133,4 @@ const RECETTE_VARIANCE = 0.3;
 
 /* Le poids de chaque marchandise dans le tirage d'une offre. La recette ne paraît que s'il reste
    une recette à apprendre ; sinon son poids se reporte sur le reste. */
-const MARCHANDISES = { change: 3, carte: 3, paquet: 2, recette: 2 };
+const MARCHANDISES = { change: 2, carte: 3, paquet: 2, recette: 3 };
