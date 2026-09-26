@@ -34,7 +34,7 @@
    constellation. Le jeton n'a donc plus qu'un évier, l'album se videra de sa source d'avant, et
    les cartes viendront des BOOSTERS — un morceau de jeu neuf, encore à venir. Ça rebat toute la
    fin de partie, d'où le majeur. */
-const VERSION = 'beta 5.9.2';
+const VERSION = 'beta 5.10.0';
 
 /* ─────────────────────────────────────────────
    Données — la forme des tables est ici. Leurs NOMBRES — le barème des bêtes, la rente, les
@@ -4477,13 +4477,15 @@ const clickPower  = () => clickPowerNu() * (enFrenesie() ? FRENESIE_X : 1) * com
 
 /* La vitesse à laquelle le sujet avance sans toi : l'automate qui s'en occupe à cet
    instant précis, et 0 tant qu'aucun n'est acheté. */
-const autoRate = s => s.kind === 'egg' ? force('couveuse')
+const autoRate = s => s.kind === 'couple' ? 1
+                    : s.kind === 'egg' ? force('couveuse')
                     : estMur(s.c) ? FATTEN_X * force('mangeoire') * temperOf(s.c).fat
                     : force('eleveur') * ELEVEUR_X;
 
 /* Ce que l'album ajoute à CE sujet-là, selon ce qu'il est en train de faire : un œuf couve,
    une bête grandit, une bête mûre engraisse. Trois familles de motifs, une seule fonction. */
 const albumVitesse = s => {
+  if (s.kind === 'couple') return 1;          // aucune famille de cartes ne touche la pension
   const b = bonusAlbum(), p = bonusPrimes();
   return 1 + (s.kind === 'egg' ? b.couvee + p.couvee
             : estMur(s.c) ? b.gras + p.gras : b.pousse + p.pousse);
@@ -5012,6 +5014,10 @@ function monteeNiveau(c, valueBefore, pt) {
 function tapStage() {
   // une ferme arrêtée l'est pour tout le monde, la main du joueur comprise
   if (enPause) { blip(300, 0.05, 'sine', 0.03); return; }
+  /* L'ONGLET DE LA PENSION REMPLACE LA SCÈNE : on clique le couple qu'on regarde. La carte
+     ocellée passe par ici elle aussi, et clique donc l'onglet ouvert — la pension quand on la
+     regarde, la ferme sinon. */
+  if (vue === 'pension') return taperCouple();
   // tant qu'elle n'a pas ouvert la porte, il n'y a rien à laver
   if (enPlonge()) { if (plongeOuverte()) laverAssiette(); return; }
   const s = current();
@@ -5538,6 +5544,8 @@ function tickOcelle(dt) {
 }
 
 function tickJoie(dt) {
+  // dans l'onglet de la pension, la scène montre un couple : aucune bête n'y est en vue
+  if (vue === 'pension') return;
   const s = current();
   if (!s || s.kind !== 'creature') return;
   const c = s.c;
@@ -7508,6 +7516,7 @@ function ascensionner() {
    l'éteint donc en tête, et seule la branche « créature » le rallume. */
 function renderStage() {
   $('stage-fond').hidden = true;
+  if (vue === 'pension') return renderCouple();
   // la plonge passe avant tout : c'est un état du jeu, pas un sujet en scène
   if (enPlonge()) return plongeOuverte() ? renderPlonge() : renderRien();
   const s = current();
@@ -8427,7 +8436,8 @@ function tickView() {
   const parquees = state.pen.filter(c => enPension(c)).length;
   setText($('compte-pen'), penUsed() + ' / ' + pensTotal() +
     (parquees ? ' · ' + parquees + ' en pension' : ''));
-  setText($('compte-incub'), state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
+  setText($('compte-incub'), vue === 'pension' ? couples().length + ' / ' + placesPension()
+    : state.incubators + (state.incubators > 1 ? ' incubateurs' : ' incubateur'));
   // La réserve n'existe que si on a acheté des œufs d'avance : pas de ligne vide sinon.
   $('strip-meta').hidden = !stock;
   if (stock) setText($('strip-meta'), reserveDite());
@@ -8681,12 +8691,17 @@ function renderTuto() {
   /* LE CARNET N'EXISTE PAS AVANT LA PREMIÈRE RECETTE APPRISE. Une liste vide dirait qu'il y a
      des recettes à trouver — le spoiler qu'on évite. Il paraît avec la première, jamais avant. */
   const recettesPret = recettesConnues() > 0;
+  /* L'ONGLET DE LA PENSION S'OUVRE AVEC LE NID : pas de pièce à montrer tant que le bâtiment
+     n'existe pas. */
+  const pensionPret = etoilePrise('nid');
   for (const b of document.querySelectorAll('.onglet')) {
+    if (b.dataset.vue === 'pension') b.hidden = !pensionPret;
     if (b.dataset.vue === 'dex') b.hidden = !dexPret;
     if (b.dataset.vue === 'forge') b.hidden = !forgePret;
     if (b.dataset.vue === 'ciel') b.hidden = !cielPret;
     if (b.dataset.vue === 'recettes') b.hidden = !recettesPret;
   }
+  if (!pensionPret && vue === 'pension') ouvrirVue('ferme');
   if (!dexPret && vue === 'dex') ouvrirVue('ferme');
   if (!forgePret && vue === 'forge') ouvrirVue('ferme');
   // pendant le saut, le ciel reste ouvert même sans jeton en réserve : c'est là qu'on valide
@@ -8700,6 +8715,7 @@ function renderTuto() {
 function refresh() {
   renderTuto();
   renderStrip();
+  renderBandeCouples();
   renderCollection();
   renderAlbum();
   renderForge();
@@ -8944,6 +8960,174 @@ function ligneeDe(a, b) {
   return (Math.random() < chancePension(ecartRarete(a, b)) ? haut : bas).line;
 }
 
+/* CE QUI PEUT SORTIR D'UN COUPLE, en une phrase. Le nid la dit pour le couple qu'on compose, la
+   scène de la pension pour celui qui couve : une seule fonction, sinon les deux divergeraient.
+
+   CE QUE LA PHRASE DIT D'UNE RECETTE, ET CE QU'ELLE TAIT. Tant qu'on n'a jamais vu la merveille,
+   elle ne la nomme pas : « et peut-être autre chose » suffit à dire qu'il y a quelque chose ici,
+   et rien de plus. Composer des couples au nid est gratuit ; les essayer coûte des jours. C'est la
+   fouille qu'on récompense, pas la lecture d'un wiki.
+
+   Une fois la bête rencontrée, la phrase la nomme et donne son pourcentage : le mystère a servi
+   une fois, et le garder ensuite ne serait plus du mystère mais de la rétention. */
+function issuesDe(a, b) {
+  const ecart = ecartRarete(a, b), chance = chancePension(ecart);
+  const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
+  const bas = haut === a ? b : a;
+  const rec = recetteDe(a, b);
+  const su = rec && state.seen[rec.donne + ':1'];
+  return (couple2Jokers(a, b)
+      ? 'n’importe quelle lignée du bestiaire, sauf la leur' +
+        (rareteConnue('merveilleuse')
+          ? ' — et ' + dec(JOKER_MERVEILLE * 100, 0) + ' % de merveilleuse' : '')
+      : ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
+                 : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
+                   ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +
+    (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name
+                    : ' · et peut-être autre chose');
+}
+
+/* ── LA PENSION SE CLIQUE ──────────────────────────────────────────────────────
+   Elle était le seul bâtiment où la présence ne servait à rien : on dépose deux bêtes, on
+   attend, on revient. Elle a maintenant son ONGLET, et il reprend la ferme telle quelle — la
+   scène montre le couple qu'on regarde au lieu d'une bête, la bande des couples remplace celle
+   des incubateurs, et tout le reste ne bouge pas.
+
+   UN CLIC SUR UN COUPLE AVANCE SA PONTE COMME UN CLIC SUR UN ŒUF AVANCE SON ÉCLOSION : la force
+   du clic, série et frénésie comprises. Mais la main ne fait jamais plus de `CLIC_PENSION` d'une
+   ponte — la moitié ; l'autre vient du temps. La chance de merveille se tire à chaque ponte, et
+   un œuf mythique pondu se revend cinq millions dès l'enfance : sans plafond, cliquer la pension
+   aurait été la meilleure affaire du jeu, et de loin.
+
+   LA CARTE OCELLÉE CLIQUE L'ONGLET OUVERT, la pension quand on la regarde et la ferme sinon.
+   Elle passe par `tapStage`, qui s'aiguille sur l'onglet : il n'y a rien à écrire pour elle. */
+let coupleVu = 0;      // le couple en scène : un coup d'œil, pas un réglage — il ne se sauvegarde pas
+function coupleEnScene() {
+  const ks = couples();
+  if (!ks.length) return null;
+  coupleVu = Math.max(0, Math.min(coupleVu, ks.length - 1));
+  return ks[coupleVu];
+}
+const sujetCouple = k => ({ kind: 'couple', key: 'k:' + k.a + '×' + k.b, k });
+// ce que la main peut encore faire de la ponte en cours
+const resteACliquer = k => Math.max(0, k.duree * CLIC_PENSION - (k.clic || 0));
+
+function taperCouple() {
+  const k = coupleEnScene();
+  if (!k) return;
+  const el = $('subject'), pt = centerOf(el);
+  const jitter = () => pt.x + (Math.random() * 60 - 30);
+  /* LA RÉSERVE PLEINE BLOQUE LA PONTE, et le clic avec elle : le couple attend une place, ce
+     qu'aucun clic ne crée. Le dire plutôt que ne rien faire — un clic sans effet et sans
+     explication est la première chose qu'on prend pour un bug. */
+  if (k.t >= k.duree) { floatText(jitter(), pt.y - 20, 'réserve pleine'); flash(el, 'shake'); return; }
+  const place = resteACliquer(k);
+  if (place <= 0) { floatText(jitter(), pt.y - 20, 'le reste vient du temps'); flash(el, 'shake'); return; }
+  const gain = Math.min(clickGain(sujetCouple(k)), place);
+  k.t += gain;
+  k.clic = (k.clic || 0) + gain;
+  if (!mainDeCarte) { state.stats.clics++; noterClic(); }
+  flash(el, 'shake');
+  floatText(jitter(), pt.y - 20, '+' + fmt(gain) + ' s');
+  blip(200 + Math.random() * 60, 0.035, 'square', 0.02);
+  // la ponte qui tombe sous le doigt tombe tout de suite, pas au prochain tour de boucle
+  if (k.t >= k.duree) avancePension(0);
+  refresh();
+}
+
+/* LE COUPLE EN SCÈNE. La même scène que pour une bête — le nom, la ligne dessous, la barre, le
+   temps, la phrase —, pour qu'on n'ait rien à réapprendre : seul le sujet change. */
+function renderCouple() {
+  sceneNue();
+  const stage = document.querySelector('.stage');
+  const k = coupleEnScene();
+  setCreature($('stage-glyph'), null, '🪺');
+  if (!k) {
+    setText($('stage-name'), 'Le nid est vide');
+    setText($('stage-meta'), '');
+    setWidth($('stage-fill'), '0%');
+    setText($('stage-timer'), '');
+    setText($('stage-hint'), 'Compose un couple au nid, dans la colonne de droite : deux bêtes ' +
+      'adultes, et une attente.');
+    return;
+  }
+  const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
+  const s = sujetCouple(k);
+  const haut = a && b && RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
+  setStageRarity(stage, haut ? 'rar-' + lineOf(haut).rarity : null);
+  setText($('stage-name'), a && b ? fullName(a) + ' × ' + fullName(b) : 'Un couple défait');
+  setText($('stage-meta'), a && b ? issuesDe(a, b) : '');
+  const plein = k.t >= k.duree, portee = porteePension();
+  setWidth($('stage-fill'), Math.min(100, k.t / k.duree * 100).toFixed(1) + '%');
+  setText($('stage-timer'), plein ? 'réserve pleine'
+    : remaining(k.duree - k.t, coefIdle(), s) + ' → ' + (portee > 1 ? portee + ' œufs' : 'un œuf'));
+  setText($('stage-boost'), 'un clic vaut ' + fmt(clickGain(s)) + ' s · la main fait au plus ' +
+    (CLIC_PENSION === 0.5 ? 'la moitié' : Math.round(CLIC_PENSION * 100) + ' %') + ' d’une ponte');
+  setText($('stage-hint'), plein
+    ? 'La réserve de cette sorte d’œuf est pleine : le couple attend qu’une place se libère.'
+    : resteACliquer(k) > 0
+    ? 'Clique pour hâter la ponte. Ta main peut en faire la moitié ; l’autre vient du temps.'
+    : 'Ta part de cette ponte est faite. Le reste viendra en attendant, même absent.');
+}
+
+/* LA BANDE DES COUPLES remplace celle des incubateurs quand l'onglet de la pension est ouvert :
+   une vignette par couple, une case vide par place libre, et la même barre que sous un œuf. Elle
+   a son propre hôte, `strip-couples`, pour ne jamais détruire les vignettes des œufs — on les
+   retrouve intactes en revenant à la ferme. */
+let couplesSig = '', couplesRefs = [];
+function renderBandeCouples() {
+  const ici = vue === 'pension';
+  $('strip-incub').hidden = ici;
+  $('strip-couples').hidden = !ici;
+  $('strip-tri-oeuf').hidden = ici;
+  setText($('titre-incub'), ici ? 'Pension' : 'Couvaison');
+  if (!ici) return;
+  const ks = couples(), places = placesPension();
+  const sig = ks.map(k => k.a + '×' + k.b).join(',') + '|' + places;
+  if (sig !== couplesSig) {
+    couplesSig = sig;
+    const hote = $('strip-couples');
+    hote.textContent = '';
+    couplesRefs = [];
+    for (let i = 0; i < Math.max(places, ks.length); i++) {
+      const k = ks[i];
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'thumb' + (k ? ' thumb-couple' : ' empty');
+      const glyph = document.createElement('span');
+      glyph.className = 'thumb-glyph';
+      const bar = document.createElement('span');
+      bar.className = 'thumb-bar';
+      const fill = document.createElement('i');
+      bar.appendChild(fill);
+      const tag = document.createElement('span');
+      tag.className = 'thumb-tag';
+      el.append(glyph, bar, tag);
+      if (k) {
+        const a = state.pen.find(c => c.id === k.a), b = state.pen.find(c => c.id === k.b);
+        glyph.textContent = (a ? glyphOf(a) : '—') + (b ? glyphOf(b) : '—');
+        el.title = a && b ? fullName(a) + ' × ' + fullName(b) : 'Un couple défait';
+        el.addEventListener('click', () => { coupleVu = i; refresh(); });
+      } else {
+        glyph.textContent = '◌';
+        el.title = 'Une place libre au nid';
+        el.disabled = true;
+      }
+      hote.appendChild(el);
+      couplesRefs.push({ el, fill, tag, k });
+    }
+  }
+  // ce qui coule à chaque image : la barre, le temps restant, et le couple en scène
+  couplesRefs.forEach((r, i) => {
+    if (!r.k) return;
+    const plein = r.k.t >= r.k.duree;
+    setWidth(r.fill, Math.min(100, r.k.t / r.k.duree * 100).toFixed(1) + '%');
+    setText(r.tag, plein ? 'plein' : fmtTime(r.k.duree - r.k.t));
+    r.el.classList.toggle('done', plein);
+    r.el.setAttribute('aria-current', String(i === coupleVu));
+  });
+}
+
 /* LA CHANCE QU'AVAIT CE RÉSULTAT-LÀ, pour ce couple-là. C'est ce que l'encyclopédie affiche
    sous un couple appris, et c'est calculé et non stocké : une prime achetée après coup ne
    doit pas laisser dans le carnet un nombre qui n'est plus vrai.
@@ -9068,6 +9252,7 @@ function avancePension(dt) {
         noterPonte(a, b, ligne);
       }
       k.t -= k.duree;
+      k.clic = 0;               // la main repart de zéro à chaque ponte — voir `taperCouple`
     }
     return true;
   });
@@ -9353,7 +9538,7 @@ function poserAuNid(id, cote) {
    page, aucune ne se sauvegarde. La forge a la même raison d'être pleine page que
    l'encyclopédie — elle montre des cartes côte à côte, six à la fois, et six cartes n'entrent
    pas dans une colonne de vingt et un rem. */
-const VUES = ['ferme', 'dex', 'forge', 'ciel', 'recettes', 'marchand', 'devsave'];
+const VUES = ['ferme', 'pension', 'dex', 'forge', 'ciel', 'recettes', 'marchand', 'devsave'];
 let vue = 'ferme';
 
 function ouvrirVue(v) {
@@ -9363,6 +9548,7 @@ function ouvrirVue(v) {
      pris, rien n'a été dépensé. `ouvrirAscension` rouvre le ciel juste après avoir levé le
      drapeau, donc on ne se coupe pas soi-même. */
   if (enAscension && vue !== 'ciel') quitterAscension();
+  document.body.classList.toggle('vue-pension', vue === 'pension');
   document.body.classList.toggle('vue-dex', vue === 'dex');
   document.body.classList.toggle('vue-forge', vue === 'forge');
   document.body.classList.toggle('vue-ciel', vue === 'ciel');
@@ -9586,33 +9772,11 @@ function renderPension() {
     dit.classList.add('refus');
   } else {
     const d = distanceDe(a, b), t = dureePension(a, b);
-    const ecart = ecartRarete(a, b);
-    const chance = chancePension(ecart);
-    const haut = RARITY[lineOf(a).rarity].rank >= RARITY[lineOf(b).rarity].rank ? a : b;
-    const bas = haut === a ? b : a;
-    /* CE QUE LA PHRASE DIT D'UNE RECETTE, ET CE QU'ELLE TAIT. Tant qu'on n'a jamais vu la
-       merveille, elle ne la nomme pas : « et peut-être autre chose » suffit à dire qu'il y a
-       quelque chose ici, et rien de plus. Composer des couples au nid est gratuit ; les
-       essayer coûte des jours. C'est la fouille qu'on récompense, pas la lecture d'un wiki.
-
-       Une fois la bête rencontrée, la phrase la nomme et donne son pourcentage : le mystère a
-       servi une fois, et le garder ensuite ne serait plus du mystère mais de la rétention. */
-    const rec = recetteDe(a, b);
-    const su = rec && state.seen[rec.donne + ':1'];
     setText(dit,
       (d === 0 ? 'Elles se ressemblent en tout' : d === 1 ? 'Elles ont une chose en commun'
                                                           : 'Elles n’ont rien en commun') +
-      ' · ' + fmtTime(t) + ' · ' +
-      (couple2Jokers(a, b)
-        ? 'n’importe quelle lignée du bestiaire, sauf la leur' +
-          (rareteConnue('merveilleuse')
-            ? ' — et ' + dec(JOKER_MERVEILLE * 100, 0) + ' % de merveilleuse' : '')
-        : ecart === 0 ? 'un œuf de l’une ou de l’autre, à pile ou face'
-                   : Math.round((1 - chance) * 100) + ' % ' + LINE_BY_KEY[bas.line].name.toLowerCase() +
-                     ', ' + Math.round(chance * 100) + ' % ' + LINE_BY_KEY[haut.line].name.toLowerCase()) +
-      (!rec ? '' : su ? ' · ' + dec(rec.chance * 100, rec.chance < 0.01 ? 1 : 0) + ' % ' + LINE_BY_KEY[rec.donne].name
-                      : ' · et peut-être autre chose'));
-    if (rec) dit.classList.add('recette');
+      ' · ' + fmtTime(t) + ' · ' + issuesDe(a, b));
+    if (recetteDe(a, b)) dit.classList.add('recette');
   }
   if (refsPension.herite) {
     const montre = a && b && !refus;

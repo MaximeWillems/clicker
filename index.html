@@ -38,6 +38,7 @@
        n'ont jamais eu leur place dans une colonne de vingt et un rem. -->
   <nav class="onglets" aria-label="Vues">
     <button type="button" class="onglet" data-vue="ferme" aria-pressed="true">Ferme</button>
+    <button type="button" class="onglet" data-vue="pension" aria-pressed="false" hidden>Pension</button>
     <button type="button" class="onglet" data-vue="dex" aria-pressed="false">Encyclopédie</button>
     <button type="button" class="onglet" data-vue="forge" aria-pressed="false" hidden>Forge</button>
     <button type="button" class="onglet" data-vue="ciel" aria-pressed="false" hidden>Constellation</button>
@@ -162,7 +163,7 @@
 
     <div class="strip-groupe">
       <div class="strip-titre">
-        <h2>Couvaison</h2>
+        <h2 id="titre-incub">Couvaison</h2>
         <span id="compte-incub"></span>
         <!-- IL VIT SUR LA BANDE DE COUVAISON, pas dans la boutique : c'est l'ordre de la FILE
              qu'il règle — lequel des œufs en réserve part le premier quand une case se libère.
@@ -177,6 +178,8 @@
         </div>
       </div>
       <div class="strip" id="strip-incub"></div>
+      <!-- LA BANDE DES COUPLES, qui remplace celle des incubateurs dans l'onglet de la pension. -->
+      <div class="strip" id="strip-couples" hidden></div>
     </div>
 
     <p class="strip-meta" id="strip-meta" hidden></p>

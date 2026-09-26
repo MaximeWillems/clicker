@@ -9,7 +9,7 @@ Deux plans se superposent, et il faut les lire ensemble. Le **plan des jalons** 
 versions** a été écrit après coup, quand le prototype a débordé de son cadre : il dit ce qui
 tombe dans quel ordre, et c'est celui qu'on suit au jour le jour.
 
-    aujourd'hui : beta 5.9.2 · sauvegarde v38 · 13 lignées illustrées sur 42 · 5 œufs sur 5
+    aujourd'hui : beta 5.10.0 · sauvegarde v38 · 13 lignées illustrées sur 42 · 5 œufs sur 5
 
 ---
 
@@ -111,6 +111,7 @@ dans la ligne du chantier en cours si elle existe, dans une ligne neuve sinon.
 | **Le barème unique** | beta 5.7.0 | chaque œuf se joue-t-il de la même façon, à une autre échelle ? | oui, par construction. La rare sert de modèle et chaque rang au-dessus vaut la rare × 25, un pas qui sort de ses propres chiffres — son dernier péage divisé par son œuf. Chaque œuf coûte donc le dernier péage de l'ère d'avant, les marges sont les mêmes à tous les rangs payants, et un péage se paie en quinze à vingt-cinq ventes de l'âge qu'on quitte. Un niveau coûte (niveau max de l'âge + n) clics, l'évolution ne donne plus de niveau, et la taille devient une marche qui repart de zéro à l'évolution et ne se vend plus : elle multiplie la poussière du saut. La marge mince a demandé la rente à quatre heures. Tout ce qui se paie en pièces est recalé sur la correspondance des bêtes mûres, paliers de jetons compris (×25), et la sauvegarde v38 convertit une partie en cours sans lui retirer un palier. **Renverse** l'échelle des rangs, les murs de la `4.27.0` et l'escalier des ères. **Prix à juger en jouant** : la première heure est deux à trois fois plus longue, et une rare tombée d'un œuf commun décide du rythme de la partie |
 | **Yggdrasil** | beta 5.8.0 | une merveille peut-elle ne pas être un animal ? | oui — un frêne, de la graine au monde, et la première forme du jeu qui soit un lieu. Ses parents devaient être une source ou un jardin, que la table n'a pas ; il prend la route de Wukong, une non-recette : deux chevaux, parce que son nom est le cheval d'Ygg. Le bois ne se croise qu'avec le bois, et `CORPS_SEULS` remplace le `if` de la pierre. Reste le dessin — le sujet le moins cher de tous, et sa fiche est prête |
 | **Le tréant et Cthulhu** | beta 5.9.0 | le bestiaire peut-il grandir à la demande, sans casser une règle ? | oui — deux lignées de plus, demandées le 26 septembre. **Le tréant**, rare, l'arbre qui marche : de la brindille au berger des forêts, et de bois comme Yggdrasil, si bien qu'il ne se croise qu'avec un autre tréant ou avec l'arbre-monde. **Cthulhu**, merveille, le seul dieu du lot qui dort : de l'idole de pierre à l'éveil, par le kraken et le dragon ancien — la pieuvre et l'aile de Lovecraft. Leurs fiches de dessin sont prêtes ; le dragon ancien devient parent de trois merveilles, à surveiller |
+| **Cliquer pour aider la pension** | beta 5.10.0 | la présence peut-elle servir là où elle ne sert à rien ? | oui, à moitié — et c'est voulu. La pension prend son onglet : un couple en scène à la place d'une bête, les couples dans la bande à la place des incubateurs. Un clic avance la ponte de la force du clic, mais la main ne fait jamais plus de la moitié d'une ponte : rester devant le nid va au mieux deux fois plus vite, et les merveilles, tirées par ponte, suivent sans s'emballer. La carte ocellée clique l'onglet ouvert |
 
 ### Ce qui vient ensuite
 
@@ -137,7 +138,7 @@ remonter ici, si bien que la seule table qui dit « ce qui vient ensuite » ne l
 | **L'animation du cinquième âge** — une planche par merveille | les dessins et `tools/pixel.js` | est-ce qu'une bête qui bouge se raconte toute seule ? |
 | **Les stats se voient** — elles agissent depuis la `4.16.0` et rien ne les montre : une lecture sur la fiche, et la planche pour la vérifier | rien, les deux moitiés sont posées | peut-on préférer une bête à une autre ? |
 | **Les tempéraments à second effet** — précoce, difficile, gourmand, précieux | rien | un tempérament peut-il se choisir plutôt que se subir ? |
-| **Cliquer pour aider la pension** | rien | la présence peut-elle servir là où elle ne sert à rien ? |
+| ~~**Cliquer pour aider la pension**~~ — **livré en `beta 5.10.0`** : un onglet Pension, et un clic qui avance la ponte sans jamais en faire plus de la moitié. Analysé [plus bas](#cliquer-pour-aider-la-pension--livré-en-beta-5100) | — | *(livré)* |
 | **Le tri du nid** — désigner un couple par sa lignée plutôt qu'en cherchant deux bêtes dans la bande | rien | huit couples se composent-ils encore à la main ? |
 | **Ce que la pension a rendu** — un journal des pontes, par lignée | rien | sait-on ce qu'on a produit sans compter les œufs ? |
 | **Couper les automates** — un interrupteur général qui lit les consignes | rien | peut-on arrêter le marchand sans aller le chercher ? |
@@ -1193,7 +1194,7 @@ seule trois-étoiles. Il y a un risque réel que l'album cesse de se remplir ass
 la forge existe. **À chiffrer sur une partie simulée avant de figer φ**, et φ n'est peut-être pas
 le bon facteur : c'est un joli nombre, ce n'est pas une raison.
 
-### Cliquer pour aider la pension
+### Cliquer pour aider la pension — livré en beta 5.10.0
 
 **La pension est le seul bâtiment où la présence ne sert à rien.** On y dépose deux bêtes, on
 attend, on revient. Tout le reste du jeu répond au clic — l'œuf couve plus vite, la bête grandit,
@@ -1219,6 +1220,22 @@ s'écrirait donc sans rien inventer : *un clic sur un couple avance sa ponte com
 de droite, celle qu'on a passé quatre versions à vider. En faire une vue à part entière — un
 quatrième onglet après la ferme, l'encyclopédie et la forge — lui donnerait la place que le nid
 à huit couples réclame déjà dans le tableau de route. Les deux chantiers se rejoignent.
+
+**Livré en `beta 5.10.0`, tranché ainsi :**
+
+- **Un onglet, qui garde la structure de la ferme.** La pension prend l'onglet qui suit la
+  ferme : la scène montre un couple à la place d'une bête, la bande montre les couples à la
+  place des incubateurs. On compose toujours les couples au nid.
+- **La main fait au plus la moitié d'une ponte** (`CLIC_PENSION`, dans `constantes.js`). Un
+  clic vaut la force du clic, combo et frénésie comprises, comme sur un œuf ; sans plafond, un
+  clic de fin de partie (400 s) bouclait une ponte d'une heure en neuf coups — une merveille
+  toutes les deux minutes de clic au lieu d'une toutes les cinquante heures. Le plafond borne
+  le gain à ×2, et la main repart de zéro à chaque ponte.
+- **La carte ocellée clique l'onglet ouvert**, contrairement au garde-fou prévu plus haut : le
+  couple sur la pension, la ferme partout ailleurs. Le plafond suffit à la tenir — elle ne
+  peut pas faire plus que la main.
+- **Le bonheur ne monte pas dans l'onglet de la pension** : il récompense une bête qu'on
+  regarde, et un couple n'en est pas une.
 
 ### Les teintes deviennent des chromatismes — à analyser
 

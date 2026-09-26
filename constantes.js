@@ -239,6 +239,19 @@ const OFFLINE_PART = 0.25;
 const ASSIETTE = 1;
 const ASSIETTE_CLICS = 10;
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   LA PENSION
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* LA PART D'UNE PONTE QUE LA MAIN PEUT FAIRE. Un clic sur un couple avance sa ponte comme un clic
+   sur un œuf avance son éclosion — mais jamais au-delà de cette part : le reste vient du temps.
+   À la moitié, la pension va au mieux deux fois plus vite tant qu'on clique, merveilles
+   comprises. Sans plafond, un clic de fin de partie — quatre cents secondes — bouclait une ponte
+   d'une heure en neuf coups : une merveille toutes les deux minutes de clic au lieu d'une toutes
+   les cinquante heures, et un œuf mythique, cinq millions à l'enfance, toutes les trois
+   secondes. */
+const CLIC_PENSION = 0.5;
+
 /* ── LA POUSSIÈRE DE CARTE ─────────────────────────────────────────────────────
    Une monnaie qui n'existe que pour l'album. On l'obtient en DÉSINTÉGRANT une carte, un peu à
    chaque ascension pour les bêtes qu'on n'emporte pas, et elle ne sert qu'à FUSIONNER.

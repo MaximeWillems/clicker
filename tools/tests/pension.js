@@ -829,3 +829,125 @@ scenario('pension — deux chimères donnent n’importe quoi, sauf une chimère
   ok('et l’écran l’annonce', /n’importe quelle lignée/.test(ditPension(jeu)), ditPension(jeu));
   ok('sans prétendre à une recette', !/autre chose/.test(ditPension(jeu)), ditPension(jeu));
 });
+
+scenario('pension cliquable — l’onglet s’ouvre avec le nid, et reprend la ferme', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const onglet = () => noeuds.get('pension-onglet') ||
+    [...document.querySelectorAll('.onglet')].find(b => b.dataset.vue === 'pension');
+  jeu.refresh();
+  ok('sans nid, pas d’onglet', onglet().hidden);
+
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.refresh();
+  ok('avec le nid, l’onglet paraît', !onglet().hidden);
+
+  jeu.ouvrirVue('pension');
+  eq('on y est', jeu.vue, 'pension');
+  ok('la bande des couples remplace celle des incubateurs',
+     !noeuds.get('strip-couples').hidden && noeuds.get('strip-incub').hidden);
+  eq('et le titre suit', noeuds.get('titre-incub').textContent, 'Pension');
+  eq('une case libre, aucun couple', noeuds.get('compte-incub').textContent, '0 / 1');
+  eq('la scène dit le nid vide', noeuds.get('stage-name').textContent, 'Le nid est vide');
+
+  jeu.accoupler(a, b);
+  jeu.refresh();
+  eq('le couple a sa vignette', noeuds.get('strip-couples').children.length, 1);
+  eq('et le compte le dit', noeuds.get('compte-incub').textContent, '1 / 1');
+  ok('la scène montre le couple', / × /.test(noeuds.get('stage-name').textContent),
+     noeuds.get('stage-name').textContent);
+
+  jeu.ouvrirVue('ferme');
+  ok('revenir à la ferme rend la bande des œufs',
+     noeuds.get('strip-couples').hidden && !noeuds.get('strip-incub').hidden);
+  eq('et son titre', noeuds.get('titre-incub').textContent, 'Couvaison');
+});
+
+scenario('pension cliquable — un clic avance la ponte, jamais plus de la moitié', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  jeu.ouvrirVue('pension');
+  const k = jeu.couples()[0];
+  const force = jeu.clickGain(jeu.sujetCouple(k));
+  ok('un clic vaut la force du clic, comme sur un œuf', force === jeu.clickPower(), force);
+
+  jeu.tapStage();
+  eq('le clic avance la ponte', k.t, force);
+  eq('et se compte', k.clic, force);
+
+  /* LA MAIN FAIT AU PLUS LA MOITIÉ D'UNE PONTE : sans ce plafond, un clic de fin de partie
+     bouclait une ponte d'une heure en neuf coups. */
+  let garde = 0;
+  while (jeu.resteACliquer(k) > 0 && garde++ < 100000) jeu.tapStage();
+  eq('la main s’arrête à la moitié', k.clic, k.duree * jeu.CLIC_PENSION);
+  const t = k.t;
+  jeu.tapStage();
+  eq('un clic de plus ne fait plus rien', k.t, t);
+
+  // le temps fait l'autre moitié, et la main repart de zéro à la ponte suivante
+  const avant = s.stats.pension || 0;
+  eq('le reste vient du temps', jeu.avancePension(k.duree - k.t), 1);
+  eq('l’œuf est tombé', s.stats.pension, avant + 1);
+  eq('et la main repart de zéro', k.clic, 0);
+  ok('elle peut recliquer', jeu.resteACliquer(k) > 0);
+});
+
+scenario('pension cliquable — la ponte qui tombe sous le doigt tombe tout de suite', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  jeu.ouvrirVue('pension');
+  const k = jeu.couples()[0];
+  k.t = k.duree - 1;                      // le temps a presque tout fait
+  const avant = s.stats.pension || 0;
+  jeu.tapStage();
+  eq('l’œuf tombe au clic', s.stats.pension, avant + 1);
+  ok('et la ponte repart', k.t < k.duree);
+});
+
+scenario('pension cliquable — la carte ocellée clique l’onglet ouvert', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  jeu.accoupler(a, b);
+  const k = jeu.couples()[0];
+  s.incub[0] = { line: 'crapaud', p: 0, kind: 'commun' };
+  jeu.select('i:0');
+
+  // sur la pension, elle clique le couple — et ce n'est pas la main du joueur
+  jeu.ouvrirVue('pension');
+  const clics = s.stats.clics;
+  jeu.mainDeCarte = true;
+  jeu.tapStage();
+  jeu.mainDeCarte = false;
+  ok('sur la pension, elle avance le couple', k.t > 0, k.t);
+  eq('l’œuf de la ferme n’a pas bougé', s.incub[0].p, 0);
+  eq('et ce n’est pas un clic du joueur', s.stats.clics, clics);
+
+  // sur la ferme, elle clique la ferme
+  jeu.ouvrirVue('ferme');
+  const t = k.t;
+  jeu.mainDeCarte = true;
+  jeu.tapStage();
+  jeu.mainDeCarte = false;
+  ok('sur la ferme, elle avance l’œuf', s.incub[0].p > 0, s.incub[0].p);
+  eq('et le couple n’a pas bougé', k.t, t);
+});
+
+scenario('pension cliquable — le bonheur ne monte que sur une bête en scène', () => {
+  const jeu = neuf(); const s = jeu.state;
+  s.tuto = false; s.coins = 1e9;
+  const [a, b] = couple(jeu, 'loup', 'ours');
+  const c = bete(jeu, 'chat', 3, 20000);
+  jeu.select('c:' + c.id);
+  jeu.ouvrirVue('pension');
+  const avant = c.bonheur || 0;
+  jeu.tickJoie(30);
+  eq('dans l’onglet de la pension, rien', c.bonheur || 0, avant);
+  jeu.ouvrirVue('ferme');
+  jeu.tickJoie(30);
+  ok('sur la ferme, il monte', (c.bonheur || 0) > avant, c.bonheur);
+});

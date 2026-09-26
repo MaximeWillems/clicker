@@ -13,7 +13,7 @@ dépendance, aucun build, aucun serveur applicatif. La partie est sauvegardée d
 Le numéro s'affiche en haut à gauche, à côté du nom. Il n'est écrit qu'une seule fois dans
 tout le projet — `VERSION`, en haut de `game.js` — et la page le recopie au démarrage.
 
-    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 5.9.2
+    MOT MAJEUR.MINEUR.CORRECTIF           aujourd'hui : beta 5.10.0
 
 | Nombre | Ce qui le fait monter | Exemple |
 |---|---|---|
@@ -67,7 +67,8 @@ avancent à leur rythme, et le passage en bêta n'y a pas touché.
 
 | Version | Ce qu'elle apporte |
 |---|---|
-| **beta 5.9.2** | rien ne change en jeu : les **réglages de l'économie** quittent `game.js` pour `constantes.js`, rangés par thème — le barème des bêtes (valeurs, péages, multiplicateur de chaque rang, prix des œufs), la rente, la croissance, les places, les faveurs, les jetons, l'absence et la plonge. Les tables gardent leur forme dans `game.js` et lisent leurs nombres dans `constantes.js` ; quatre commentaires périmés par le barème unique sont corrigés au passage
+| **beta 5.10.0** | la **pension se clique** : elle prend son onglet, où un couple remplace la bête en scène et les couples remplacent les incubateurs. Un clic avance la ponte de la force du clic, sans jamais faire plus de la moitié d'une ponte — le temps fait le reste, et rester devant le nid va au mieux deux fois plus vite. La carte ocellée clique l'onglet ouvert |
+| beta 5.9.2 | rien ne change en jeu : les **réglages de l'économie** quittent `game.js` pour `constantes.js`, rangés par thème — le barème des bêtes (valeurs, péages, multiplicateur de chaque rang, prix des œufs), la rente, la croissance, les places, les faveurs, les jetons, l'absence et la plonge. Les tables gardent leur forme dans `game.js` et lisent leurs nombres dans `constantes.js` ; quatre commentaires périmés par le barème unique sont corrigés au passage
 | beta 5.9.1 | le marchand pose **plus de recettes et moins de change** : le poids de la recette dans le tirage d'une offre passe de 2 à 3, celui du change de 3 à 2 (cartes et paquets ne bougent pas)
 | beta 5.9.0 | deux lignées de plus. **Le tréant**, rare, l'arbre qui marche — brindille, souche, tréant, tréant moussu, berger des forêts — : de bois comme Yggdrasil, il ne se croise qu'avec un autre tréant ou avec l'arbre-monde. **Cthulhu**, merveille, le dieu qui dort — idole de Cthulhu, rejeton des étoiles, Cthulhu, le dormeur de R'lyeh, Cthulhu qui ne dort plus — : un **kraken** et un **dragon ancien** confiés à la pension le donnent une fois sur cinquante, la tête de pieuvre et les ailes de Lovecraft. Dessins à venir, fiches prêtes (`prompts/treant.txt`, `prompts/cthulhu.txt`)
 | beta 5.8.0 | **Yggdrasil, l'arbre-monde** — la huitième merveille, et la première lignée qui n'est pas un animal : graine de frêne, pousse de frêne, frêne sacré, Yggdrasil, Yggdrasil l'arbre-monde. Aucun œuf ne le donne ; deux **chevaux** confiés à la pension, oui, une fois sur cinquante — son nom est le cheval d'Ygg, l'un des noms d'Odin, et c'est la route de Wukong, une non-recette. **Le bois ne se croise qu'avec le bois**, comme la pierre : la pension le dit. Dessin à venir, sa fiche est prête (`prompts/yggdrasil.txt`)
@@ -971,6 +972,8 @@ au hasard comme les teintes et par hérédité.
 en sortirait un toutes les cinq minutes » — mille à un sur huit cents font 1,25 par heure, soit
 un toutes les quarante-huit minutes. Le vrai plafond de la pension est de 1 920 œufs l'heure,
 donc un fond toutes les vingt-cinq minutes, au sommet d'une partie parfaitement optimisée.
+Depuis que la pension se clique (`beta 5.10.0`), ce plafond double pour qui clique chaque
+couple à chaque ponte : 3 840 œufs l'heure.
 Beaucoup pour un objet dit prestigieux, mais cinq à dix fois moins que ce qui était annoncé.
 
 C'est aussi la frontière qui donne sa place à chacune des deux voies : **on achète pour tomber
@@ -2547,6 +2550,24 @@ sortir :
 Sans elle, on confie deux bêtes à l'aveugle et on attend cinq heures pour découvrir la règle.
 Le refus rend une **raison** et non un booléen : un bouton grisé sans explication est la
 première chose qu'un joueur ne comprend pas.
+
+#### L'onglet, et le clic qui aide
+
+Depuis la `beta 5.10.0`, la pension a son **onglet**, juste après la ferme ; il paraît avec le
+nid. Il garde la structure de la ferme : **la scène montre un couple à la place d'une bête, et
+la bande montre les couples à la place des incubateurs** — une vignette par couple, une case
+vide par place libre. On compose toujours les couples au nid.
+
+**Un clic sur le couple avance sa ponte**, comme un clic sur un œuf avance son éclosion : de la
+force du clic, combo et frénésie comprises. Mais **la main ne fait jamais plus de la moitié
+d'une ponte** (`CLIC_PENSION`, dans `constantes.js`), et elle repart de zéro à chaque ponte : le
+temps fait l'autre moitié. Sans ce plafond, un clic de fin de partie bouclait une ponte d'une
+heure en neuf coups — une merveille toutes les deux minutes de clic au lieu d'une toutes les
+cinquante heures. Avec lui, rester devant le nid va au mieux deux fois plus vite.
+
+**La carte ocellée clique l'onglet ouvert** : le couple sur la pension, la ferme partout
+ailleurs. Le **bonheur**, lui, ne monte pas dans cet onglet : il récompense une bête qu'on
+regarde, et un couple n'en est pas une.
 
 #### Les cases de l'enclos ne bougent pas
 
